@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
-var apiURL = "https://default.api/"
+var ApiURL = os.Getenv("API_URL")
+var Port = os.Getenv("PORT")
 
 func main() {
 	r := gin.Default()
 
 	r.GET("/", func(c *gin.Context) {
-		resp, err := http.Get(apiURL)
+		resp, err := http.Get(ApiURL)
 		if err != nil {
-			c.JSON(http.StatusServiceUnavailable, gin.H{"context": fmt.Sprintf("GET %s", apiURL), "error": err})
+			c.JSON(http.StatusServiceUnavailable, gin.H{"context": fmt.Sprintf("GET %s", ApiURL), "error": err})
 			return
 		}
 		defer resp.Body.Close()
@@ -31,5 +33,5 @@ func main() {
 		}
 	})
 
-	r.Run(":8080")
+	r.Run(fmt.Sprintf(":%s", Port))
 }

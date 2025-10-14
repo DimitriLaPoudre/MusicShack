@@ -1,4 +1,18 @@
 services:
-  client_web:
+  # client_web:
 
   server:
+    build: ./server
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./server/db:/db
+      - ./users/users:/users
+    environment:
+      API_URL: "https://tidal.401658.xyz/"
+      PORT: 8080
+      USER_SPACE_PATH: "./users"
+      JWT_SECRET: ${JWT_SECRET}
+
