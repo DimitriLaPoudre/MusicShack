@@ -10,7 +10,8 @@ RUN go build -ldflags="-s -w" -o server ./cmd/app
 
 FROM alpine:3.20
 
-COPY --from=builder /app/server /server
+WORKDIR /app
+COPY --from=builder /app/server ./server
 
-ENTRYPOINT ["/server"]
+ENTRYPOINT ["./server"]
 
