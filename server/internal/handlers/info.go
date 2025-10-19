@@ -26,3 +26,7 @@ func Info(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "API is running..."})
 
 }
+
+func Me(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
