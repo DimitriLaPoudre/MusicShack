@@ -1,12 +1,13 @@
 services:
-  # client_web:
-  #   build: ./client_web
-  #   restart: unless-stopped
-  #   user: "1000:1000"
-  #   ports:
-  #     - "5173:5173"
-  #   environment:
-  #     BACKEND_URL: ${BACKEND_URL}
+  client_web:
+    build: ./client_web
+    restart: unless-stopped
+    user: "1000:1000"
+    ports:
+      - "5173:5173"
+    environment:
+      PUBLIC_BACKEND_URL: ${BACKEND_URL}
+      PORT: 5173
 
   server:
     build: ./server
@@ -15,10 +16,10 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./server/db:/db
+      - ./server/db:/app/db
       - ./users:/users
     environment:
       API_URL: "https://tidal.401658.xyz/"
-      PORT: 8080
+      URL: "http://localhost:8080/"
       JWT_SECRET: ${JWT_SECRET}
 
