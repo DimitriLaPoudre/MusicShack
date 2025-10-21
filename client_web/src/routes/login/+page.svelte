@@ -1,8 +1,22 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
+	// import { PUBLIC_BACKEND_URL } from "$env/static/public";
+
 	let username: string = "";
 	let password: string = "";
 	let error: string = "";
+
+	onMount(async () => {
+		const res = await fetch("http://localhost:8080/api/me", {
+			credentials: "include",
+		});
+
+		if (res.ok) {
+			goto("/dashboard");
+			return;
+		}
+	});
 
 	async function handleLogin() {
 		error = "";
@@ -18,7 +32,12 @@
 				const data = await res.json();
 				alert(`welcome ${data.username}`);
 				goto("/dashboard");
+				return;
 			} else {
+				if (res.status === 403) {
+					goto("/login");
+					return;
+				}
 				const errData = await res.json();
 				error = errData.error || "error during login";
 			}

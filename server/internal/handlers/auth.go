@@ -36,6 +36,7 @@ func Signup(c *gin.Context) {
 	}
 	if err := repository.CreateUser(&models.User{Username: req.Username, Password: string(hashPassword)}); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

@@ -1,9 +1,22 @@
 <script lang="ts">
+	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
+
 	let username: string = "";
 	let password: string = "";
 	let confirmPassword: string = "";
 	let error: string = "";
+
+	onMount(async () => {
+		const res = await fetch("http://localhost:8080/api/me", {
+			credentials: "include",
+		});
+
+		if (res.ok) {
+			goto("/dashboard");
+			return;
+		}
+	});
 
 	async function handleSignup() {
 		error = "";
@@ -16,13 +29,20 @@
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),
+				credentials: "include",
 			});
 
 			if (res.ok) {
 				const data = await res.json();
 				alert(`account create for ${data.username}`);
+
 				goto("/login");
+				return;
 			} else {
+				if (res.status === 403) {
+					goto("/dashboard");
+					return;
+				}
 				const errData = await res.json();
 				error = errData.error || "error while signup";
 			}
