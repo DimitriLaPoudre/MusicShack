@@ -16,5 +16,6 @@ func InitDB() {
 	}
 
 	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.ApiInstance{})
 	DB = db
 }

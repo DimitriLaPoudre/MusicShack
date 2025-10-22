@@ -6,7 +6,7 @@ type User struct {
 	Password string `gorm:"not null"`
 }
 
-type UpdateUserRequest struct {
+type UserRequest struct {
 	Username string
 	Password string
 }
