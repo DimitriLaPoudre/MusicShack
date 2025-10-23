@@ -1,13 +1,20 @@
 package plugin
 
 type Plugin interface {
-	Test() string
+	Name() string
+	Download(string, string) error
+	Song(string) (any, error)
+	Album(string) (any, error)
+	Artist(string) (any, error)
+	Search(string, string, string) (any, error)
+	Cover(string) (string, error)
+	Lyrics(string) (string, string, error)
 }
 
 var registry = make(map[string]Plugin)
 
-func Register(name string, p Plugin) {
-	registry[name] = p
+func Register(p Plugin) {
+	registry[p.Name()] = p
 }
 
 func Get(name string) (Plugin, bool) {
