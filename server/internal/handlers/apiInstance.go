@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugin"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/gin-gonic/gin"
@@ -20,7 +20,7 @@ func AddInstance(c *gin.Context) {
 		return
 	}
 
-	if _, ok := plugin.Get(req.Api); !ok {
+	if _, ok := plugins.Get(req.Api); !ok {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid plugin name"})
 		return
 	}

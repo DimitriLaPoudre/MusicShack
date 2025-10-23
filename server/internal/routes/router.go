@@ -19,7 +19,7 @@ func SetupRouters() *gin.Engine {
 
 	apiInstance := r.Group("/api/instances/")
 	{
-		apiInstance.Use(middlewares.Logged())
+		// apiInstance.Use(middlewares.Logged())
 		apiInstance.POST("/", handlers.AddInstance)
 		apiInstance.GET("/", handlers.ListInstances)
 		apiInstance.GET("/:id", handlers.GetInstance)
@@ -28,13 +28,15 @@ func SetupRouters() *gin.Engine {
 
 	users := r.Group("/api/users")
 	{
-		apiInstance.Use(middlewares.Logged())
+		// apiInstance.Use(middlewares.Logged())
 		users.POST("/", handlers.CreateUser)
 		users.GET("/", handlers.ListUsers)
 		users.GET("/:id", handlers.GetUser)
 		users.PUT("/:id", handlers.UpdateUser)
 		users.DELETE("/:id", handlers.DeleteUser)
 	}
+
+	r.GET("/api/song/:api/:id", handlers.GetSong)
 
 	return r
 }

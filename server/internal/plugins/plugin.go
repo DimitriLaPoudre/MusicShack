@@ -1,9 +1,13 @@
-package plugin
+package plugins
+
+import (
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+)
 
 type Plugin interface {
 	Name() string
 	Download(string, string) error
-	Song(string) (any, error)
+	Song(string) (models.SongData, error)
 	Album(string) (any, error)
 	Artist(string) (any, error)
 	Search(string, string, string) (any, error)

@@ -24,6 +24,15 @@ func GetApiInstanceByID(id uint) (*models.ApiInstance, error) {
 	return &user, nil
 }
 
+func GetApiInstanceByApi(api string) (*models.ApiInstance, error) {
+	var user models.ApiInstance
+	err := database.DB.Take(&user, "api = ?", api).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func GetApiInstanceByURL(url string) (*models.ApiInstance, error) {
 	var user models.ApiInstance
 	err := database.DB.Take(&user, "url = ?", url).Error
