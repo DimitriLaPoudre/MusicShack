@@ -49,6 +49,9 @@ func Login(c *gin.Context) {
 	}
 	user, err := repository.GetUserByUsername(req.Username)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "username not found"})
+		}
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
