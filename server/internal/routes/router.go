@@ -36,5 +36,7 @@ func SetupRouters() *gin.Engine {
 		users.DELETE("/:id", handlers.DeleteUser)
 	}
 
+	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)
+
 	return r
 }
