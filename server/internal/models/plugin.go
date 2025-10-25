@@ -17,8 +17,9 @@ type SongData struct {
 		Name string
 	}
 	Album struct {
-		Id    string
-		Title string
+		Id       string
+		Title    string
+		CoverUrl string
 	}
 	BitDepth    uint
 	SampleRate  uint

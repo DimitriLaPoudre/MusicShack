@@ -3,6 +3,7 @@ package hifiv1
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -26,8 +27,9 @@ type songData struct {
 		Name string `mapstructure:"name"`
 	} `mapstructure:"artists"`
 	Album struct {
-		Id    uint   `mapstructure:"id"`
-		Title string `mapstructure:"title"`
+		Id       uint   `mapstructure:"id"`
+		Title    string `mapstructure:"title"`
+		CoverUrl string `mapstructure:"cover"`
 	} `mapstructure:"album"`
 	BitDepth    uint   `mapstructure:"bitDepth"`
 	SampleRate  uint   `mapstructure:"sampleRate"`
@@ -68,6 +70,8 @@ func (p *HifiV1) Song(id string) (models.SongData, error) {
 	if err := decoder.Decode(data); err != nil {
 		return models.SongData{}, err
 	}
+
+	songData.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(songData.Album.CoverUrl, "-", "/") + "/640x640.jpg"
 
 	var normalizeSongData models.SongData
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{

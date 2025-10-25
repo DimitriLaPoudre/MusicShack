@@ -2,13 +2,9 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 
-	let title = $state("Unreleased");
-	let artistName = $state("Unknown");
-	let artistId = $state(0);
-	let albumTitle = $state("Total");
-	let albumId = $state(0);
-	let duration = $state("0:00");
-	let quality = $state("None");
+	let isLoading = $state(true);
+	let error = $state<string | null>(null);
+	let song = $state<any | null>(null);
 
 	afterNavigate(async () => {
 		try {
@@ -23,23 +19,68 @@
 				goto("/login");
 				return;
 			}
-			const data = await res.json();
-			console.log(data);
-			title = data.Title;
-			artistName = data.Artist.Name;
-			artistId = data.Artist.Id;
-			albumTitle = data.Album.Title;
-			albumId = data.Album.Id;
-			duration = `${Math.floor(data.Duration / 60)}:${(data.Duration % 60).toString().padStart(2, "0")}`;
-			quality = data.AudioQuality;
+			if (!res.ok) {
+				throw new Error("Failed to fetch album");
+			}
+
+			song = await res.json();
+			song.Duration = `${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`;
+			isLoading = false;
 		} catch (e) {
-			console.log(e);
+			error = e instanceof Error ? e.message : "Failed to load album";
+			isLoading = false;
 		}
 	});
 </script>
 
-<p>{title}</p>
-<a href="/album/{page.params.api}/{albumId}">{albumTitle}</a>
-<a href="/artist/{page.params.api}/{artistId}">{artistName}</a>
-<p>{duration}</p>
-<p>{quality}</p>
+<svelte:head>
+	<title
+		>{song?.Title || "Song"} | {song?.Artist?.Name || "Artist"} - MusicShack</title
+	>
+</svelte:head>
+
+{#if isLoading}
+	<p>Loading...</p>
+{:else if error}
+	<h2>Error Loading Song</h2>
+	<p>{error}</p>
+	<a href="/dashboard"> Go to Dashboard </a>
+{:else}
+	<!-- page top -->
+	<div style="display: flex; align-items: row; gap: 10px;">
+		<img
+			src={song.Album.CoverUrl}
+			alt={song.title}
+			style="width:200px; height:auto;"
+		/>
+		<div style="display: flex; flex-direction: column; gap: 10px">
+			<h1>{song.Title}</h1>
+			<a
+				href="/album/{page.params.api}/{song.Album.Id}"
+				style="display: block;"
+			>
+				{song.Album.Title}
+			</a>
+			<div style="display: flex; gap: 10px;">
+				{#each song.Artists as artist}
+					<a href="/artist/{page.params.api}/{artist.Id}">
+						{artist.Name}
+					</a>
+				{/each}
+			</div>
+			<br />
+			<p>{song.Duration}</p>
+			<p>{song.AudioQuality}</p>
+			<button onclick={() => {}}>Download song</button>
+		</div>
+	</div>
+{/if}
+
+<style>
+	h1 {
+		margin: 0;
+	}
+	p {
+		margin: 0;
+	}
+</style>

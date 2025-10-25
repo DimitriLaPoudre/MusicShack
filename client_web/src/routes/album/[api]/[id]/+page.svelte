@@ -45,25 +45,34 @@
 	<p>{error}</p>
 	<a href="/dashboard"> Go to Dashboard </a>
 {:else}
-	<div style="display: flex; align-items: flex-start; gap: 10px;">
+	<!-- page top -->
+	<div style="display: flex; flex-direction: row; gap: 10px;">
 		<img
 			src={album.CoverUrl}
 			alt={album.title}
-			style="width:300px; height:auto;"
+			style="width:200px; height:auto;"
 		/>
-		<div>
+		<div style="display: flex; flex-direction: column; gap: 10px">
 			<p>[{album.Type}]</p>
 			<h1>{album.Title}</h1>
-			{#each album.Artists as artist}
-				<a href="/artist/{page.params.api}/{artist.Id}">{artist.Name}</a
-				>
-			{/each}
+			<div style="display: flex; gap: 10px;">
+				{#each album.Artists as artist}
+					<a href="/artist/{page.params.api}/{artist.Id}">
+						{artist.Name}
+					</a>
+				{/each}
+			</div>
+			<br />
 			<p>{album.Duration}</p>
-			<p>{album.AudioQuality}</p>
-			<p>{album.ReleaseDate}</p>
+			<div style="display: flex; flex-direction: row;">
+				<p>{album.ReleaseDate}</p>
+				<p>{album.AudioQuality}</p>
+			</div>
+
 			<button onclick={() => {}}>Download album</button>
 		</div>
 	</div>
+	<!-- page body -->
 	<div>
 		{#each album.Songs as song}
 			<div style="display: flex">
@@ -73,23 +82,32 @@
 						goto(`/song/${page.params.api}/${song.Id}`);
 					}}
 				>
-					<span>
+					<p>
 						{song.TrackNumber}
-					</span>
-					<span>
+					</p>
+					<p>
 						{song.Title}
-					</span>
+					</p>
 					{#each song.Artists as artist}
 						<a href="/artist/{page.params.api}/{artist.Id}">
 							{artist.Name}
 						</a>
 					{/each}
-					<span>
+					<p>
 						{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
-					</span>
+					</p>
 				</button>
 				<button onclick={() => {}}> Download</button>
 			</div>
 		{/each}
 	</div>
 {/if}
+
+<style>
+	h1 {
+		margin: 0;
+	}
+	p {
+		margin: 0;
+	}
+</style>
