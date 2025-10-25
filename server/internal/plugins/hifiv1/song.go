@@ -1,17 +1,17 @@
-package hifi
+package hifiv1
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/mitchellh/mapstructure"
 )
 
-type SongData struct {
-	Id           string `mapstructure:"id"`
+type songData struct {
+	Id           uint   `mapstructure:"id"`
 	Title        string `mapstructure:"title"`
 	Duration     uint   `mapstructure:"duration"`
 	ReleaseDate  string `mapstructure:"streamStartDate"`
@@ -19,24 +19,25 @@ type SongData struct {
 	VolumeNumber uint   `mapstructure:"volumeNumber"`
 	AudioQuality string `mapstructure:"audioQuality"`
 	Artist       struct {
-		Id   string `mapstructure:"id"`
+		Id   uint   `mapstructure:"id"`
 		Name string `mapstructure:"name"`
 	} `mapstructure:"artist"`
 	Artists []struct {
-		Id   string `mapstructure:"id"`
+		Id   uint   `mapstructure:"id"`
 		Name string `mapstructure:"name"`
 	} `mapstructure:"artists"`
 	Album struct {
-		Id    string `mapstructure:"id"`
-		Title string `mapstructure:"title"`
+		Id       uint   `mapstructure:"id"`
+		Title    string `mapstructure:"title"`
+		CoverUrl string `mapstructure:"cover"`
 	} `mapstructure:"album"`
 	BitDepth    uint   `mapstructure:"bitDepth"`
 	SampleRate  uint   `mapstructure:"sampleRate"`
 	DownloadUrl string `mapstructure:"OriginalTrackUrl"`
 }
 
-func (p *Hifi) Song(id string) (models.SongData, error) {
-	apiInstance, err := repository.GetApiInstanceByApi("hifi")
+func (p *HifiV1) Song(id string) (models.SongData, error) {
+	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
 	if err != nil {
 		return models.SongData{}, err
 	}
@@ -48,7 +49,6 @@ func (p *Hifi) Song(id string) (models.SongData, error) {
 
 	var items []map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
-		log.Println("json decode")
 		return models.SongData{}, err
 	}
 
@@ -59,29 +59,32 @@ func (p *Hifi) Song(id string) (models.SongData, error) {
 		}
 	}
 
-	var songData SongData
+	var songData songData
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:  &songData,
 		TagName: "mapstructure",
 	})
 	if err != nil {
-		log.Println("decode into tmp songdata")
 		return models.SongData{}, err
 	}
-	decoder.Decode(data)
+	if err := decoder.Decode(data); err != nil {
+		return models.SongData{}, err
+	}
 
-	var normalizeSongData SongData
+	songData.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(songData.Album.CoverUrl, "-", "/") + "/640x640.jpg"
+
+	var normalizeSongData models.SongData
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &normalizeSongData,
-		TagName:          "",
+		TagName:          "useless",
 		WeaklyTypedInput: true,
 	})
 	if err != nil {
-		log.Println("decode into songdata")
 		return models.SongData{}, err
 	}
-	decoder.Decode(data)
+	if err := decoder.Decode(songData); err != nil {
+		return models.SongData{}, err
+	}
 
-	log.Println("finish")
-	return models.SongData(normalizeSongData), nil
+	return normalizeSongData, nil
 }
