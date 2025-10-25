@@ -45,40 +45,51 @@
 	<p>{error}</p>
 	<a href="/dashboard"> Go to Dashboard </a>
 {:else}
-	<img src={album.Cover} alt={album.title} />
-	<p>[{album.Type}]</p>
-	<h1>{album.Title}</h1>
-	{#each album.Artists as artist}
-		<a href="/artist/{page.params.api}/{artist.Id}">{artist.Name}</a>
-	{/each}
-	<p>{album.Duration}</p>
-	<p>{album.AudioQuality}</p>
-	<p>{album.ReleaseDate}</p>
-	<button onclick={() => {}}>Download album</button>
-	{#each album.Songs as song}
-		<div style="display: flex">
-			<button
-				style="display: flex; gap: 10px;"
-				onclick={() => {
-					goto(`/song/${page.params.api}/${song.Id}`);
-				}}
-			>
-				<span>
-					{song.TrackNumber}
-				</span>
-				<span>
-					{song.Title}
-				</span>
-				{#each song.Artists as artist}
-					<a href="/artist/{page.params.api}/{artist.Id}">
-						{artist.Name}
-					</a>
-				{/each}
-				<span>
-					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
-				</span>
-			</button>
-			<button onclick={() => {}}> Download song</button>
+	<div style="display: flex; align-items: flex-start; gap: 10px;">
+		<img
+			src={album.CoverUrl}
+			alt={album.title}
+			style="width:300px; height:auto;"
+		/>
+		<div>
+			<p>[{album.Type}]</p>
+			<h1>{album.Title}</h1>
+			{#each album.Artists as artist}
+				<a href="/artist/{page.params.api}/{artist.Id}">{artist.Name}</a
+				>
+			{/each}
+			<p>{album.Duration}</p>
+			<p>{album.AudioQuality}</p>
+			<p>{album.ReleaseDate}</p>
+			<button onclick={() => {}}>Download album</button>
 		</div>
-	{/each}
+	</div>
+	<div>
+		{#each album.Songs as song}
+			<div style="display: flex">
+				<button
+					style="display: flex; gap: 10px;"
+					onclick={() => {
+						goto(`/song/${page.params.api}/${song.Id}`);
+					}}
+				>
+					<span>
+						{song.TrackNumber}
+					</span>
+					<span>
+						{song.Title}
+					</span>
+					{#each song.Artists as artist}
+						<a href="/artist/{page.params.api}/{artist.Id}">
+							{artist.Name}
+						</a>
+					{/each}
+					<span>
+						{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
+					</span>
+				</button>
+				<button onclick={() => {}}> Download</button>
+			</div>
+		{/each}
+	</div>
 {/if}

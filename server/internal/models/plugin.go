@@ -33,6 +33,7 @@ type AlbumData struct {
 	NumberTracks  uint
 	NumberVolumes uint
 	Type          string
+	CoverUrl      string
 	AudioQuality  string
 	Artist        struct {
 		Id   string
