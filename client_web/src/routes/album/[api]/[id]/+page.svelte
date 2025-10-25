@@ -14,25 +14,25 @@
 	onMount(async () => {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/song/${page.params.api}/${page.params.id}`,
+				`http://localhost:8080/api/album/${page.params.api}/${page.params.id}`,
 				{
 					credentials: "include",
 				},
 			);
 
-			if (res.status === 401) {
+			if (!res.ok) {
 				goto("/login");
 				return;
 			}
-			const data = await res.json();
-			console.log(data);
-			title = data.Title;
-			artistName = data.Artist.Name;
-			artistId = data.Artist.Id;
-			albumTitle = data.Album.Title;
-			albumId = data.Album.Id;
-			duration = `${Math.floor(data.Duration / 60)}:${data.Duration % 60}`;
-			quality = data.AudioQuality;
+			// const data = await res.json();
+			// console.log(data);
+			// title = data.Title;
+			// artistName = data.Artist.Name;
+			// artistId = data.Artist.Id;
+			// albumTitle = data.Album.Title;
+			// albumId = data.Album.Id;
+			// duration = `${Math.floor(data.Duration / 60)}:${data.Duration % 60}`;
+			// quality = data.AudioQuality;
 		} catch (e) {
 			console.log(e);
 		}

@@ -24,3 +24,20 @@ func GetSong(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, data)
 }
+
+func GetAlbum(c *gin.Context) {
+	api := c.Param("api")
+	id := c.Param("id")
+
+	p, ok := plugins.Get(api)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		return
+	}
+	data, err := p.Album(id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data)
+}

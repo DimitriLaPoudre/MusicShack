@@ -24,3 +24,36 @@ type SongData struct {
 	SampleRate  uint
 	DownloadUrl string
 }
+
+type AlbumData struct {
+	Id            string
+	Title         string
+	Duration      uint
+	ReleaseDate   string
+	NumberTracks  uint
+	NumberVolumes uint
+	Type          string
+	AudioQuality  string
+	Artist        struct {
+		Id   string
+		Name string
+	}
+	Artists []struct {
+		Id   string
+		Name string
+	}
+	Limit       uint
+	Offset      uint
+	NumberSongs uint
+	Songs       []struct {
+		Id           string
+		Title        string
+		Duration     uint
+		TrackNumber  uint
+		VolumeNumber uint
+		Artists      []struct {
+			Id   string
+			Name string
+		}
+	}
+}

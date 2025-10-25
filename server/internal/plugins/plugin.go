@@ -8,7 +8,7 @@ type Plugin interface {
 	Name() string
 	Download(string, string) error
 	Song(string) (models.SongData, error)
-	Album(string) (any, error)
+	Album(string) (models.AlbumData, error)
 	Artist(string) (any, error)
 	Search(string, string, string) (any, error)
 	Cover(string) (string, error)
