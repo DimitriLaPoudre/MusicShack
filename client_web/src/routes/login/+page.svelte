@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
-	// import { PUBLIC_BACKEND_URL } from "$env/static/public";
 
 	let username: string = "";
 	let password: string = "";
