@@ -68,7 +68,6 @@
 				<p>{album.ReleaseDate}</p>
 				<p>{album.AudioQuality}</p>
 			</div>
-
 			<button onclick={() => {}}>Download album</button>
 		</div>
 	</div>

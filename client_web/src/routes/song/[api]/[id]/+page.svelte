@@ -22,7 +22,6 @@
 			if (!res.ok) {
 				throw new Error("Failed to fetch album");
 			}
-
 			song = await res.json();
 			song.Duration = `${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`;
 			isLoading = false;
@@ -47,7 +46,7 @@
 	<a href="/dashboard"> Go to Dashboard </a>
 {:else}
 	<!-- page top -->
-	<div style="display: flex; align-items: row; gap: 10px;">
+	<div style="display: flex; flex-direction: row; gap: 10px;">
 		<img
 			src={song.Album.CoverUrl}
 			alt={song.title}
