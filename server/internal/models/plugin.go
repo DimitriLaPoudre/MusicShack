@@ -68,6 +68,10 @@ type ArtistData struct {
 		Id       string
 		Title    string
 		CoverUrl string
+		Artists  []struct {
+			Id   string
+			Name string
+		}
 	}
 	Ep []struct {
 		Id       string

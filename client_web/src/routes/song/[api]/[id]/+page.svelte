@@ -20,13 +20,13 @@
 				return;
 			}
 			if (!res.ok) {
-				throw new Error("Failed to fetch album");
+				throw new Error("Failed to fetch song");
 			}
 			song = await res.json();
 			song.Duration = `${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`;
 			isLoading = false;
 		} catch (e) {
-			error = e instanceof Error ? e.message : "Failed to load album";
+			error = e instanceof Error ? e.message : "Failed to load song";
 			isLoading = false;
 		}
 	});
@@ -49,7 +49,7 @@
 	<div style="display: flex; flex-direction: row; gap: 10px;">
 		<img
 			src={song.Album.CoverUrl}
-			alt={song.title}
+			alt={song.Title}
 			style="width:200px; height:auto;"
 		/>
 		<div style="display: flex; flex-direction: column; gap: 10px">

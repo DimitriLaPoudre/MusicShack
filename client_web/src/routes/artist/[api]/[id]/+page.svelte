@@ -9,7 +9,7 @@
 	afterNavigate(async () => {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/song/${page.params.api}/${page.params.id}`,
+				`http://localhost:8080/api/artist/${page.params.api}/${page.params.id}`,
 				{
 					credentials: "include",
 				},
@@ -20,12 +20,12 @@
 				return;
 			}
 			if (!res.ok) {
-				throw new Error("Failed to fetch album");
+				throw new Error("Failed to fetch artist");
 			}
 			artist = await res.json();
 			isLoading = false;
 		} catch (e) {
-			error = e instanceof Error ? e.message : "Failed to load album";
+			error = e instanceof Error ? e.message : "Failed to load artist";
 			isLoading = false;
 		}
 	});
@@ -43,33 +43,45 @@
 	<a href="/dashboard"> Go to Dashboard </a>
 {:else}
 	<!-- page top -->
-	<!-- <div style="display: flex; flex-direction: row; gap: 10px;"> -->
-	<!-- 	<img -->
-	<!-- 		src={song.Album.CoverUrl} -->
-	<!-- 		alt={song.title} -->
-	<!-- 		style="width:200px; height:auto;" -->
-	<!-- 	/> -->
-	<!-- 	<div style="display: flex; flex-direction: column; gap: 10px"> -->
-	<!-- 		<h1>{song.Title}</h1> -->
-	<!-- 		<a -->
-	<!-- 			href="/album/{page.params.api}/{song.Album.Id}" -->
-	<!-- 			style="display: block;" -->
-	<!-- 		> -->
-	<!-- 			{song.Album.Title} -->
-	<!-- 		</a> -->
-	<!-- 		<div style="display: flex; gap: 10px;"> -->
-	<!-- 			{#each song.Artists as artist} -->
-	<!-- 				<a href="/artist/{page.params.api}/{artist.Id}"> -->
-	<!-- 					{artist.Name} -->
-	<!-- 				</a> -->
-	<!-- 			{/each} -->
-	<!-- 		</div> -->
-	<!-- 		<br /> -->
-	<!-- 		<p>{song.Duration}</p> -->
-	<!-- 		<p>{song.AudioQuality}</p> -->
-	<!-- 		<button onclick={() => {}}>Download song</button> -->
-	<!-- 	</div> -->
-	<!-- </div> -->
+	<div style="display: flex; flex-direction: row; gap: 10px;">
+		<img
+			src={artist.PictureUrl}
+			alt={artist.Name}
+			style="width:200px; height:auto;"
+		/>
+		<div style="display: flex; flex-direction: column; gap: 10px">
+			<h1>{artist.Name}</h1>
+			<div style="display:flex; flex-direction: row; gap: 10px">
+				<button onclick={() => {}}>Favorite</button>
+				<button onclick={() => {}}>Download discography</button>
+			</div>
+		</div>
+	</div>
+	<!-- page body -->
+	<div>
+		<div style="display: flex; flex-wrap: wrap; gap: 10px;">
+			{#each artist.Albums as album}
+				<button
+					onclick={() => {
+						goto(`/album/${page.params.api}/${album.Id}`);
+					}}
+					style="display: flex; flex-direction: column; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width:160px; height: 200px;"
+				>
+					<img
+						src={album.CoverUrl}
+						alt={album.Title}
+						style="max-width:100%; max-height:100%;"
+					/>
+					<p>{album.Title}</p>
+					{#each album.Artists as artist}
+						<a href="/artist/{page.params.api}/{artist.Id}">
+							{artist.Name}
+						</a>
+					{/each}
+				</button>
+			{/each}
+		</div>
+	</div>
 {/if}
 
 <style>

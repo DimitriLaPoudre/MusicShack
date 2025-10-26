@@ -31,6 +31,10 @@ type artistAlbums struct {
 					Id       uint
 					Title    string
 					CoverUrl string `mapstructure:"cover"`
+					Artists  []struct {
+						Id   uint
+						Name string
+					}
 				}
 			}
 		}
