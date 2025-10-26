@@ -38,6 +38,6 @@ func SetupRouters() *gin.Engine {
 
 	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)
 	r.GET("/api/album/:api/:id", middlewares.Logged(), handlers.GetAlbum)
-
+	r.GET("/api/artist/:api/:id", middlewares.Logged(), handlers.GetArtist)
 	return r
 }

@@ -49,7 +49,7 @@
 	<div style="display: flex; flex-direction: row; gap: 10px;">
 		<img
 			src={album.CoverUrl}
-			alt={album.title}
+			alt={album.Title}
 			style="width:200px; height:auto;"
 		/>
 		<div style="display: flex; flex-direction: column; gap: 10px">

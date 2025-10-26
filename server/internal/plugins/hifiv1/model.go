@@ -10,9 +10,6 @@ func (p *HifiV1) Download(id string, quality string) error {
 	return nil
 }
 
-func (p *HifiV1) Artist(id string) (any, error) {
-	return nil, nil
-}
 func (p *HifiV1) Search(song, album, artist string) (any, error) {
 	return nil, nil
 }
