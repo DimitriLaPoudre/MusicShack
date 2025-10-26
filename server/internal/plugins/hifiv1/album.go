@@ -89,7 +89,9 @@ func (p *HifiV1) Album(id string) (models.AlbumData, error) {
 	if err != nil {
 		return models.AlbumData{}, err
 	}
-	decoder.Decode(data)
+	if err := decoder.Decode(data); err != nil {
+		return models.AlbumData{}, err
+	}
 
 	for _, item := range albumData.DirtySongs {
 		albumData.Songs = append(albumData.Songs, struct {
@@ -117,7 +119,9 @@ func (p *HifiV1) Album(id string) (models.AlbumData, error) {
 	if err != nil {
 		return models.AlbumData{}, err
 	}
-	decoder.Decode(albumData)
+	if err := decoder.Decode(albumData); err != nil {
+		return models.AlbumData{}, err
+	}
 
 	return normalizeAlbumData, nil
 }
