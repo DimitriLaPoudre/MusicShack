@@ -19,10 +19,21 @@ type artistData struct {
 }
 
 type artistAlbums struct {
-	Albums []struct {
-		Id       uint
-		Title    string
-		CoverUrl string
+	Id    string
+	Title string
+	Rows  []struct {
+		Modules []struct {
+			PagedList struct {
+				Limit               uint
+				Offset              uint
+				TotalNumbersOfItems uint
+				Items               []struct {
+					Id       uint
+					Title    string
+					CoverUrl string `mapstructure:"cover"`
+				}
+			}
+		}
 	}
 }
 
@@ -47,7 +58,6 @@ func (p *HifiV1) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPt
 		*errPtr = err
 		return
 	}
-
 	var item map[string]any
 	if err := json.Unmarshal(raw[0], &item); err != nil {
 		*errPtr = err
@@ -82,6 +92,25 @@ func (p *HifiV1) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums,
 	}
 	defer resp.Body.Close()
 
+	var raw []json.RawMessage
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return
+	}
+	var item map[string]any
+	if err := json.Unmarshal(raw[0], &item); err != nil {
+		return
+	}
+
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:  artistAlbums,
+		TagName: "mapstructure",
+	})
+	if err != nil {
+		return
+	}
+	if err := decoder.Decode(item); err != nil {
+		return
+	}
 }
 
 func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
@@ -106,6 +135,13 @@ func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
 		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrlFallback, "-", "/") + "/640x640.jpg"
 	}
 
+	if artistAlbums.Id != "" {
+		items := artistAlbums.Rows[0].Modules[0].PagedList.Items
+		for i := range items {
+			items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+		}
+	}
+
 	var normalizeArtistData models.ArtistData
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &normalizeArtistData,
@@ -116,6 +152,18 @@ func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
 		return models.ArtistData{}, err
 	}
 	if err := decoder.Decode(artistData); err != nil {
+		return models.ArtistData{}, err
+	}
+
+	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:           &normalizeArtistData.Albums,
+		TagName:          "useless",
+		WeaklyTypedInput: true,
+	})
+	if err != nil {
+		return models.ArtistData{}, err
+	}
+	if err := decoder.Decode(artistAlbums.Rows[0].Modules[0].PagedList.Items); err != nil {
 		return models.ArtistData{}, err
 	}
 
