@@ -8,7 +8,7 @@
 <header
 	style="display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; gap: 10px; flex-wrap: wrap; background-color: var(--color-background-light);"
 >
-	<a href="/">MusicShack</a>
+	<a href="/dashboard">MusicShack</a>
 	<div
 		style="width: 300px; max-width: 100%; padding: 8px; background-color: var(--color-secondary); display: flex; flex-direction: row; gap: 10px"
 	>

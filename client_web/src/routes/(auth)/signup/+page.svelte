@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { afterNavigate, goto } from "$app/navigation";
 
 	let username: string = "";

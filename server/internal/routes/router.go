@@ -18,7 +18,7 @@ func SetupRouters() *gin.Engine {
 	r.POST("/api/login", middlewares.LoggedOut(), handlers.Login)
 	r.POST("/api/logout", middlewares.Logged(), handlers.Logout)
 
-	apiInstance := r.Group("/api/instances/")
+	apiInstance := r.Group("/api/instances")
 	{
 		apiInstance.Use(middlewares.Logged())
 		apiInstance.POST("/", handlers.AddInstance)
