@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { onMount } from "svelte";
-	import { goto } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 
-	onMount(async () => {
+	afterNavigate(async () => {
 		const res = await fetch("http://localhost:8080/api/me", {
 			credentials: "include",
 		});

@@ -8,8 +8,15 @@
 /* Définition des variables CSS personnalisées */
 :root {
   --color-primary: #6b21a8;
-  --color-secondary: #f59e0b;
+  --color-primary-dark: #5b1198;
+  --color-secondary: #f9ae1b;
+  --color-secondary-dark: #e99e0b;
+  --color-background-light: #2a2a2a;
   --color-background: #1a1a1a;
+  --color-background-dark: #0a0a0a;
+  --color-error-light: #ff2020;	
+  --color-error: #ef1010;	
+  --color-error-dark: #df0000;	
   --color-text: #f2f3f4;
 
   /* Espacements */
@@ -44,7 +51,8 @@ a {
   text-decoration: none;
 }
 a:hover {
-  text-decoration: underline;
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
 /* Boutons */

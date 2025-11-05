@@ -43,7 +43,7 @@
 {:else if error}
 	<h2>Error Loading Song</h2>
 	<p>{error}</p>
-	<a href="/dashboard"> Go to Dashboard </a>
+	<a href="/">Go to Home</a>
 {:else}
 	<!-- page top -->
 	<div style="display: flex; flex-direction: row; gap: 10px;">

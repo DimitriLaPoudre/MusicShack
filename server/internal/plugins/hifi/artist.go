@@ -1,4 +1,4 @@
-package hifiv1
+package hifi
 
 import (
 	"encoding/json"
@@ -41,7 +41,7 @@ type artistAlbums struct {
 	}
 }
 
-func (p *HifiV1) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
+func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -82,7 +82,7 @@ func (p *HifiV1) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPt
 	}
 }
 
-func (p *HifiV1) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
+func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -117,7 +117,7 @@ func (p *HifiV1) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums,
 	}
 }
 
-func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
+func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 

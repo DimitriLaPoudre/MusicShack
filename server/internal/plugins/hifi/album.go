@@ -1,4 +1,4 @@
-package hifiv1
+package hifi
 
 import (
 	"encoding/json"
@@ -58,7 +58,7 @@ type albumData struct {
 	}
 }
 
-func (p *HifiV1) Album(id string) (models.AlbumData, error) {
+func (p *Hifi) Album(id string) (models.AlbumData, error) {
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
 	if err != nil {
 		return models.AlbumData{}, err

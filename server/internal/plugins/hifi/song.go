@@ -1,4 +1,4 @@
-package hifiv1
+package hifi
 
 import (
 	"encoding/json"
@@ -36,7 +36,7 @@ type songData struct {
 	DownloadUrl string `mapstructure:"OriginalTrackUrl"`
 }
 
-func (p *HifiV1) Song(id string) (models.SongData, error) {
+func (p *Hifi) Song(id string) (models.SongData, error) {
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
 	if err != nil {
 		return models.SongData{}, err
