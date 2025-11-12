@@ -84,3 +84,29 @@ type ArtistData struct {
 		CoverUrl string
 	}
 }
+
+type SearchData struct {
+	Songs []struct {
+		Id       string
+		Title    string
+		CoverUrl string
+		Artists  []struct {
+			Id   string
+			Name string
+		}
+	}
+	Albums []struct {
+		Id       string
+		Title    string
+		CoverUrl string
+		Artists  []struct {
+			Id   string
+			Name string
+		}
+	}
+	Artists []struct {
+		Id         string
+		Name       string
+		PictureUrl string
+	}
+}

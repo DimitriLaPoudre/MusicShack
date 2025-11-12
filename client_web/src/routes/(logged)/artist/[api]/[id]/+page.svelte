@@ -19,10 +19,10 @@
 				goto("/login");
 				return;
 			}
-			if (!res.ok) {
-				throw new Error("Failed to fetch artist");
-			}
 			artist = await res.json();
+			if (!res.ok) {
+				throw new Error(artist.error || "Failed to fetch artist");
+			}
 			isLoading = false;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";

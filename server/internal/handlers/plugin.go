@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 
 	"github.com/gin-gonic/gin"
@@ -57,4 +58,17 @@ func GetArtist(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, data)
+}
+
+func Search(c *gin.Context) {
+	search := c.Query("q")
+	finding := make(map[string]models.SearchData)
+
+	for key, value := range plugins.GetRegistry() {
+		tmp, err := value.Search(search, search, search)
+		if err == nil {
+			finding[key] = tmp
+		}
+	}
+	c.JSON(http.StatusOK, finding)
 }

@@ -20,10 +20,10 @@
 				goto("/login");
 				return;
 			}
-			if (!res.ok) {
-				throw new Error("Failed to fetch album");
-			}
 			album = await res.json();
+			if (!res.ok) {
+				throw new Error(album.error || "Failed to fetch album");
+			}
 			album.Duration = `${Math.floor(album.Duration / 60)}:${(album.Duration % 60).toString().padStart(2, "0")}`;
 			isLoading = false;
 		} catch (e) {

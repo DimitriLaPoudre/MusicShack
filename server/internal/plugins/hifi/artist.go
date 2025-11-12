@@ -125,8 +125,8 @@ func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 	var err error = nil
 	var artistAlbums artistAlbums
 
-	p.getArtistData(&wg, &artistData, &err, id)
-	p.getArtistAlbums(&wg, &artistAlbums, id)
+	go p.getArtistData(&wg, &artistData, &err, id)
+	go p.getArtistAlbums(&wg, &artistAlbums, id)
 
 	wg.Wait()
 	if err != nil {

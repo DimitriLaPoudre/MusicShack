@@ -19,10 +19,10 @@
 				goto("/login");
 				return;
 			}
-			if (!res.ok) {
-				throw new Error("Failed to fetch song");
-			}
 			song = await res.json();
+			if (!res.ok) {
+				throw new Error(song.error || "Failed to fetch song");
+			}
 			song.Duration = `${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`;
 			isLoading = false;
 		} catch (e) {

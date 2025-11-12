@@ -30,11 +30,11 @@
 				goto("/login");
 				return;
 			}
-			if (!res.ok) {
-				throw new Error("Failed to fetch instances");
-			}
 
 			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to fetch instances");
+			}
 			instances = body.instances;
 			instanceError = null;
 		} catch (e) {
@@ -88,7 +88,7 @@
 				},
 			);
 
-			const data = await res.json();
+			await res.json();
 			if (!res.ok) {
 				if (res.status === 403) {
 					goto("/");
@@ -112,46 +112,68 @@
 	}
 </script>
 
-<h1>User</h1>
-<div>
-	<div style="display: flex; flex-direction: column; gap: 8px;">
+<div style="display: flex; flex-direction: column; gap: 8px; padding: 8px;">
+	<div style="display: flex; flex-direction: column; gap: 8px; padding: 8px">
 		<p>Instances</p>
 		<form
 			on:submit|preventDefault={addInstance}
-			style="display: flex; flex-direction: row; justify-content: space-between; padding: 4px; border: 2px solid var(--color-background-dark); background-color: var(--color-background-light);"
+			style="display: flex; flex-direction: row; justify-content: space-between; padding: 4px; gap: 8px; border: 2px solid var(--color-background-dark); background-color: var(--color-background-light);"
 		>
-			<input placeholder="API" bind:value={newInstanceAPI} />
-			<input placeholder="URL" bind:value={newInstanceURL} />
-			<button><Plus /></button>
-			{#if newInstanceError}
-				<p
-					style="border: 4px solid var(--color-error-dark); background-color: var(--color-error);"
-				>
-					{newInstanceError}
-				</p>
-			{/if}
+			<input
+				placeholder="API"
+				bind:value={newInstanceAPI}
+				style="flex: 1; text-align: left; margin: 0;"
+			/>
+			<input
+				placeholder="URL"
+				bind:value={newInstanceURL}
+				style="flex: 1; text-align: left; margin: 0;"
+			/>
+			<button style="margin-left: auto;"><Plus /></button>
 		</form>
+		{#if newInstanceError}
+			<p
+				style="border: 4px solid var(--color-error-dark); background-color: var(--color-error);"
+			>
+				{newInstanceError}
+			</p>
+		{/if}
 		{#if instanceError}
 			<p
-				style="padding: 8px; border: 4px solid var(--color-error-dark); background-color: var(--color-error);"
+				style="padding: 8px; border: 2px solid var(--color-error-dark); background-color: var(--color-error);"
 			>
 				{instanceError}
 			</p>
 		{:else if !instances}
-			<p>Loading...</p>
+			<p
+				style="text-align: center; padding: 4px; gap: 8px; border: 2px solid var(--color-background-dark); background-color: var(--color-background-light);"
+			>
+				Loading...
+			</p>
 		{:else}
 			{#each instances as instance}
 				<div
-					style="display: flex; flex-direction: row; justify-content: space-between; padding: 4px;"
+					style="display: flex; flex-direction: row; justify-content: space-between; padding: 4px; gap: 8px; border: 2px solid var(--color-background-dark); background-color: var(--color-background-light);"
 				>
-					<p>{instance.Api}</p>
-					<p>{instance.Url}</p>
-					<button on:click={() => deleteInstance(instance.ID)}>
+					<p style="flex: 1; text-align: left; margin: 0;">
+						{instance.Api}
+					</p>
+					<p style="flex: 1; text-align: left; margin: 0;">
+						{instance.Url}
+					</p>
+					<button
+						on:click={() => deleteInstance(instance.ID)}
+						style="margin-left: auto;"
+					>
 						<Trash /></button
 					>
 				</div>
 			{/each}
 		{/if}
 	</div>
-	<button on:click={Logout} style="color: red">Logout</button>
+	<button
+		on:click={Logout}
+		style="padding: 4px; border: 2px solid var(--color-error-dark); background-color: var(--color-error-light);"
+		>Logout</button
+	>
 </div>

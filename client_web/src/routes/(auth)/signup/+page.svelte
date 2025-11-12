@@ -67,18 +67,21 @@
 				style="padding: 8px; border: 4px solid var(--color-secondary-dark); background-color: var(--color-secondary);"
 				placeholder="Username"
 				bind:value={username}
+				required
 			/>
 			<input
 				style="padding: 8px; border: 4px solid var(--color-secondary-dark); background-color: var(--color-secondary);"
 				type="password"
 				placeholder="Password"
 				bind:value={password}
+				required
 			/>
 			<input
 				style="padding: 8px; border: 4px solid var(--color-secondary-dark); background-color: var(--color-secondary);"
 				type="password"
 				placeholder="Confirm Password"
 				bind:value={confirmPassword}
+				required
 			/>
 
 			<button
