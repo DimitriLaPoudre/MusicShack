@@ -121,12 +121,12 @@ func (p *Hifi) Album(ctx context.Context, id string) (models.AlbumData, error) {
 	}
 	select {
 	case find, ok := <-ch:
-		if !ok {
-			cancel()
-			return models.AlbumData{}, errors.New("Album not found")
-		}
 		cancel()
-		data = find
+		if !ok {
+			return models.AlbumData{}, errors.New("Album not found")
+		} else {
+			data = find
+		}
 	case <-ctx.Done():
 		cancel()
 	}

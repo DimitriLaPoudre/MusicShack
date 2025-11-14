@@ -99,12 +99,12 @@ func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
 	}
 	select {
 	case find, ok := <-ch:
-		if !ok {
-			cancel()
-			return models.SongData{}, errors.New("Song not found")
-		}
 		cancel()
-		data = find
+		if !ok {
+			return models.SongData{}, errors.New("Song can't be fetch")
+		} else {
+			data = find
+		}
 	case <-ctx.Done():
 		cancel()
 	}

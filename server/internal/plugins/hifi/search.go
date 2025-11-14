@@ -3,6 +3,7 @@ package hifi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	"strings"
@@ -45,14 +46,17 @@ type searchAlbumData struct {
 type searchArtistData struct {
 	Section struct {
 		Artists []struct {
-			Id         uint   `json:"id"`
-			Name       string `json:"name"`
-			PictureUrl string `json:"picture"`
+			Id                 uint   `json:"id"`
+			Name               string `json:"name"`
+			PictureUrl         string `json:"picture"`
+			PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
 		} `json:"items"`
 	} `json:"artists"`
 }
 
-func (p *Hifi) getSearchSong(ctx context.Context, urlApi string, ch chan<- searchSongData, song string) {
+func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchSongData, song string) {
+	defer wg.Done()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
 	if err != nil {
 		println(err.Error())
@@ -71,7 +75,9 @@ func (p *Hifi) getSearchSong(ctx context.Context, urlApi string, ch chan<- searc
 	ch <- data
 }
 
-func (p *Hifi) getSearchAlbum(ctx context.Context, urlApi string, ch chan<- searchAlbumData, album string) {
+func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchAlbumData, album string) {
+	defer wg.Done()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
 	if err != nil {
 		println(err.Error())
@@ -90,7 +96,9 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, urlApi string, ch chan<- sear
 	ch <- data
 }
 
-func (p *Hifi) getSearchArtist(ctx context.Context, urlApi string, ch chan<- searchArtistData, artist string) {
+func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchArtistData, artist string) {
+	defer wg.Done()
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
 	if err != nil {
 		println(err.Error())
@@ -106,7 +114,6 @@ func (p *Hifi) getSearchArtist(ctx context.Context, urlApi string, ch chan<- sea
 	if err := json.NewDecoder(resp.Body).Decode(&tmp); err != nil {
 		return
 	}
-
 	ch <- tmp[0]
 }
 
@@ -128,14 +135,22 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 
 		routineCtx, cancel := context.WithCancel(context.Background())
 		ch := make(chan searchSongData)
+		var wgRoutine sync.WaitGroup
 
+		wgRoutine.Add(len(apiInstances))
+		go func() {
+			wgRoutine.Wait()
+			close(ch)
+		}()
 		for _, instance := range apiInstances {
-			go p.getSearchSong(routineCtx, instance.Url, ch, song)
+			go p.getSearchSong(routineCtx, &wgRoutine, instance.Url, ch, song)
 		}
 		select {
-		case find := <-ch:
+		case find, ok := <-ch:
 			cancel()
-			songData = find
+			if ok {
+				songData = find
+			}
 		case <-ctx.Done():
 			cancel()
 		}
@@ -146,14 +161,22 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 
 		routineCtx, cancel := context.WithCancel(context.Background())
 		ch := make(chan searchAlbumData)
+		var wgRoutine sync.WaitGroup
 
+		wgRoutine.Add(len(apiInstances))
+		go func() {
+			wgRoutine.Wait()
+			close(ch)
+		}()
 		for _, instance := range apiInstances {
-			go p.getSearchAlbum(routineCtx, instance.Url, ch, album)
+			go p.getSearchAlbum(routineCtx, &wgRoutine, instance.Url, ch, album)
 		}
 		select {
-		case find := <-ch:
+		case find, ok := <-ch:
 			cancel()
-			albumData = find
+			if ok {
+				albumData = find
+			}
 		case <-ctx.Done():
 			cancel()
 		}
@@ -163,14 +186,22 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 
 		routineCtx, cancel := context.WithCancel(context.Background())
 		ch := make(chan searchArtistData)
+		var wgRoutine sync.WaitGroup
 
+		wgRoutine.Add(len(apiInstances))
+		go func() {
+			wgRoutine.Wait()
+			close(ch)
+		}()
 		for _, instance := range apiInstances {
-			go p.getSearchArtist(routineCtx, instance.Url, ch, artist)
+			go p.getSearchArtist(routineCtx, &wgRoutine, instance.Url, ch, artist)
 		}
 		select {
-		case find := <-ch:
+		case find, ok := <-ch:
 			cancel()
-			artistData = find
+			if ok {
+				artistData = find
+			}
 		case <-ctx.Done():
 			cancel()
 		}
@@ -178,57 +209,71 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 
 	wg.Wait()
 
+	select {
+	case <-ctx.Done():
+		return models.SearchData{}, errors.New("connection closed")
+	default:
+	}
+
 	var result models.SearchData
 
-	for index, value := range songData.Songs {
-		if value.Album.CoverUrl != "" {
-			songData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/160x160.jpg"
+	if len(songData.Songs) != 0 {
+		for index, value := range songData.Songs {
+			if value.Album.CoverUrl != "" {
+				songData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/160x160.jpg"
+			}
 		}
-	}
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &result.Songs,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.SearchData{}, err
-	}
-	if err := decoder.Decode(songData.Songs); err != nil {
-		return models.SearchData{}, err
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			Result:           &result.Songs,
+			TagName:          "useless",
+			WeaklyTypedInput: true,
+		})
+		if err != nil {
+			return models.SearchData{}, err
+		}
+		if err := decoder.Decode(songData.Songs); err != nil {
+			return models.SearchData{}, err
+		}
 	}
 
-	for index, value := range albumData.Section.Albums {
-		if value.CoverUrl != "" {
-			albumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/160x160.jpg"
+	if len(albumData.Section.Albums) != 0 {
+		for index, value := range albumData.Section.Albums {
+			if value.CoverUrl != "" {
+				albumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/160x160.jpg"
+			}
 		}
-	}
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &result.Albums,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.SearchData{}, err
-	}
-	if err := decoder.Decode(albumData.Section.Albums); err != nil {
-		return models.SearchData{}, err
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			Result:           &result.Albums,
+			TagName:          "useless",
+			WeaklyTypedInput: true,
+		})
+		if err != nil {
+			return models.SearchData{}, err
+		}
+		if err := decoder.Decode(albumData.Section.Albums); err != nil {
+			return models.SearchData{}, err
+		}
 	}
 
-	for index, value := range artistData.Section.Artists {
-		if value.PictureUrl != "" {
-			artistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/160x160.jpg"
+	if len(artistData.Section.Artists) != 0 {
+		for index, value := range artistData.Section.Artists {
+			if value.PictureUrl != "" {
+				artistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/160x160.jpg"
+			} else if value.PictureUrlFallback != "" {
+				artistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrlFallback, "-", "/") + "/160x160.jpg"
+			}
 		}
-	}
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &result.Artists,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.SearchData{}, err
-	}
-	if err := decoder.Decode(artistData.Section.Artists); err != nil {
-		return models.SearchData{}, err
+		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			Result:           &result.Artists,
+			TagName:          "useless",
+			WeaklyTypedInput: true,
+		})
+		if err != nil {
+			return models.SearchData{}, err
+		}
+		if err := decoder.Decode(artistData.Section.Artists); err != nil {
+			return models.SearchData{}, err
+		}
 	}
 
 	return result, nil
