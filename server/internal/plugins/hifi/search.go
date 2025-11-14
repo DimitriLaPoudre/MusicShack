@@ -52,16 +52,10 @@ type searchArtistData struct {
 	} `json:"artists"`
 }
 
-func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, data *searchSongData, song string) {
-	defer wg.Done()
-
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
+func (p *Hifi) getSearchSong(ctx context.Context, urlApi string, ch chan<- searchSongData, song string) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
 	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?s="+url.QueryEscape(song), nil)
-	if err != nil {
+		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -70,21 +64,17 @@ func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, data *sear
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(data); err != nil {
+	var data searchSongData
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
 	}
+	ch <- data
 }
 
-func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, data *searchAlbumData, album string) {
-	defer wg.Done()
-
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
+func (p *Hifi) getSearchAlbum(ctx context.Context, urlApi string, ch chan<- searchAlbumData, album string) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
 	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?al="+url.QueryEscape(album), nil)
-	if err != nil {
+		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -93,21 +83,17 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, data *sea
 	}
 	defer resp.Body.Close()
 
-	if err := json.NewDecoder(resp.Body).Decode(data); err != nil {
+	var data searchAlbumData
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
 	}
+	ch <- data
 }
 
-func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, data *searchArtistData, artist string) {
-	defer wg.Done()
-
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
+func (p *Hifi) getSearchArtist(ctx context.Context, urlApi string, ch chan<- searchArtistData, artist string) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
 	if err != nil {
-		return
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?a="+url.QueryEscape(artist), nil)
-	if err != nil {
+		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -121,28 +107,82 @@ func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, data *se
 		return
 	}
 
-	*data = tmp[0]
+	ch <- tmp[0]
 }
 
 func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
-	var searchSongData searchSongData
-	var searchAlbumData searchAlbumData
-	var searchArtistData searchArtistData
+	var songData searchSongData
+	var albumData searchAlbumData
+	var artistData searchArtistData
 
-	go p.getSearchSong(ctx, &wg, &searchSongData, song)
-	go p.getSearchAlbum(ctx, &wg, &searchAlbumData, album)
-	go p.getSearchArtist(ctx, &wg, &searchArtistData, artist)
+	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	if err != nil {
+		return models.SearchData{}, err
+	}
+
+	go func() {
+		defer wg.Done()
+
+		routineCtx, cancel := context.WithCancel(context.Background())
+		ch := make(chan searchSongData)
+
+		for _, instance := range apiInstances {
+			go p.getSearchSong(routineCtx, instance.Url, ch, song)
+		}
+		select {
+		case find := <-ch:
+			cancel()
+			songData = find
+		case <-ctx.Done():
+			cancel()
+		}
+
+	}()
+	go func() {
+		defer wg.Done()
+
+		routineCtx, cancel := context.WithCancel(context.Background())
+		ch := make(chan searchAlbumData)
+
+		for _, instance := range apiInstances {
+			go p.getSearchAlbum(routineCtx, instance.Url, ch, album)
+		}
+		select {
+		case find := <-ch:
+			cancel()
+			albumData = find
+		case <-ctx.Done():
+			cancel()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+
+		routineCtx, cancel := context.WithCancel(context.Background())
+		ch := make(chan searchArtistData)
+
+		for _, instance := range apiInstances {
+			go p.getSearchArtist(routineCtx, instance.Url, ch, artist)
+		}
+		select {
+		case find := <-ch:
+			cancel()
+			artistData = find
+		case <-ctx.Done():
+			cancel()
+		}
+	}()
 
 	wg.Wait()
 
 	var result models.SearchData
 
-	for index, value := range searchSongData.Songs {
+	for index, value := range songData.Songs {
 		if value.Album.CoverUrl != "" {
-			searchSongData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/160x160.jpg"
+			songData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/160x160.jpg"
 		}
 	}
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -153,13 +193,13 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 	if err != nil {
 		return models.SearchData{}, err
 	}
-	if err := decoder.Decode(searchSongData.Songs); err != nil {
+	if err := decoder.Decode(songData.Songs); err != nil {
 		return models.SearchData{}, err
 	}
 
-	for index, value := range searchAlbumData.Section.Albums {
+	for index, value := range albumData.Section.Albums {
 		if value.CoverUrl != "" {
-			searchAlbumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/160x160.jpg"
+			albumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/160x160.jpg"
 		}
 	}
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -170,13 +210,13 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 	if err != nil {
 		return models.SearchData{}, err
 	}
-	if err := decoder.Decode(searchAlbumData.Section.Albums); err != nil {
+	if err := decoder.Decode(albumData.Section.Albums); err != nil {
 		return models.SearchData{}, err
 	}
 
-	for index, value := range searchArtistData.Section.Artists {
+	for index, value := range artistData.Section.Artists {
 		if value.PictureUrl != "" {
-			searchArtistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/160x160.jpg"
+			artistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/160x160.jpg"
 		}
 	}
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -187,7 +227,7 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 	if err != nil {
 		return models.SearchData{}, err
 	}
-	if err := decoder.Decode(searchArtistData.Section.Artists); err != nil {
+	if err := decoder.Decode(artistData.Section.Artists); err != nil {
 		return models.SearchData{}, err
 	}
 

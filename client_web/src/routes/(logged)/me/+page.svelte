@@ -44,6 +44,7 @@
 
 	async function addInstance() {
 		try {
+			newInstanceURL = newInstanceURL.trim();
 			if (newInstanceURL.endsWith("/")) {
 				newInstanceURL = newInstanceURL.substring(
 					0,
