@@ -108,7 +108,9 @@ func (p *Hifi) Album(id string) (models.AlbumData, error) {
 			item.SongData,
 		))
 	}
-	albumData.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(albumData.CoverUrl, "-", "/") + "/640x640.jpg"
+	if albumData.CoverUrl != "" {
+		albumData.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(albumData.CoverUrl, "-", "/") + "/640x640.jpg"
+	}
 
 	var normalizeAlbumData models.AlbumData
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{

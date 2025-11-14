@@ -135,14 +135,16 @@ func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 
 	if artistData.PictureUrl != "" {
 		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrl, "-", "/") + "/640x640.jpg"
-	} else {
+	} else if artistData.PictureUrlFallback != "" {
 		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrlFallback, "-", "/") + "/640x640.jpg"
 	}
 
 	if artistAlbums.Id != "" {
 		items := artistAlbums.Rows[0].Modules[0].PagedList.Items
 		for i := range items {
-			items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+			if items[i].CoverUrl != "" {
+				items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+			}
 		}
 	}
 

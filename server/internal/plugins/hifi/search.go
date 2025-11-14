@@ -3,6 +3,7 @@ package hifi
 import (
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 
@@ -17,7 +18,7 @@ type searchSongData struct {
 		Title    string `json:"title"`
 		CoverUrl string
 		Artists  []struct {
-			Id   string `json:"id"`
+			Id   uint   `json:"id"`
 			Name string `json:"name"`
 		} `json:"artists"`
 		Album struct {
@@ -58,7 +59,7 @@ func (p *Hifi) getSearchSong(wg *sync.WaitGroup, data *searchSongData, song stri
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?s=" + song)
+	resp, err := http.Get(apiInstance.Url + "/search/?s=" + url.QueryEscape(song))
 	if err != nil {
 		return
 	}
@@ -77,7 +78,7 @@ func (p *Hifi) getSearchAlbum(wg *sync.WaitGroup, data *searchAlbumData, album s
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?al=" + album)
+	resp, err := http.Get(apiInstance.Url + "/search/?al=" + url.QueryEscape(album))
 	if err != nil {
 		return
 	}
@@ -96,7 +97,7 @@ func (p *Hifi) getSearchArtist(wg *sync.WaitGroup, data *searchArtistData, artis
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?a=" + artist)
+	resp, err := http.Get(apiInstance.Url + "/search/?a=" + url.QueryEscape(artist))
 	if err != nil {
 		return
 	}
@@ -127,7 +128,9 @@ func (p *Hifi) Search(song, album, artist string) (models.SearchData, error) {
 	var result models.SearchData
 
 	for index, value := range searchSongData.Songs {
-		searchSongData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/640x640.jpg"
+		if value.Album.CoverUrl != "" {
+			searchSongData.Songs[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.Album.CoverUrl, "-", "/") + "/160x160.jpg"
+		}
 	}
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &result.Songs,
@@ -142,7 +145,9 @@ func (p *Hifi) Search(song, album, artist string) (models.SearchData, error) {
 	}
 
 	for index, value := range searchAlbumData.Section.Albums {
-		searchAlbumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/640x640.jpg"
+		if value.CoverUrl != "" {
+			searchAlbumData.Section.Albums[index].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.CoverUrl, "-", "/") + "/160x160.jpg"
+		}
 	}
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &result.Albums,
@@ -157,7 +162,9 @@ func (p *Hifi) Search(song, album, artist string) (models.SearchData, error) {
 	}
 
 	for index, value := range searchArtistData.Section.Artists {
-		searchArtistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/640x640.jpg"
+		if value.PictureUrl != "" {
+			searchArtistData.Section.Artists[index].PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(value.PictureUrl, "-", "/") + "/160x160.jpg"
+		}
 	}
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &result.Artists,

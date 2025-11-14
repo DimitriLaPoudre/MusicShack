@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
+	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -67,39 +68,57 @@
 	<div class="items">
 		{#if type === "songs"}
 			{#each result[api].Songs as song}
-				<div
-					class="song"
-					onclick={() => goto(`/song/${api}/${song.Id}`)}
-				>
-					<img src={song.CoverUrl} alt={song.Title} />
-					<p>{song.Title}</p>
-					{#each song.Artists as artist}
-						<p>{artist.Name}</p>
-					{/each}
-				</div>
+				<a class="song" href="/song/{api}/{song.Id}">
+					{#if song.CoverUrl !== ""}
+						<img src={song.CoverUrl} alt={song.CoverUrl} />
+					{:else}
+						<Disc style="width: 160px; height: 160px;" />
+					{/if}
+					<div class="song-detail">
+						<div>
+							<p>{song.Title}</p>
+							{#each song.Artists as artist}
+								<a href="/artist/{api}/{artist.Id}"
+									>{artist.Name}</a
+								>
+							{/each}
+						</div>
+						<button><Download /></button>
+					</div>
+				</a>
 			{/each}
 		{:else if type === "albums"}
 			{#each result[api].Albums as album}
-				<div
-					class="album"
-					onclick={() => goto(`/album/${api}/${album.Id}`)}
-				>
-					<img src={album.CoverUrl} alt={album.Title} />
-					<p>{album.Title}</p>
-					{#each album.Artists as artist}
-						<p>{artist.Name}</p>
-					{/each}
-				</div>
+				<a class="album" href="/album/{api}/{album.Id}">
+					{#if album.CoverUrl !== ""}
+						<img src={album.CoverUrl} alt={album.Title} />
+					{:else}
+						<DiscAlbum style="width: 160px; height: 160px;" />
+					{/if}
+
+					<div class="album-detail">
+						<div>
+							<p>{album.Title}</p>
+							{#each album.Artists as artist}
+								<a href="/artist/{api}/{artist.Id}"
+									>{artist.Name}</a
+								>
+							{/each}
+						</div>
+						<button><Download /></button>
+					</div>
+				</a>
 			{/each}
 		{:else}
 			{#each result[api].Artists as artist}
-				<div
-					class="artist"
-					onclick={() => goto(`/artist/${api}/${artist.Id}`)}
-				>
-					<img src={artist.PictureUrl} alt={artist.Name} />
+				<a class="artist" href="/artist/{api}/{artist.Id}">
+					{#if artist.PictureUrl !== ""}
+						<img src={artist.PictureUrl} alt={artist.PictureUrl} />
+					{:else}
+						<User style="width: 160px; height: 160px;" />
+					{/if}
 					<p>{artist.Name}</p>
-				</div>
+				</a>
 			{/each}
 		{/if}
 	</div>
@@ -140,10 +159,22 @@
 		width: 200px;
 		height: auto;
 	}
+	.song-detail {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
 	.album {
 		width: 200px;
 		height: auto;
 	}
+	.album-detail {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+	}
+
 	.artist {
 		width: 200px;
 		height: auto;
