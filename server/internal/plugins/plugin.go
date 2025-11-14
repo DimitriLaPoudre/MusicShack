@@ -1,18 +1,20 @@
 package plugins
 
 import (
+	"context"
+
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
 type Plugin interface {
 	Name() string
-	Download(string, string) error
-	Song(string) (models.SongData, error)
-	Album(string) (models.AlbumData, error)
-	Artist(string) (models.ArtistData, error)
-	Search(string, string, string) (models.SearchData, error)
-	Cover(string) (string, error)
-	Lyrics(string) (string, string, error)
+	Download(context.Context, string, string) error
+	Song(context.Context, string) (models.SongData, error)
+	Album(context.Context, string) (models.AlbumData, error)
+	Artist(context.Context, string) (models.ArtistData, error)
+	Search(context.Context, string, string, string) (models.SearchData, error)
+	Cover(context.Context, string) (string, error)
+	Lyrics(context.Context, string) (string, string, error)
 }
 
 var registry = make(map[string]Plugin)

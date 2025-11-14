@@ -1,6 +1,7 @@
 package hifi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -51,7 +52,7 @@ type searchArtistData struct {
 	} `json:"artists"`
 }
 
-func (p *Hifi) getSearchSong(wg *sync.WaitGroup, data *searchSongData, song string) {
+func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, data *searchSongData, song string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -59,7 +60,11 @@ func (p *Hifi) getSearchSong(wg *sync.WaitGroup, data *searchSongData, song stri
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?s=" + url.QueryEscape(song))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?s="+url.QueryEscape(song), nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -70,7 +75,7 @@ func (p *Hifi) getSearchSong(wg *sync.WaitGroup, data *searchSongData, song stri
 	}
 }
 
-func (p *Hifi) getSearchAlbum(wg *sync.WaitGroup, data *searchAlbumData, album string) {
+func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, data *searchAlbumData, album string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -78,7 +83,11 @@ func (p *Hifi) getSearchAlbum(wg *sync.WaitGroup, data *searchAlbumData, album s
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?al=" + url.QueryEscape(album))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?al="+url.QueryEscape(album), nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -89,7 +98,7 @@ func (p *Hifi) getSearchAlbum(wg *sync.WaitGroup, data *searchAlbumData, album s
 	}
 }
 
-func (p *Hifi) getSearchArtist(wg *sync.WaitGroup, data *searchArtistData, artist string) {
+func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, data *searchArtistData, artist string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -97,7 +106,11 @@ func (p *Hifi) getSearchArtist(wg *sync.WaitGroup, data *searchArtistData, artis
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/search/?a=" + url.QueryEscape(artist))
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/search/?a="+url.QueryEscape(artist), nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -111,7 +124,7 @@ func (p *Hifi) getSearchArtist(wg *sync.WaitGroup, data *searchArtistData, artis
 	*data = tmp[0]
 }
 
-func (p *Hifi) Search(song, album, artist string) (models.SearchData, error) {
+func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
@@ -119,9 +132,9 @@ func (p *Hifi) Search(song, album, artist string) (models.SearchData, error) {
 	var searchAlbumData searchAlbumData
 	var searchArtistData searchArtistData
 
-	go p.getSearchSong(&wg, &searchSongData, song)
-	go p.getSearchAlbum(&wg, &searchAlbumData, album)
-	go p.getSearchArtist(&wg, &searchArtistData, artist)
+	go p.getSearchSong(ctx, &wg, &searchSongData, song)
+	go p.getSearchAlbum(ctx, &wg, &searchAlbumData, album)
+	go p.getSearchArtist(ctx, &wg, &searchArtistData, artist)
 
 	wg.Wait()
 

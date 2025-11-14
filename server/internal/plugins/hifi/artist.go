@@ -1,6 +1,7 @@
 package hifi
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"strings"
@@ -41,7 +42,7 @@ type artistAlbums struct {
 	}
 }
 
-func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
+func (p *Hifi) getArtistData(ctx context.Context, wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -50,7 +51,12 @@ func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr 
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/artist/?id=" + id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/artist/?id="+id, nil)
+	if err != nil {
+		*errPtr = err
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		*errPtr = err
 		return
@@ -82,7 +88,7 @@ func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr 
 	}
 }
 
-func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
+func (p *Hifi) getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -90,7 +96,11 @@ func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, i
 		return
 	}
 
-	resp, err := http.Get(apiInstance.Url + "/artist/?f=" + id)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/artist/?f="+id, nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -117,7 +127,7 @@ func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, i
 	}
 }
 
-func (p *Hifi) Artist(id string) (models.ArtistData, error) {
+func (p *Hifi) Artist(ctx context.Context, id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -125,8 +135,8 @@ func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 	var err error = nil
 	var artistAlbums artistAlbums
 
-	go p.getArtistData(&wg, &artistData, &err, id)
-	go p.getArtistAlbums(&wg, &artistAlbums, id)
+	go p.getArtistData(ctx, &wg, &artistData, &err, id)
+	go p.getArtistAlbums(ctx, &wg, &artistAlbums, id)
 
 	wg.Wait()
 	if err != nil {

@@ -1,7 +1,9 @@
 package hifi
 
 import (
+	"context"
 	"encoding/json"
+	"maps"
 	"net/http"
 	"strings"
 
@@ -58,12 +60,17 @@ type albumData struct {
 	}
 }
 
-func (p *Hifi) Album(id string) (models.AlbumData, error) {
+func (p *Hifi) Album(ctx context.Context, id string) (models.AlbumData, error) {
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
 	if err != nil {
 		return models.AlbumData{}, err
 	}
-	resp, err := http.Get(apiInstance.Url + "/album/?id=" + id)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/album/?id="+id, nil)
+	if err != nil {
+		return models.AlbumData{}, err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return models.AlbumData{}, err
 	}
@@ -76,9 +83,7 @@ func (p *Hifi) Album(id string) (models.AlbumData, error) {
 
 	data := make(map[string]any)
 	for _, item := range items {
-		for key, value := range item {
-			data[key] = value
-		}
+		maps.Copy(data, item)
 	}
 
 	var albumData albumData
