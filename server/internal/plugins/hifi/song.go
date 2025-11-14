@@ -3,9 +3,11 @@ package hifi
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"maps"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -38,50 +40,80 @@ type songData struct {
 	DownloadUrl string `mapstructure:"OriginalTrackUrl"`
 }
 
-func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
-	if err != nil {
-		return models.SongData{}, err
-	}
+func (p *Hifi) getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- songData, id string) {
+	defer wg.Done()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, apiInstance.Url+"/track/?id="+id, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/track/?id="+id, nil)
 	if err != nil {
-		return models.SongData{}, err
+		return
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return models.SongData{}, err
+		return
 	}
 	defer resp.Body.Close()
 
 	var items []map[string]any
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
-		return models.SongData{}, err
+		return
 	}
 
-	data := make(map[string]any)
+	tmp := make(map[string]any)
 	for _, item := range items {
-		maps.Copy(data, item)
+		maps.Copy(tmp, item)
 	}
 
-	var songData songData
+	var data songData
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  &songData,
+		Result:  &data,
 		TagName: "mapstructure",
 	})
 	if err != nil {
-		return models.SongData{}, err
+		return
 	}
-	if err := decoder.Decode(data); err != nil {
+	if err := decoder.Decode(tmp); err != nil {
+		return
+	}
+
+	ch <- data
+}
+
+func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
+	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	if err != nil {
 		return models.SongData{}, err
 	}
 
-	if songData.Album.CoverUrl != "" {
-		songData.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(songData.Album.CoverUrl, "-", "/") + "/640x640.jpg"
+	var data songData
+	routineCtx, cancel := context.WithCancel(context.Background())
+	ch := make(chan songData)
+	var wg sync.WaitGroup
+
+	wg.Add(len(apiInstances))
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+	for _, instance := range apiInstances {
+		go p.getSong(routineCtx, &wg, instance.Url, ch, id)
+	}
+	select {
+	case find, ok := <-ch:
+		if !ok {
+			return models.SongData{}, errors.New("Song not found")
+		}
+		cancel()
+		data = find
+	case <-ctx.Done():
+		cancel()
+	}
+
+	if data.Album.CoverUrl != "" {
+		data.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(data.Album.CoverUrl, "-", "/") + "/640x640.jpg"
 	}
 
 	var normalizeSongData models.SongData
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &normalizeSongData,
 		TagName:          "useless",
 		WeaklyTypedInput: true,
@@ -89,7 +121,7 @@ func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
 	if err != nil {
 		return models.SongData{}, err
 	}
-	if err := decoder.Decode(songData); err != nil {
+	if err := decoder.Decode(data); err != nil {
 		return models.SongData{}, err
 	}
 
