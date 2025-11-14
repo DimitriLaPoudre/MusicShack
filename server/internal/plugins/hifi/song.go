@@ -40,7 +40,7 @@ type songData struct {
 	DownloadUrl string `mapstructure:"OriginalTrackUrl"`
 }
 
-func (p *Hifi) getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- songData, id string) {
+func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- songData, id string) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/track/?id="+id, nil)
@@ -95,11 +95,12 @@ func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
 		close(ch)
 	}()
 	for _, instance := range apiInstances {
-		go p.getSong(routineCtx, &wg, instance.Url, ch, id)
+		go getSong(routineCtx, &wg, instance.Url, ch, id)
 	}
 	select {
 	case find, ok := <-ch:
 		if !ok {
+			cancel()
 			return models.SongData{}, errors.New("Song not found")
 		}
 		cancel()
