@@ -1,4 +1,4 @@
-package hifiv1
+package hifi
 
 import (
 	"encoding/json"
@@ -41,7 +41,7 @@ type artistAlbums struct {
 	}
 }
 
-func (p *HifiV1) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
+func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -82,7 +82,7 @@ func (p *HifiV1) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPt
 	}
 }
 
-func (p *HifiV1) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
+func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
 	defer wg.Done()
 
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
@@ -117,7 +117,7 @@ func (p *HifiV1) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums,
 	}
 }
 
-func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
+func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -125,8 +125,8 @@ func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
 	var err error = nil
 	var artistAlbums artistAlbums
 
-	p.getArtistData(&wg, &artistData, &err, id)
-	p.getArtistAlbums(&wg, &artistAlbums, id)
+	go p.getArtistData(&wg, &artistData, &err, id)
+	go p.getArtistAlbums(&wg, &artistAlbums, id)
 
 	wg.Wait()
 	if err != nil {
@@ -135,14 +135,16 @@ func (p *HifiV1) Artist(id string) (models.ArtistData, error) {
 
 	if artistData.PictureUrl != "" {
 		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrl, "-", "/") + "/640x640.jpg"
-	} else {
+	} else if artistData.PictureUrlFallback != "" {
 		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrlFallback, "-", "/") + "/640x640.jpg"
 	}
 
 	if artistAlbums.Id != "" {
 		items := artistAlbums.Rows[0].Modules[0].PagedList.Items
 		for i := range items {
-			items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+			if items[i].CoverUrl != "" {
+				items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+			}
 		}
 	}
 

@@ -19,10 +19,10 @@
 				goto("/login");
 				return;
 			}
-			if (!res.ok) {
-				throw new Error("Failed to fetch artist");
-			}
 			artist = await res.json();
+			if (!res.ok) {
+				throw new Error(artist.error || "Failed to fetch artist");
+			}
 			isLoading = false;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";
@@ -40,7 +40,7 @@
 {:else if error}
 	<h2>Error Loading Artist</h2>
 	<p>{error}</p>
-	<a href="/dashboard"> Go to Dashboard </a>
+	<a href="/">Go to Home</a>
 {:else}
 	<!-- page top -->
 	<div style="display: flex; flex-direction: row; gap: 10px;">

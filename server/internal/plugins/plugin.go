@@ -10,7 +10,7 @@ type Plugin interface {
 	Song(string) (models.SongData, error)
 	Album(string) (models.AlbumData, error)
 	Artist(string) (models.ArtistData, error)
-	Search(string, string, string) (any, error)
+	Search(string, string, string) (models.SearchData, error)
 	Cover(string) (string, error)
 	Lyrics(string) (string, string, error)
 }
@@ -24,4 +24,8 @@ func Register(p Plugin) {
 func Get(name string) (Plugin, bool) {
 	p, ok := registry[name]
 	return p, ok
+}
+
+func GetRegistry() map[string]Plugin {
+	return registry
 }

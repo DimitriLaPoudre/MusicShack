@@ -1,4 +1,4 @@
-package hifiv1
+package hifi
 
 import (
 	"encoding/json"
@@ -36,7 +36,7 @@ type songData struct {
 	DownloadUrl string `mapstructure:"OriginalTrackUrl"`
 }
 
-func (p *HifiV1) Song(id string) (models.SongData, error) {
+func (p *Hifi) Song(id string) (models.SongData, error) {
 	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
 	if err != nil {
 		return models.SongData{}, err
@@ -45,6 +45,7 @@ func (p *HifiV1) Song(id string) (models.SongData, error) {
 	if err != nil {
 		return models.SongData{}, err
 	}
+
 	defer resp.Body.Close()
 
 	var items []map[string]any
@@ -71,7 +72,9 @@ func (p *HifiV1) Song(id string) (models.SongData, error) {
 		return models.SongData{}, err
 	}
 
-	songData.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(songData.Album.CoverUrl, "-", "/") + "/640x640.jpg"
+	if songData.Album.CoverUrl != "" {
+		songData.Album.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(songData.Album.CoverUrl, "-", "/") + "/640x640.jpg"
+	}
 
 	var normalizeSongData models.SongData
 	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{

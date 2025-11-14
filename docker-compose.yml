@@ -19,7 +19,6 @@ services:
       - ./server/db:/app/db
       - ./users:/users
     environment:
-      API_URL: "https://tidal.401658.xyz/"
-      URL: "http://localhost:8080/"
+      URL: ${BACKEND_URL}
       JWT_SECRET: ${JWT_SECRET}
 
