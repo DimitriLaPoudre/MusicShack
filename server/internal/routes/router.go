@@ -41,8 +41,8 @@ func SetupRouters() *gin.Engine {
 			downloads.POST("/:api/:id", handlers.AddDownloadSong)
 			downloads.GET("/", handlers.ListDownload)
 			downloads.DELETE("/:id", handlers.DeleteDownload)
-			downloads.POST("/:id/retry", handlers.RetryDownload)
-			downloads.POST("/:id/cancel", handlers.CancelDownload)
+			downloads.POST("/retry/:id", handlers.RetryDownload)
+			downloads.POST("/cancel/:id", handlers.CancelDownload)
 		}
 	}
 

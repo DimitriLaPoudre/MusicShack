@@ -40,7 +40,6 @@
 	});
 
 	async function download(api: string, id: string) {
-		console.log("test");
 		try {
 			const res = await fetch(
 				`http://localhost:8080/api/users/downloads/${api}/${id}`,

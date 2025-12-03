@@ -2,15 +2,16 @@
 	import { goto } from "$app/navigation";
 	import "../../app.css";
 	import {
-		Ban,
-		Check,
 		CircleAlert,
+		CircleCheck,
 		CircleDashed,
+		CircleX,
 		Disc,
 		DownloadIcon,
 		Heart,
 		LoaderCircleIcon,
 		Plus,
+		RotateCcw,
 		Search,
 		SettingsIcon,
 		Trash,
@@ -25,6 +26,7 @@
 	// panel-download variable
 	let downloadList = $state<null | any>(null);
 	let downloadError = $state<null | string>(null);
+	let downloadManageHover = $state<null | number>(null);
 
 	// panel-settingsvariable
 	let settingsApiInput = $state<null | string>(null);
@@ -37,10 +39,19 @@
 		window.location.assign(`/search?q=${encodedSearchData}`);
 	}
 
+	$effect(() => {
+		if (barState === "download") {
+			const interval = setInterval(() => {
+				loadDownloads();
+			}, 500);
+			return () => clearInterval(interval);
+		}
+	});
+
 	async function loadDownloads() {
 		try {
 			const res = await fetch(
-				"http://localhost:8080/api/users/downloads",
+				"http://localhost:8080/api/users/downloads/",
 				{
 					credentials: "include",
 				},
@@ -55,8 +66,58 @@
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch downloads");
 			}
-			downloadList = body.tasks;
+			downloadList = body.tasks
+				.slice()
+				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
 			downloadError = null;
+		} catch (e) {
+			downloadError = "network failed";
+		}
+	}
+
+	async function retryDownload(id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/retry/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			if (res.status === 403) {
+				return;
+			}
+
+			loadDownloads();
+		} catch (e) {
+			downloadError = "network failed";
+		}
+	}
+
+	async function cancelDownload(id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/cancel/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			if (res.status === 403) {
+				return;
+			}
+
+			loadDownloads();
 		} catch (e) {
 			downloadError = "network failed";
 		}
@@ -88,7 +149,7 @@
 
 	async function loadInstance() {
 		try {
-			const res = await fetch("http://localhost:8080/api/instances", {
+			const res = await fetch("http://localhost:8080/api/instances/", {
 				credentials: "include",
 			});
 
@@ -123,7 +184,7 @@
 					settingsURLInput.length - 1,
 				);
 			}
-			const res = await fetch("http://localhost:8080/api/instances", {
+			const res = await fetch("http://localhost:8080/api/instances/", {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
@@ -282,7 +343,7 @@
 				<p class="panel-download-loading">Loading...</p>
 			{:else}
 				<div class="panel-download-items">
-					{#each downloadList as download}
+					{#each downloadList as download, index}
 						<div class="panel-download-item">
 							{#if download.Data.Album.CoverUrl !== ""}
 								<img
@@ -298,15 +359,57 @@
 							<p>{download.Data.Title}</p>
 							<p>{download.Data.Artist.Name}</p>
 							{#if download.Status === "done"}
-								<Check />
-							{:else if download.Status === "running"}
-								<LoaderCircleIcon />
+								<button>
+									<CircleCheck />
+								</button>
 							{:else if download.Status === "pending"}
-								<CircleDashed />
-							{:else if download.Status === "error"}
-								<CircleAlert />
-							{:else if download.Status === "cancel"}
-								<Ban />
+								<button
+									onmouseenter={() =>
+										(downloadManageHover = index)}
+									onmouseleave={() =>
+										(downloadManageHover = null)}
+									onclick={() => {
+										cancelDownload(download.Id);
+									}}
+								>
+									{#if downloadManageHover != null && downloadManageHover === index}
+										<CircleX />
+									{:else}
+										<CircleDashed />
+									{/if}
+								</button>
+							{:else if download.Status === "running"}
+								<button
+									onmouseenter={() =>
+										(downloadManageHover = index)}
+									onmouseleave={() =>
+										(downloadManageHover = null)}
+									onclick={() => {
+										cancelDownload(download.Id);
+									}}
+								>
+									{#if downloadManageHover != null && downloadManageHover === index}
+										<CircleX />
+									{:else}
+										<LoaderCircleIcon />
+									{/if}
+								</button>
+							{:else if download.Status === "failed" || download.Status === "cancel"}
+								<button
+									onmouseenter={() =>
+										(downloadManageHover = index)}
+									onmouseleave={() =>
+										(downloadManageHover = null)}
+									onclick={() => {
+										retryDownload(download.Id);
+									}}
+								>
+									{#if downloadManageHover != null && downloadManageHover === index}
+										<RotateCcw />
+									{:else}
+										<CircleAlert />
+									{/if}
+								</button>
 							{/if}
 							<button
 								onclick={() => {

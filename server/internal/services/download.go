@@ -96,7 +96,7 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 		case <-t.retryDownload:
 			if t.status == models.StatusCancel || t.status == models.StatusFailed {
 				ctx, cancel = context.WithCancel(context.Background())
-				status := make(chan models.Status)
+				status = make(chan models.Status)
 				t.status = models.StatusPending
 
 				go m.run(t, ctx, status)
