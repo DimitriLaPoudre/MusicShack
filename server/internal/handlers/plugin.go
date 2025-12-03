@@ -5,6 +5,8 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -71,4 +73,24 @@ func Search(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, finding)
+}
+
+func AddDownloadSong(c *gin.Context) {
+	api := c.Param("api")
+	id := c.Param("id")
+	qualityAudio := c.Query("qualityAudio")
+
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	p, ok := plugins.Get(api)
+	if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		return
+	}
+	services.DownloadManager.Add(userId, p, id, qualityAudio)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

@@ -1,5 +1,20 @@
 package models
 
+import "context"
+
+type Plugin interface {
+	Name() string
+	DownloadSong(context.Context, uint, string, string) error
+	DownloadAlbum(context.Context, uint, string, string) error
+	DownloadArtist(context.Context, uint, string, string) error
+	Song(context.Context, string) (SongData, error)
+	Album(context.Context, string) (AlbumData, error)
+	Artist(context.Context, string) (ArtistData, error)
+	Search(context.Context, string, string, string) (SearchData, error)
+	Cover(context.Context, string) (string, error)
+	Lyrics(context.Context, string) (string, string, error)
+}
+
 type SongData struct {
 	Id           string
 	Title        string
@@ -109,4 +124,21 @@ type SearchData struct {
 		Name       string
 		PictureUrl string
 	}
+}
+
+type Status string
+
+const (
+	StatusPending Status = "pending"
+	StatusRunning Status = "running"
+	StatusDone    Status = "done"
+	StatusFailed  Status = "failed"
+	StatusCancel  Status = "cancel"
+)
+
+type DownloadData struct {
+	Id     uint
+	Data   SongData
+	Api    string
+	Status Status
 }

@@ -30,6 +30,30 @@
 			isLoading = false;
 		}
 	});
+
+	async function download() {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/${page.params.api}/${page.params.id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download song");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error ? e.message : "Failed to load download song";
+		}
+	}
 </script>
 
 <svelte:head>
@@ -70,7 +94,7 @@
 			<br />
 			<p>{song.Duration}</p>
 			<p>{song.AudioQuality}</p>
-			<button onclick={() => {}}>Download song</button>
+			<button onclick={download}>Download song</button>
 		</div>
 	</div>
 {/if}

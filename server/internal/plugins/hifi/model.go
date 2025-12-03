@@ -8,10 +8,6 @@ func (p *Hifi) Name() string {
 	return "hifi"
 }
 
-func (p *Hifi) Download(ctx context.Context, id string, quality string) error {
-	return nil
-}
-
 func (p *Hifi) Cover(ctx context.Context, id string) (string, error) {
 	return "", nil
 }

@@ -59,7 +59,6 @@ func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi str
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
 	if err != nil {
-		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -80,7 +79,6 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi st
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
 	if err != nil {
-		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)
@@ -101,7 +99,6 @@ func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi s
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
 	if err != nil {
-		println(err.Error())
 		return
 	}
 	resp, err := http.DefaultClient.Do(req)

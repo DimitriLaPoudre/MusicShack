@@ -38,6 +38,31 @@
 			isLoading = false;
 		}
 	});
+
+	async function download(api: string, id: string) {
+		console.log("test");
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download song");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error ? e.message : "Failed to load download song";
+		}
+	}
 </script>
 
 <svelte:head>
@@ -53,39 +78,55 @@
 {:else}
 	<div class="api">
 		{#each Object.entries(result as Record<string, any>) as [key, _]}
-			<button class="api-btn">{key}</button>
+			<button
+				class="api-btn"
+				onclick={() => (api = key)}
+				class:active={api === key}>{key}</button
+			>
 		{/each}
 	</div>
 	<div class="type">
-		<button class="type-btn" onclick={() => (type = "songs")}>Songs</button>
-		<button class="type-btn" onclick={() => (type = "albums")}
-			>Albums</button
+		<button
+			class="type-btn"
+			onclick={() => (type = "songs")}
+			class:active={type === "songs"}>Songs</button
 		>
-		<button class="type-btn" onclick={() => (type = "artists")}
-			>Artists</button
+		<button
+			class="type-btn"
+			onclick={() => (type = "albums")}
+			class:active={type === "albums"}>Albums</button
+		>
+		<button
+			class="type-btn"
+			onclick={() => (type = "artists")}
+			class:active={type === "artists"}>Artists</button
 		>
 	</div>
 	<div class="items">
 		{#if type === "songs"}
 			{#each result[api].Songs as song}
-				<a class="song" href="/song/{api}/{song.Id}">
+				<div class="song">
 					{#if song.CoverUrl !== ""}
 						<img src={song.CoverUrl} alt={song.CoverUrl} />
 					{:else}
 						<Disc style="width: 160px; height: 160px;" />
 					{/if}
 					<div class="song-detail">
-						<div>
-							<p>{song.Title}</p>
+						<div style="display:flex;flex-direction: column;">
+							<a href="/song/{api}/{song.Id}">{song.Title}</a>
 							{#each song.Artists as artist}
 								<a href="/artist/{api}/{artist.Id}"
 									>{artist.Name}</a
 								>
 							{/each}
 						</div>
-						<button><Download /></button>
+						<button
+							onclick={() => {
+								download(api, song.Id);
+							}}><Download /></button
+						>
 					</div>
-				</a>
+				</div>
 			{/each}
 		{:else if type === "albums"}
 			{#each result[api].Albums as album}
@@ -128,25 +169,21 @@
 	.api {
 		display: flex;
 		flex-direction: row;
-		background-color: var(--color-primary);
 		gap: 10px;
 		padding: 10px;
 	}
 	.api-btn {
 		padding: 10px;
-		background-color: var(--color-secondary);
 	}
 
 	.type {
 		display: flex;
 		flex-direction: row;
-		background-color: var(--color-secondary);
 		gap: 10px;
 		padding: 10px;
 	}
 	.type-btn {
 		padding: 10px;
-		background-color: var(--color-primary);
 	}
 
 	.items {
