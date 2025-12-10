@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -17,11 +18,13 @@ func GetSong(c *gin.Context) {
 
 	p, ok := plugins.Get(api)
 	if !ok {
+		fmt.Println("invalid api name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}
 	data, err := p.Song(c.Request.Context(), id)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -34,11 +37,13 @@ func GetAlbum(c *gin.Context) {
 
 	p, ok := plugins.Get(api)
 	if !ok {
+		fmt.Println("invalid api name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}
 	data, err := p.Album(c.Request.Context(), id)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -51,11 +56,13 @@ func GetArtist(c *gin.Context) {
 
 	p, ok := plugins.Get(api)
 	if !ok {
+		fmt.Println("invalid api name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}
 	data, err := p.Artist(c.Request.Context(), id)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -82,12 +89,14 @@ func AddDownloadSong(c *gin.Context) {
 
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	p, ok := plugins.Get(api)
 	if !ok {
+		fmt.Println("invalid api name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}

@@ -36,8 +36,6 @@ type SongData struct {
 		Title    string
 		CoverUrl string
 	}
-	BitDepth    uint
-	SampleRate  uint
 	DownloadUrl string
 }
 

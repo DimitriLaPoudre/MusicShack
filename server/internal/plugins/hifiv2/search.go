@@ -1,4 +1,4 @@
-package hifi
+package hifiv2
 
 import (
 	"context"
@@ -31,6 +31,7 @@ type searchSongData struct {
 }
 
 type searchAlbumData struct {
+	// Data struct {
 	Section struct {
 		Albums []struct {
 			Id       uint   `json:"id"`
@@ -42,6 +43,7 @@ type searchAlbumData struct {
 			} `json:"artists"`
 		} `json:"items"`
 	} `json:"albums"`
+	// }
 }
 
 type searchArtistData struct {
@@ -55,7 +57,7 @@ type searchArtistData struct {
 	} `json:"artists"`
 }
 
-func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchSongData, song string) {
+func (p *HifiV2) getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchSongData, song string) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
@@ -75,7 +77,7 @@ func (p *Hifi) getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi str
 	ch <- data
 }
 
-func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchAlbumData, album string) {
+func (p *HifiV2) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchAlbumData, album string) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
@@ -95,7 +97,7 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi st
 	ch <- data
 }
 
-func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchArtistData, artist string) {
+func (p *HifiV2) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchArtistData, artist string) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
@@ -117,7 +119,7 @@ func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi s
 	ch <- tmp[0]
 }
 
-func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
+func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
