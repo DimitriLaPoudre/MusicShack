@@ -9,10 +9,13 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"path/filepath"
 	"sync"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id string, quality string, ch chan<- downloadData) {
@@ -123,6 +126,9 @@ func downloadMPD(ctx context.Context, manifest []byte, file *os.File) error {
 }
 
 func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string, status chan<- models.Status, data chan<- models.SongData) error {
+	if quality == "" {
+		quality = "LOSSLESS"
+	}
 	status <- models.StatusPending
 
 	song, err := p.Song(ctx, id)
@@ -148,11 +154,22 @@ func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality s
 
 	status <- models.StatusRunning
 
-	filename := fmt.Sprintf("%d - %s.flac", song.TrackNumber, song.Title)
+	filename := fmt.Sprintf("%s/%s/%s/%d - %s.", config.DOWNLOAD_FOLDER, song.Artist.Name, song.Album.Title, song.TrackNumber, song.Title)
+	if quality == "HI_RES_LOSSLESS" || quality == "LOSSLESS" {
+		filename += "flac"
+	} else {
+		filename += "mp4"
+	}
+	dir := filepath.Dir(filename)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		status <- models.StatusFailed
+		return fmt.Errorf("HifiV2.Download: os.MkdirAll: %w", err)
+
+	}
 	file, err := os.Create(filename)
 	if err != nil {
 		status <- models.StatusFailed
-		return fmt.Errorf("HifiV2.Download: %w", err)
+		return fmt.Errorf("HifiV2.Download: os.Create: %w", err)
 	}
 	defer file.Close()
 
@@ -176,6 +193,11 @@ func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality s
 		} else {
 			status <- models.StatusFailed
 		}
+		return fmt.Errorf("HifiV2.Download: %w", err)
+	}
+
+	if err := utils.FormatMetadata(filename, song); err != nil {
+		status <- models.StatusFailed
 		return fmt.Errorf("HifiV2.Download: %w", err)
 	}
 

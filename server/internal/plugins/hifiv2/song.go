@@ -58,15 +58,16 @@ func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
 	case find, ok := <-ch:
 		routineCancel()
 		if !ok {
-			return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", errors.New("can't be fetch"))
+			return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", errors.New("can't fetch"))
 		}
 		data = find
 	case <-ctx.Done():
 		routineCancel()
-		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", errors.New("context canceled"))
+		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", context.Canceled)
 	}
 
 	data.Data.Album.CoverUrl = utils.GetImageURL(data.Data.Album.CoverUrl, 640)
+	data.Data.ReleaseDate = data.Data.ReleaseDate[:10]
 
 	var normalizeSongData models.SongData
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -75,10 +76,10 @@ func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
 		WeaklyTypedInput: true,
 	})
 	if err != nil {
-		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", err)
+		return models.SongData{}, fmt.Errorf("HifiV2.Song: mapstructure.NewDecoder: %w", err)
 	}
 	if err := decoder.Decode(data.Data); err != nil {
-		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", err)
+		return models.SongData{}, fmt.Errorf("HifiV2.Song: mapstructure.Decode: %w", err)
 	}
 
 	return normalizeSongData, nil

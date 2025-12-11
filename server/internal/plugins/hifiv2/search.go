@@ -3,7 +3,6 @@ package hifiv2
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -172,7 +171,7 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 
 	select {
 	case <-ctx.Done():
-		return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", errors.New("context canceled"))
+		return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", context.Canceled)
 	default:
 	}
 
@@ -188,10 +187,10 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 			WeaklyTypedInput: true,
 		})
 		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Song: mapstructure.NewDecoder: %w", err)
 		}
 		if err := decoder.Decode(songData.Data.Songs); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Song: mapstructure.Decode: %w", err)
 		}
 	}
 
@@ -205,10 +204,10 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 			WeaklyTypedInput: true,
 		})
 		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Album: mapstructure.NewDecoder: %w", err)
 		}
 		if err := decoder.Decode(albumData.Data.Albums.Albums); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Album: mapstructure.Decode: %w", err)
 		}
 	}
 
@@ -225,10 +224,10 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 			WeaklyTypedInput: true,
 		})
 		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Artist: mapstructure.NewDecoder: %w", err)
 		}
 		if err := decoder.Decode(artistData.Data.Artists.Artists); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
+			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Artist: mapstructure.Decode: %w", err)
 		}
 	}
 

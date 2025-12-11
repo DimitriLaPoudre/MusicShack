@@ -123,20 +123,20 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 
 	select {
 	case <-ctx.Done():
-		return models.ArtistData{}, errors.New("context canceled")
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", context.Canceled)
 	default:
 	}
 
 	var normalizeArtistData models.ArtistData
 
 	if data.Artist.Id == 0 {
-		return models.ArtistData{}, errors.New("artist can't be fetch")
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", errors.New("can't fetch"))
 	}
 
 	if data.Artist.PictureUrl == "" {
 		data.Artist.PictureUrl = data.Artist.PictureUrlFallback
 	}
-	data.Artist.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 640)
+	data.Artist.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 750)
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &normalizeArtistData,
@@ -144,10 +144,10 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 		WeaklyTypedInput: true,
 	})
 	if err != nil {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: mapstructure.NewDecoder: %w", err)
 	}
 	if err := decoder.Decode(data.Artist); err != nil {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: mapstructure.Decode: %w", err)
 	}
 
 	if albums.Albums.Id == "" {

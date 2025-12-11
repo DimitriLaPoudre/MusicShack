@@ -1,33 +1,29 @@
 package hifiv2
 
 type artistData struct {
-	Artist struct {
-		Id                 uint
-		Name               string
-		PictureUrl         string
-		PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
+	Version string
+	Artist  artistItem
+	Cover   struct {
+		// 750 string
+		Id   uint
+		Name string
 	}
 }
 
 type artistAlbums struct {
-	Albums struct {
-		Id    string
-		Title string
-		Rows  []struct {
+	Version string
+	Albums  struct {
+		SelfLink string
+		Id       string
+		Title    string
+		Rows     []struct {
 			Modules []struct {
 				PagedList struct {
+					DataApiPath         string
 					Limit               uint
 					Offset              uint
 					TotalNumbersOfItems uint
-					Items               []struct {
-						Id       uint
-						Title    string
-						CoverUrl string `json:"cover"`
-						Artists  []struct {
-							Id   uint
-							Name string
-						}
-					}
+					Items               []albumItem
 				}
 			}
 		}

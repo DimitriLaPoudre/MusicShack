@@ -59,13 +59,13 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 	case find, ok := <-ch:
 		cancel()
 		if !ok {
-			return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("can't be fetch"))
+			return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("can't fetch"))
 		} else {
 			data = find
 		}
 	case <-ctx.Done():
 		cancel()
-		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("context canceled"))
+		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", context.Canceled)
 	}
 
 	var normalizeAlbumData models.AlbumData
@@ -99,7 +99,7 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
 	}
 	if len(normalizeAlbumData.Songs) == 0 {
-		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("can't be formatted"))
+		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("songs not found"))
 	}
 
 	firstSong := normalizeAlbumData.Songs[0]
