@@ -34,6 +34,24 @@ type artistAlbums struct {
 	}
 }
 
+type artistItem struct {
+	Id                 uint
+	Name               string
+	ArtistTypes        []string
+	Url                string
+	PictureUrl         string `json:"picture"`
+	PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
+	Popularity         uint
+	ArtistRoles        []struct {
+		CategoryId int
+		Category   string
+	}
+	Mixes struct {
+		Artist_mix string
+	}
+	Spotlighted bool
+}
+
 type albumData struct {
 	Version string
 	Data    struct {
@@ -44,6 +62,43 @@ type albumData struct {
 			Item songItem
 			Type string
 		}
+	}
+}
+
+type albumItem struct {
+	Id                     uint
+	Title                  string
+	Duration               uint
+	StreamReady            bool
+	PayToStream            bool
+	AdSupportedStreamReady bool
+	DjReady                bool
+	StemReady              bool
+	StreamStartDate        string
+	AllowStreaming         bool
+	PremiumStreamingOnly   bool
+	NumberOfTracks         uint
+	NumberOfVideos         uint
+	NumberOfVolumes        uint
+	ReleaseDate            string
+	Copyright              string
+	Type                   string
+	Url                    string
+	CoverUrl               string `json:"cover"`
+	VibrantColor           string
+	Explicit               bool
+	Upc                    string
+	Popularity             uint
+	AudioQuality           string
+	AudioModes             []string
+	MediaMetadata          struct {
+		Tags []string
+	}
+	Upload  bool
+	Artists []struct {
+		Id   uint
+		Name string
+		Type string
 	}
 }
 
@@ -103,5 +158,40 @@ type songItem struct {
 	}
 	Mixes struct {
 		Track_mix string
+	}
+	CoverUrl string
+}
+
+type searchSongData struct {
+	Version string
+	Data    struct {
+		Limit              uint
+		Offset             uint
+		TotalNumberOfItems uint
+		Songs              []songItem `json:"items"`
+	}
+}
+
+type searchAlbumData struct {
+	Version string
+	Data    struct {
+		Albums struct {
+			Limit              uint
+			Offset             uint
+			TotalNumberOfItems uint
+			Albums             []albumItem `json:"items"`
+		}
+	}
+}
+
+type searchArtistData struct {
+	Version string
+	Data    struct {
+		Artists struct {
+			Limit              uint
+			Offset             uint
+			TotalNumberOfItems uint
+			Artists            []artistItem `json:"items"`
+		}
 	}
 }

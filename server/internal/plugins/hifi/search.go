@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strings"
@@ -109,9 +108,7 @@ func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi s
 	defer resp.Body.Close()
 
 	var tmp []searchArtistData
-	fmt.Printf("%s: %#v\n", urlApi, resp.Body)
 	if err := json.NewDecoder(resp.Body).Decode(&tmp); err != nil {
-		fmt.Printf("%s: %#v\n", urlApi, err.Error())
 		return
 	}
 	ch <- tmp[0]

@@ -63,6 +63,7 @@ func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
 		data = find
 	case <-ctx.Done():
 		routineCancel()
+		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", errors.New("context canceled"))
 	}
 
 	data.Data.Album.CoverUrl = utils.GetImageURL(data.Data.Album.CoverUrl, 640)
@@ -79,8 +80,6 @@ func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
 	if err := decoder.Decode(data.Data); err != nil {
 		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", err)
 	}
-
-	fmt.Printf("%#v\n", normalizeSongData)
 
 	return normalizeSongData, nil
 }
