@@ -4,14 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"maps"
+	"fmt"
 	"net/http"
-	"strings"
+	"strconv"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/mitchellh/mapstructure"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- albumData, id string) {
@@ -27,25 +27,8 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 	}
 	defer resp.Body.Close()
 
-	var items []map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
-		return
-	}
-
-	tmp := make(map[string]any)
-	for _, item := range items {
-		maps.Copy(tmp, item)
-	}
-
 	var data albumData
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  &data,
-		TagName: "mapstructure",
-	})
-	if err != nil {
-		return
-	}
-	if err := decoder.Decode(tmp); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
 	}
 
@@ -55,10 +38,9 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error) {
 	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
 	if err != nil {
-		return models.AlbumData{}, err
+		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", err)
 	}
 
-	var data albumData
 	routineCtx, cancel := context.WithCancel(context.Background())
 	ch := make(chan albumData)
 	var wg sync.WaitGroup
@@ -71,6 +53,8 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 	for _, instance := range apiInstances {
 		go getAlbum(routineCtx, &wg, instance.Url, ch, id)
 	}
+
+	var data albumData
 	select {
 	case find, ok := <-ch:
 		cancel()
@@ -83,37 +67,46 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 		cancel()
 	}
 
-	for _, item := range data.DirtySongs {
-		data.Songs = append(data.Songs, struct {
-			Id           uint
+	var normalizeAlbumData models.AlbumData
+
+	normalizeAlbumData.Limit = data.Data.Limit
+	normalizeAlbumData.Offset = data.Data.Offset
+	normalizeAlbumData.NumberSongs = data.Data.TotalNumberOfItems
+	for _, wrappedSong := range data.Data.Items {
+		dirtySong := wrappedSong.Item
+		song := struct {
+			Id           string
 			Title        string
 			Duration     uint
 			TrackNumber  uint
 			VolumeNumber uint
 			Artists      []struct {
-				Id   uint
+				Id   string
 				Name string
 			}
-		}(
-			item.SongData,
-		))
+		}{strconv.FormatUint(uint64(dirtySong.Id), 10),
+			dirtySong.Title,
+			dirtySong.Duration,
+			dirtySong.TrackNumber,
+			dirtySong.VolumeNumber,
+			[]struct {
+				Id   string
+				Name string
+			}{},
+		}
+		normalizeAlbumData.Duration += song.Duration
+		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
 	}
-	if data.CoverUrl != "" {
-		data.CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(data.CoverUrl, "-", "/") + "/640x640.jpg"
+	if len(normalizeAlbumData.Songs) == 0 {
+		return models.AlbumData{}, errors.New("Album can't be formatted")
 	}
 
-	var normalizeAlbumData models.AlbumData
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &normalizeAlbumData,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.AlbumData{}, err
-	}
-	if err := decoder.Decode(data); err != nil {
-		return models.AlbumData{}, err
-	}
+	firstSong := normalizeAlbumData.Songs[0]
+
+	normalizeAlbumData.Id = firstSong.Id
+	normalizeAlbumData.Title = firstSong.Title
+	normalizeAlbumData.ReleaseDate = data.Data.Items[0].Item.ReleaseDate
+	normalizeAlbumData.CoverUrl = utils.GetImageURL(data.Data.Items[0].Item.Album.CoverUrl, 640)
 
 	return normalizeAlbumData, nil
 }

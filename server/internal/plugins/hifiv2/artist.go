@@ -14,7 +14,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func getArtistData(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistData, id string) {
+func getArtistInfo(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistData, id string) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/artist/?id="+id, nil)
@@ -27,20 +27,8 @@ func getArtistData(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 	}
 	defer resp.Body.Close()
 
-	var item map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&item); err != nil {
-		return
-	}
-
 	var data artistData
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  &data,
-		TagName: "mapstructure",
-	})
-	if err != nil {
-		return
-	}
-	if err := decoder.Decode(item); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
 	}
 
@@ -60,20 +48,8 @@ func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 	}
 	defer resp.Body.Close()
 
-	var item map[string]any
-	if err := json.NewDecoder(resp.Body).Decode(&item); err != nil {
-		return
-	}
-
 	var data artistAlbums
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  &data,
-		TagName: "mapstructure",
-	})
-	if err != nil {
-		return
-	}
-	if err := decoder.Decode(item); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
 	}
 
@@ -91,6 +67,7 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 	if err != nil {
 		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
 	}
+
 	go func() {
 		defer wg.Done()
 
@@ -104,7 +81,7 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 			close(ch)
 		}()
 		for _, instance := range apiInstances {
-			go getArtistData(routineCtx, &wgRoutine, instance.Url, ch, id)
+			go getArtistInfo(routineCtx, &wgRoutine, instance.Url, ch, id)
 		}
 		select {
 		case find, ok := <-ch:
@@ -159,7 +136,6 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 	if data.Artist.PictureUrl == "" {
 		data.Artist.PictureUrl = data.Artist.PictureUrlFallback
 	}
-
 	data.Artist.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 640)
 
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -168,24 +144,26 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 		WeaklyTypedInput: true,
 	})
 	if err != nil {
-		return models.ArtistData{}, err
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
 	}
 	if err := decoder.Decode(data.Artist); err != nil {
-		return models.ArtistData{}, err
+		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
 	}
 
-	if albums.Albums.Id != "" {
-		for i, item := range albums.Albums.Rows[0].Modules[0].PagedList.Items {
-			albums.Albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl = utils.GetImageURL(item.CoverUrl, 640)
-		}
-
-		decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			Result:           &normalizeArtistData.Albums,
-			TagName:          "useless",
-			WeaklyTypedInput: true,
-		})
-		decoder.Decode(albums.Albums.Rows[0].Modules[0].PagedList.Items)
+	if albums.Albums.Id == "" {
+		return normalizeArtistData, nil
 	}
+
+	for i, item := range albums.Albums.Rows[0].Modules[0].PagedList.Items {
+		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl = utils.GetImageURL(item.CoverUrl, 640)
+	}
+
+	decoder, _ = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:           &normalizeArtistData.Albums,
+		TagName:          "useless",
+		WeaklyTypedInput: true,
+	})
+	decoder.Decode(albums.Albums.Rows[0].Modules[0].PagedList.Items)
 
 	return normalizeArtistData, nil
 }
