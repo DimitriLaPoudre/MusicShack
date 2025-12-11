@@ -4,9 +4,7 @@ import "context"
 
 type Plugin interface {
 	Name() string
-	DownloadSong(context.Context, uint, string, string) error
-	DownloadAlbum(context.Context, uint, string, string) error
-	DownloadArtist(context.Context, uint, string, string) error
+	Download(context.Context, uint, string, string, chan<- Status, chan<- SongData) error
 	Song(context.Context, string) (SongData, error)
 	Album(context.Context, string) (AlbumData, error)
 	Artist(context.Context, string) (ArtistData, error)

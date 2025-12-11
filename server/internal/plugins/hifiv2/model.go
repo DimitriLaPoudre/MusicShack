@@ -195,3 +195,31 @@ type searchArtistData struct {
 		}
 	}
 }
+
+type downloadData struct {
+	Version string
+	Data    downloadItem
+}
+
+type downloadItem struct {
+	TrackId            uint
+	AssetPresentation  string
+	AudioMode          string
+	AudioQuality       string
+	ManifestMimeType   string
+	ManifestHash       string
+	Manifest           string
+	AlbumReplayGain    float64
+	AlbumPeakAmplitude float64
+	TrackReplayGain    float64
+	TrackPeakAmplitude float64
+	BitDepth           uint
+	SampleRate         uint
+}
+
+type manifestTidal struct {
+	MimeType       string
+	Codecs         string
+	EncryptionType string
+	Urls           []string
+}
