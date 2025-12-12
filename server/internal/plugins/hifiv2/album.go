@@ -75,6 +75,19 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 	normalizeAlbumData.NumberSongs = data.Data.TotalNumberOfItems
 	for _, wrappedSong := range data.Data.Items {
 		dirtySong := wrappedSong.Item
+		var artists []struct {
+			Id   string
+			Name string
+		}
+		for _, artist := range dirtySong.Artists {
+			artists = append(artists, struct {
+				Id   string
+				Name string
+			}{
+				strconv.FormatUint(uint64(artist.Id), 10),
+				artist.Name,
+			})
+		}
 		song := struct {
 			Id           string
 			Title        string
@@ -90,10 +103,7 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 			dirtySong.Duration,
 			dirtySong.TrackNumber,
 			dirtySong.VolumeNumber,
-			[]struct {
-				Id   string
-				Name string
-			}{},
+			artists,
 		}
 		normalizeAlbumData.Duration += song.Duration
 		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
