@@ -46,7 +46,29 @@ func (m *downloadManager) generateId(userId uint) uint {
 	return id
 }
 
-func (m *downloadManager) Add(userId uint, api models.Plugin, songId string, quality string) {
+func (m *downloadManager) AddArtist(userId uint, api models.Plugin, artistId string, quality string) {
+	artist, err := api.Artist(context.Background(), artistId)
+	if err != nil {
+		fmt.Printf("downloadManager.AddArtist: %v\n", err)
+		return
+	}
+	for _, album := range artist.Albums {
+		m.AddAlbum(userId, api, album.Id, quality)
+	}
+}
+
+func (m *downloadManager) AddAlbum(userId uint, api models.Plugin, albumId string, quality string) {
+	album, err := api.Album(context.Background(), albumId)
+	if err != nil {
+		fmt.Printf("downloadManager.AddAlbum: %v\n", err)
+		return
+	}
+	for _, song := range album.Songs {
+		m.AddSong(userId, api, song.Id, quality)
+	}
+}
+
+func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string, quality string) {
 	taskId := m.generateId(userId)
 	ctx, cancel := context.WithCancel(context.Background())
 

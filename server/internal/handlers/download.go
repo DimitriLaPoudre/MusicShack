@@ -29,7 +29,51 @@ func AddDownloadSong(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}
-	services.DownloadManager.Add(userId, p, id, qualityAudio)
+	services.DownloadManager.AddSong(userId, p, id, qualityAudio)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func AddDownloadAlbum(c *gin.Context) {
+	api := c.Param("api")
+	id := c.Param("id")
+	qualityAudio := c.Query("qualityAudio")
+
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	p, ok := plugins.Get(api)
+	if !ok {
+		fmt.Println("invalid api name")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		return
+	}
+	services.DownloadManager.AddAlbum(userId, p, id, qualityAudio)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func AddDownloadArtist(c *gin.Context) {
+	api := c.Param("api")
+	id := c.Param("id")
+	qualityAudio := c.Query("qualityAudio")
+
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	p, ok := plugins.Get(api)
+	if !ok {
+		fmt.Println("invalid api name")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		return
+	}
+	services.DownloadManager.AddArtist(userId, p, id, qualityAudio)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 

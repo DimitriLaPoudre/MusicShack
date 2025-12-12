@@ -99,15 +99,15 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
 	}
 	if len(normalizeAlbumData.Songs) == 0 {
-		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("songs not found"))
+		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %v: %w", normalizeAlbumData, errors.New("songs not found"))
 	}
 
-	firstSong := normalizeAlbumData.Songs[0]
+	firstSong := data.Data.Items[0].Item
 
-	normalizeAlbumData.Id = firstSong.Id
-	normalizeAlbumData.Title = firstSong.Title
-	normalizeAlbumData.ReleaseDate = data.Data.Items[0].Item.ReleaseDate
-	normalizeAlbumData.CoverUrl = utils.GetImageURL(data.Data.Items[0].Item.Album.CoverUrl, 640)
+	normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
+	normalizeAlbumData.Title = firstSong.Album.Title
+	normalizeAlbumData.ReleaseDate = firstSong.ReleaseDate
+	normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
 
 	return normalizeAlbumData, nil
 }

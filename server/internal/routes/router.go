@@ -38,7 +38,9 @@ func SetupRouters() *gin.Engine {
 
 		downloads := users.Group("/downloads")
 		{
-			downloads.POST("/:api/:id", handlers.AddDownloadSong)
+			downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
+			downloads.POST("/album/:api/:id", handlers.AddDownloadAlbum)
+			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
 			downloads.GET("/", handlers.ListDownload)
 			downloads.DELETE("/:id", handlers.DeleteDownload)
 			downloads.POST("/retry/:id", handlers.RetryDownload)

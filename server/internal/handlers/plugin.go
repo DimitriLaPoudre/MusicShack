@@ -73,7 +73,8 @@ func Search(c *gin.Context) {
 
 	for key, value := range plugins.GetRegistry() {
 		tmp, err := value.Search(c.Request.Context(), search, search, search)
-		if err == nil {
+		if err == nil &&
+			(len(tmp.Songs) != 0 || len(tmp.Albums) != 0 || len(tmp.Artists) != 0) {
 			finding[key] = tmp
 		}
 	}

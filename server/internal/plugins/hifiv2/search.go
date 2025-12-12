@@ -179,7 +179,7 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 
 	if len(songData.Data.Songs) != 0 {
 		for index, value := range songData.Data.Songs {
-			songData.Data.Songs[index].CoverUrl = utils.GetImageURL(value.Album.CoverUrl, 160)
+			songData.Data.Songs[index].CoverUrl = utils.GetImageURL(value.Album.CoverUrl, 640)
 		}
 		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 			Result:           &result.Songs,
@@ -196,7 +196,7 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 
 	if len(albumData.Data.Albums.Albums) != 0 {
 		for index, value := range albumData.Data.Albums.Albums {
-			albumData.Data.Albums.Albums[index].CoverUrl = utils.GetImageURL(value.CoverUrl, 160)
+			albumData.Data.Albums.Albums[index].CoverUrl = utils.GetImageURL(value.CoverUrl, 640)
 		}
 		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 			Result:           &result.Albums,
@@ -213,10 +213,10 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 
 	if len(artistData.Data.Artists.Artists) != 0 {
 		for index, value := range artistData.Data.Artists.Artists {
-			if value.PictureUrl != "" {
+			if value.PictureUrl == "" {
 				value.PictureUrl = value.PictureUrlFallback
 			}
-			artistData.Data.Artists.Artists[index].PictureUrl = utils.GetImageURL(value.PictureUrl, 160)
+			artistData.Data.Artists.Artists[index].PictureUrl = utils.GetImageURL(value.PictureUrl, 750)
 		}
 		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 			Result:           &result.Artists,

@@ -34,7 +34,7 @@
 	async function download() {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/${page.params.api}/${page.params.id}`,
+				`http://localhost:8080/api/users/downloads/song/${page.params.api}/${page.params.id}`,
 				{
 					method: "POST",
 					credentials: "include",

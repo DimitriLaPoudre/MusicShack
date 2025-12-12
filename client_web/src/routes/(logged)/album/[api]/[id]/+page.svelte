@@ -32,10 +32,10 @@
 		}
 	});
 
-	async function download(api: string, id: string) {
+	async function downloadSong(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/${api}/${id}`,
+				`http://localhost:8080/api/users/downloads/song/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -53,6 +53,32 @@
 		} catch (e) {
 			error =
 				e instanceof Error ? e.message : "Failed to load download song";
+		}
+	}
+
+	async function downloadAlbum(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download album");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download album";
 		}
 	}
 </script>
@@ -102,7 +128,9 @@
 		</div>
 		<button
 			style="display: flex; flex-direction: row; gap: 10px; padding: 10px 10px; "
-			onclick={() => {}}
+			onclick={() => {
+				downloadAlbum(page.params.api!, album.Id);
+			}}
 		>
 			<Download size="24" />
 			<p>Download Album</p>
@@ -132,7 +160,7 @@
 				</p>
 				<button
 					onclick={() => {
-						download(page.params.api!, song.Id);
+						downloadSong(page.params.api!, song.Id);
 					}}
 				>
 					<Download size="28" />
