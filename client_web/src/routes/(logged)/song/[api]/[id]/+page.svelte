@@ -94,7 +94,7 @@
 				</div>
 			</div>
 		</div>
-		<button class="download" onclick={download}>Download song</button>
+		<button class="download" onclick={download}>Download Song</button>
 	</div>
 {/if}
 

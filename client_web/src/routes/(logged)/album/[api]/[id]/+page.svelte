@@ -90,72 +90,59 @@
 </svelte:head>
 
 {#if isLoading}
-	<p>Loading...</p>
+	<p class="loading">Loading...</p>
 {:else if error}
-	<h2>Error Loading Album</h2>
-	<p>{error}</p>
-	<a href="/">Go to Home</a>
+	<div class="error">
+		<h2>Error Loading Song</h2>
+		<p>{error}</p>
+		<a href="/">Go to Home</a>
+	</div>
 {:else}
 	<!-- page top -->
-	<div
-		style="display: flex; flex-direction: column; align-items: center; gap: 10px"
-	>
-		<div
-			style="display: flex; flex-direction: row; gap: 10px; justify-content: center;"
-		>
-			<img
-				src={album.CoverUrl}
-				alt={album.Title}
-				style="width:200px; height:auto;"
-			/>
-			<div style="display: flex; flex-direction: column; gap: 10px">
-				<p>[{album.Type}]</p>
-				<h1>{album.Title}</h1>
-				<div style="display: flex; gap: 10px;">
-					{#each album.Artists as artist}
-						<a href="/artist/{page.params.api}/{artist.Id}">
-							{artist.Name}
-						</a>
-					{/each}
-				</div>
-				<br />
-				<p>{album.Duration}</p>
-				<div style="display: flex; flex-direction: row; gap: 10px">
-					<p>{album.ReleaseDate}</p>
+	<div class="header">
+		<div class="top">
+			<div class="top-data">
+				<img class="cover" src={album.CoverUrl} alt={album.Title} />
+				<div class="data">
+					<h1>{album.Title}</h1>
+					<div class="artists">
+						{#each album.Artists as artist}
+							<a href="/artist/{page.params.api}/{artist.Id}">
+								{artist.Name}
+							</a>
+						{/each}
+					</div>
+					<br />
+					<p>{album.Duration}</p>
 					<p>{album.AudioQuality}</p>
 				</div>
 			</div>
 		</div>
 		<button
-			style="display: flex; flex-direction: row; gap: 10px; padding: 10px 10px; "
+			class="download"
 			onclick={() => {
 				downloadAlbum(page.params.api!, album.Id);
-			}}
+			}}>Download Album</button
 		>
-			<Download size="24" />
-			<p>Download Album</p>
-		</button>
 	</div>
+
 	<!-- page body -->
-	<div style="display: grid; gap: 10px; padding: 20px 20px;">
+	<div class="body">
 		{#each album.Songs as song}
-			<div
-				style="display: flex; flex-direction: row; justify-content: space-between; gap: 16px"
-			>
-				<p>
-					{song.TrackNumber}
-				</p>
-				<a href="/song/{page.params.api}/{song.Id}">
+			<div class="song">
+				<p class="number">{song.TrackNumber}</p>
+				<a class="title" href="/song/{page.params.api}/{song.Id}">
 					{song.Title}
 				</a>
-				<div style="display: flex; flex-direction: row; gap: 1em">
+				<p class="split">|</p>
+				<div class="artists">
 					{#each song.Artists as artist}
 						<a href="/artist/{page.params.api}/{artist.Id}">
 							{artist.Name}
 						</a>
 					{/each}
 				</div>
-				<p style="margin-left: auto;">
+				<p class="duration">
 					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
 				</p>
 				<button
@@ -163,7 +150,7 @@
 						downloadSong(page.params.api!, song.Id);
 					}}
 				>
-					<Download size="28" />
+					<Download />
 				</button>
 			</div>
 		{/each}
@@ -171,10 +158,106 @@
 {/if}
 
 <style>
-	h1 {
-		margin: 0;
+	.loading {
+		margin-top: 30px;
+		text-align: center;
 	}
-	p {
-		margin: 0;
+	.error {
+		margin-top: 30px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+
+		* {
+			margin: 0;
+		}
+	}
+
+	.header {
+		display: table;
+		margin: 0 auto;
+		border-spacing: 0 10px;
+	}
+	.top {
+		display: table-row;
+	}
+
+	.top-data {
+		display: flex;
+		flex-direction: row;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 10px;
+	}
+
+	.cover {
+		width: 160px;
+		height: 160px;
+	}
+
+	.data {
+		display: flex;
+		flex-direction: column;
+		gap: 7px;
+
+		* {
+			margin: 0;
+		}
+
+		.artists {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0px 0.5rem;
+		}
+	}
+
+	.download {
+		display: table-row;
+		width: 100%;
+	}
+
+	.body {
+		display: grid;
+		gap: 10px;
+		padding: 20px 20px;
+	}
+
+	.song {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		gap: 16px;
+
+		.number {
+			margin: 0;
+		}
+
+		.title {
+			margin: 0 0 0 auto;
+		}
+
+		.split {
+			margin: 0;
+		}
+
+		.artists {
+			margin: 0;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: 1em;
+		}
+
+		.duration {
+			margin: 0;
+			margin-left: auto;
+		}
+
+		button {
+			aspect-ratio: 1/1;
+		}
 	}
 </style>
