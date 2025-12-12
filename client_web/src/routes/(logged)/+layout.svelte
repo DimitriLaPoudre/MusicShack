@@ -527,7 +527,7 @@
 
 	.panel-default {
 		width: 70vw;
-		max-height: 85vh;
+		max-height: calc(95vh - 135px);
 		overflow-y: auto;
 		outline: 1px solid #ffffff;
 		display: flex;
@@ -572,9 +572,6 @@
 		flex-direction: column;
 		padding: 8px;
 		gap: 16px;
-		h2 {
-			margin: 0;
-		}
 	}
 	.panel-settings-instances-error {
 		text-align: center;
