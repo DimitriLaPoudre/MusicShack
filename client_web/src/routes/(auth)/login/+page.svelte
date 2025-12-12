@@ -49,7 +49,7 @@
 	<h1>Login</h1>
 	<form on:submit|preventDefault={handleLogin}>
 		<div
-			style="display: flex; flex-direction: column; align-items: center; gap: 1rem; background-color: var(--color-background-light); padding: 2rem 3rem; border: 4px solid var(--color-background-dark);"
+			style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 3rem;"
 		>
 			{#if error}
 				<p
@@ -59,22 +59,19 @@
 				</p>
 			{/if}
 			<input
-				style="padding: 8px; border: 4px solid var(--color-secondary-dark); background-color: var(--color-secondary);"
+				style="padding: 8px;"
 				placeholder="Username"
 				bind:value={username}
 				required
 			/>
 			<input
-				style="padding: 8px; border: 4px solid var(--color-secondary-dark); background-color: var(--color-secondary);"
+				style="padding: 8px;"
 				type="password"
 				placeholder="Password"
 				bind:value={password}
 				required
 			/>
-			<button
-				style="width: 60%; padding: 8px; border: 4px solid var(--color-primary-dark); background-color: var(--color-primary);"
-				>Login</button
-			>
+			<button style="width: 60%; padding: 8px;">Login</button>
 			<a href="/signup">create an account</a>
 		</div>
 	</form>

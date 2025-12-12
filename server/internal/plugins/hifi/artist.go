@@ -1,7 +1,9 @@
 package hifi
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"sync"
@@ -41,56 +43,14 @@ type artistAlbums struct {
 	}
 }
 
-func (p *Hifi) getArtistData(wg *sync.WaitGroup, artistData *artistData, errPtr *error, id string) {
+func (p *Hifi) getArtistData(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistData, id string) {
 	defer wg.Done()
 
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
-	if err != nil {
-		*errPtr = err
-		return
-	}
-
-	resp, err := http.Get(apiInstance.Url + "/artist/?id=" + id)
-	if err != nil {
-		*errPtr = err
-		return
-	}
-	defer resp.Body.Close()
-
-	var raw []json.RawMessage
-	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
-		*errPtr = err
-		return
-	}
-	var item map[string]any
-	if err := json.Unmarshal(raw[0], &item); err != nil {
-		*errPtr = err
-		return
-	}
-
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  artistData,
-		TagName: "mapstructure",
-	})
-	if err != nil {
-		*errPtr = err
-		return
-	}
-	if err := decoder.Decode(item); err != nil {
-		*errPtr = err
-		return
-	}
-}
-
-func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, id string) {
-	defer wg.Done()
-
-	apiInstance, err := repository.GetApiInstanceByApi(p.Name())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/artist/?id="+id, nil)
 	if err != nil {
 		return
 	}
-
-	resp, err := http.Get(apiInstance.Url + "/artist/?f=" + id)
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return
 	}
@@ -105,8 +65,9 @@ func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, i
 		return
 	}
 
+	var data artistData
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:  artistAlbums,
+		Result:  &data,
 		TagName: "mapstructure",
 	})
 	if err != nil {
@@ -115,40 +76,129 @@ func (p *Hifi) getArtistAlbums(wg *sync.WaitGroup, artistAlbums *artistAlbums, i
 	if err := decoder.Decode(item); err != nil {
 		return
 	}
+
+	ch <- data
 }
 
-func (p *Hifi) Artist(id string) (models.ArtistData, error) {
+func (p *Hifi) getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistAlbums, id string) {
+	defer wg.Done()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/artist/?f="+id, nil)
+	if err != nil {
+		return
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	var raw []json.RawMessage
+	if err := json.NewDecoder(resp.Body).Decode(&raw); err != nil {
+		return
+	}
+	var item map[string]any
+	if err := json.Unmarshal(raw[0], &item); err != nil {
+		return
+	}
+
+	var data artistAlbums
+	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		Result:  &data,
+		TagName: "mapstructure",
+	})
+	if err != nil {
+		return
+	}
+	if err := decoder.Decode(item); err != nil {
+		return
+	}
+
+	ch <- data
+}
+
+func (p *Hifi) Artist(ctx context.Context, id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
-	var artistData artistData
-	var err error = nil
-	var artistAlbums artistAlbums
+	var data artistData
+	var albums artistAlbums
 
-	go p.getArtistData(&wg, &artistData, &err, id)
-	go p.getArtistAlbums(&wg, &artistAlbums, id)
-
-	wg.Wait()
+	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
 	if err != nil {
 		return models.ArtistData{}, err
 	}
+	go func() {
+		defer wg.Done()
 
-	if artistData.PictureUrl != "" {
-		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrl, "-", "/") + "/640x640.jpg"
-	} else if artistData.PictureUrlFallback != "" {
-		artistData.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(artistData.PictureUrlFallback, "-", "/") + "/640x640.jpg"
-	}
+		routineCtx, cancel := context.WithCancel(context.Background())
+		ch := make(chan artistData)
+		var wgRoutine sync.WaitGroup
 
-	if artistAlbums.Id != "" {
-		items := artistAlbums.Rows[0].Modules[0].PagedList.Items
-		for i := range items {
-			if items[i].CoverUrl != "" {
-				items[i].CoverUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(items[i].CoverUrl, "-", "/") + "/640x640.jpg"
-			}
+		wgRoutine.Add(len(apiInstances))
+		go func() {
+			wgRoutine.Wait()
+			close(ch)
+		}()
+		for _, instance := range apiInstances {
+			go p.getArtistData(routineCtx, &wgRoutine, instance.Url, ch, id)
 		}
+		select {
+		case find, ok := <-ch:
+			cancel()
+			if ok {
+				data = find
+			}
+		case <-ctx.Done():
+			cancel()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+
+		routineCtx, cancel := context.WithCancel(context.Background())
+		ch := make(chan artistAlbums)
+		var wgRoutine sync.WaitGroup
+
+		wgRoutine.Add(len(apiInstances))
+		go func() {
+			wgRoutine.Wait()
+			close(ch)
+		}()
+		for _, instance := range apiInstances {
+			go p.getArtistAlbums(routineCtx, &wgRoutine, instance.Url, ch, id)
+		}
+		select {
+		case find, ok := <-ch:
+			cancel()
+			if ok {
+				albums = find
+			}
+		case <-ctx.Done():
+			cancel()
+		}
+	}()
+
+	wg.Wait()
+
+	select {
+	case <-ctx.Done():
+		return models.ArtistData{}, errors.New("connection closed")
+	default:
 	}
 
 	var normalizeArtistData models.ArtistData
+
+	if data.Id == 0 {
+		return models.ArtistData{}, errors.New("Artist can't be fetch")
+	}
+
+	if data.PictureUrl != "" {
+		data.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(data.PictureUrl, "-", "/") + "/160x160.jpg"
+	} else if data.PictureUrlFallback != "" {
+		data.PictureUrl = "https://resources.tidal.com/images/" + strings.ReplaceAll(data.PictureUrlFallback, "-", "/") + "/160x160.jpg"
+	}
+
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		Result:           &normalizeArtistData,
 		TagName:          "useless",
@@ -157,20 +207,24 @@ func (p *Hifi) Artist(id string) (models.ArtistData, error) {
 	if err != nil {
 		return models.ArtistData{}, err
 	}
-	if err := decoder.Decode(artistData); err != nil {
+	if err := decoder.Decode(data); err != nil {
 		return models.ArtistData{}, err
 	}
 
-	decoder, err = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &normalizeArtistData.Albums,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.ArtistData{}, err
-	}
-	if err := decoder.Decode(artistAlbums.Rows[0].Modules[0].PagedList.Items); err != nil {
-		return models.ArtistData{}, err
+	if albums.Id != "" {
+		for i := range albums.Rows[0].Modules[0].PagedList.Items {
+			if albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl != "" {
+				albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl =
+					"https://resources.tidal.com/images/" + strings.ReplaceAll(albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl, "-", "/") + "/640x640.jpg"
+			}
+		}
+
+		decoder, _ := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+			Result:           &normalizeArtistData.Albums,
+			TagName:          "useless",
+			WeaklyTypedInput: true,
+		})
+		decoder.Decode(albums.Rows[0].Modules[0].PagedList.Items)
 	}
 
 	return normalizeArtistData, nil

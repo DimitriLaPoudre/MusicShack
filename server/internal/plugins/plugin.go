@@ -4,28 +4,17 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-type Plugin interface {
-	Name() string
-	Download(string, string) error
-	Song(string) (models.SongData, error)
-	Album(string) (models.AlbumData, error)
-	Artist(string) (models.ArtistData, error)
-	Search(string, string, string) (models.SearchData, error)
-	Cover(string) (string, error)
-	Lyrics(string) (string, string, error)
-}
+var registry = make(map[string]models.Plugin)
 
-var registry = make(map[string]Plugin)
-
-func Register(p Plugin) {
+func Register(p models.Plugin) {
 	registry[p.Name()] = p
 }
 
-func Get(name string) (Plugin, bool) {
+func Get(name string) (models.Plugin, bool) {
 	p, ok := registry[name]
 	return p, ok
 }
 
-func GetRegistry() map[string]Plugin {
+func GetRegistry() map[string]models.Plugin {
 	return registry
 }

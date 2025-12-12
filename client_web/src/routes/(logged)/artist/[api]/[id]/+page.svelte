@@ -29,6 +29,58 @@
 			isLoading = false;
 		}
 	});
+
+	async function downloadAlbum(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download album");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download album";
+		}
+	}
+
+	async function downloadArtist(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/artist/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download artist");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download artist";
+		}
+	}
 </script>
 
 <svelte:head>
@@ -53,7 +105,11 @@
 			<h1>{artist.Name}</h1>
 			<div style="display:flex; flex-direction: row; gap: 10px">
 				<button onclick={() => {}}>Favorite</button>
-				<button onclick={() => {}}>Download discography</button>
+				<button
+					onclick={() => {
+						downloadArtist(page.params.api!, artist.Id);
+					}}>Download discography</button
+				>
 			</div>
 		</div>
 	</div>

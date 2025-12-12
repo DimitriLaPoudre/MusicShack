@@ -31,6 +31,56 @@
 			isLoading = false;
 		}
 	});
+
+	async function downloadSong(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/song/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download song");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error ? e.message : "Failed to load download song";
+		}
+	}
+
+	async function downloadAlbum(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download album");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download album";
+		}
+	}
 </script>
 
 <svelte:head>
@@ -77,8 +127,10 @@
 			</div>
 		</div>
 		<button
-			style="display: flex; flex-direction: row; gap: 10px; padding: 10px 10px; background-color: var(--color-background-light);"
-			onclick={() => {}}
+			style="display: flex; flex-direction: row; gap: 10px; padding: 10px 10px; "
+			onclick={() => {
+				downloadAlbum(page.params.api!, album.Id);
+			}}
 		>
 			<Download size="24" />
 			<p>Download Album</p>
@@ -88,7 +140,7 @@
 	<div style="display: grid; gap: 10px; padding: 20px 20px;">
 		{#each album.Songs as song}
 			<div
-				style="display: flex; flex-direction: row; justify-content: space-between; background-color: var(--color-background-light); gap: 16px"
+				style="display: flex; flex-direction: row; justify-content: space-between; gap: 16px"
 			>
 				<p>
 					{song.TrackNumber}
@@ -107,8 +159,9 @@
 					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
 				</p>
 				<button
-					style=" background-color: var(--color-background-light)"
-					onclick={() => {}}
+					onclick={() => {
+						downloadSong(page.params.api!, song.Id);
+					}}
 				>
 					<Download size="28" />
 				</button>

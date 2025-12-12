@@ -15,6 +15,12 @@ func ListApiInstances() ([]models.ApiInstance, error) {
 	return apiInstances, err
 }
 
+func ListApiInstancesByApi(api string) ([]models.ApiInstance, error) {
+	var apiInstances []models.ApiInstance
+	err := database.DB.Find(&apiInstances, "api = ?", api).Error
+	return apiInstances, err
+}
+
 func GetApiInstanceByID(id uint) (*models.ApiInstance, error) {
 	var user models.ApiInstance
 	err := database.DB.Take(&user, id).Error

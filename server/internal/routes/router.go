@@ -29,17 +29,29 @@ func SetupRouters() *gin.Engine {
 
 	users := r.Group("/api/users")
 	{
-		apiInstance.Use(middlewares.Logged())
+		users.Use(middlewares.Logged())
 		users.POST("/", handlers.CreateUser)
 		users.GET("/", handlers.ListUsers)
 		users.GET("/:id", handlers.GetUser)
 		users.PUT("/:id", handlers.UpdateUser)
 		users.DELETE("/:id", handlers.DeleteUser)
+
+		downloads := users.Group("/downloads")
+		{
+			downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
+			downloads.POST("/album/:api/:id", handlers.AddDownloadAlbum)
+			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
+			downloads.GET("/", handlers.ListDownload)
+			downloads.DELETE("/:id", handlers.DeleteDownload)
+			downloads.POST("/retry/:id", handlers.RetryDownload)
+			downloads.POST("/cancel/:id", handlers.CancelDownload)
+		}
 	}
 
 	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)
 	r.GET("/api/album/:api/:id", middlewares.Logged(), handlers.GetAlbum)
 	r.GET("/api/artist/:api/:id", middlewares.Logged(), handlers.GetArtist)
 	r.GET("/api/search", middlewares.Logged(), handlers.Search)
+
 	return r
 }

@@ -1,9 +1,10 @@
 package middlewares
 
 import (
+	"net/http"
+
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func Logged() gin.HandlerFunc {

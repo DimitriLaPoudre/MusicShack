@@ -1,86 +1,120 @@
-@import 'tailwindcss';
+/* global.css */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-/* app.css */
-
-/* Définition des variables CSS personnalisées */
-:root {
-  --color-primary: #6b21a8;
-  --color-primary-dark: #5b1198;
-  --color-secondary: #f9ae1b;
-  --color-secondary-dark: #e99e0b;
-  --color-background-light: #2a2a2a;
-  --color-background: #1a1a1a;
-  --color-background-dark: #0a0a0a;
-  --color-error-light: #ff2020;	
-  --color-error: #ef1010;	
-  --color-error-dark: #df0000;	
-  --color-text: #f2f3f4;
-
-  /* Espacements */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 32px;
-
-  /* Typographie */
-  --font-heading: "Montserrat", monospace;
-  --font-family: "Firacode" monospace;
-  --font-size-base: 16px;
-  --font-size-lg: 24px;
-}
-
+/* 1. Reset de base pour uniformiser les navigateurs */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-body {
-  font-family: var(--font-family);
-  font-size: var(--font-size-base);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  line-height: 1.5;
+
+:root {
+  --bg: #0e0e0e;
+  --fg: #e0e0e0;
+  --err: #ef1010;
+  --border: #1a1a1a;
+  --border-light: #2a2a2a;
+  --grid-dim: #050505;
+  --font-mono: 'Courier New', Courier, monospace;
+  --font-sans: 'Arial Black', 'Helvetica Neue', sans-serif;
+  --accent: #ffffff;
+  --accent-dim: rgba(255, 255, 255, 0.1);
 }
 
-/* Liens */
+/* 2. Styles globaux du body */
+html { scroll-behavior: smooth; }
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  overflow-x: hidden;
+  font-size: 13px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+}
+
+/* 3. Styles généraux pour tous les liens */
 a {
-  color: var(--color-primary);
+  color: inherit; /* pas de couleur spécifique */
   text-decoration: none;
 }
+
+/* 4. Titres pour cohérence */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: normal;
+  margin-bottom: 1rem;
+}
+
+/* 5. Paragraphes */
+p {
+  margin-bottom: 1rem;
+}
+
+/* 6. Listes */
+ul, ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* 7. Images */
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* 8. Inputs et boutons pour cohérence */
+/* Liens */
+a {
+  color: #ffffff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 a:hover {
-  color: var(--color-primary);
-  text-decoration: none;
+  opacity: 0.8; /* léger effet au survol */
 }
 
 /* Boutons */
-.btn {
-  padding: var(--space-sm) var(--space-md);
-  border-radius: 8px;
-  font-weight: bold;
+button {
+  font-family: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid #ffffff;
+  padding: 0.5rem 1rem;
   cursor: pointer;
 }
-.btn-primary {
-  background-color: var(--color-primary);
-  color: white;
-}
-.btn-secondary {
-  background-color: var(--color-secondary);
-  color: white;
+
+button:hover,
+button.active {
+  background-color: #ffffff;
+  color: #0e0e0e;
 }
 
-/* Cartes / containers */
-.card {
-  padding: var(--space-md);
-  border-radius: 12px;
-  background-color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+/* Inputs simples */
+input, textarea, select {
+  font-family: inherit;
+  color: inherit;
+  background-color: #0e0e0e;
+  border: 1px solid #ffffff;
+  padding: 0.5rem;
+  outline: none;
 }
 
-/* Marges / espacements */
-.mt-md { margin-top: var(--space-md); }
-.mb-md { margin-bottom: var(--space-md); }
-.p-md { padding: var(--space-md); }
+input:focus, textarea:focus, select:focus {
+  border-color: #ffffff;
+}
+
+
+/* 9. Scrollbar custom simple (optionnel) */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: #2e2e2e;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-track {
+  background: #0e0e0e;
+}
 
