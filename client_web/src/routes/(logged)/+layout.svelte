@@ -71,7 +71,10 @@
 				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
 			downloadError = null;
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error
+					? e.message
+					: "Failed to reload download queue";
 		}
 	}
 
@@ -92,11 +95,11 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to retry download";
 		}
+		loadDownloads();
 	}
 
 	async function cancelDownload(id: string) {
@@ -116,11 +119,11 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to cancel download";
 		}
+		loadDownloads();
 	}
 
 	async function deleteDownload(id: string) {
@@ -140,11 +143,11 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to delete download";
 		}
+		loadDownloads();
 	}
 
 	async function loadInstance() {
@@ -165,7 +168,10 @@
 			settingsInstanceList = body.instances;
 			settingsInstanceError = null;
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error
+					? e.message
+					: "Failed to reload instances queue";
 		}
 	}
 
@@ -203,10 +209,11 @@
 
 			settingsApiInput = "";
 			settingsURLInput = "";
-			loadInstance();
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error ? e.message : "Failed to add instance";
 		}
+		loadInstance();
 	}
 
 	async function deleteInstance(id: number) {
@@ -225,11 +232,11 @@
 					data.error || "error while trying to delete Instance";
 				return;
 			}
-
-			loadInstance();
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error ? e.message : "Failed to delete instance";
 		}
+		loadInstance();
 	}
 
 	async function Logout() {

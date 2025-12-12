@@ -18,7 +18,27 @@
 	});
 </script>
 
-<h1 style="text-align: center;">Dashboard</h1>
 {#if error}
-	<p class="error-msg">{error}</p>
+	<div class="error">
+		<h2>Error Loading Song</h2>
+		<p>{error}</p>
+		<a href="/">Go to Home</a>
+	</div>
+{:else}
+	<h1 style="text-align: center;">Dashboard</h1>
 {/if}
+
+<style>
+	.error {
+		margin-top: 30px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+
+		* {
+			margin: 0;
+		}
+	}
+</style>

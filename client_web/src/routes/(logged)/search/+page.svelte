@@ -39,7 +39,7 @@
 		}
 	});
 
-	async function download(api: string, id: string) {
+	async function downloadSong(api: string, id: string) {
 		try {
 			const res = await fetch(
 				`http://localhost:8080/api/users/downloads/song/${api}/${id}`,
@@ -62,6 +62,58 @@
 				e instanceof Error ? e.message : "Failed to load download song";
 		}
 	}
+
+	async function downloadAlbum(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download album");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download album";
+		}
+	}
+
+	async function downloadArtist(api: string, id: string) {
+		try {
+			const res = await fetch(
+				`http://localhost:8080/api/users/downloads/artist/${api}/${id}`,
+				{
+					method: "POST",
+					credentials: "include",
+				},
+			);
+
+			if (res.status === 401) {
+				goto("/login");
+				return;
+			}
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "Failed to download artist");
+			}
+		} catch (e) {
+			error =
+				e instanceof Error
+					? e.message
+					: "Failed to load download artist";
+		}
+	}
 </script>
 
 <svelte:head>
@@ -69,11 +121,13 @@
 </svelte:head>
 
 {#if isLoading}
-	<p>Loading...</p>
+	<p class="loading">Loading...</p>
 {:else if error}
-	<h2>Error Loading Song</h2>
-	<p>{error}</p>
-	<a href="/">Go to Home</a>
+	<div class="error">
+		<h2>Error Loading Song</h2>
+		<p>{error}</p>
+		<a href="/">Go to Home</a>
+	</div>
 {:else}
 	<div class="api">
 		{#each Object.entries(result as Record<string, any>) as [key, _]}
@@ -121,7 +175,7 @@
 						</div>
 						<button
 							onclick={() => {
-								download(api, song.Id);
+								downloadSong(api, song.Id);
 							}}><Download /></button
 						>
 					</div>
@@ -165,6 +219,23 @@
 {/if}
 
 <style>
+	.loading {
+		margin-top: 30px;
+		text-align: center;
+	}
+	.error {
+		margin-top: 30px;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+
+		* {
+			margin: 0;
+		}
+	}
+
 	.api {
 		display: flex;
 		flex-direction: row;
