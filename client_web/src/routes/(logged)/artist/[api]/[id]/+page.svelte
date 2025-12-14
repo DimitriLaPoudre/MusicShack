@@ -129,30 +129,34 @@
 			<h2>Albums</h2>
 			<div class="container">
 				{#each artist.Albums as album}
-					<button
-						class="item"
-						onclick={() => {
-							goto(`/album/${page.params.api}/${album.Id}`);
-						}}
-					>
-						<img src={album.CoverUrl} alt={album.Title} />
-						<p>{album.Title}</p>
-						<div class="list">
-							{#each album.Artists as artist}
-								<a href="/artist/{page.params.api}/{artist.Id}">
-									{artist.Name}
-								</a>
-							{/each}
-						</div>
-						<div
-							onclick={(event) => {
-								event.stopPropagation();
-								downloadAlbum(page.params.api!, album.Id);
+					<div class="wrap-item">
+						<button
+							class="item"
+							onclick={() => {
+								goto(`/album/${page.params.api}/${album.Id}`);
 							}}
 						>
+							<img src={album.CoverUrl} alt={album.Title} />
+							<p>{album.Title}</p>
+							<div class="list">
+								{#each album.Artists as artist}
+									<a
+										href="/artist/{page.params
+											.api}/{artist.Id}"
+									>
+										{artist.Name}
+									</a>
+								{/each}
+							</div>
+						</button>
+						<button
+							class="download"
+							onclick={() =>
+								downloadAlbum(page.params.api!, album.Id)}
+						>
 							<Download />
-						</div>
-					</button>
+						</button>
+					</div>
 				{/each}
 			</div>
 		</div>
@@ -268,34 +272,62 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-		.item {
-			display: flex;
-			flex-direction: column;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			width: 160px;
-			height: 250px;
-			gap: 5px;
-			img {
-				max-width: 100%;
-				max-height: 100%;
-			}
-			p {
-				margin: 0;
-			}
-			.list {
-				margin: 0;
+		.wrap-item {
+			width: 200px;
+			height: auto;
+			.item {
 				display: flex;
 				flex-direction: column;
-				white-space: nowrap;
-				width: auto;
+				align-items: center;
+				width: 200px;
+				height: auto;
 				overflow: hidden;
-				text-overflow: ellipsis;
-				a {
-					margin: 0;
+				border-bottom: none;
+
+				.cover {
+					width: 160px;
+					height: 160px;
+				}
+
+				nav {
+					display: flex;
+					flex-direction: column;
+					gap: 0.2rem 1rem;
 				}
 			}
+			.download {
+				width: 100%;
+				border-top: none;
+			}
 		}
+		/* .item { */
+		/* 	display: flex; */
+		/* 	flex-direction: column; */
+		/* 	white-space: nowrap; */
+		/* 	overflow: hidden; */
+		/* 	text-overflow: ellipsis; */
+		/* 	width: 160px; */
+		/* 	height: 250px; */
+		/* 	gap: 5px; */
+		/* 	img { */
+		/* 		max-width: 100%; */
+		/* 		max-height: 100%; */
+		/* 	} */
+		/* 	p { */
+		/* 		margin: 0; */
+		/* 	} */
+		/* 	.list { */
+		/* 		margin: 0; */
+		/* 		display: flex; */
+		/* 		flex-direction: column; */
+		/* 		white-space: nowrap; */
+		/* 		width: auto; */
+		/* 		overflow: hidden; */
+		/* 		text-overflow: ellipsis; */
+		/* 		a { */
+		/* 			margin: 0; */
+		/* 		} */
+		/* 	} */
+		/* } */
 	}
 </style>

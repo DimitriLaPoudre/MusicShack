@@ -135,12 +135,14 @@
 					{song.Title}
 				</a>
 				<p class="split">|</p>
-				<div class="artists">
-					{#each song.Artists as artist}
-						<a href="/artist/{page.params.api}/{artist.Id}">
-							{artist.Name}
-						</a>
-					{/each}
+				<div class="wrap-artists">
+					<div class="artists">
+						{#each song.Artists as artist}
+							<a href="/artist/{page.params.api}/{artist.Id}">
+								{artist.Name}
+							</a>
+						{/each}
+					</div>
 				</div>
 				<p class="duration">
 					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
@@ -221,7 +223,7 @@
 	.body {
 		display: grid;
 		gap: 10px;
-		padding: 20px 20px;
+		padding: 0 0 0 5px;
 	}
 
 	.song {
@@ -230,6 +232,7 @@
 		justify-content: space-between;
 		align-items: center;
 		gap: 16px;
+		overflow-x: hidden;
 
 		.number {
 			margin: 0;
@@ -243,17 +246,23 @@
 			margin: 0;
 		}
 
-		.artists {
-			margin: 0;
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: 1em;
+		.wrap-artists {
+			overflow-x: hidden;
+			.artists {
+				margin: 0;
+				display: flex;
+				flex-direction: row;
+				flex-wrap: nowrap;
+				flex-shrink: 0;
+				overflow-x: hidden;
+				gap: 1em;
+			}
 		}
 
 		.duration {
 			margin: 0;
 			margin-left: auto;
+			overflow-x: hidden;
 		}
 
 		button {

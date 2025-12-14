@@ -129,90 +129,123 @@
 		<a href="/">Go to Home</a>
 	</div>
 {:else}
-	<div class="api">
-		{#each Object.entries(result as Record<string, any>) as [key, _]}
+	<div class="top">
+		<div class="section">
+			{#each Object.entries(result as Record<string, any>) as [key, _]}
+				<button onclick={() => (api = key)} class:active={api === key}>
+					{key}</button
+				>
+			{/each}
+		</div>
+		<div class="section">
 			<button
-				class="api-btn"
-				onclick={() => (api = key)}
-				class:active={api === key}>{key}</button
+				onclick={() => (type = "songs")}
+				class:active={type === "songs"}
 			>
-		{/each}
-	</div>
-	<div class="type">
-		<button
-			class="type-btn"
-			onclick={() => (type = "songs")}
-			class:active={type === "songs"}>Songs</button
-		>
-		<button
-			class="type-btn"
-			onclick={() => (type = "albums")}
-			class:active={type === "albums"}>Albums</button
-		>
-		<button
-			class="type-btn"
-			onclick={() => (type = "artists")}
-			class:active={type === "artists"}>Artists</button
-		>
+				Songs</button
+			>
+			<button
+				onclick={() => (type = "albums")}
+				class:active={type === "albums"}>Albums</button
+			>
+			<button
+				onclick={() => (type = "artists")}
+				class:active={type === "artists"}>Artists</button
+			>
+		</div>
 	</div>
 	<div class="items">
 		{#if type === "songs"}
 			{#each result[api].Songs as song}
-				<div class="song">
-					{#if song.CoverUrl !== ""}
-						<img src={song.CoverUrl} alt={song.CoverUrl} />
-					{:else}
-						<Disc style="width: 160px; height: 160px;" />
-					{/if}
-					<div class="song-detail">
-						<div style="display:flex;flex-direction: column;">
-							<a href="/song/{api}/{song.Id}">{song.Title}</a>
-							{#each song.Artists as artist}
-								<a href="/artist/{api}/{artist.Id}"
-									>{artist.Name}</a
-								>
-							{/each}
+				<div class="wrap-item">
+					<button
+						class="item"
+						onclick={(e) => {
+							if (
+								e.target instanceof Element &&
+								e.target.closest("a")
+							)
+								return;
+							goto(`/song/${api}/${song.Id}`);
+						}}
+					>
+						<div class="cover">
+							{#if song.CoverUrl !== ""}
+								<img src={song.CoverUrl} alt={song.Title} />
+							{:else}
+								<Disc size={140} />
+							{/if}
 						</div>
-						<button
-							onclick={() => {
-								downloadSong(api, song.Id);
-							}}><Download /></button
-						>
-					</div>
+						<p>{song.Title}</p>
+						<nav>
+							{#each song.Artists as artist}
+								<a href="/artist/{api}/{artist.Id}">
+									{artist.Name}
+								</a>
+							{/each}
+						</nav>
+					</button>
+					<button
+						class="download"
+						onclick={() => downloadSong(api, song.Id)}
+					>
+						<Download />
+					</button>
 				</div>
 			{/each}
 		{:else if type === "albums"}
 			{#each result[api].Albums as album}
-				<a class="album" href="/album/{api}/{album.Id}">
-					{#if album.CoverUrl !== ""}
-						<img src={album.CoverUrl} alt={album.Title} />
-					{:else}
-						<DiscAlbum style="width: 160px; height: 160px;" />
-					{/if}
-
-					<div class="album-detail">
-						<div>
-							<p>{album.Title}</p>
-							{#each album.Artists as artist}
-								<a href="/artist/{api}/{artist.Id}"
-									>{artist.Name}</a
-								>
-							{/each}
+				<div class="wrap-item">
+					<button
+						class="item"
+						onclick={(e) => {
+							if (
+								e.target instanceof Element &&
+								e.target.closest("a")
+							)
+								return;
+							goto(`/song/${api}/${album.Id}`);
+						}}
+					>
+						<div class="cover">
+							{#if album.CoverUrl !== ""}
+								<img src={album.CoverUrl} alt={album.Title} />
+							{:else}
+								<DiscAlbum size={140} />
+							{/if}
 						</div>
-						<button><Download /></button>
-					</div>
-				</a>
+						<p>{album.Title}</p>
+						<nav>
+							{#each album.Artists as artist}
+								<a href="/artist/{api}/{artist.Id}">
+									{artist.Name}
+								</a>
+							{/each}
+						</nav>
+					</button>
+					<button
+						class="download"
+						onclick={() => downloadAlbum(api, album.Id)}
+					>
+						<Download />
+					</button>
+				</div>
 			{/each}
 		{:else}
 			{#each result[api].Artists as artist}
-				<a class="artist" href="/artist/{api}/{artist.Id}">
-					{#if artist.PictureUrl !== ""}
-						<img src={artist.PictureUrl} alt={artist.PictureUrl} />
-					{:else}
-						<User style="width: 160px; height: 160px;" />
-					{/if}
+				<button
+					class="artist"
+					onclick={() => goto(`/artist/${api}/${artist.Id}`)}
+				>
+					<div class="picture">
+						{#if artist.PictureUrl !== ""}
+							<img src={artist.PictureUrl} alt={artist.Name} />
+						{:else}
+							<User size={140} />
+						{/if}
+					</div>
 					<p>{artist.Name}</p>
-				</a>
+				</button>
 			{/each}
 		{/if}
 	</div>
@@ -236,54 +269,63 @@
 		}
 	}
 
-	.api {
+	.top {
 		display: flex;
-		flex-direction: row;
+		flex-direction: column;
 		gap: 10px;
-		padding: 10px;
-	}
-	.api-btn {
-		padding: 10px;
-	}
-
-	.type {
-		display: flex;
-		flex-direction: row;
-		gap: 10px;
-		padding: 10px;
-	}
-	.type-btn {
-		padding: 10px;
+		padding: 10px 0;
+		.section {
+			display: flex;
+			flex-direction: row;
+			gap: 10px;
+			button {
+				padding: 10px;
+			}
+		}
 	}
 
 	.items {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
-	}
 
-	.song {
-		width: 200px;
-		height: auto;
-	}
-	.song-detail {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-	}
+		.wrap-item {
+			width: 200px;
+			height: auto;
+			.item {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				width: 200px;
+				height: auto;
+				overflow: hidden;
+				border-bottom: none;
 
-	.album {
-		width: 200px;
-		height: auto;
-	}
-	.album-detail {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+				.cover {
+					width: 160px;
+					height: 160px;
+				}
+
+				nav {
+					display: flex;
+					flex-direction: column;
+					gap: 0.2rem 1rem;
+				}
+			}
+			.download {
+				width: 100%;
+				border-top: none;
+			}
+		}
 	}
 
 	.artist {
 		width: 200px;
 		height: auto;
+		.picture {
+			width: 160px;
+			height: 160px;
+			border-radius: 50%;
+		}
 	}
 </style>
