@@ -66,13 +66,8 @@ img {
 /* 8. Inputs et boutons pour cohérence */
 /* Liens */
 a {
-  color: #ffffff;
   text-decoration: underline;
   cursor: pointer;
-}
-
-a:hover {
-  opacity: 0.8; /* léger effet au survol */
 }
 
 /* Boutons */
@@ -86,6 +81,7 @@ button {
 }
 
 button:hover,
+button:active,
 button.active {
   background-color: #ffffff;
   color: #0e0e0e;

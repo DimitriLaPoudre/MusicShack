@@ -16,6 +16,7 @@
 		SettingsIcon,
 		Trash,
 	} from "lucide-svelte";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
@@ -50,12 +51,9 @@
 
 	async function loadDownloads() {
 		try {
-			const res = await fetch(
-				"http://localhost:8080/api/users/downloads/",
-				{
-					credentials: "include",
-				},
-			);
+			const res = await fetch(`${PUBLIC_API_URL}/api/users/downloads/`, {
+				credentials: "include",
+			});
 
 			if (res.status === 401) {
 				goto("/login");
@@ -71,14 +69,17 @@
 				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
 			downloadError = null;
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error
+					? e.message
+					: "Failed to reload download queue";
 		}
 	}
 
 	async function retryDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/retry/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/retry/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -92,17 +93,17 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to retry download";
 		}
+		loadDownloads();
 	}
 
 	async function cancelDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/cancel/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/cancel/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -116,17 +117,17 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to cancel download";
 		}
+		loadDownloads();
 	}
 
 	async function deleteDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/${id}`,
 				{
 					method: "DELETE",
 					credentials: "include",
@@ -140,16 +141,16 @@
 			if (res.status === 403) {
 				return;
 			}
-
-			loadDownloads();
 		} catch (e) {
-			downloadError = "network failed";
+			downloadError =
+				e instanceof Error ? e.message : "Failed to delete download";
 		}
+		loadDownloads();
 	}
 
 	async function loadInstance() {
 		try {
-			const res = await fetch("http://localhost:8080/api/instances/", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
 				credentials: "include",
 			});
 
@@ -165,7 +166,10 @@
 			settingsInstanceList = body.instances;
 			settingsInstanceError = null;
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error
+					? e.message
+					: "Failed to reload instances queue";
 		}
 	}
 
@@ -184,7 +188,7 @@
 					settingsURLInput.length - 1,
 				);
 			}
-			const res = await fetch("http://localhost:8080/api/instances/", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
@@ -203,21 +207,19 @@
 
 			settingsApiInput = "";
 			settingsURLInput = "";
-			loadInstance();
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error ? e.message : "Failed to add instance";
 		}
+		loadInstance();
 	}
 
 	async function deleteInstance(id: number) {
 		try {
-			const res = await fetch(
-				`http://localhost:8080/api/instances/${id}`,
-				{
-					method: "DELETE",
-					credentials: "include",
-				},
-			);
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/${id}`, {
+				method: "DELETE",
+				credentials: "include",
+			});
 
 			const data = await res.json();
 			if (!res.ok) {
@@ -225,15 +227,15 @@
 					data.error || "error while trying to delete Instance";
 				return;
 			}
-
-			loadInstance();
 		} catch (e) {
-			settingsInstanceError = "network failed";
+			settingsInstanceError =
+				e instanceof Error ? e.message : "Failed to delete instance";
 		}
+		loadInstance();
 	}
 
 	async function Logout() {
-		await fetch("http://localhost:8080/api/logout", {
+		await fetch(`${PUBLIC_API_URL}/api/logout`, {
 			method: "POST",
 			credentials: "include",
 		});
@@ -349,75 +351,76 @@
 								<img
 									src={download.Data.Album.CoverUrl}
 									alt={download.Data.Album.CoverUrl}
-									style="width: 64px; height: 64px;"
 								/>
 							{:else}
-								<Disc
-									style="width: auto; height: auto; aspect-ratio: 1;"
-								/>
+								<Disc />
 							{/if}
-							<p>{download.Data.Title}</p>
-							<p>{download.Data.Artist.Name}</p>
-							{#if download.Status === "done"}
-								<button>
-									<CircleCheck />
-								</button>
-							{:else if download.Status === "pending"}
+							<div class="panel-download-item-data">
+								<p>{download.Data.Title}</p>
+								<p>{download.Data.Artist.Name}</p>
+							</div>
+							<div class="panel-download-item-btn">
+								{#if download.Status === "done"}
+									<button>
+										<CircleCheck />
+									</button>
+								{:else if download.Status === "pending"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											cancelDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<CircleX />
+										{:else}
+											<CircleDashed />
+										{/if}
+									</button>
+								{:else if download.Status === "running"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											cancelDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<CircleX />
+										{:else}
+											<LoaderCircleIcon />
+										{/if}
+									</button>
+								{:else if download.Status === "failed" || download.Status === "cancel"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											retryDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<RotateCcw />
+										{:else}
+											<CircleAlert />
+										{/if}
+									</button>
+								{/if}
 								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
 									onclick={() => {
-										cancelDownload(download.Id);
+										deleteDownload(download.Id);
 									}}
 								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<CircleX />
-									{:else}
-										<CircleDashed />
-									{/if}
+									<Trash />
 								</button>
-							{:else if download.Status === "running"}
-								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
-									onclick={() => {
-										cancelDownload(download.Id);
-									}}
-								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<CircleX />
-									{:else}
-										<LoaderCircleIcon />
-									{/if}
-								</button>
-							{:else if download.Status === "failed" || download.Status === "cancel"}
-								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
-									onclick={() => {
-										retryDownload(download.Id);
-									}}
-								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<RotateCcw />
-									{:else}
-										<CircleAlert />
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={() => {
-									deleteDownload(download.Id);
-								}}
-							>
-								<Trash />
-							</button>
+							</div>
 						</div>
 					{/each}
 				</div>
@@ -439,8 +442,16 @@
 					class="panel-settings-instances-form"
 					onsubmit={addInstance}
 				>
-					<input placeholder="API" bind:value={settingsApiInput} />
-					<input placeholder="URL" bind:value={settingsURLInput} />
+					<div class="inputs">
+						<input
+							placeholder="API"
+							bind:value={settingsApiInput}
+						/>
+						<input
+							placeholder="URL"
+							bind:value={settingsURLInput}
+						/>
+					</div>
 					<button><Plus /></button>
 				</form>
 				{#if !settingsInstanceList}
@@ -449,8 +460,10 @@
 					<div class="panel-settings-instances-items">
 						{#each settingsInstanceList as instance}
 							<div class="panel-settings-instances-item">
-								<p>{instance.Api}</p>
-								<p>{instance.Url}</p>
+								<div class="panel-settings-instances-item-data">
+									<p>{instance.Api}</p>
+									<p>{instance.Url}</p>
+								</div>
 								<button
 									onclick={() => deleteInstance(instance.ID)}
 								>
@@ -527,7 +540,7 @@
 
 	.panel-default {
 		width: 70vw;
-		max-height: 85vh;
+		max-height: calc(95vh - 135px);
 		overflow-y: auto;
 		outline: 1px solid #ffffff;
 		display: flex;
@@ -549,21 +562,45 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-	}
-	.panel-download-item {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		p {
-			flex: 1;
-			text-align: left;
-			padding-left: 8px;
-			margin: auto;
-		}
-		button {
-			margin: auto;
-			aspect-ratio: 1/1;
+		.panel-download-item {
+			display: grid;
+			grid-template-columns: auto 1fr auto;
+			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
+
+			img {
+				margin: auto;
+				width: 58px;
+				height: 58px;
+				aspect-ratio: 1/1;
+			}
+
+			.panel-download-item-data {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				align-items: center;
+				p {
+					margin: 0;
+				}
+			}
+			.panel-download-item-btn {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				button {
+					aspect-ratio: 1/1;
+				}
+			}
+
+			@container (max-width: 420px) {
+				.panel-download-item-data {
+					grid-template-columns: 1fr;
+				}
+
+				.panel-download-item-btn {
+					grid-template-columns: 1fr;
+				}
+			}
 		}
 	}
 
@@ -572,9 +609,6 @@
 		flex-direction: column;
 		padding: 8px;
 		gap: 16px;
-		h2 {
-			margin: 0;
-		}
 	}
 	.panel-settings-instances-error {
 		text-align: center;
@@ -583,19 +617,25 @@
 		margin: 0;
 	}
 	.panel-settings-instances-form {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: 1fr auto;
 		gap: 8px;
+		align-items: stretch;
+		container-type: inline-size;
 
-		input {
-			flex: 1;
-			text-align: left;
-			margin: 0;
+		.inputs {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
 		}
 		button {
-			margin: auto;
 			aspect-ratio: 1/1;
+		}
+
+		@container (max-width: 420px) {
+			.inputs {
+				grid-template-columns: 1fr;
+			}
 		}
 	}
 	.panel-settings-instances-loading {
@@ -605,21 +645,32 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-	}
-	.panel-settings-instances-item {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		p {
-			flex: 1;
-			text-align: left;
-			padding-left: 8px;
-			margin: auto;
-		}
-		button {
-			margin: auto;
-			aspect-ratio: 1/1;
+		.panel-settings-instances-item {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
+
+			.panel-settings-instances-item-data {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				border: 1px solid #ffffff;
+				align-items: center;
+				padding: 1rem;
+				p {
+					margin: 0;
+				}
+			}
+			button {
+				aspect-ratio: 1/1;
+			}
+			@container (max-width: 420px) {
+				.panel-settings-instances-item-data {
+					grid-template-columns: 1fr;
+				}
+			}
 		}
 	}
 

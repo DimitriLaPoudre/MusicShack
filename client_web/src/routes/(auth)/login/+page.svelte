@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { goto, onNavigate } from "$app/navigation";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let username: string = "";
 	let password: string = "";
 	let error: string = "";
 
 	onNavigate(async () => {
-		const res = await fetch("http://localhost:8080/api/me", {
+		const res = await fetch(`${PUBLIC_API_URL}/api/me`, {
 			credentials: "include",
 		});
 
@@ -18,7 +19,7 @@
 
 	async function handleLogin() {
 		try {
-			const res = await fetch("http://localhost:8080/api/login", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/login`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),
@@ -38,41 +39,63 @@
 				error = errData.error || "error during login";
 			}
 		} catch (e) {
-			error = "network failed";
+			error = e instanceof Error ? e.message : "network failed";
 		}
 	}
 </script>
 
-<div
-	style="display: flex; flex-direction: column; align-items: center; gap: 2rem;"
->
+<div class="body">
 	<h1>Login</h1>
 	<form on:submit|preventDefault={handleLogin}>
-		<div
-			style="display: flex; flex-direction: column; align-items: center; gap: 1rem; padding: 2rem 3rem;"
-		>
+		<div class="form">
 			{#if error}
-				<p
-					style="padding: 8px; border: 4px solid var(--color-error-dark); background-color: var(--color-error);"
-				>
-					{error}
-				</p>
+				<p>{error}</p>
 			{/if}
+			<input placeholder="Username" bind:value={username} required />
 			<input
-				style="padding: 8px;"
-				placeholder="Username"
-				bind:value={username}
-				required
-			/>
-			<input
-				style="padding: 8px;"
 				type="password"
 				placeholder="Password"
 				bind:value={password}
 				required
 			/>
-			<button style="width: 60%; padding: 8px;">Login</button>
-			<a href="/signup">create an account</a>
+			<button>Login</button>
 		</div>
 	</form>
+	<a href="/signup">create an account</a>
 </div>
+
+<style>
+	.body {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		margin-top: 10vh;
+		height: 100vh;
+
+		h1 {
+			margin: 0;
+		}
+	}
+	.form {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 1rem;
+		padding: 1rem 2rem;
+
+		p {
+			padding: 8px;
+			margin: 10px;
+			color: var(--err);
+		}
+
+		input {
+			padding: 8px;
+		}
+
+		button {
+			width: 60%;
+			padding: 8px;
+		}
+	}
+</style>
