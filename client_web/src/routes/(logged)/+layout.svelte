@@ -10,6 +10,7 @@
 		DownloadIcon,
 		Heart,
 		LoaderCircleIcon,
+		Pencil,
 		Plus,
 		RotateCcw,
 		Search,
@@ -23,13 +24,16 @@
 
 	// panel-search variable
 	let searchInput: string = "";
-
 	// panel-download variable
 	let downloadList = $state<null | any>(null);
 	let downloadError = $state<null | string>(null);
 	let downloadManageHover = $state<null | number>(null);
 
 	// panel-settingsvariable
+	let settingsUserError = $state<null | string>(null);
+	let settingsUsername = $state<null | string>(null);
+	let settingsUsernameInput = $state<null | string>(null);
+	let settingsPasswordInput = $state<null | string>(null);
 	let settingsApiInput = $state<null | string>(null);
 	let settingsURLInput = $state<null | string>(null);
 	let settingsInstanceError = $state<null | string>(null);
@@ -146,6 +150,79 @@
 				e instanceof Error ? e.message : "Failed to delete download";
 		}
 		loadDownloads();
+	}
+
+	async function apiFetch(
+		path: string,
+		method: string = "GET",
+		body?: any,
+	): Promise<Response> {
+		const res = await fetch(`${PUBLIC_API_URL}/api` + path, {
+			method: method,
+			credentials: "include",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify(body),
+		});
+		if (res.status === 401) {
+			goto("/login");
+			return res;
+		}
+		return res;
+	}
+
+	async function getUser() {
+		try {
+			const res = await apiFetch("/me/");
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to fetch me");
+			}
+			settingsUsername = body.user.Username;
+			settingsUserError = null;
+		} catch (e) {
+			settingsUserError =
+				e instanceof Error ? e.message : "Failed to get user info";
+		}
+	}
+
+	async function changeUsername(event: SubmitEvent) {
+		event.preventDefault();
+		try {
+			const res = await apiFetch("/me", "PUT", {
+				username: settingsUsernameInput,
+				password: null,
+			});
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to update me");
+			}
+			settingsUsername = body.user.Username;
+			settingsUserError = null;
+			settingsUsernameInput = null;
+		} catch (e) {
+			settingsUserError =
+				e instanceof Error ? e.message : "Failed to update user info";
+		}
+	}
+
+	async function changePassword(event: SubmitEvent) {
+		event.preventDefault();
+		try {
+			const res = await apiFetch("/me/", "PUT", {
+				username: null,
+				password: settingsPasswordInput,
+			});
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to update me");
+			}
+			settingsUsername = body.user.Username;
+			settingsUserError = null;
+			settingsPasswordInput = null;
+		} catch (e) {
+			settingsUserError =
+				e instanceof Error ? e.message : "Failed to update user info";
+		}
 	}
 
 	async function loadInstance() {
@@ -290,6 +367,7 @@
 				} else {
 					barState = "settings";
 					loadInstance();
+					getUser();
 				}
 			}}
 			class:active={barState === "settings"}
@@ -430,7 +508,37 @@
 		<div class="panel-default">
 			<h1>Settings</h1>
 			<h2>User</h2>
-			<div class="panel-settings-user"></div>
+			<div class="panel-settings-user">
+				{#if settingsUserError}
+					<p class="panel-settings-user-error">
+						{settingsUserError}
+					</p>
+				{/if}
+				<form
+					class="panel-settings-user-section"
+					onsubmit={changeUsername}
+				>
+					<input
+						placeholder={settingsUsername}
+						bind:value={settingsUsernameInput}
+					/>
+					<button>
+						<Pencil />
+					</button>
+				</form>
+				<form
+					class="panel-settings-user-section"
+					onsubmit={changePassword}
+				>
+					<input
+						placeholder="Password"
+						bind:value={settingsPasswordInput}
+					/>
+					<button>
+						<Pencil />
+					</button>
+				</form>
+			</div>
 			<h2>Instances</h2>
 			<div class="panel-settings-instances">
 				{#if settingsInstanceError}
@@ -600,6 +708,32 @@
 				.panel-download-item-btn {
 					grid-template-columns: 1fr;
 				}
+			}
+		}
+	}
+
+	.panel-settings-user {
+		display: flex;
+		flex-direction: column;
+		padding: 8px;
+		gap: 8px;
+		.panel-settings-user-error {
+			text-align: center;
+			background-color: var(--err);
+			padding: 0.5rem;
+			margin: 0;
+		}
+		/* p { */
+		/* margin: 0; */
+		/* border: 1px solid #ffffff; */
+		/* } */
+		.panel-settings-user-section {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
+
+			button {
+				aspect-ratio: 1/1;
 			}
 		}
 	}

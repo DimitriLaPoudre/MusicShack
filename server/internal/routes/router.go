@@ -12,7 +12,13 @@ func SetupRouters() *gin.Engine {
 	r.Use(cors.Default())
 
 	r.GET("/api", handlers.Info)
-	r.GET("/api/me", middlewares.Logged(), handlers.Me)
+	me := r.Group("/api/me")
+	{
+		me.Use(middlewares.Logged())
+		me.GET("/", handlers.Me)
+		me.PUT("/", handlers.UpdateMe)
+		me.DELETE("/", handlers.DeleteMe)
+	}
 
 	r.POST("/api/signup", middlewares.LoggedOut(), handlers.Signup)
 	r.POST("/api/login", middlewares.LoggedOut(), handlers.Login)
@@ -29,23 +35,24 @@ func SetupRouters() *gin.Engine {
 
 	users := r.Group("/api/users")
 	{
-		users.Use(middlewares.Logged())
+		users.Use(middlewares.Admin())
 		users.POST("/", handlers.CreateUser)
 		users.GET("/", handlers.ListUsers)
 		users.GET("/:id", handlers.GetUser)
 		users.PUT("/:id", handlers.UpdateUser)
 		users.DELETE("/:id", handlers.DeleteUser)
+	}
 
-		downloads := users.Group("/downloads")
-		{
-			downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
-			downloads.POST("/album/:api/:id", handlers.AddDownloadAlbum)
-			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
-			downloads.GET("/", handlers.ListDownload)
-			downloads.DELETE("/:id", handlers.DeleteDownload)
-			downloads.POST("/retry/:id", handlers.RetryDownload)
-			downloads.POST("/cancel/:id", handlers.CancelDownload)
-		}
+	downloads := users.Group("/api/users/downloads")
+	{
+		downloads.Use(middlewares.Logged())
+		downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
+		downloads.POST("/album/:api/:id", handlers.AddDownloadAlbum)
+		downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
+		downloads.GET("/", handlers.ListDownload)
+		downloads.DELETE("/:id", handlers.DeleteDownload)
+		downloads.POST("/retry/:id", handlers.RetryDownload)
+		downloads.POST("/cancel/:id", handlers.CancelDownload)
 	}
 
 	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)
