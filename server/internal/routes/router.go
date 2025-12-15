@@ -12,7 +12,13 @@ func SetupRouters() *gin.Engine {
 	r.Use(cors.Default())
 
 	r.GET("/api", handlers.Info)
-	r.GET("/api/me", middlewares.Logged(), handlers.Me)
+	me := r.Group("/api/me")
+	{
+		me.Use(middlewares.Logged())
+		me.GET("/", handlers.Me)
+		me.PUT("/", handlers.UpdateMe)
+		me.DELETE("/", handlers.DeleteMe)
+	}
 
 	r.POST("/api/signup", middlewares.LoggedOut(), handlers.Signup)
 	r.POST("/api/login", middlewares.LoggedOut(), handlers.Login)
