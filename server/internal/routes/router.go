@@ -43,7 +43,7 @@ func SetupRouters() *gin.Engine {
 		users.DELETE("/:id", handlers.DeleteUser)
 	}
 
-	downloads := users.Group("/api/users/downloads")
+	downloads := r.Group("/api/users/downloads")
 	{
 		downloads.Use(middlewares.Logged())
 		downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
@@ -53,6 +53,14 @@ func SetupRouters() *gin.Engine {
 		downloads.DELETE("/:id", handlers.DeleteDownload)
 		downloads.POST("/retry/:id", handlers.RetryDownload)
 		downloads.POST("/cancel/:id", handlers.CancelDownload)
+	}
+
+	follows := r.Group("/api/follows")
+	{
+		follows.Use(middlewares.Logged())
+		follows.POST("/", handlers.AddFollow)
+		follows.GET("/", handlers.ListFollows)
+		follows.DELETE("/:id", handlers.DeleteFollow)
 	}
 
 	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)

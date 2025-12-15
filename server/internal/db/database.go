@@ -9,13 +9,12 @@ import (
 
 var DB *gorm.DB
 
-func InitDB() {
+func init() {
 	db, err := gorm.Open(sqlite.Open("./db/data.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.User{})
-	db.AutoMigrate(&models.ApiInstance{})
+	db.AutoMigrate(&models.User{}, &models.ApiInstance{}, &models.Follow{})
 	DB = db
 }
