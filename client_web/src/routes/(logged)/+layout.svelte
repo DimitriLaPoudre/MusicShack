@@ -356,75 +356,76 @@
 								<img
 									src={download.Data.Album.CoverUrl}
 									alt={download.Data.Album.CoverUrl}
-									style="width: 64px; height: 64px;"
 								/>
 							{:else}
-								<Disc
-									style="width: auto; height: auto; aspect-ratio: 1;"
-								/>
+								<Disc />
 							{/if}
-							<p>{download.Data.Title}</p>
-							<p>{download.Data.Artist.Name}</p>
-							{#if download.Status === "done"}
-								<button>
-									<CircleCheck />
-								</button>
-							{:else if download.Status === "pending"}
+							<div class="panel-download-item-data">
+								<p>{download.Data.Title}</p>
+								<p>{download.Data.Artist.Name}</p>
+							</div>
+							<div class="panel-download-item-btn">
+								{#if download.Status === "done"}
+									<button>
+										<CircleCheck />
+									</button>
+								{:else if download.Status === "pending"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											cancelDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<CircleX />
+										{:else}
+											<CircleDashed />
+										{/if}
+									</button>
+								{:else if download.Status === "running"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											cancelDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<CircleX />
+										{:else}
+											<LoaderCircleIcon />
+										{/if}
+									</button>
+								{:else if download.Status === "failed" || download.Status === "cancel"}
+									<button
+										onmouseenter={() =>
+											(downloadManageHover = index)}
+										onmouseleave={() =>
+											(downloadManageHover = null)}
+										onclick={() => {
+											retryDownload(download.Id);
+										}}
+									>
+										{#if downloadManageHover != null && downloadManageHover === index}
+											<RotateCcw />
+										{:else}
+											<CircleAlert />
+										{/if}
+									</button>
+								{/if}
 								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
 									onclick={() => {
-										cancelDownload(download.Id);
+										deleteDownload(download.Id);
 									}}
 								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<CircleX />
-									{:else}
-										<CircleDashed />
-									{/if}
+									<Trash />
 								</button>
-							{:else if download.Status === "running"}
-								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
-									onclick={() => {
-										cancelDownload(download.Id);
-									}}
-								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<CircleX />
-									{:else}
-										<LoaderCircleIcon />
-									{/if}
-								</button>
-							{:else if download.Status === "failed" || download.Status === "cancel"}
-								<button
-									onmouseenter={() =>
-										(downloadManageHover = index)}
-									onmouseleave={() =>
-										(downloadManageHover = null)}
-									onclick={() => {
-										retryDownload(download.Id);
-									}}
-								>
-									{#if downloadManageHover != null && downloadManageHover === index}
-										<RotateCcw />
-									{:else}
-										<CircleAlert />
-									{/if}
-								</button>
-							{/if}
-							<button
-								onclick={() => {
-									deleteDownload(download.Id);
-								}}
-							>
-								<Trash />
-							</button>
+							</div>
 						</div>
 					{/each}
 				</div>
@@ -566,21 +567,45 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-	}
-	.panel-download-item {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		p {
-			flex: 1;
-			text-align: left;
-			padding-left: 8px;
-			margin: auto;
-		}
-		button {
-			margin: auto;
-			aspect-ratio: 1/1;
+		.panel-download-item {
+			display: grid;
+			grid-template-columns: auto 1fr auto;
+			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
+
+			img {
+				margin: auto;
+				width: 58px;
+				height: 58px;
+				aspect-ratio: 1/1;
+			}
+
+			.panel-download-item-data {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				align-items: center;
+				p {
+					margin: 0;
+				}
+			}
+			.panel-download-item-btn {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				button {
+					aspect-ratio: 1/1;
+				}
+			}
+
+			@container (max-width: 420px) {
+				.panel-download-item-data {
+					grid-template-columns: 1fr;
+				}
+
+				.panel-download-item-btn {
+					grid-template-columns: 1fr;
+				}
+			}
 		}
 	}
 
