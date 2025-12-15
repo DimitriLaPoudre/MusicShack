@@ -172,7 +172,7 @@
 
 	async function getUser() {
 		try {
-			const res = await apiFetch("/me");
+			const res = await apiFetch("/me/");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch me");
@@ -208,7 +208,10 @@
 	async function changePassword(event: SubmitEvent) {
 		event.preventDefault();
 		try {
-			const res = await apiFetch("/me", "PUT");
+			const res = await apiFetch("/me/", "PUT", {
+				username: null,
+				password: settingsPasswordInput,
+			});
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to update me");
@@ -506,7 +509,7 @@
 			<h1>Settings</h1>
 			<h2>User</h2>
 			<div class="panel-settings-user">
-				{#if settingsInstanceError}
+				{#if settingsUserError}
 					<p class="panel-settings-user-error">
 						{settingsUserError}
 					</p>

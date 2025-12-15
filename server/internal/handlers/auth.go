@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"regexp"
 
@@ -14,49 +15,70 @@ import (
 	"gorm.io/gorm"
 )
 
+func validateUsername(username string) error {
+	if len(username) < 3 || len(username) > 32 {
+		return fmt.Errorf("validateUsername: %s", "username must be between 3 and 32 characters long")
+	}
+	_, err := repository.GetUserByUsername(username)
+	if err == nil {
+		return fmt.Errorf("validateUsername: %s", "username already used")
+	} else {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("validateUsername: %w", err)
+		}
+	}
+	return nil
+}
+
+func validatePassword(password string) error {
+	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-.]+$`)
+	if !regexUsername.MatchString(password) {
+		return fmt.Errorf("validatePassword: %s", "password must only contain alphanumeric characters, _, ., -")
+	}
+
+	if len(password) < 8 || len(password) > 128 {
+		return fmt.Errorf("validatePassword: %s", "password must be between 8 and 128 characters long")
+	}
+	regexPassword := regexp.MustCompile(`^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'",.<>/?\\|]+$`)
+	if !regexPassword.MatchString(password) {
+		return fmt.Errorf("validatePassword: %s", "password contains invalid character")
+	}
+	return nil
+}
+
+func validateRequestUser(req models.UserRequest) error {
+	if err := validateUsername(req.Username); err != nil {
+		return fmt.Errorf("validateRequestUser: %w", err)
+	}
+
+	if err := validatePassword(req.Password); err != nil {
+		return fmt.Errorf("validateRequestUser: %w", err)
+	}
+
+	return nil
+}
+
 func Signup(c *gin.Context) {
-	var req models.Signup
+	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if len(req.Username) < 3 || len(req.Username) > 32 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username must be between 3 and 32 characters long"})
-		return
-	}
-	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-.]+$`)
-	if !regexUsername.MatchString(req.Password) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "username must only contain alphanumeric characters, _, ., -"})
+	if err := validateRequestUser(req); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if len(req.Password) < 8 || len(req.Password) > 128 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "password must be between 8 and 128 characters long"})
-		return
-	}
-	regexPassword := regexp.MustCompile(`^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'",.<>/?\\|]+$`)
-	if !regexPassword.MatchString(req.Password) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "password contains invalid character"})
-		return
-	}
-
-	_, err := repository.GetUserByUsername(req.Username)
-	if err == nil {
-		c.JSON(http.StatusConflict, gin.H{"error": "username already used"})
-		return
-	} else {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		}
-	}
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	if err := repository.CreateUser(&models.User{Username: req.Username, Password: string(hashPassword)}); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -64,26 +86,31 @@ func Signup(c *gin.Context) {
 }
 
 func Login(c *gin.Context) {
-	var req models.Login
+	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	user, err := repository.GetUserByUsername(req.Username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			fmt.Println(err)
 			c.JSON(http.StatusNotFound, gin.H{"error": "username not found"})
 			return
 		}
+		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	token, err := services.GetTokenForID(user.ID)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

@@ -6,13 +6,3 @@ type JwtClaims struct {
 	Id uint `json:"username"`
 	jwt.RegisteredClaims
 }
-
-type Signup struct {
-	Username string
-	Password string
-}
-
-type Login struct {
-	Username string
-	Password string
-}
