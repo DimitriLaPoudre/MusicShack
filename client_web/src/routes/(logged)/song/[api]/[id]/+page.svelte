@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -9,7 +10,7 @@
 	afterNavigate(async () => {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/song/${page.params.api}/${page.params.id}`,
+				`${PUBLIC_API_URL}/api/song/${page.params.api}/${page.params.id}`,
 				{
 					credentials: "include",
 				},
@@ -34,7 +35,7 @@
 	async function download() {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/song/${page.params.api}/${page.params.id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/song/${page.params.api}/${page.params.id}`,
 				{
 					method: "POST",
 					credentials: "include",

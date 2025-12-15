@@ -2,6 +2,7 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Download } from "lucide-svelte";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -10,7 +11,7 @@
 	afterNavigate(async () => {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/artist/${page.params.api}/${page.params.id}`,
+				`${PUBLIC_API_URL}/api/artist/${page.params.api}/${page.params.id}`,
 				{
 					credentials: "include",
 				},
@@ -34,7 +35,7 @@
 	async function downloadAlbum(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/album/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -60,7 +61,7 @@
 	async function downloadArtist(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/artist/${api}/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/artist/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",

@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let error = $state<string | null>(null);
 
 	afterNavigate(async () => {
 		try {
-			const res = await fetch(`http://localhost:8080/api/me`, {
+			const res = await fetch(`${PUBLIC_API_URL}/api/me`, {
 				credentials: "include",
 			});
 			if (res.status === 401) {

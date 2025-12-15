@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let username: string = "";
 	let password: string = "";
@@ -7,7 +8,7 @@
 	let error: string = "";
 
 	afterNavigate(async () => {
-		const res = await fetch("http://localhost:8080/api/me", {
+		const res = await fetch(`${PUBLIC_API_URL}/api/me`, {
 			credentials: "include",
 		});
 
@@ -23,7 +24,7 @@
 			return;
 		}
 		try {
-			const res = await fetch("http://localhost:8080/api/signup", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/signup`, {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),

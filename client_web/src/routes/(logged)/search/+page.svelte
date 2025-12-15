@@ -2,6 +2,7 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -17,7 +18,7 @@
 				throw new Error("No Search");
 			}
 			const res = await fetch(
-				`http://localhost:8080/api/search?q=${searchData}`,
+				`${PUBLIC_API_URL}/api/search?q=${searchData}`,
 				{
 					credentials: "include",
 				},
@@ -42,7 +43,7 @@
 	async function downloadSong(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/song/${api}/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/song/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -66,7 +67,7 @@
 	async function downloadAlbum(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/album/${api}/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/album/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -92,7 +93,7 @@
 	async function downloadArtist(api: string, id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/artist/${api}/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/artist/${api}/${id}`,
 				{
 					method: "POST",
 					credentials: "include",

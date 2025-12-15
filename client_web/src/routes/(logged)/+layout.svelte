@@ -16,6 +16,7 @@
 		SettingsIcon,
 		Trash,
 	} from "lucide-svelte";
+	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
@@ -50,12 +51,9 @@
 
 	async function loadDownloads() {
 		try {
-			const res = await fetch(
-				"http://localhost:8080/api/users/downloads/",
-				{
-					credentials: "include",
-				},
-			);
+			const res = await fetch(`${PUBLIC_API_URL}/api/users/downloads/`, {
+				credentials: "include",
+			});
 
 			if (res.status === 401) {
 				goto("/login");
@@ -81,7 +79,7 @@
 	async function retryDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/retry/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/retry/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -105,7 +103,7 @@
 	async function cancelDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/cancel/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/cancel/${id}`,
 				{
 					method: "POST",
 					credentials: "include",
@@ -129,7 +127,7 @@
 	async function deleteDownload(id: string) {
 		try {
 			const res = await fetch(
-				`http://localhost:8080/api/users/downloads/${id}`,
+				`${PUBLIC_API_URL}/api/users/downloads/${id}`,
 				{
 					method: "DELETE",
 					credentials: "include",
@@ -152,7 +150,7 @@
 
 	async function loadInstance() {
 		try {
-			const res = await fetch("http://localhost:8080/api/instances/", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
 				credentials: "include",
 			});
 
@@ -190,7 +188,7 @@
 					settingsURLInput.length - 1,
 				);
 			}
-			const res = await fetch("http://localhost:8080/api/instances/", {
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
 				method: "POST",
 				credentials: "include",
 				headers: { "Content-Type": "application/json" },
@@ -218,13 +216,10 @@
 
 	async function deleteInstance(id: number) {
 		try {
-			const res = await fetch(
-				`http://localhost:8080/api/instances/${id}`,
-				{
-					method: "DELETE",
-					credentials: "include",
-				},
-			);
+			const res = await fetch(`${PUBLIC_API_URL}/api/instances/${id}`, {
+				method: "DELETE",
+				credentials: "include",
+			});
 
 			const data = await res.json();
 			if (!res.ok) {
@@ -240,7 +235,7 @@
 	}
 
 	async function Logout() {
-		await fetch("http://localhost:8080/api/logout", {
+		await fetch(`${PUBLIC_API_URL}/api/logout`, {
 			method: "POST",
 			credentials: "include",
 		});
