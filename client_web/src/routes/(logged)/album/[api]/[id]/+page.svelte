@@ -134,15 +134,12 @@
 				<a class="title" href="/song/{page.params.api}/{song.Id}">
 					{song.Title}
 				</a>
-				<p class="split">|</p>
-				<div class="wrap-artists">
-					<div class="artists">
-						{#each song.Artists as artist}
-							<a href="/artist/{page.params.api}/{artist.Id}">
-								{artist.Name}
-							</a>
-						{/each}
-					</div>
+				<div class="artists">
+					{#each song.Artists as artist}
+						<a href="/artist/{page.params.api}/{artist.Id}">
+							{artist.Name}
+						</a>
+					{/each}
 				</div>
 				<p class="duration">
 					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
@@ -227,42 +224,25 @@
 	}
 
 	.song {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: auto 1fr 1fr auto auto;
 		align-items: center;
-		gap: 16px;
-		overflow-x: hidden;
+		gap: 8px;
 
-		.number {
+		p {
 			margin: 0;
 		}
 
-		.title {
-			margin: 0 0 0 auto;
-		}
-
-		.split {
-			margin: 0;
-		}
-
-		.wrap-artists {
-			overflow-x: hidden;
-			.artists {
-				margin: 0;
-				display: flex;
-				flex-direction: row;
-				flex-wrap: nowrap;
-				flex-shrink: 0;
+		.artists {
+			display: flex;
+			gap: 1rem;
+			overflow: hidden;
+			a {
+				white-space: nowrap;
 				overflow-x: hidden;
-				gap: 1em;
+				text-overflow: ellipsis;
+				margin: 0;
 			}
-		}
-
-		.duration {
-			margin: 0;
-			margin-left: auto;
-			overflow-x: hidden;
 		}
 
 		button {
