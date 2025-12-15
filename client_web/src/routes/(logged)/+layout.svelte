@@ -446,8 +446,16 @@
 					class="panel-settings-instances-form"
 					onsubmit={addInstance}
 				>
-					<input placeholder="API" bind:value={settingsApiInput} />
-					<input placeholder="URL" bind:value={settingsURLInput} />
+					<div class="inputs">
+						<input
+							placeholder="API"
+							bind:value={settingsApiInput}
+						/>
+						<input
+							placeholder="URL"
+							bind:value={settingsURLInput}
+						/>
+					</div>
 					<button><Plus /></button>
 				</form>
 				{#if !settingsInstanceList}
@@ -456,8 +464,10 @@
 					<div class="panel-settings-instances-items">
 						{#each settingsInstanceList as instance}
 							<div class="panel-settings-instances-item">
-								<p>{instance.Api}</p>
-								<p>{instance.Url}</p>
+								<div class="panel-settings-instances-item-data">
+									<p>{instance.Api}</p>
+									<p>{instance.Url}</p>
+								</div>
 								<button
 									onclick={() => deleteInstance(instance.ID)}
 								>
@@ -587,19 +597,25 @@
 		margin: 0;
 	}
 	.panel-settings-instances-form {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+		display: grid;
+		grid-template-columns: 1fr auto;
 		gap: 8px;
+		align-items: stretch;
+		container-type: inline-size;
 
-		input {
-			flex: 1;
-			text-align: left;
-			margin: 0;
+		.inputs {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 8px;
 		}
 		button {
-			margin: auto;
 			aspect-ratio: 1/1;
+		}
+
+		@container (max-width: 420px) {
+			.inputs {
+				grid-template-columns: 1fr;
+			}
 		}
 	}
 	.panel-settings-instances-loading {
@@ -609,21 +625,32 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
-	}
-	.panel-settings-instances-item {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		p {
-			flex: 1;
-			text-align: left;
-			padding-left: 8px;
-			margin: auto;
-		}
-		button {
-			margin: auto;
-			aspect-ratio: 1/1;
+		.panel-settings-instances-item {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
+
+			.panel-settings-instances-item-data {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+				border: 1px solid #ffffff;
+				align-items: center;
+				padding: 1rem;
+				p {
+					margin: 0;
+				}
+			}
+			button {
+				aspect-ratio: 1/1;
+			}
+			@container (max-width: 420px) {
+				.panel-settings-instances-item-data {
+					grid-template-columns: 1fr;
+				}
+			}
 		}
 	}
 
