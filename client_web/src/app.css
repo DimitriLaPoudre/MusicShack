@@ -43,18 +43,14 @@ a {
 /* 4. Titres pour cohérence */
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
-  margin-bottom: 1rem;
 }
 
 /* 5. Paragraphes */
 p {
-  margin-bottom: 1rem;
 }
 
 /* 6. Listes */
 ul, ol {
-  margin-left: 1.5rem;
-  margin-bottom: 1rem;
 }
 
 /* 7. Images */

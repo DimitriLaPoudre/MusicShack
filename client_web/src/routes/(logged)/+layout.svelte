@@ -185,31 +185,11 @@
 		}
 	}
 
-	async function changeUsername(event: SubmitEvent) {
+	async function changeUser(event: SubmitEvent) {
 		event.preventDefault();
 		try {
 			const res = await apiFetch("/me", "PUT", {
 				username: settingsUsernameInput,
-				password: null,
-			});
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to update me");
-			}
-			settingsUsername = body.user.Username;
-			settingsUserError = null;
-			settingsUsernameInput = null;
-		} catch (e) {
-			settingsUserError =
-				e instanceof Error ? e.message : "Failed to update user info";
-		}
-	}
-
-	async function changePassword(event: SubmitEvent) {
-		event.preventDefault();
-		try {
-			const res = await apiFetch("/me/", "PUT", {
-				username: null,
 				password: settingsPasswordInput,
 			});
 			const body = await res.json();
@@ -218,7 +198,7 @@
 			}
 			settingsUsername = body.user.Username;
 			settingsUserError = null;
-			settingsPasswordInput = null;
+			settingsUsernameInput = null;
 		} catch (e) {
 			settingsUserError =
 				e instanceof Error ? e.message : "Failed to update user info";
@@ -514,26 +494,17 @@
 						{settingsUserError}
 					</p>
 				{/if}
-				<form
-					class="panel-settings-user-section"
-					onsubmit={changeUsername}
-				>
-					<input
-						placeholder={settingsUsername}
-						bind:value={settingsUsernameInput}
-					/>
-					<button>
-						<Pencil />
-					</button>
-				</form>
-				<form
-					class="panel-settings-user-section"
-					onsubmit={changePassword}
-				>
-					<input
-						placeholder="Password"
-						bind:value={settingsPasswordInput}
-					/>
+				<form class="panel-settings-user-form" onsubmit={changeUser}>
+					<div class="panel-settings-user-section-inputs">
+						<input
+							placeholder={settingsUsername}
+							bind:value={settingsUsernameInput}
+						/>
+						<input
+							placeholder="Password"
+							bind:value={settingsPasswordInput}
+						/>
+					</div>
 					<button>
 						<Pencil />
 					</button>
@@ -689,9 +660,15 @@
 				grid-template-columns: 1fr 1fr;
 				align-items: center;
 				p {
+					padding-left: 0.5rem;
 					margin: 0;
 				}
 			}
+			.panel-download-item-data:hover {
+				outline: 1px solid #ffffff;
+				outline-offset: -1px;
+			}
+
 			.panel-download-item-btn {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
@@ -723,17 +700,26 @@
 			padding: 0.5rem;
 			margin: 0;
 		}
-		/* p { */
-		/* margin: 0; */
-		/* border: 1px solid #ffffff; */
-		/* } */
-		.panel-settings-user-section {
+		.panel-settings-user-form {
 			display: grid;
 			grid-template-columns: 1fr auto;
 			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
 
+			.panel-settings-user-section-inputs {
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 8px;
+			}
 			button {
 				aspect-ratio: 1/1;
+			}
+
+			@container (max-width: 420px) {
+				.panel-settings-user-section-inputs {
+					grid-template-columns: 1fr;
+				}
 			}
 		}
 	}
@@ -790,12 +776,15 @@
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 				gap: 8px;
-				border: 1px solid #ffffff;
 				align-items: center;
 				padding: 1rem;
 				p {
 					margin: 0;
 				}
+			}
+			.panel-settings-instances-item-data:hover {
+				outline: 1px solid #ffffff;
+				outline-offset: -1px;
 			}
 			button {
 				aspect-ratio: 1/1;
