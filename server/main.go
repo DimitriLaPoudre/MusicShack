@@ -1,12 +1,26 @@
 package main
 
 import (
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
+	"context"
+	"fmt"
+	"os/signal"
+	"syscall"
+
 	_ "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/routes"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func main() {
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer stop()
+
+	cron := utils.AutoFetch(ctx)
 	r := routes.SetupRouters()
-	r.Run(":" + config.URL.Port())
+	defer r.Close()
+	if err := r.RunWithContext(ctx); err != nil && err != context.Canceled {
+		panic(err)
+	}
+	<-cron.Stop().Done()
+	fmt.Println("CTRL-C successfully handle")
 }

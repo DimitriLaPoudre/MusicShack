@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"sync"
 
@@ -38,13 +39,30 @@ func AddFollow(c *gin.Context) {
 		return
 	}
 
-	if _, err := api.Artist(c.Request.Context(), id); err != nil {
+	artist, err := api.Artist(c.Request.Context(), id)
+	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := repository.AddFollow(userId, api.Name(), id); err != nil {
+	slices.SortFunc(artist.Albums, func(a, b models.AlbumData) int {
+		if a.ReleaseDate > b.ReleaseDate {
+			return 1
+		} else if a.ReleaseDate < b.ReleaseDate {
+			return -1
+		} else {
+			return 0
+		}
+	})
+
+	lastFetchId := ""
+
+	if len(artist.Albums) > 0 {
+		lastFetchId = artist.Albums[0].Id
+	}
+
+	if err := repository.AddFollow(userId, api.Name(), id, lastFetchId); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

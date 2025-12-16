@@ -1,14 +1,18 @@
 package routes
 
 import (
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/handlers"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/middlewares"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/graceful"
 )
 
-func SetupRouters() *gin.Engine {
-	r := gin.Default()
+func SetupRouters() *graceful.Graceful {
+	r, err := graceful.Default(graceful.WithAddr(":" + config.URL.Port()))
+	if err != nil {
+		panic(err)
+	}
 	r.Use(cors.Default())
 
 	r.GET("/api", handlers.Info)
