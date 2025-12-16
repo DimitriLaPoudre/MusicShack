@@ -18,12 +18,15 @@
 		Trash,
 	} from "lucide-svelte";
 	import { PUBLIC_API_URL } from "$env/static/public";
+	import Follow from "$lib/components/panel/Follow.svelte";
+	import { apiFetch } from "$lib/functions/apiFetch";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
 
 	// panel-search variable
 	let searchInput: string = "";
+
 	// panel-download variable
 	let downloadList = $state<null | any>(null);
 	let downloadError = $state<null | string>(null);
@@ -150,24 +153,6 @@
 				e instanceof Error ? e.message : "Failed to delete download";
 		}
 		loadDownloads();
-	}
-
-	async function apiFetch(
-		path: string,
-		method: string = "GET",
-		body?: any,
-	): Promise<Response> {
-		const res = await fetch(`${PUBLIC_API_URL}/api` + path, {
-			method: method,
-			credentials: "include",
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(body),
-		});
-		if (res.status === 401) {
-			goto("/login");
-			return res;
-		}
-		return res;
 	}
 
 	async function getUser() {
@@ -368,30 +353,7 @@
 		</div>
 	{:else if barState === "follow"}
 		<div class="panel-default">
-			<h1>Followed Artist</h1>
-			<!-- {#if downloadError} -->
-			<!-- 	<p class="panel-download-error">{downloadError}</p> -->
-			<!-- {/if} -->
-			<!-- {#if !downloadList} -->
-			<!-- 	<p class="panel-download-loading">Loading...</p> -->
-			<!-- {:else} -->
-			<!-- 	<div class="panel-download-items"> -->
-			<!-- 		{#each downloadList as download} -->
-			<!-- 			<div class="panel-download-item"> -->
-			<!-- 				<p>{download.Data.Title}</p> -->
-			<!-- 				<p>{download.Data.Artist.Name}</p> -->
-			<!-- 				<p>{download.Status}</p> -->
-			<!-- 				<button -->
-			<!-- 					onclick={() => { -->
-			<!-- 						deleteDownload(download.Id); -->
-			<!-- 					}} -->
-			<!-- 				> -->
-			<!-- 					<Trash /> -->
-			<!-- 				</button> -->
-			<!-- 			</div> -->
-			<!-- 		{/each} -->
-			<!-- 	</div> -->
-			<!-- {/if} -->
+			<Follow />
 		</div>
 	{:else if barState === "download"}
 		<div class="panel-default">

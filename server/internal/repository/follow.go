@@ -6,7 +6,7 @@ import (
 )
 
 func AddFollow(userId uint, api string, id string) error {
-	return database.DB.Create(models.Follow{
+	return database.DB.Create(&models.Follow{
 		UserId:   userId,
 		Api:      api,
 		ArtistId: id,
@@ -30,5 +30,5 @@ func DeleteFollow(id uint) error {
 }
 
 func DeleteFollowByUserID(userId uint, id uint) error {
-	return database.DB.Delete(&models.Follow{}, "user_id = ?", userId, "id = ?", id).Error
+	return database.DB.Delete(&models.Follow{}, "user_id = ? AND id = ?", userId, id).Error
 }

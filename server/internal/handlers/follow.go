@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
@@ -60,12 +61,37 @@ func ListFollows(c *gin.Context) {
 		return
 	}
 
-	follows, err := repository.ListFollowsByUserID(userId)
+	followsRaw, err := repository.ListFollowsByUserID(userId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"follows": follows})
+
+	follows := make([]models.FollowItem, len(followsRaw))
+	var wg sync.WaitGroup
+
+	for index, value := range followsRaw {
+		wg.Add(1)
+		go func(i int, follow models.Follow) {
+			defer wg.Done()
+
+			p, ok := plugins.Get(follow.Api)
+			if !ok {
+				return
+			}
+
+			artist, err := p.Artist(c.Request.Context(), follow.ArtistId)
+			if err != nil {
+				return
+			}
+
+			follows[i] = models.FollowItem{Id: follow.ID, Artist: artist}
+		}(index, value)
+	}
+
+	wg.Wait()
+
+	c.JSON(http.StatusOK, follows)
 }
 
 func DeleteFollow(c *gin.Context) {
