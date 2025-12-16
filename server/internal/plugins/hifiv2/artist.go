@@ -156,6 +156,7 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 
 	for i, item := range albums.Albums.Rows[0].Modules[0].PagedList.Items {
 		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl = utils.GetImageURL(item.CoverUrl, 640)
+		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].ReleaseDate = item.ReleaseDate[:10]
 	}
 
 	decoder, _ = mapstructure.NewDecoder(&mapstructure.DecoderConfig{

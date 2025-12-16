@@ -116,7 +116,7 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 
 	normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
 	normalizeAlbumData.Title = firstSong.Album.Title
-	normalizeAlbumData.ReleaseDate = firstSong.ReleaseDate
+	normalizeAlbumData.ReleaseDate = firstSong.ReleaseDate[:10]
 	normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
 
 	return normalizeAlbumData, nil

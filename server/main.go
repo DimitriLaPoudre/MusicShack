@@ -8,14 +8,14 @@ import (
 
 	_ "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/routes"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/autofetch"
 )
 
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	cron := utils.AutoFetch(ctx)
+	cron := autofetch.AutoFetch(ctx)
 	r := routes.SetupRouters()
 	defer r.Close()
 	if err := r.RunWithContext(ctx); err != nil && err != context.Canceled {
