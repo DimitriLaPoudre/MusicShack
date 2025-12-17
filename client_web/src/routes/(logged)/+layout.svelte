@@ -57,7 +57,7 @@
 
 	async function loadDownloads() {
 		try {
-			const res = await apiFetch(`/api/users/downloads/`);
+			const res = await apiFetch(`/users/downloads/`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch downloads");
@@ -76,10 +76,7 @@
 
 	async function retryDownload(id: string) {
 		try {
-			const res = await apiFetch(
-				`/api/users/downloads/retry/${id}`,
-				"POST",
-			);
+			const res = await apiFetch(`/users/downloads/retry/${id}`, "POST");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to retry download");
@@ -93,10 +90,7 @@
 
 	async function cancelDownload(id: string) {
 		try {
-			const res = await apiFetch(
-				`/api/users/downloads/cancel/${id}`,
-				"POST",
-			);
+			const res = await apiFetch(`/users/downloads/cancel/${id}`, "POST");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to cancel download");
@@ -110,7 +104,7 @@
 
 	async function deleteDownload(id: string) {
 		try {
-			const res = await apiFetch(`/api/users/downloads/${id}`, "DELETE");
+			const res = await apiFetch(`/users/downloads/${id}`, "DELETE");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to delete download");
@@ -159,7 +153,7 @@
 
 	async function loadInstance() {
 		try {
-			const res = await apiFetch(`/api/instances/`);
+			const res = await apiFetch(`/instances/`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch instances");
@@ -190,7 +184,7 @@
 				);
 			}
 
-			const res = await apiFetch(`/api/instances/`, "POST", {
+			const res = await apiFetch(`/instances/`, "POST", {
 				api: settingsApiInput,
 				url: settingsURLInput,
 			});
@@ -213,7 +207,7 @@
 
 	async function deleteInstance(id: number) {
 		try {
-			const res = await apiFetch(`/api/instances/${id}`, "DELETE");
+			const res = await apiFetch(`/instances/${id}`, "DELETE");
 			const data = await res.json();
 			if (!res.ok) {
 				throw new Error(
@@ -229,7 +223,7 @@
 	}
 
 	async function Logout() {
-		await apiFetch(`/api/logout`, "POST");
+		await apiFetch(`/logout`, "POST");
 		goto("/login");
 	}
 </script>

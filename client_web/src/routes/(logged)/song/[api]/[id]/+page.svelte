@@ -11,7 +11,7 @@
 	afterNavigate(async () => {
 		try {
 			const res = await apiFetch(
-				`/api/song/${page.params.api}/${page.params.id}`,
+				`/song/${page.params.api}/${page.params.id}`,
 			);
 			song = await res.json();
 			if (!res.ok) {

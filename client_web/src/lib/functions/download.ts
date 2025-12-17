@@ -5,7 +5,7 @@ export async function downloadSong(api: string, id: string) {
 	let error: string | null = null
 	try {
 		const res = await apiFetch(
-			`/api/users/downloads/song/${api}/${id}`,
+			`/users/downloads/song/${api}/${id}`,
 			"POST"
 		);
 		const data = await res.json();
@@ -25,7 +25,7 @@ export async function downloadAlbum(api: string, id: string) {
 	let error: string | null = null
 	try {
 		const res = await apiFetch(
-			`/api/users/downloads/album/${api}/${id}`,
+			`/users/downloads/album/${api}/${id}`,
 			"POST"
 		);
 		const data = await res.json();
@@ -46,7 +46,7 @@ export async function downloadArtist(api: string, id: string) {
 	let error: string | null = null
 	try {
 		const res = await apiFetch(
-			`/api/users/downloads/artist/${api}/${id}`,
+			`/users/downloads/artist/${api}/${id}`,
 			"POST"
 		);
 		const data = await res.json();

@@ -13,7 +13,7 @@
 	afterNavigate(async () => {
 		try {
 			const res = await apiFetch(
-				`/api/artists/${page.params.api}/${page.params.id}`,
+				`/artists/${page.params.api}/${page.params.id}`,
 			);
 			artist = await res.json();
 			if (!res.ok) {

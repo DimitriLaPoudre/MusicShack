@@ -6,7 +6,7 @@
 
 	afterNavigate(async () => {
 		try {
-			await apiFetch("/api/me");
+			await apiFetch("/me/");
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load dashboard";
 		}

@@ -18,7 +18,7 @@
 			if (!searchData) {
 				throw new Error("No Search");
 			}
-			const res = await apiFetch(`/api/search?q=${searchData}`);
+			const res = await apiFetch(`/search?q=${searchData}`);
 			result = await res.json();
 			if (!res.ok) {
 				throw new Error(result.error || "Failed to fetch search");
