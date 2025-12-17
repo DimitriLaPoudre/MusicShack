@@ -1,14 +1,18 @@
 package routes
 
 import (
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/handlers"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/middlewares"
 	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
+	"github.com/gin-contrib/graceful"
 )
 
-func SetupRouters() *gin.Engine {
-	r := gin.Default()
+func SetupRouters() *graceful.Graceful {
+	r, err := graceful.Default(graceful.WithAddr(":" + config.URL.Port()))
+	if err != nil {
+		panic(err)
+	}
 	r.Use(cors.Default())
 
 	r.GET("/api", handlers.Info)
@@ -43,7 +47,7 @@ func SetupRouters() *gin.Engine {
 		users.DELETE("/:id", handlers.DeleteUser)
 	}
 
-	downloads := users.Group("/api/users/downloads")
+	downloads := r.Group("/api/users/downloads")
 	{
 		downloads.Use(middlewares.Logged())
 		downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
@@ -53,6 +57,14 @@ func SetupRouters() *gin.Engine {
 		downloads.DELETE("/:id", handlers.DeleteDownload)
 		downloads.POST("/retry/:id", handlers.RetryDownload)
 		downloads.POST("/cancel/:id", handlers.CancelDownload)
+	}
+
+	follows := r.Group("/api/follows")
+	{
+		follows.Use(middlewares.Logged())
+		follows.POST("/", handlers.AddFollow)
+		follows.GET("/", handlers.ListFollows)
+		follows.DELETE("/:id", handlers.DeleteFollow)
 	}
 
 	r.GET("/api/song/:api/:id", middlewares.Logged(), handlers.GetSong)

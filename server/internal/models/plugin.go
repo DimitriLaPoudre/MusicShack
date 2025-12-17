@@ -93,15 +93,16 @@ type ArtistData struct {
 	Id         string
 	Name       string
 	PictureUrl string
-	Albums     []struct {
-		Id       string
-		Title    string
-		CoverUrl string
-		Artists  []struct {
-			Id   string
-			Name string
-		}
-	}
+	Albums     []AlbumData
+	// Albums     []struct {
+	// 	Id       string
+	// 	Title    string
+	// 	CoverUrl string
+	// 	Artists  []struct {
+	// 		Id   string
+	// 		Name string
+	// 	}
+	// }
 	Ep []struct {
 		Id       string
 		Title    string

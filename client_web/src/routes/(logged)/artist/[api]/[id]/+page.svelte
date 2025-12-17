@@ -3,6 +3,7 @@
 	import { page } from "$app/state";
 	import { Download } from "lucide-svelte";
 	import { PUBLIC_API_URL } from "$env/static/public";
+	import { addFollow } from "$lib/functions/follow";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -114,7 +115,11 @@
 		</div>
 		<div class="bottom">
 			<div class="bottom-data">
-				<button onclick={() => {}}>Favorite</button>
+				<button
+					onclick={() => {
+						addFollow(page.params.api!, artist.Id);
+					}}>Favorite</button
+				>
 				<button
 					onclick={() => {
 						downloadArtist(page.params.api!, artist.Id);
@@ -139,7 +144,7 @@
 						>
 							<img src={album.CoverUrl} alt={album.Title} />
 							<p>{album.Title}</p>
-							<div class="list">
+							<nav>
 								{#each album.Artists as artist}
 									<a
 										href="/artist/{page.params
@@ -148,7 +153,7 @@
 										{artist.Name}
 									</a>
 								{/each}
-							</div>
+							</nav>
 						</button>
 						<button
 							class="download"
@@ -285,7 +290,7 @@
 				overflow: hidden;
 				border-bottom: none;
 
-				.cover {
+				img {
 					width: 160px;
 					height: 160px;
 				}
@@ -301,34 +306,5 @@
 				border-top: none;
 			}
 		}
-		/* .item { */
-		/* 	display: flex; */
-		/* 	flex-direction: column; */
-		/* 	white-space: nowrap; */
-		/* 	overflow: hidden; */
-		/* 	text-overflow: ellipsis; */
-		/* 	width: 160px; */
-		/* 	height: 250px; */
-		/* 	gap: 5px; */
-		/* 	img { */
-		/* 		max-width: 100%; */
-		/* 		max-height: 100%; */
-		/* 	} */
-		/* 	p { */
-		/* 		margin: 0; */
-		/* 	} */
-		/* 	.list { */
-		/* 		margin: 0; */
-		/* 		display: flex; */
-		/* 		flex-direction: column; */
-		/* 		white-space: nowrap; */
-		/* 		width: auto; */
-		/* 		overflow: hidden; */
-		/* 		text-overflow: ellipsis; */
-		/* 		a { */
-		/* 			margin: 0; */
-		/* 		} */
-		/* 	} */
-		/* } */
 	}
 </style>
