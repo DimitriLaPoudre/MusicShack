@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/apiFetch";
 	import { downloadSong } from "$lib/functions/download";
@@ -36,7 +36,7 @@
 	<p class="loading">Loading...</p>
 {:else if error}
 	<div class="error">
-		<h2>Error Loading Song</h2>
+		<h2>Error loading Song</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>

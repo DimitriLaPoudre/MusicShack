@@ -15,7 +15,7 @@
 
 {#if error}
 	<div class="error">
-		<h2>Error</h2>
+		<h2>Error loading Dashboard</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>

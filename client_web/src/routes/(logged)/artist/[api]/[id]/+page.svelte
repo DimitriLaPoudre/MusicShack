@@ -35,7 +35,7 @@
 	<p class="loading">Loading...</p>
 {:else if error}
 	<div class="error">
-		<h2>Error Loading Song</h2>
+		<h2>Error loading Artist</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
