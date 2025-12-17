@@ -1,0 +1,80 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  format-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - name: Check Go formatting
+        run: |
+          go fmt ./server/...
+          go vet ./server/...
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        working-directory: client_web
+        run: npm ci
+      - name: Run Prettier
+        working-directory: client_web
+        run: npx prettier --check .
+      - name: Run ESLint
+        working-directory: client_web
+        run: npx eslint .
+
+  build:
+    runs-on: ubuntu-latest
+    needs: format-and-lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+      - name: Build Go backend
+        working-directory: server
+        run: go build ./...
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install frontend dependencies
+        working-directory: client_web
+        run: npm ci
+      - name: Build frontend
+        working-directory: client_web
+        run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push server image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/musicshack-server:latest ./server
+          docker push ghcr.io/${{ github.repository_owner }}/musicshack-server:latest
+      - name: Build and push client_web image
+        run: |
+          docker build -t ghcr.io/${{ github.repository_owner }}/musicshack-client:latest ./client_web
+          docker push ghcr.io/${{ github.repository_owner }}/musicshack-client:latest
