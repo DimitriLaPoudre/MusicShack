@@ -1,18 +1,12 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
-	import { PUBLIC_API_URL } from "$env/static/public";
+	import { afterNavigate } from "$app/navigation";
+	import { apiFetch } from "$lib/functions/apiFetch";
 
 	let error = $state<string | null>(null);
 
 	afterNavigate(async () => {
 		try {
-			const res = await fetch(`${PUBLIC_API_URL}/api/me`, {
-				credentials: "include",
-			});
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
+			await apiFetch("/api/me");
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load dashboard";
 		}
@@ -21,7 +15,7 @@
 
 {#if error}
 	<div class="error">
-		<h2>Error Loading Song</h2>
+		<h2>Error</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>

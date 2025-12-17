@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { PUBLIC_API_URL } from "$env/static/public";
+	import { apiFetch } from "$lib/functions/apiFetch";
+	import { downloadSong } from "$lib/functions/download";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -9,17 +10,9 @@
 
 	afterNavigate(async () => {
 		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/song/${page.params.api}/${page.params.id}`,
-				{
-					credentials: "include",
-				},
+			const res = await apiFetch(
+				`/api/song/${page.params.api}/${page.params.id}`,
 			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
 			song = await res.json();
 			if (!res.ok) {
 				throw new Error(song.error || "Failed to fetch song");
@@ -31,30 +24,6 @@
 			isLoading = false;
 		}
 	});
-
-	async function download() {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/song/${page.params.api}/${page.params.id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download song");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error ? e.message : "Failed to load download song";
-		}
-	}
 </script>
 
 <svelte:head>
@@ -95,7 +64,14 @@
 				</div>
 			</div>
 		</div>
-		<button class="download" onclick={download}>Download Song</button>
+		<button
+			class="download"
+			onclick={async () => {
+				error = await downloadSong(page.params.api!, song.Id);
+			}}
+		>
+			Download Song
+		</button>
 	</div>
 {/if}
 

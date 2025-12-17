@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
+	import { apiFetch } from "$lib/functions/apiFetch";
+	import { downloadAlbum, downloadSong } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
-	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -17,17 +18,7 @@
 			if (!searchData) {
 				throw new Error("No Search");
 			}
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/search?q=${searchData}`,
-				{
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
+			const res = await apiFetch(`/api/search?q=${searchData}`);
 			result = await res.json();
 			if (!res.ok) {
 				throw new Error(result.error || "Failed to fetch search");
@@ -39,82 +30,6 @@
 			isLoading = false;
 		}
 	});
-
-	async function downloadSong(api: string, id: string) {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/song/${api}/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download song");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error ? e.message : "Failed to load download song";
-		}
-	}
-
-	async function downloadAlbum(api: string, id: string) {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/album/${api}/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download album");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error
-					? e.message
-					: "Failed to load download album";
-		}
-	}
-
-	async function downloadArtist(api: string, id: string) {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/artist/${api}/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download artist");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error
-					? e.message
-					: "Failed to load download artist";
-		}
-	}
 </script>
 
 <svelte:head>
@@ -188,7 +103,9 @@
 					</button>
 					<button
 						class="download"
-						onclick={() => downloadSong(api, song.Id)}
+						onclick={async () => {
+							error = await downloadSong(api, song.Id);
+						}}
 					>
 						<Download />
 					</button>
@@ -226,7 +143,9 @@
 					</button>
 					<button
 						class="download"
-						onclick={() => downloadAlbum(api, album.Id)}
+						onclick={async () => {
+							error = await downloadAlbum(api, album.Id);
+						}}
 					>
 						<Download />
 					</button>
