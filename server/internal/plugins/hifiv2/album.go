@@ -73,6 +73,7 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 	normalizeAlbumData.Limit = data.Data.Limit
 	normalizeAlbumData.Offset = data.Data.Offset
 	normalizeAlbumData.NumberSongs = data.Data.TotalNumberOfItems
+	normalizeAlbumData.ReleaseDate = ""
 	for _, wrappedSong := range data.Data.Items {
 		dirtySong := wrappedSong.Item
 		var artists []struct {
@@ -107,6 +108,11 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 		}
 		normalizeAlbumData.Duration += song.Duration
 		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
+
+		tmpReleaseDate := dirtySong.ReleaseDate[:10]
+		if normalizeAlbumData.ReleaseDate < tmpReleaseDate {
+			normalizeAlbumData.ReleaseDate = tmpReleaseDate
+		}
 	}
 	if len(normalizeAlbumData.Songs) == 0 {
 		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %v: %w", normalizeAlbumData, errors.New("songs not found"))
@@ -116,7 +122,6 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 
 	normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
 	normalizeAlbumData.Title = firstSong.Album.Title
-	normalizeAlbumData.ReleaseDate = firstSong.ReleaseDate[:10]
 	normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
 
 	return normalizeAlbumData, nil
