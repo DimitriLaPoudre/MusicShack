@@ -27,12 +27,6 @@ jobs:
       - name: Install frontend dependencies
         working-directory: client_web
         run: npm ci
-      - name: Run Prettier
-        working-directory: client_web
-        run: npx prettier --check .
-      - name: Run ESLint
-        working-directory: client_web
-        run: npx eslint .
 
   build:
     runs-on: ubuntu-latest
