@@ -6,19 +6,47 @@ services:
     ports:
       - "5173:5173"
     environment:
-      PUBLIC_BACKEND_URL: ${BACKEND_URL}
+      PUBLIC_API_URL: ${BACKEND_URL}
       PORT: 5173
 
   server:
     build: ./server
+    depends_on:
+      database:
+        condition: service_healthy
     restart: unless-stopped
     user: "1000:1000"
+    networks:
+      - backend_musicshack
     ports:
       - "8080:8080"
     volumes:
-      - ./server/db:/app/db
       - ./users:/users
     environment:
+      DOWNLOAD_FOLDER: ${DOWNLOAD_FOLDER}
       URL: ${BACKEND_URL}
       JWT_SECRET: ${JWT_SECRET}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
 
+  database:
+    image: postgres:16
+    networks:
+      - backend_musicshack
+    volumes:
+      - ./db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+networks:
+  backend_musicshack:
+    driver: bridge
