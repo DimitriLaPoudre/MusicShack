@@ -67,13 +67,8 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push server image
+      - name: Build and push musicshack image
         run: |
           REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/${REPO_OWNER_LC}/musicshack-server:latest ./server
-          docker push ghcr.io/${REPO_OWNER_LC}/musicshack-server:latest
-      - name: Build and push client_web image
-        run: |
-          REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/${REPO_OWNER_LC}/musicshack-client:latest ./client_web
-          docker push ghcr.io/${REPO_OWNER_LC}/musicshack-client:latest
+          docker build -t ghcr.io/${REPO_OWNER_LC}/musicshack:latest .
+          docker push ghcr.io/${REPO_OWNER_LC}/musicshack:latest
