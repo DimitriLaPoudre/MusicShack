@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 	import "../../app.css";
 	import {
 		CircleAlert,
@@ -40,6 +40,10 @@
 	let settingsURLInput = $state<null | string>(null);
 	let settingsInstanceError = $state<null | string>(null);
 	let settingsInstanceList = $state<null | any>(null);
+
+	afterNavigate(() => {
+		barState = null;
+	});
 
 	async function searchFunction() {
 		const encodedSearchData = encodeURI(searchInput);

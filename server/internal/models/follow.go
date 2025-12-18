@@ -14,6 +14,8 @@ type Follow struct {
 }
 
 type FollowItem struct {
-	Id     uint
-	Artist ArtistData
+	Id       uint
+	Api      string
+	ArtistId string
+	Artist   ArtistData
 }

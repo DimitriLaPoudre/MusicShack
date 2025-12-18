@@ -4,6 +4,8 @@ import (
 	"log"
 	"net/url"
 	"os"
+
+	"github.com/joho/godotenv"
 )
 
 var PORT string
@@ -12,6 +14,8 @@ var JWT_SECRET []byte
 var DOWNLOAD_FOLDER string
 
 func init() {
+	godotenv.Load("../.env")
+
 	urlRaw := os.Getenv("URL")
 	if urlRaw == "" {
 		log.Fatal("URL is missing")

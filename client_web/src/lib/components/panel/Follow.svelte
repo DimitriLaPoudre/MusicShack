@@ -26,8 +26,13 @@
 		<div class="list">
 			{#each list as item}
 				<div class="artist">
-					<img src={item.Artist.PictureUrl} alt={item.Artist.Name} />
-					<p>{item.Artist.Name}</p>
+					<a class="data" href="/artist/{item.Api}/{item.ArtistId}">
+						<img
+							src={item.Artist.PictureUrl}
+							alt={item.Artist.Name}
+						/>
+						<p>{item.Artist.Name}</p>
+					</a>
 					<button
 						onclick={async () => {
 							await removeFollow(item.Id);
@@ -59,13 +64,32 @@
 	.list {
 		.artist {
 			display: grid;
-			grid-template-columns: auto 1fr auto;
-			align-items: center;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
 
-			img {
-				width: 64px;
-				height: auto;
-				aspect-ratio: 1/1;
+			.data {
+				display: grid;
+				grid-template-columns: auto 1fr;
+				align-items: stretch;
+				gap: 8px;
+
+				img {
+					width: 58px;
+					height: auto;
+					aspect-ratio: 1/1;
+				}
+
+				p {
+					padding-left: 8px;
+					display: flex;
+					align-items: center;
+				}
+			}
+			.data:hover {
+				p {
+					outline: 1px solid #ffffff;
+					outline-offset: -1px;
+				}
 			}
 
 			button {

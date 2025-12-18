@@ -24,8 +24,8 @@ services:
 
   database:
     image: postgres:16
-    networks:
-      - musicshack
+    # networks:
+    #   - musicshack
     ports:
       - "5432:5432"
     volumes:
