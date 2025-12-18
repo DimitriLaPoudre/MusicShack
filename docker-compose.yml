@@ -1,30 +1,21 @@
 services:
-  client_web:
-    build: ./client_web
-    restart: unless-stopped
-    user: "1000:1000"
-    ports:
-      - "5173:5173"
-    environment:
-      PUBLIC_API_URL: ${BACKEND_URL}
-      PORT: 5173
-
-  server:
-    build: ./server
+  musicshack:
+    build: .
     depends_on:
       database:
         condition: service_healthy
     restart: unless-stopped
     user: "1000:1000"
     networks:
-      - backend_musicshack
+      - musicshack
     ports:
       - "8080:8080"
     volumes:
       - ./users:/users
     environment:
-      DOWNLOAD_FOLDER: ${DOWNLOAD_FOLDER}
-      URL: ${BACKEND_URL}
+      URL: http://localhost
+      PORT: 8080
+      DOWNLOAD: /users
       JWT_SECRET: ${JWT_SECRET}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -34,7 +25,9 @@ services:
   database:
     image: postgres:16
     networks:
-      - backend_musicshack
+      - musicshack
+    ports:
+      - "5432:5432"
     volumes:
       - ./db:/var/lib/postgresql/data
     environment:
@@ -48,5 +41,5 @@ services:
       retries: 5
 
 networks:
-  backend_musicshack:
+  musicshack:
     driver: bridge

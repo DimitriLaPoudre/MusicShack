@@ -8,7 +8,7 @@
 	let error: string = "";
 
 	afterNavigate(async () => {
-		const res = await fetch(`${env.PUBLIC_API_URL}/api/me`, {
+		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
 
@@ -24,7 +24,7 @@
 			return;
 		}
 		try {
-			const res = await fetch(`${env.PUBLIC_API_URL}/api/signup`, {
+			const res = await fetch("/api/signup", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),

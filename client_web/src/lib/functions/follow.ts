@@ -4,7 +4,7 @@ export async function loadFollows() {
 	let list = null
 	let error = null
 	try {
-		const res = await apiFetch("/follows/");
+		const res = await apiFetch("/follows");
 		const body = await res.json();
 		if (!res.ok) {
 			throw new Error(body.error || "Failed to fetch follows");
@@ -21,7 +21,7 @@ export async function loadFollows() {
 export async function addFollow(api: string, id: string) {
 	let error = null
 	try {
-		const res = await apiFetch("/follows/", "POST", {
+		const res = await apiFetch("/follows", "POST", {
 			api, id
 		});
 		const body = await res.json();

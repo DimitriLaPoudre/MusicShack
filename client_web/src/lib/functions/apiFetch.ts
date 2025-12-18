@@ -1,12 +1,11 @@
 import { goto } from "$app/navigation";
-import { env } from "$env/dynamic/public";
 
 export async function apiFetch(
 	path: string,
 	method: string = "GET",
 	body?: any,
 ): Promise<Response> {
-	const res = await fetch(`${env.PUBLIC_API_URL}/api` + path, {
+	const res = await fetch("/api" + path, {
 		method: method,
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },

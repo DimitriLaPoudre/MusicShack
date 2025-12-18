@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { goto, onNavigate } from "$app/navigation";
-	import { env } from "$env/dynamic/public";
 
 	let username: string = "";
 	let password: string = "";
 	let error: string = "";
 
 	onNavigate(async () => {
-		const res = await fetch(`${env.PUBLIC_API_URL}/api/me`, {
+		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
 
@@ -19,7 +18,7 @@
 
 	async function handleLogin() {
 		try {
-			const res = await fetch(`${env.PUBLIC_API_URL}/api/login`, {
+			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),

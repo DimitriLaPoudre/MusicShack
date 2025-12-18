@@ -57,7 +57,7 @@
 
 	async function loadDownloads() {
 		try {
-			const res = await apiFetch(`/users/downloads/`);
+			const res = await apiFetch(`/users/downloads`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch downloads");
@@ -118,7 +118,7 @@
 
 	async function getUser() {
 		try {
-			const res = await apiFetch("/me/");
+			const res = await apiFetch("/me");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch me");
@@ -153,7 +153,7 @@
 
 	async function loadInstance() {
 		try {
-			const res = await apiFetch(`/instances/`);
+			const res = await apiFetch(`/instances`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch instances");
@@ -184,7 +184,7 @@
 				);
 			}
 
-			const res = await apiFetch(`/instances/`, "POST", {
+			const res = await apiFetch(`/instances`, "POST", {
 				api: settingsApiInput,
 				url: settingsURLInput,
 			});
