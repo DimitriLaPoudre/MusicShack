@@ -24,7 +24,8 @@ func init() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		log.Fatal("PORT is missing")
+		log.Println("PORT is missing - defaulting to 8080")
+		port = "8080"
 	}
 	PORT = port
 
