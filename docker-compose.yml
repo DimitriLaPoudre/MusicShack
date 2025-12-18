@@ -15,7 +15,7 @@ services:
     environment:
       URL: http://localhost
       PORT: 8080
-      DOWNLOAD: /users
+      DOWNLOAD: /downloads
       JWT_SECRET: ${JWT_SECRET}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
