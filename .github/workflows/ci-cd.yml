@@ -67,8 +67,10 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build and push musicshack image
+      - name: Build and push musicshack image (tag & latest)
         run: |
           REPO_OWNER_LC=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ghcr.io/${REPO_OWNER_LC}/musicshack:latest .
+          VERSION_TAG=${GITHUB_REF##*/}
+          docker build -t ghcr.io/${REPO_OWNER_LC}/musicshack:${VERSION_TAG} -t ghcr.io/${REPO_OWNER_LC}/musicshack:latest .
+          docker push ghcr.io/${REPO_OWNER_LC}/musicshack:${VERSION_TAG}
           docker push ghcr.io/${REPO_OWNER_LC}/musicshack:latest
