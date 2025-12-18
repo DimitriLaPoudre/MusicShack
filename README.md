@@ -25,6 +25,8 @@ Provide a private, easy-to-run solution to manage your personal music library. M
 
 Use Docker Compose to run MusicShack quickly and reliably. The repository includes a `docker-compose.yml` sample. For production, store secrets in a `.env` file (not in version control).
 
+**Use the Docker image from Github Container Repository (ghcr.io/dimitrilapoudre/musicshack:latest) for better and easier update handling.**
+
 1. Clone the repository:
 
 ```bash
