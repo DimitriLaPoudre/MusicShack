@@ -1,13 +1,12 @@
 <script lang="ts">
 	import { goto, onNavigate } from "$app/navigation";
-	import { PUBLIC_API_URL } from "$env/static/public";
 
 	let username: string = "";
 	let password: string = "";
 	let error: string = "";
 
 	onNavigate(async () => {
-		const res = await fetch(`${PUBLIC_API_URL}/api/me`, {
+		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
 
@@ -19,7 +18,7 @@
 
 	async function handleLogin() {
 		try {
-			const res = await fetch(`${PUBLIC_API_URL}/api/login`, {
+			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),

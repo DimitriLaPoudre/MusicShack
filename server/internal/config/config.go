@@ -6,19 +6,28 @@ import (
 	"os"
 )
 
+var PORT string
 var URL url.URL
 var JWT_SECRET []byte
 var DOWNLOAD_FOLDER string
 
 func init() {
-	parsed, err := url.Parse(os.Getenv("URL"))
+	urlRaw := os.Getenv("URL")
+	if urlRaw == "" {
+		log.Fatal("URL is missing")
+	}
+	parsed, err := url.Parse(urlRaw)
 	if err != nil {
 		log.Fatal("URL invalid: ", err)
 	}
-	if parsed.Port() == "" {
-		log.Fatal("URL port invalid")
-	}
 	URL = *parsed
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Println("PORT is missing - defaulting to 8080")
+		port = "8080"
+	}
+	PORT = port
 
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
@@ -26,16 +35,16 @@ func init() {
 	}
 	JWT_SECRET = []byte(secret)
 
-	folder := os.Getenv("DOWNLOAD_FOLDER")
+	folder := os.Getenv("DOWNLOAD")
 	if folder == "" {
-		log.Fatal("DOWNLOAD_FOLDER is missing")
+		log.Fatal("DOWNLOAD is missing")
 	}
 	info, err := os.Stat(folder)
 	if err != nil {
 		log.Fatal("DOWNLOAD_FOLDER: ", err)
 	}
 	if !info.IsDir() {
-		log.Fatal("DOWNLOAD_FOLDER is not a directory")
+		log.Fatal("DOWNLOAD is not a directory")
 	}
 	DOWNLOAD_FOLDER = folder
 }

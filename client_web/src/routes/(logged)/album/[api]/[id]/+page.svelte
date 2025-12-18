@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Download } from "lucide-svelte";
-	import { afterNavigate, goto } from "$app/navigation";
+	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
-	import { PUBLIC_API_URL } from "$env/static/public";
+	import { apiFetch } from "$lib/functions/apiFetch";
+	import { downloadAlbum, downloadSong } from "$lib/functions/download";
 
 	let isLoading = $state(true);
 	let error = $state<string | null>(null);
@@ -10,78 +11,19 @@
 
 	afterNavigate(async () => {
 		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/album/${page.params.api}/${page.params.id}`,
-				{
-					credentials: "include",
-				},
+			const res = await apiFetch(
+				`/album/${page.params.api}/${page.params.id}`,
 			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
 			album = await res.json();
 			if (!res.ok) {
 				throw new Error(album.error || "Failed to fetch album");
 			}
 			album.Duration = `${Math.floor(album.Duration / 60)}:${(album.Duration % 60).toString().padStart(2, "0")}`;
-			isLoading = false;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load album";
-			isLoading = false;
 		}
+		isLoading = false;
 	});
-
-	async function downloadSong(api: string, id: string) {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/song/${api}/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download song");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error ? e.message : "Failed to load download song";
-		}
-	}
-
-	async function downloadAlbum(api: string, id: string) {
-		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/album/${api}/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			const data = await res.json();
-			if (!res.ok) {
-				throw new Error(data.error || "Failed to download album");
-			}
-		} catch (e) {
-			error =
-				e instanceof Error
-					? e.message
-					: "Failed to load download album";
-		}
-	}
 </script>
 
 <svelte:head>
@@ -94,7 +36,7 @@
 	<p class="loading">Loading...</p>
 {:else if error}
 	<div class="error">
-		<h2>Error Loading Song</h2>
+		<h2>Error loading Album</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
@@ -121,10 +63,12 @@
 		</div>
 		<button
 			class="download"
-			onclick={() => {
-				downloadAlbum(page.params.api!, album.Id);
-			}}>Download Album</button
+			onclick={async () => {
+				error = await downloadAlbum(page.params.api!, album.Id);
+			}}
 		>
+			Download Album
+		</button>
 	</div>
 
 	<!-- page body -->
@@ -146,8 +90,8 @@
 					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
 				</p>
 				<button
-					onclick={() => {
-						downloadSong(page.params.api!, song.Id);
+					onclick={async () => {
+						error = await downloadSong(page.params.api!, song.Id);
 					}}
 				>
 					<Download />

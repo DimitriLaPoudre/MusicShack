@@ -17,7 +17,6 @@
 		SettingsIcon,
 		Trash,
 	} from "lucide-svelte";
-	import { PUBLIC_API_URL } from "$env/static/public";
 	import Follow from "$lib/components/panel/Follow.svelte";
 	import { apiFetch } from "$lib/functions/apiFetch";
 
@@ -58,15 +57,7 @@
 
 	async function loadDownloads() {
 		try {
-			const res = await fetch(`${PUBLIC_API_URL}/api/users/downloads/`, {
-				credentials: "include",
-			});
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-
+			const res = await apiFetch(`/users/downloads`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch downloads");
@@ -85,20 +76,10 @@
 
 	async function retryDownload(id: string) {
 		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/retry/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			if (res.status === 403) {
-				return;
+			const res = await apiFetch(`/users/downloads/retry/${id}`, "POST");
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to retry download");
 			}
 		} catch (e) {
 			downloadError =
@@ -109,20 +90,10 @@
 
 	async function cancelDownload(id: string) {
 		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/cancel/${id}`,
-				{
-					method: "POST",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			if (res.status === 403) {
-				return;
+			const res = await apiFetch(`/users/downloads/cancel/${id}`, "POST");
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to cancel download");
 			}
 		} catch (e) {
 			downloadError =
@@ -133,20 +104,10 @@
 
 	async function deleteDownload(id: string) {
 		try {
-			const res = await fetch(
-				`${PUBLIC_API_URL}/api/users/downloads/${id}`,
-				{
-					method: "DELETE",
-					credentials: "include",
-				},
-			);
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-			if (res.status === 403) {
-				return;
+			const res = await apiFetch(`/users/downloads/${id}`, "DELETE");
+			const body = await res.json();
+			if (!res.ok) {
+				throw new Error(body.error || "Failed to delete download");
 			}
 		} catch (e) {
 			downloadError =
@@ -157,7 +118,7 @@
 
 	async function getUser() {
 		try {
-			const res = await apiFetch("/me/");
+			const res = await apiFetch("/me");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch me");
@@ -192,15 +153,7 @@
 
 	async function loadInstance() {
 		try {
-			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
-				credentials: "include",
-			});
-
-			if (res.status === 401) {
-				goto("/login");
-				return;
-			}
-
+			const res = await apiFetch(`/instances`);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch instances");
@@ -230,21 +183,16 @@
 					settingsURLInput.length - 1,
 				);
 			}
-			const res = await fetch(`${PUBLIC_API_URL}/api/instances/`, {
-				method: "POST",
-				credentials: "include",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					api: settingsApiInput,
-					url: settingsURLInput,
-				}),
-			});
 
+			const res = await apiFetch(`/instances`, "POST", {
+				api: settingsApiInput,
+				url: settingsURLInput,
+			});
 			const data = await res.json();
 			if (!res.ok) {
-				settingsInstanceError =
-					data.error || "error while trying to add Instance";
-				return;
+				throw new Error(
+					data.error || "error while trying to delete Instance",
+				);
 			}
 
 			settingsApiInput = "";
@@ -252,35 +200,30 @@
 		} catch (e) {
 			settingsInstanceError =
 				e instanceof Error ? e.message : "Failed to add instance";
+			return;
 		}
 		loadInstance();
 	}
 
 	async function deleteInstance(id: number) {
 		try {
-			const res = await fetch(`${PUBLIC_API_URL}/api/instances/${id}`, {
-				method: "DELETE",
-				credentials: "include",
-			});
-
+			const res = await apiFetch(`/instances/${id}`, "DELETE");
 			const data = await res.json();
 			if (!res.ok) {
-				settingsInstanceError =
-					data.error || "error while trying to delete Instance";
-				return;
+				throw new Error(
+					data.error || "error while trying to delete Instance",
+				);
 			}
 		} catch (e) {
 			settingsInstanceError =
 				e instanceof Error ? e.message : "Failed to delete instance";
+			return;
 		}
 		loadInstance();
 	}
 
 	async function Logout() {
-		await fetch(`${PUBLIC_API_URL}/api/logout`, {
-			method: "POST",
-			credentials: "include",
-		});
+		await apiFetch(`/logout`, "POST");
 		goto("/login");
 	}
 </script>
