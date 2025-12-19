@@ -7,6 +7,10 @@
 	let error = $state<null | string>(null);
 
 	onMount(() => {
+		async function firstInterval() {
+			({ list, error } = await loadFollows());
+		}
+		firstInterval();
 		const interval = setInterval(async () => {
 			({ list, error } = await loadFollows());
 		}, 500);

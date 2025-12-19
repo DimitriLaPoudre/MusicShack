@@ -1,4 +1,3 @@
-import { goto } from "$app/navigation";
 import { apiFetch } from "./apiFetch";
 
 export async function downloadSong(api: string, id: string) {

@@ -2,34 +2,21 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import "../../app.css";
 	import {
-		CircleAlert,
-		CircleCheck,
-		CircleDashed,
-		CircleX,
-		Disc,
 		DownloadIcon,
 		Heart,
-		LoaderCircleIcon,
 		Pencil,
 		Plus,
-		RotateCcw,
-		Search,
+		Search as SearchIcon,
 		SettingsIcon,
 		Trash,
 	} from "lucide-svelte";
 	import Follow from "$lib/components/panel/Follow.svelte";
 	import { apiFetch } from "$lib/functions/apiFetch";
+	import Downloads from "$lib/components/panel/Downloads.svelte";
+	import Search from "$lib/components/panel/Search.svelte";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
-
-	// panel-search variable
-	let searchInput: string = "";
-
-	// panel-download variable
-	let downloadList = $state<null | any>(null);
-	let downloadError = $state<null | string>(null);
-	let downloadManageHover = $state<null | number>(null);
 
 	// panel-settingsvariable
 	let settingsUserError = $state<null | string>(null);
@@ -44,81 +31,6 @@
 	afterNavigate(() => {
 		barState = null;
 	});
-
-	async function searchFunction() {
-		const encodedSearchData = encodeURI(searchInput);
-		window.location.assign(`/search?q=${encodedSearchData}`);
-	}
-
-	$effect(() => {
-		if (barState === "download") {
-			const interval = setInterval(() => {
-				loadDownloads();
-			}, 500);
-			return () => clearInterval(interval);
-		}
-	});
-
-	async function loadDownloads() {
-		try {
-			const res = await apiFetch(`/users/downloads`);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to fetch downloads");
-			}
-			downloadList = body.tasks
-				.slice()
-				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
-			downloadError = null;
-		} catch (e) {
-			downloadError =
-				e instanceof Error
-					? e.message
-					: "Failed to reload download queue";
-		}
-	}
-
-	async function retryDownload(id: string) {
-		try {
-			const res = await apiFetch(`/users/downloads/retry/${id}`, "POST");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to retry download");
-			}
-		} catch (e) {
-			downloadError =
-				e instanceof Error ? e.message : "Failed to retry download";
-		}
-		loadDownloads();
-	}
-
-	async function cancelDownload(id: string) {
-		try {
-			const res = await apiFetch(`/users/downloads/cancel/${id}`, "POST");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to cancel download");
-			}
-		} catch (e) {
-			downloadError =
-				e instanceof Error ? e.message : "Failed to cancel download";
-		}
-		loadDownloads();
-	}
-
-	async function deleteDownload(id: string) {
-		try {
-			const res = await apiFetch(`/users/downloads/${id}`, "DELETE");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to delete download");
-			}
-		} catch (e) {
-			downloadError =
-				e instanceof Error ? e.message : "Failed to delete download";
-		}
-		loadDownloads();
-	}
 
 	async function getUser() {
 		try {
@@ -249,7 +161,7 @@
 			}}
 			class:active={barState === "search"}
 		>
-			<Search />
+			<SearchIcon />
 		</button>
 		<button
 			onclick={() => {
@@ -261,12 +173,7 @@
 		</button>
 		<button
 			onclick={() => {
-				if (barState === "download") {
-					barState = null;
-				} else {
-					barState = "download";
-					loadDownloads();
-				}
+				barState = barState === "download" ? null : "download";
 			}}
 			class:active={barState === "download"}
 		>
@@ -290,13 +197,7 @@
 
 	{#if barState === "search"}
 		<div class="panel-search">
-			<form onsubmit={searchFunction}>
-				<input
-					type="text"
-					bind:value={searchInput}
-					placeholder="Search"
-				/>
-			</form>
+			<Search />
 		</div>
 	{:else if barState === "follow"}
 		<div class="panel-default">
@@ -304,110 +205,7 @@
 		</div>
 	{:else if barState === "download"}
 		<div class="panel-default">
-			<h1>Download Queue</h1>
-			{#if downloadError}
-				<p class="panel-download-error">{downloadError}</p>
-			{/if}
-			{#if !downloadList}
-				<p class="panel-download-loading">Loading...</p>
-			{:else}
-				<div class="panel-download-items">
-					{#each downloadList as download, index}
-						<div class="panel-download-item">
-							{#if download.Data.Album.CoverUrl !== ""}
-								<img
-									src={download.Data.Album.CoverUrl}
-									alt={download.Data.Album.CoverUrl}
-								/>
-							{:else}
-								<Disc />
-							{/if}
-							<button
-								class="panel-download-item-data"
-								onclick={(e) => {
-									if (
-										e.target instanceof Element &&
-										e.target.closest("a")
-									)
-										return;
-									goto(
-										`/song/${download.Api}/${download.Data.Id}`,
-									);
-								}}
-							>
-								<p>{download.Data.Title}</p>
-								<a
-									href="/artist/{download.Api}/{download.Data
-										.Artist.Id}"
-									>{download.Data.Artist.Name}</a
-								>
-							</button>
-							<div class="panel-download-item-btn">
-								{#if download.Status === "done"}
-									<button>
-										<CircleCheck />
-									</button>
-								{:else if download.Status === "pending"}
-									<button
-										onmouseenter={() =>
-											(downloadManageHover = index)}
-										onmouseleave={() =>
-											(downloadManageHover = null)}
-										onclick={() => {
-											cancelDownload(download.Id);
-										}}
-									>
-										{#if downloadManageHover != null && downloadManageHover === index}
-											<CircleX />
-										{:else}
-											<CircleDashed />
-										{/if}
-									</button>
-								{:else if download.Status === "running"}
-									<button
-										onmouseenter={() =>
-											(downloadManageHover = index)}
-										onmouseleave={() =>
-											(downloadManageHover = null)}
-										onclick={() => {
-											cancelDownload(download.Id);
-										}}
-									>
-										{#if downloadManageHover != null && downloadManageHover === index}
-											<CircleX />
-										{:else}
-											<LoaderCircleIcon />
-										{/if}
-									</button>
-								{:else if download.Status === "failed" || download.Status === "cancel"}
-									<button
-										onmouseenter={() =>
-											(downloadManageHover = index)}
-										onmouseleave={() =>
-											(downloadManageHover = null)}
-										onclick={() => {
-											retryDownload(download.Id);
-										}}
-									>
-										{#if downloadManageHover != null && downloadManageHover === index}
-											<RotateCcw />
-										{:else}
-											<CircleAlert />
-										{/if}
-									</button>
-								{/if}
-								<button
-									onclick={() => {
-										deleteDownload(download.Id);
-									}}
-								>
-									<Trash />
-								</button>
-							</div>
-						</div>
-					{/each}
-				</div>
-			{/if}
+			<Downloads />
 		</div>
 	{:else if barState === "settings"}
 		<div class="panel-default">
@@ -534,12 +332,12 @@
 
 	.panel-search {
 		width: 70vw;
+		max-height: calc(95vh - 135px);
+		overflow-y: auto;
 		outline: 1px solid #ffffff;
-	}
-
-	.panel-search input {
-		width: 100%;
-		border: none;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
 	}
 
 	.panel-default {
@@ -551,67 +349,6 @@
 		flex-direction: column;
 		gap: 8px;
 		padding: 8px;
-	}
-
-	.panel-download-loading {
-		text-align: center;
-	}
-	.panel-download-error {
-		text-align: center;
-		background-color: var(--err);
-		padding: 0.5rem;
-		margin: 0;
-	}
-	.panel-download-items {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		.panel-download-item {
-			display: grid;
-			grid-template-columns: auto 1fr auto;
-			gap: 8px;
-			align-items: stretch;
-			container-type: inline-size;
-
-			img {
-				margin: auto;
-				width: 58px;
-				height: 58px;
-				aspect-ratio: 1/1;
-			}
-
-			.panel-download-item-data {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				align-items: center;
-				justify-items: left;
-				border: none;
-			}
-			.panel-download-item-data:hover {
-				outline: 1px solid #ffffff;
-				outline-offset: -1px;
-				background-color: inherit;
-				color: inherit;
-			}
-
-			.panel-download-item-btn {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				button {
-					aspect-ratio: 1/1;
-				}
-			}
-
-			@container (max-width: 420px) {
-				.panel-download-item-data {
-					grid-template-columns: 1fr;
-				}
-
-				.panel-download-item-btn {
-					grid-template-columns: 1fr;
-				}
-			}
-		}
 	}
 
 	.panel-settings-user {
