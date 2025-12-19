@@ -103,7 +103,7 @@ func ListFollows(c *gin.Context) {
 				return
 			}
 
-			follows[i] = models.FollowItem{Id: follow.ID, Api: follow.Api, ArtistId: follow.ArtistId, Artist: artist}
+			follows[i] = models.FollowItem{Id: follow.ID, Api: follow.Api, Artist: artist}
 		}(index, value)
 	}
 

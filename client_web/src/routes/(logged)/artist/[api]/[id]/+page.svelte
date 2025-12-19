@@ -84,7 +84,12 @@
 					<div class="wrap-item">
 						<button
 							class="item"
-							onclick={() => {
+							onclick={(e) => {
+								if (
+									e.target instanceof Element &&
+									e.target.closest("a")
+								)
+									return;
 								goto(`/album/${page.params.api}/${album.Id}`);
 							}}
 						>

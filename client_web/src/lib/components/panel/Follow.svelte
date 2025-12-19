@@ -26,7 +26,7 @@
 		<div class="list">
 			{#each list as item}
 				<div class="artist">
-					<a class="data" href="/artist/{item.Api}/{item.ArtistId}">
+					<a class="data" href="/artist/{item.Api}/{item.Artist.Id}">
 						<img
 							src={item.Artist.PictureUrl}
 							alt={item.Artist.Name}

@@ -322,10 +322,26 @@
 							{:else}
 								<Disc />
 							{/if}
-							<div class="panel-download-item-data">
+							<button
+								class="panel-download-item-data"
+								onclick={(e) => {
+									if (
+										e.target instanceof Element &&
+										e.target.closest("a")
+									)
+										return;
+									goto(
+										`/song/${download.Api}/${download.Data.Id}`,
+									);
+								}}
+							>
 								<p>{download.Data.Title}</p>
-								<p>{download.Data.Artist.Name}</p>
-							</div>
+								<a
+									href="/artist/{download.Api}/{download.Data
+										.Artist.Id}"
+									>{download.Data.Artist.Name}</a
+								>
+							</button>
 							<div class="panel-download-item-btn">
 								{#if download.Status === "done"}
 									<button>
@@ -568,14 +584,14 @@
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 				align-items: center;
-				p {
-					padding-left: 0.5rem;
-					margin: 0;
-				}
+				justify-items: left;
+				border: none;
 			}
 			.panel-download-item-data:hover {
 				outline: 1px solid #ffffff;
 				outline-offset: -1px;
+				background-color: inherit;
+				color: inherit;
 			}
 
 			.panel-download-item-btn {
@@ -687,9 +703,6 @@
 				gap: 8px;
 				align-items: center;
 				padding: 1rem;
-				p {
-					margin: 0;
-				}
 			}
 			.panel-settings-instances-item-data:hover {
 				outline: 1px solid #ffffff;

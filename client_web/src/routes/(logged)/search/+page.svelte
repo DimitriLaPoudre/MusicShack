@@ -36,8 +36,9 @@
 	<title>{"Search"} | {searchData} - MusicShack</title>
 </svelte:head>
 
+<h1 class="research">"{searchData}"</h1>
 {#if isLoading}
-	<p class="loading">Loading...</p>
+	<p class="loading">Searching...</p>
 {:else if error}
 	<div class="error">
 		<h2>Error loading Search result</h2>
@@ -172,12 +173,17 @@
 {/if}
 
 <style>
+	.research {
+		margin-top: 15px;
+		text-align: center;
+	}
+
 	.loading {
-		margin-top: 30px;
+		/* margin-top: 30px; */
 		text-align: center;
 	}
 	.error {
-		margin-top: 30px;
+		/* margin-top: 30px; */
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
