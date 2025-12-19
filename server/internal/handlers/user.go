@@ -3,8 +3,11 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
@@ -83,6 +86,16 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
+	oldUser, err := repository.GetUserByID(uint(id))
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	err = repository.UpdateUser(uint(id), &req)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -91,6 +104,14 @@ func UpdateUser(c *gin.Context) {
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	if req.Username != "" {
+		err := os.Rename(filepath.Join(config.DOWNLOAD_FOLDER, oldUser.Username), filepath.Join(config.DOWNLOAD_FOLDER, req.Username))
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})

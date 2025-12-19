@@ -4,9 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"sync"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 type downloadManager struct {
@@ -97,6 +103,60 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 	go m.startMaster(newTask)
 }
 
+func saveSong(userId uint, reader io.ReadCloser, extension string, data models.SongData) error {
+	defer reader.Close()
+
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+
+	root, err := os.OpenRoot(config.DOWNLOAD_FOLDER)
+	if err != nil {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+	defer root.Close()
+
+	if err := root.Mkdir(user.Username, 0755); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+
+	root, err = os.OpenRoot(filepath.Join(config.DOWNLOAD_FOLDER, user.Username))
+	if err != nil {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+	defer root.Close()
+
+	filename := filepath.Join(data.Artist.Name, data.Album.Title, fmt.Sprintf("%d - %s.%s", data.TrackNumber, data.Title, extension))
+
+	if err := root.Mkdir(data.Artist.Name, 0755); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+
+	if err := root.Mkdir(filepath.Join(data.Artist.Name, data.Album.Title), 0755); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+
+	file, err := root.Create(filename)
+	if err != nil {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+	defer file.Close()
+
+	_, err = io.Copy(file, reader)
+	if err != nil {
+		path := file.Name()
+		file.Close()
+		os.Remove(path)
+		return fmt.Errorf("saveSong: %w", err)
+	}
+
+	if err := utils.FormatMetadata(filepath.Join(root.Name(), filename), data); err != nil {
+		return fmt.Errorf("saveSong: %w", err)
+	}
+	return nil
+}
+
 func (m *downloadManager) startMaster(t *downloadTask) {
 	defer close(t.retryDownload)
 	defer close(t.cancelDownload)
@@ -105,10 +165,27 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 	status := make(chan models.Status)
 	data := make(chan models.SongData)
 
+	t.status = models.StatusPending
 	go func() {
-		if err := t.api.Download(ctx, t.userId, t.songId, t.quality, status, data); err != nil {
-			fmt.Println("downloadManager.startMaster: goroutine: ", err)
+		status <- models.StatusRunning
+
+		reader, extension, err := t.api.Download(ctx, t.songId, t.quality, data)
+		if err == nil {
+			err = saveSong(t.userId, reader, extension, t.songData)
 		}
+
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				status <- models.StatusCancel
+				return
+			} else {
+				status <- models.StatusFailed
+				fmt.Println("downloadManager.startMaster: goroutine: ", err)
+				return
+			}
+		}
+
+		status <- models.StatusDone
 	}()
 
 	for {
@@ -127,10 +204,25 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 				status = make(chan models.Status)
 				data = make(chan models.SongData)
 
+				t.status = models.StatusPending
 				go func() {
-					if err := t.api.Download(ctx, t.userId, t.songId, t.quality, status, data); err != nil {
-						fmt.Println("downloadManager.startMaster: goroutine: ", err)
+					status <- models.StatusRunning
+
+					reader, extension, err := t.api.Download(ctx, t.songId, t.quality, data)
+					if err == nil {
+						err = saveSong(t.userId, reader, extension, t.songData)
 					}
+
+					if err != nil {
+						if errors.Is(err, context.Canceled) {
+							status <- models.StatusCancel
+						} else {
+							status <- models.StatusFailed
+							fmt.Println("downloadManager.startMaster: goroutine: ", err)
+						}
+					}
+
+					status <- models.StatusDone
 				}()
 			}
 		case <-t.cancelDownload:

@@ -1,10 +1,13 @@
 package models
 
-import "context"
+import (
+	"context"
+	"io"
+)
 
 type Plugin interface {
 	Name() string
-	Download(context.Context, uint, string, string, chan<- Status, chan<- SongData) error
+	Download(context.Context, string, string, chan<- SongData) (io.ReadCloser, string, error)
 	Song(context.Context, string) (SongData, error)
 	Album(context.Context, string) (AlbumData, error)
 	Artist(context.Context, string) (ArtistData, error)

@@ -8,14 +8,10 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"sync"
 
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id string, quality string, ch chan<- downloadData) {
@@ -45,7 +41,7 @@ func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id 
 	ch <- data
 }
 
-func (p *HifiV2) DownloadInfo(ctx context.Context, id string, quality string) (downloadItem, error) {
+func (p *HifiV2) downloadInfo(ctx context.Context, id string, quality string) (downloadItem, error) {
 	instances, err := repository.ListApiInstancesByApi(p.Name())
 	if err != nil {
 		return downloadItem{}, fmt.Errorf("HifiV2.DownloadInfo: %w", err)
@@ -79,129 +75,69 @@ func (p *HifiV2) DownloadInfo(ctx context.Context, id string, quality string) (d
 	return data.Data, nil
 }
 
-func downloadTidal(ctx context.Context, manifestRaw []byte, file *os.File) error {
+func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, error) {
 	var manifest manifestTidal
 	if err := json.Unmarshal(manifestRaw, &manifest); err != nil {
-		return fmt.Errorf("downloadTidal: unmarshal manisfestRaw: %w", err)
+		return nil, fmt.Errorf("downloadTidal: unmarshal manisfestRaw: %w", err)
 	}
 
 	if len(manifest.Urls) <= 0 {
-		return fmt.Errorf("downloadTidal: manifest.Urls[0]: %w", errors.New("not found"))
+		return nil, fmt.Errorf("downloadTidal: manifest.Urls[0]: %w", errors.New("not found"))
 	}
 	req, _ := http.NewRequestWithContext(ctx, "GET", manifest.Urls[0], nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("downloadTidal: download url request: %w", err)
+		return nil, fmt.Errorf("downloadTidal: download url request: %w", err)
 	}
-	defer resp.Body.Close()
 
-	buf := make([]byte, 32*1024)
-	for {
-		select {
-		case <-ctx.Done():
-			path := file.Name()
-			file.Close()
-			os.Remove(path)
-			return fmt.Errorf("downloadTidal: read in file: %w", context.Canceled)
-		default:
-			n, err := resp.Body.Read(buf)
-			if n > 0 {
-				file.Write(buf[:n])
-			}
-			if err == io.EOF {
-				return nil
-			}
-			if err != nil {
-				path := file.Name()
-				file.Close()
-				os.Remove(path)
-				return fmt.Errorf("downloadTidal: read in file: %w", err)
-			}
-		}
-	}
+	return resp.Body, nil
 }
 
-func downloadMPD(ctx context.Context, manifest []byte, file *os.File) error {
-	return nil
+func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
+	return nil, nil
 }
 
-func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string, status chan<- models.Status, data chan<- models.SongData) error {
+func (p *HifiV2) Download(ctx context.Context, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
 	if quality == "" {
 		quality = "LOSSLESS"
 	}
-	status <- models.StatusPending
 
 	song, err := p.Song(ctx, id)
 	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			status <- models.StatusCancel
-		} else {
-			status <- models.StatusFailed
-		}
-		return fmt.Errorf("HifiV2.Download: %w", err)
+		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}
 	data <- song
 
-	info, err := p.DownloadInfo(ctx, id, quality)
+	info, err := p.downloadInfo(ctx, id, quality)
 	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			status <- models.StatusCancel
-		} else {
-			status <- models.StatusFailed
-		}
-		return fmt.Errorf("HifiV2.Download: %w", err)
+		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}
-
-	status <- models.StatusRunning
-
-	filename := fmt.Sprintf("%s/%s/%s/%d - %s.", config.DOWNLOAD_FOLDER, song.Artist.Name, song.Album.Title, song.TrackNumber, song.Title)
-	if quality == "HI_RES_LOSSLESS" || quality == "LOSSLESS" {
-		filename += "flac"
-	} else {
-		filename += "mp4"
-	}
-	dir := filepath.Dir(filename)
-	if err := os.MkdirAll(dir, 0755); err != nil {
-		status <- models.StatusFailed
-		return fmt.Errorf("HifiV2.Download: os.MkdirAll: %w", err)
-
-	}
-	file, err := os.Create(filename)
-	if err != nil {
-		status <- models.StatusFailed
-		return fmt.Errorf("HifiV2.Download: os.Create: %w", err)
-	}
-	defer file.Close()
 
 	manifest, err := base64.StdEncoding.DecodeString(info.Manifest)
 	if err != nil {
-		return fmt.Errorf("HifiV2.Download: manifest decoding: %w", err)
+		return nil, "", fmt.Errorf("HifiV2.Download: manifest decoding: %w", err)
 	}
 
+	var reader io.ReadCloser
 	switch info.ManifestMimeType {
 	case "application/vnd.tidal.bts":
-		err = downloadTidal(ctx, manifest, file)
+		reader, err = downloadTidal(ctx, manifest)
 	case "application/dash+xml":
-		err = downloadMPD(ctx, manifest, file)
+		reader, err = downloadMPD(ctx, manifest)
 	default:
 		err = errors.New("manifest type unknown")
 	}
 
 	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			status <- models.StatusCancel
-		} else {
-			status <- models.StatusFailed
-		}
-		return fmt.Errorf("HifiV2.Download: %w", err)
+		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}
 
-	if err := utils.FormatMetadata(filename, song); err != nil {
-		status <- models.StatusFailed
-		return fmt.Errorf("HifiV2.Download: %w", err)
+	var extension string
+	if quality == "HI_RES_LOSSLESS" || quality == "LOSSLESS" {
+		extension = "flac"
+	} else {
+		extension = "mp4"
 	}
 
-	status <- models.StatusDone
-
-	return nil
+	return reader, extension, nil
 }

@@ -2,10 +2,11 @@ package hifi
 
 import (
 	"context"
+	"io"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality string, status chan<- models.Status, data chan<- models.SongData) error {
-	return nil
+func (p *Hifi) Download(ctx context.Context, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
+	return nil, "", nil
 }
