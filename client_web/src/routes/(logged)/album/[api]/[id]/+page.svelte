@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Download } from "lucide-svelte";
-	import { afterNavigate } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/apiFetch";
 	import { downloadAlbum, downloadSong } from "$lib/functions/download";
@@ -75,21 +75,32 @@
 	<div class="body">
 		{#each album.Songs as song}
 			<div class="song">
-				<p class="number">{song.TrackNumber}</p>
-				<a class="title" href="/song/{page.params.api}/{song.Id}">
-					{song.Title}
-				</a>
-				<div class="artists">
-					{#each song.Artists as artist}
-						<a href="/artist/{page.params.api}/{artist.Id}">
-							{artist.Name}
-						</a>
-					{/each}
-				</div>
-				<p class="duration">
-					{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
-				</p>
 				<button
+					class="data"
+					onclick={(e) => {
+						if (
+							e.target instanceof Element &&
+							e.target.closest("a")
+						)
+							return;
+						goto(`/song/${page.params.api}/${song.Id}`);
+					}}
+				>
+					<p class="number">{song.TrackNumber}</p>
+					<p>{song.Title}</p>
+					<div class="artists">
+						{#each song.Artists as artist}
+							<a href="/artist/{page.params.api}/{artist.Id}">
+								{artist.Name}
+							</a>
+						{/each}
+					</div>
+					<p class="duration">
+						{`${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`}
+					</p>
+				</button>
+				<button
+					class="download"
 					onclick={async () => {
 						error = await downloadSong(page.params.api!, song.Id);
 					}}
@@ -123,75 +134,77 @@
 		display: table;
 		margin: 0 auto;
 		border-spacing: 0 10px;
-	}
-	.top {
-		display: table-row;
-	}
+		.top {
+			display: table-row;
 
-	.top-data {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 10px;
-	}
+			.top-data {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
 
-	.cover {
-		width: 160px;
-		height: 160px;
-	}
+				.cover {
+					width: 160px;
+					height: 160px;
+				}
 
-	.data {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
+				.data {
+					display: flex;
+					flex-direction: column;
+					gap: 7px;
 
-		* {
-			margin: 0;
+					.artists {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 0px 0.5rem;
+					}
+				}
+			}
 		}
-
-		.artists {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0px 0.5rem;
+		.download {
+			display: table-row;
+			width: 100%;
 		}
-	}
-
-	.download {
-		display: table-row;
-		width: 100%;
 	}
 
 	.body {
 		display: grid;
 		gap: 10px;
 		padding: 0 0 0 5px;
-	}
 
-	.song {
-		display: grid;
-		grid-template-columns: auto 1fr 1fr auto auto;
-		align-items: center;
-		gap: 8px;
+		.song {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
+			.data {
+				display: grid;
+				grid-template-columns: auto 1fr 1fr auto;
+				align-items: center;
+				gap: 8px;
+				border: none;
 
-		p {
-			margin: 0;
-		}
-
-		.artists {
-			display: flex;
-			gap: 1rem;
-			overflow: hidden;
-			a {
-				white-space: nowrap;
-				overflow-x: hidden;
-				text-overflow: ellipsis;
-				margin: 0;
+				.artists {
+					display: flex;
+					gap: 1rem;
+					overflow: hidden;
+					a {
+						white-space: nowrap;
+						overflow-x: hidden;
+						text-overflow: ellipsis;
+					}
+				}
 			}
-		}
+			.data:hover {
+				outline: 1px solid #ffffff;
+				outline-offset: -1px;
+				background-color: inherit;
+				color: inherit;
+			}
 
-		button {
-			aspect-ratio: 1/1;
+			.download {
+				aspect-ratio: 1/1;
+			}
 		}
 	}
 </style>
