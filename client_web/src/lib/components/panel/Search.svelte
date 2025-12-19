@@ -1,5 +1,6 @@
 <script lang="ts">
 	let input = $state<string>("");
+
 	async function searchFunction() {
 		const encodedSearchData = encodeURI(input);
 		window.location.assign(`/search?q=${encodedSearchData}`);
@@ -14,11 +15,6 @@
 
 <style>
 	.body {
-		/* .search { */
-		/* 	width: 70vw; */
-		/* 	outline: 1px solid #ffffff; */
-		/* } */
-
 		input {
 			width: 100%;
 			margin: 0;
