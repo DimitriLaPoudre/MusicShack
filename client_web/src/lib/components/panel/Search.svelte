@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { goto } from "$app/navigation";
+
 	let input = $state<string>("");
 
-	async function searchFunction() {
-		const encodedSearchData = encodeURI(input);
-		window.location.assign(`/search?q=${encodedSearchData}`);
+	async function searchFunction(e: SubmitEvent) {
+		e.preventDefault();
+		const encodedSearchData = encodeURIComponent(input);
+		await goto(`/search?q=${encodedSearchData}`);
 	}
 </script>
 
