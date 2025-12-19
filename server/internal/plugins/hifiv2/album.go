@@ -35,8 +35,8 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 	ch <- data
 }
 
-func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error) {
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.AlbumData, error) {
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", err)
 	}
@@ -45,12 +45,12 @@ func (p *HifiV2) Album(ctx context.Context, id string) (models.AlbumData, error)
 	ch := make(chan albumData)
 	var wg sync.WaitGroup
 
-	wg.Add(len(apiInstances))
+	wg.Add(len(instances))
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
-	for _, instance := range apiInstances {
+	for _, instance := range instances {
 		go getAlbum(routineCtx, &wg, instance.Url, ch, id)
 	}
 

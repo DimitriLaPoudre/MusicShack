@@ -35,8 +35,8 @@ func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- s
 	ch <- data
 }
 
-func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", err)
 	}
@@ -44,12 +44,12 @@ func (p *HifiV2) Song(ctx context.Context, id string) (models.SongData, error) {
 	routineCtx, routineCancel := context.WithCancel(context.Background())
 	ch := make(chan songData)
 	var wg sync.WaitGroup
-	wg.Add(len(apiInstances))
+	wg.Add(len(instances))
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
-	for _, instance := range apiInstances {
+	for _, instance := range instances {
 		go getSong(routineCtx, &wg, instance.Url, ch, id)
 	}
 

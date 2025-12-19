@@ -26,7 +26,7 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 		return newReleases, fmt.Errorf("api name invalid")
 	}
 
-	artist, err := p.Artist(ctx, id)
+	artist, err := p.Artist(ctx, userId, id)
 	if err != nil {
 		return newReleases, err
 	}

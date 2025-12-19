@@ -59,7 +59,6 @@ func SetupRouters() *graceful.Graceful {
 			apiInstance.Use(middlewares.Logged())
 			apiInstance.POST("", handlers.AddInstance)
 			apiInstance.GET("", handlers.ListInstances)
-			apiInstance.GET("/:id", handlers.GetInstance)
 			apiInstance.DELETE("/:id", handlers.RemoveInstance)
 		}
 

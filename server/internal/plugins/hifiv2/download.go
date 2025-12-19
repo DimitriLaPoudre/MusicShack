@@ -41,8 +41,8 @@ func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id 
 	ch <- data
 }
 
-func (p *HifiV2) downloadInfo(ctx context.Context, id string, quality string) (downloadItem, error) {
-	instances, err := repository.ListApiInstancesByApi(p.Name())
+func (p *HifiV2) downloadInfo(ctx context.Context, userId uint, id string, quality string) (downloadItem, error) {
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return downloadItem{}, fmt.Errorf("HifiV2.DownloadInfo: %w", err)
 	}
@@ -97,18 +97,18 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	return nil, nil
 }
 
-func (p *HifiV2) Download(ctx context.Context, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
+func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
 	if quality == "" {
 		quality = "LOSSLESS"
 	}
 
-	song, err := p.Song(ctx, id)
+	song, err := p.Song(ctx, userId, id)
 	if err != nil {
 		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}
 	data <- song
 
-	info, err := p.downloadInfo(ctx, id, quality)
+	info, err := p.downloadInfo(ctx, userId, id, quality)
 	if err != nil {
 		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}

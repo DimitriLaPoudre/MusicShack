@@ -63,7 +63,7 @@
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to fetch instances");
 			}
-			instances = body.instances;
+			instances = body;
 			errorInstances = null;
 		} catch (e) {
 			errorInstances =
@@ -176,7 +176,7 @@
 							<p>{instance.Api}</p>
 							<p>{instance.Url}</p>
 						</div>
-						<button onclick={() => deleteInstance(instance.ID)}>
+						<button onclick={() => deleteInstance(instance.Id)}>
 							<Trash />
 						</button>
 					</div>

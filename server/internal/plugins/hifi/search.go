@@ -114,7 +114,7 @@ func (p *Hifi) getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi s
 	ch <- tmp[0]
 }
 
-func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
+func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
@@ -122,7 +122,7 @@ func (p *Hifi) Search(ctx context.Context, song, album, artist string) (models.S
 	var albumData searchAlbumData
 	var artistData searchArtistData
 
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	apiInstances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SearchData{}, err
 	}

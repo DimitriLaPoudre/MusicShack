@@ -53,7 +53,7 @@ func (m *downloadManager) generateId(userId uint) uint {
 }
 
 func (m *downloadManager) AddArtist(userId uint, api models.Plugin, artistId string, quality string) {
-	artist, err := api.Artist(context.Background(), artistId)
+	artist, err := api.Artist(context.Background(), userId, artistId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddArtist: %v\n", err)
 		return
@@ -64,7 +64,7 @@ func (m *downloadManager) AddArtist(userId uint, api models.Plugin, artistId str
 }
 
 func (m *downloadManager) AddAlbum(userId uint, api models.Plugin, albumId string, quality string) {
-	album, err := api.Album(context.Background(), albumId)
+	album, err := api.Album(context.Background(), userId, albumId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddAlbum: %v\n", err)
 		return
@@ -169,7 +169,7 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 	go func() {
 		status <- models.StatusRunning
 
-		reader, extension, err := t.api.Download(ctx, t.songId, t.quality, data)
+		reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality, data)
 		if err == nil {
 			err = saveSong(t.userId, reader, extension, t.songData)
 		}
@@ -208,7 +208,7 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 				go func() {
 					status <- models.StatusRunning
 
-					reader, extension, err := t.api.Download(ctx, t.songId, t.quality, data)
+					reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality, data)
 					if err == nil {
 						err = saveSong(t.userId, reader, extension, t.songData)
 					}

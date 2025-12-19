@@ -1,35 +1,42 @@
 package handlers
 
 import (
-	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func AddInstance(c *gin.Context) {
-	var req models.ApiInstanceRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if _, ok := plugins.Get(req.Api); !ok {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid plugin name"})
+	var req models.RequestApiInstance
+	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	validApiInstance := services.ConstructApiInstance(&req)
+	_, ok := plugins.Get(req.Api)
+	if !ok {
+		fmt.Println("invalid api name")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		return
+	}
 
-	err := repository.CreateApiInstance(validApiInstance)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+	if err := repository.AddInstance(userId, req.Api, req.Url); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -37,54 +44,53 @@ func AddInstance(c *gin.Context) {
 }
 
 func ListInstances(c *gin.Context) {
-	instances, err := repository.ListApiInstances()
+	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"instances": instances})
-}
-
-func GetInstance(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	instancesRaw, err := repository.ListInstancesByUserID(userId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	instance, err := repository.GetApiInstanceByID(uint(id))
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "instance not found"})
-			return
-		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err})
-		return
+	instances := make([]models.ApiInstanceItem, len(instancesRaw))
+	for index, instance := range instancesRaw {
+		instances[index] = models.ApiInstanceItem{Id: instance.ID, Api: instance.Api, Url: instance.Url}
 	}
+	fmt.Println(instancesRaw)
+	fmt.Println(instances)
 
-	c.JSON(http.StatusOK, gin.H{"instance": instance})
+	c.JSON(http.StatusOK, instances)
+
 }
 
 func RemoveInstance(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = repository.DeleteApiInstance(uint(id))
+	idStr := c.Param("id")
+	idUint64, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "instance not found"})
-			return
-		}
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		return
+	}
+	id := uint(idUint64)
+
+	if err := repository.DeleteInstanceByUserID(userId, id); err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-
 }

@@ -77,7 +77,7 @@ func getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 	ch <- data
 }
 
-func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models.SearchData, error) {
+func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
 	var wg sync.WaitGroup
 	wg.Add(3)
 
@@ -85,7 +85,7 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 	var albumData searchAlbumData
 	var artistData searchArtistData
 
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
 	}
@@ -97,12 +97,12 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 		ch := make(chan searchSongData)
 		var wgRoutine sync.WaitGroup
 
-		wgRoutine.Add(len(apiInstances))
+		wgRoutine.Add(len(instances))
 		go func() {
 			wgRoutine.Wait()
 			close(ch)
 		}()
-		for _, instance := range apiInstances {
+		for _, instance := range instances {
 			go getSearchSong(routineCtx, &wgRoutine, instance.Url, ch, song)
 		}
 		select {
@@ -123,12 +123,12 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 		ch := make(chan searchAlbumData)
 		var wgRoutine sync.WaitGroup
 
-		wgRoutine.Add(len(apiInstances))
+		wgRoutine.Add(len(instances))
 		go func() {
 			wgRoutine.Wait()
 			close(ch)
 		}()
-		for _, instance := range apiInstances {
+		for _, instance := range instances {
 			go getSearchAlbum(routineCtx, &wgRoutine, instance.Url, ch, album)
 		}
 		select {
@@ -148,12 +148,12 @@ func (p *HifiV2) Search(ctx context.Context, song, album, artist string) (models
 		ch := make(chan searchArtistData)
 		var wgRoutine sync.WaitGroup
 
-		wgRoutine.Add(len(apiInstances))
+		wgRoutine.Add(len(instances))
 		go func() {
 			wgRoutine.Wait()
 			close(ch)
 		}()
-		for _, instance := range apiInstances {
+		for _, instance := range instances {
 			go getSearchArtist(routineCtx, &wgRoutine, instance.Url, ch, artist)
 		}
 		select {

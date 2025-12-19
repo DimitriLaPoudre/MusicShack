@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
-	"slices"
 	"strconv"
 	"sync"
 
@@ -13,7 +11,6 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func AddFollow(c *gin.Context) {
@@ -31,38 +28,14 @@ func AddFollow(c *gin.Context) {
 		return
 	}
 
-	id := req.Id
-	api, ok := plugins.Get(req.Api)
+	_, ok := plugins.Get(req.Api)
 	if !ok {
 		fmt.Println("invalid api name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
 		return
 	}
 
-	artist, err := api.Artist(c.Request.Context(), id)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	slices.SortFunc(artist.Albums, func(a, b models.AlbumData) int {
-		if a.ReleaseDate > b.ReleaseDate {
-			return 1
-		} else if a.ReleaseDate < b.ReleaseDate {
-			return -1
-		} else {
-			return 0
-		}
-	})
-
-	lastFetchId := ""
-
-	if len(artist.Albums) > 0 {
-		lastFetchId = artist.Albums[0].Id
-	}
-
-	if err := repository.AddFollow(userId, api.Name(), id, lastFetchId); err != nil {
+	if err := repository.AddFollow(userId, req.Api, req.Id); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,6 +54,7 @@ func ListFollows(c *gin.Context) {
 
 	followsRaw, err := repository.ListFollowsByUserID(userId)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -98,7 +72,7 @@ func ListFollows(c *gin.Context) {
 				return
 			}
 
-			artist, err := p.Artist(c.Request.Context(), follow.ArtistId)
+			artist, err := p.Artist(c.Request.Context(), userId, follow.ArtistId)
 			if err != nil {
 				return
 			}
@@ -123,16 +97,14 @@ func DeleteFollow(c *gin.Context) {
 	idStr := c.Param("id")
 	idUint64, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
 	if err != nil {
+		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
 	id := uint(idUint64)
 
 	if err := repository.DeleteFollowByUserID(userId, id); err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "follow not found"})
-			return
-		}
+		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

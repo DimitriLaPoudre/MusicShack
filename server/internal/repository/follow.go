@@ -1,16 +1,15 @@
 package repository
 
 import (
-	database "github.com/DimitriLaPoudre/MusicShack/server/internal/db"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/db"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-func AddFollow(userId uint, api string, id string, lastFetchId string) error {
+func AddFollow(userId uint, api string, id string) error {
 	return database.DB.Create(&models.Follow{
-		UserId:      userId,
-		Api:         api,
-		ArtistId:    id,
-		LastFetchId: lastFetchId,
+		UserId:   userId,
+		Api:      api,
+		ArtistId: id,
 	}).Error
 }
 

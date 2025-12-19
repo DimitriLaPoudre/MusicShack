@@ -7,13 +7,13 @@ import (
 
 type Plugin interface {
 	Name() string
-	Download(context.Context, string, string, chan<- SongData) (io.ReadCloser, string, error)
-	Song(context.Context, string) (SongData, error)
-	Album(context.Context, string) (AlbumData, error)
-	Artist(context.Context, string) (ArtistData, error)
-	Search(context.Context, string, string, string) (SearchData, error)
-	Cover(context.Context, string) (string, error)
-	Lyrics(context.Context, string) (string, string, error)
+	Download(context.Context, uint, string, string, chan<- SongData) (io.ReadCloser, string, error)
+	Song(context.Context, uint, string) (SongData, error)
+	Album(context.Context, uint, string) (AlbumData, error)
+	Artist(context.Context, uint, string) (ArtistData, error)
+	Search(context.Context, uint, string, string, string) (SearchData, error)
+	Cover(context.Context, uint, string) (string, error)
+	Lyrics(context.Context, uint, string) (string, string, error)
 }
 
 // "tags": {

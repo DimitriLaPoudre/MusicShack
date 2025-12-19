@@ -5,49 +5,36 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-func CreateApiInstance(apiInstance *models.ApiInstance) error {
-	return database.DB.Create(apiInstance).Error
+func AddInstance(userId uint, api string, url string) error {
+	return database.DB.Create(&models.ApiInstance{
+		UserId: userId,
+		Api:    api,
+		Url:    url,
+	}).Error
 }
 
-func ListApiInstances() ([]models.ApiInstance, error) {
-	var apiInstances []models.ApiInstance
-	err := database.DB.Find(&apiInstances).Error
-	return apiInstances, err
+func ListInstances() ([]models.ApiInstance, error) {
+	var instances []models.ApiInstance
+	err := database.DB.Find(&instances).Error
+	return instances, err
 }
 
-func ListApiInstancesByApi(api string) ([]models.ApiInstance, error) {
-	var apiInstances []models.ApiInstance
-	err := database.DB.Find(&apiInstances, "api = ?", api).Error
-	return apiInstances, err
+func ListInstancesByUserID(userId uint) ([]models.ApiInstance, error) {
+	var instances []models.ApiInstance
+	err := database.DB.Find(&instances, "user_id = ?", userId).Error
+	return instances, err
 }
 
-func GetApiInstanceByID(id uint) (*models.ApiInstance, error) {
-	var user models.ApiInstance
-	err := database.DB.Take(&user, id).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
+func ListInstancesByUserIDByAPI(userId uint, api string) ([]models.ApiInstance, error) {
+	var instances []models.ApiInstance
+	err := database.DB.Find(&instances, "user_id = ? AND api = ?", userId, api).Error
+	return instances, err
 }
 
-func GetApiInstanceByApi(api string) (*models.ApiInstance, error) {
-	var user models.ApiInstance
-	err := database.DB.Take(&user, "api = ?", api).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
-func GetApiInstanceByURL(url string) (*models.ApiInstance, error) {
-	var user models.ApiInstance
-	err := database.DB.Take(&user, "url = ?", url).Error
-	if err != nil {
-		return nil, err
-	}
-	return &user, nil
-}
-
-func DeleteApiInstance(id uint) error {
+func DeleteInstance(id uint) error {
 	return database.DB.Delete(&models.ApiInstance{}, id).Error
+}
+
+func DeleteInstanceByUserID(userId uint, id uint) error {
+	return database.DB.Delete(&models.ApiInstance{}, "user_id = ? AND id = ?", userId, id).Error
 }

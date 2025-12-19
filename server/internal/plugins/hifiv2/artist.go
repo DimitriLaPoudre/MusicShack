@@ -56,14 +56,14 @@ func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 	ch <- data
 }
 
-func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, error) {
+func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	var data artistData
 	var albums artistAlbums
 
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
 	}
@@ -75,12 +75,12 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 		ch := make(chan artistData)
 		var wgRoutine sync.WaitGroup
 
-		wgRoutine.Add(len(apiInstances))
+		wgRoutine.Add(len(instances))
 		go func() {
 			wgRoutine.Wait()
 			close(ch)
 		}()
-		for _, instance := range apiInstances {
+		for _, instance := range instances {
 			go getArtistInfo(routineCtx, &wgRoutine, instance.Url, ch, id)
 		}
 		select {
@@ -100,12 +100,12 @@ func (p *HifiV2) Artist(ctx context.Context, id string) (models.ArtistData, erro
 		ch := make(chan artistAlbums)
 		var wgRoutine sync.WaitGroup
 
-		wgRoutine.Add(len(apiInstances))
+		wgRoutine.Add(len(instances))
 		go func() {
 			wgRoutine.Wait()
 			close(ch)
 		}()
-		for _, instance := range apiInstances {
+		for _, instance := range instances {
 			go getArtistAlbums(routineCtx, &wgRoutine, instance.Url, ch, id)
 		}
 		select {

@@ -19,16 +19,19 @@
 				throw new Error("No Search");
 			}
 			const res = await apiFetch(`/search?q=${searchData}`);
+			console.log("test");
 			result = await res.json();
 			if (!res.ok) {
 				throw new Error(result.error || "Failed to fetch search");
 			}
+			if (Object.keys(result).length === 0) {
+				throw new Error("instances missing");
+			}
 			api = Object.keys(result)[0];
-			isLoading = false;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
-			isLoading = false;
 		}
+		isLoading = false;
 	});
 </script>
 
