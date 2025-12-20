@@ -100,8 +100,8 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 	ch <- data
 }
 
-func (p *Hifi) Album(ctx context.Context, id string) (models.AlbumData, error) {
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumData, error) {
+	apiInstances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.AlbumData{}, err
 	}

@@ -117,14 +117,14 @@ func (p *Hifi) getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi s
 	ch <- data
 }
 
-func (p *Hifi) Artist(ctx context.Context, id string) (models.ArtistData, error) {
+func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
 	var data artistData
 	var albums artistAlbums
 
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+	apiInstances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.ArtistData{}, err
 	}
