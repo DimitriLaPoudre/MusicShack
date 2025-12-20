@@ -4,7 +4,6 @@
 	import { onMount } from "svelte";
 	import { Pencil, Plus, Trash } from "lucide-svelte";
 
-	let errorAdmin = $state<null | string>(null);
 	let errorUser = $state<null | string>(null);
 	let errorInstances = $state<null | string>(null);
 
