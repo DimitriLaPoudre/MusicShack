@@ -24,6 +24,6 @@ func init() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.ApiInstance{}, &models.Follow{})
+	db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.ApiInstance{}, &models.Follow{})
 	DB = db
 }

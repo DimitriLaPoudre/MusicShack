@@ -4,41 +4,27 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func GetTokenForID(id uint) (string, error) {
-	claims := models.JwtClaims{
-		Id: id,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-		},
-	}
-
-	tokenUnsigned := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-
-	return tokenUnsigned.SignedString(config.JWT_SECRET)
-}
-
-func GetTokenContent(token string) (*models.JwtClaims, error) {
-	tokenUnsigned, err := jwt.ParseWithClaims(token, &models.JwtClaims{}, func(token *jwt.Token) (any, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("signing method not valid: %v", token.Header["alg"])
-		}
-		return []byte(config.JWT_SECRET), nil
-	})
+func CreateUserSession(userId uint) (*models.UserSession, error) {
+	token, err := utils.GenerateRandomString(32)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("CreateUserSession: %w", err)
 	}
-	if !tokenUnsigned.Valid {
-		return nil, fmt.Errorf("token invalid")
+	expireAt := time.Now().Add(1 * time.Hour)
+
+	session := models.UserSession{
+		UserId:    userId,
+		Token:     token,
+		ExpiresAt: expireAt,
 	}
-	claims, ok := tokenUnsigned.Claims.(*models.JwtClaims)
-	if !ok {
-		return nil, fmt.Errorf("token content invalid")
+
+	if err := repository.CreateUserSession(&session); err != nil {
+		return nil, fmt.Errorf("CreateUserSession: %w", err)
 	}
-	return claims, nil
+
+	return &session, nil
 }

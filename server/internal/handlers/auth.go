@@ -108,18 +108,18 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	token, err := services.GetTokenForID(user.ID)
+
+	session, err := services.CreateUserSession(user.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
+	c.SetCookie("user_session", session.Token, session.ExpiresAt.Second(), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 
-	c.SetCookie("token", token, 0, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func Logout(c *gin.Context) {
-	c.SetCookie("token", "", -1, "/", "", true, true)
+	c.SetCookie("user_session", "", -1, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 	c.JSON(200, gin.H{"status": "ok"})
 }
