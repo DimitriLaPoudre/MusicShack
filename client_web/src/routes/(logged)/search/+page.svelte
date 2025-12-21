@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadAlbum, downloadSong } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 

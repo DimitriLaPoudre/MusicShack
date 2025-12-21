@@ -3,7 +3,7 @@
 	import { page } from "$app/state";
 	import { Download } from "lucide-svelte";
 	import { addFollow } from "$lib/functions/follow";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadAlbum, downloadArtist } from "$lib/functions/download";
 
 	let isLoading = $state(true);

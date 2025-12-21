@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { afterNavigate } from "$app/navigation";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 
 	let error = $state<string | null>(null);
 

@@ -13,6 +13,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func Admin(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
 func AdminLogin(c *gin.Context) {
 	var req models.RequestAdmin
 	if err := c.ShouldBindJSON(&req); err != nil {

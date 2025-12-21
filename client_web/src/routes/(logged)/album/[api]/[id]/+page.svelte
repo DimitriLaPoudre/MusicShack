@@ -2,7 +2,7 @@
 	import { Download } from "lucide-svelte";
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadAlbum, downloadSong } from "$lib/functions/download";
 
 	let isLoading = $state(true);

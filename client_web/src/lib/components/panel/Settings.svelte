@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { onMount } from "svelte";
 	import { Pencil, Plus, Trash } from "lucide-svelte";
 

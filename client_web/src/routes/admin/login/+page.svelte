@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto, onNavigate } from "$app/navigation";
 
 	let username: string = "";
 	let password: string = "";
-	let confirmPassword: string = "";
 	let error: string = "";
 
-	afterNavigate(async () => {
+	onNavigate(async () => {
 		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
@@ -17,13 +16,9 @@
 		}
 	});
 
-	async function handleSignup() {
-		if (password !== confirmPassword) {
-			error = "password diff";
-			return;
-		}
+	async function handleLogin() {
 		try {
-			const res = await fetch("/api/signup", {
+			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ username, password }),
@@ -32,15 +27,15 @@
 
 			if (res.ok) {
 				await res.json();
-				goto("/login");
+				goto("/");
 				return;
 			} else {
 				if (res.status === 403) {
-					goto("/");
+					goto("/login");
 					return;
 				}
 				const errData = await res.json();
-				error = errData.error || "error while signup";
+				error = errData.error || "error during login";
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";
@@ -49,8 +44,8 @@
 </script>
 
 <div class="body">
-	<h1>Signup</h1>
-	<form on:submit|preventDefault={handleSignup}>
+	<h1>Login</h1>
+	<form on:submit|preventDefault={handleLogin}>
 		<div class="form">
 			{#if error}
 				<p>{error}</p>
@@ -62,16 +57,10 @@
 				bind:value={password}
 				required
 			/>
-			<input
-				type="password"
-				placeholder="Confirm Password"
-				bind:value={confirmPassword}
-				required
-			/>
-			<button>Signup</button>
+			<button>Login</button>
 		</div>
 	</form>
-	<a href="/login">connect to an existing account</a>
+	<a href="/signup">create an account</a>
 </div>
 
 <style>
@@ -81,10 +70,6 @@
 		align-items: center;
 		margin-top: 10vh;
 		height: 100vh;
-
-		h1 {
-			margin: 0;
-		}
 	}
 	.form {
 		display: flex;

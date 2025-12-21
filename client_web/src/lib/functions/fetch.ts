@@ -17,3 +17,21 @@ export async function apiFetch(
 	}
 	return res;
 }
+
+export async function adminFetch(
+	path: string,
+	method: string = "GET",
+	body?: any,
+): Promise<Response> {
+	const res = await fetch("/api/admin" + path, {
+		method: method,
+		credentials: "include",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify(body),
+	});
+	if (res.status === 401) {
+		goto("/admin/login");
+		return res;
+	}
+	return res;
+}

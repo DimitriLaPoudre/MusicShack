@@ -56,6 +56,7 @@ func SetupRouters() *graceful.Graceful {
 
 		admin := api.Group("/admin")
 		{
+			admin.GET("", middlewares.Admin(), handlers.Admin)
 			admin.POST("/login", middlewares.Admout(), handlers.AdminLogin)
 			admin.PUT("/password", middlewares.Admin(), handlers.AdminPassword)
 			admin.POST("/logout", middlewares.Admin(), handlers.AdminLogout)
