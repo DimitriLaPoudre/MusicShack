@@ -23,7 +23,7 @@ export async function adminFetch(
 	method: string = "GET",
 	body?: any,
 ): Promise<Response> {
-	const res = await fetch("/api/admin" + path, {
+	const res = await fetch("/api" + path, {
 		method: method,
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },

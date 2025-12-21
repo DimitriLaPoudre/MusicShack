@@ -46,10 +46,12 @@ func UpdateMe(c *gin.Context) {
 		return
 	}
 
-	if err := validateUsername(updates.Username); updates.Username != "" && err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+	if updates.Username != "" {
+		if err := validateUsername(updates.Username); err != nil {
+			fmt.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	if updates.Password != "" {

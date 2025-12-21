@@ -125,7 +125,7 @@
 		loadInstance();
 	}
 
-	async function Logout() {
+	async function logout() {
 		try {
 			const res = await apiFetch(`/logout`, "POST");
 			const data = await res.json();
@@ -191,7 +191,7 @@
 			</div>
 		{/if}
 	</div>
-	<button class="logout" onclick={Logout}> Logout </button>
+	<button class="logout" onclick={logout}> Logout </button>
 </div>
 
 <style>

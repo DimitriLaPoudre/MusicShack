@@ -39,6 +39,7 @@
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";
 		}
+		password = "";
 	}
 </script>
 
@@ -86,7 +87,7 @@
 		}
 
 		button {
-			width: 60%;
+			width: auto;
 			padding: 8px;
 		}
 	}

@@ -60,33 +60,6 @@ func validateRequestUser(req models.UserRequest) error {
 	return nil
 }
 
-func Signup(c *gin.Context) {
-	var req models.UserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := validateRequestUser(req); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if err := repository.CreateUser(&models.User{Username: req.Username, Password: string(hashPassword)}); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
 func Login(c *gin.Context) {
 	var req models.UserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

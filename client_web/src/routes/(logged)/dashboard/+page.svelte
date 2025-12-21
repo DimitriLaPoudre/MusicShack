@@ -34,9 +34,5 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
-
-		* {
-			margin: 0;
-		}
 	}
 </style>

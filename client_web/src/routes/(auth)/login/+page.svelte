@@ -60,7 +60,6 @@
 			<button>Login</button>
 		</div>
 	</form>
-	<a href="/signup">create an account</a>
 </div>
 
 <style>
