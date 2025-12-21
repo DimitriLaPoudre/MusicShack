@@ -14,12 +14,12 @@ func CreateUserSession(userId uint) (*models.UserSession, error) {
 	if err != nil {
 		return nil, fmt.Errorf("CreateUserSession: %w", err)
 	}
-	expireAt := time.Now().Add(1 * time.Hour)
+	expiresAt := time.Now().Add(1 * time.Hour)
 
 	session := models.UserSession{
 		UserId:    userId,
 		Token:     token,
-		ExpiresAt: expireAt,
+		ExpiresAt: expiresAt,
 	}
 
 	if err := repository.CreateUserSession(&session); err != nil {

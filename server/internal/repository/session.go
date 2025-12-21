@@ -23,6 +23,13 @@ func FindUserSessionByToken(token string) (*models.UserSession, error) {
 	return &userSession, nil
 }
 
+func DeleteUserSession(userId uint, token string) error {
+	if err := database.DB.Delete(&models.UserSession{}, "user_id = ? AND token = ?", userId, token).Error; err != nil {
+		return fmt.Errorf("repository.DeleteUserSession: %w", err)
+	}
+	return nil
+}
+
 func DeleteExpiredUserSession() error {
 	if err := database.DB.Delete(&models.UserSession{}, "expires_at <= ?", time.Now()).Error; err != nil {
 		return fmt.Errorf("repository.DeleteExpiredUserSession: %w", err)

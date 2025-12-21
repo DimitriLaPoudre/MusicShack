@@ -51,10 +51,3 @@ func LoggedOut() gin.HandlerFunc {
 		c.Abort()
 	}
 }
-
-func Admin() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.JSON(http.StatusForbidden, gin.H{"error": "user not authorized"})
-		c.Abort()
-	}
-}

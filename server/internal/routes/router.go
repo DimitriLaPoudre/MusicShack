@@ -54,6 +54,13 @@ func SetupRouters() *graceful.Graceful {
 		api.POST("/login", middlewares.LoggedOut(), handlers.Login)
 		api.POST("/logout", middlewares.Logged(), handlers.Logout)
 
+		admin := api.Group("/admin")
+		{
+			admin.POST("/login", middlewares.Admout(), handlers.AdminLogin)
+			admin.PUT("/password", middlewares.Admin(), handlers.AdminPassword)
+			admin.POST("/logout", middlewares.Admin(), handlers.AdminLogout)
+		}
+
 		apiInstance := api.Group("/instances")
 		{
 			apiInstance.Use(middlewares.Logged())

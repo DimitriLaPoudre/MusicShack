@@ -10,6 +10,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -94,11 +95,6 @@ func Login(c *gin.Context) {
 	}
 	user, err := repository.GetUserByUsername(req.Username)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fmt.Println(err)
-			c.JSON(http.StatusNotFound, gin.H{"error": "username not found"})
-			return
-		}
 		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -120,6 +116,26 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := c.Cookie("user_session")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := repository.DeleteUserSession(userId, token); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.SetCookie("user_session", "", -1, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
-	c.JSON(200, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

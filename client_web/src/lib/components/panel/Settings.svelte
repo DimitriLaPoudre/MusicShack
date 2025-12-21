@@ -10,7 +10,6 @@
 	let username = $state<null | string>(null);
 	let inputUserUsername = $state<null | string>(null);
 	let inputUserPassword = $state<null | string>(null);
-
 	let inputInstancesAPI = $state<null | string>(null);
 	let inputInstancesURL = $state<null | string>(null);
 	let instances = $state<null | any>(null);
@@ -127,8 +126,17 @@
 	}
 
 	async function Logout() {
-		await apiFetch(`/logout`, "POST");
-		goto("/login");
+		try {
+			const res = await apiFetch(`/logout`, "POST");
+			const data = await res.json();
+			if (!res.ok) {
+				throw new Error(data.error || "error while trying to logout");
+			}
+			goto("/login");
+		} catch (e) {
+			errorUser = e instanceof Error ? e.message : "Failed to logout";
+			return;
+		}
 	}
 </script>
 
