@@ -27,7 +27,7 @@ func Admin() gin.HandlerFunc {
 			return
 		}
 
-		if admin.Token != token || time.Now().Before(admin.ExpiresAt) {
+		if admin.Token != token || admin.ExpiresAt.Before(time.Now()) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
 			c.Abort()
 			return
@@ -53,7 +53,7 @@ func Admout() gin.HandlerFunc {
 			return
 		}
 
-		if admin.Token != token || time.Now().Before(admin.ExpiresAt) {
+		if admin.Token != token || admin.ExpiresAt.Before(time.Now()) {
 			c.Next()
 			return
 		}
