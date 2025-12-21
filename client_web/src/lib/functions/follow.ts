@@ -1,4 +1,4 @@
-import { apiFetch } from "./apiFetch";
+import { apiFetch } from "./fetch";
 
 export async function loadFollows() {
 	let list = null

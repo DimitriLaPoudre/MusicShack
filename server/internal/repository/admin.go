@@ -10,7 +10,7 @@ import (
 
 func GetAdmin() (*models.Admin, error) {
 	var admin models.Admin
-	err := database.DB.First(&admin, "id = true").Error
+	err := database.DB.First(&admin, "id = ?", true).Error
 	if err != nil {
 		return nil, fmt.Errorf("repository.GetAdmin: %w", err)
 	}
@@ -18,7 +18,7 @@ func GetAdmin() (*models.Admin, error) {
 }
 
 func ChangeAdminPassword(password string) error {
-	err := database.DB.Model(&models.Admin{}).Updates(map[string]any{"password": password, "token": ""}).Error
+	err := database.DB.Model(&models.Admin{}).Where("id = ?", true).Updates(map[string]any{"password": password, "token": ""}).Error
 	if err != nil {
 		return fmt.Errorf("repository.ChangeAdminPassword: %w", err)
 	}
@@ -26,7 +26,7 @@ func ChangeAdminPassword(password string) error {
 }
 
 func CreateAdminSession(token string, expiresAt time.Time) error {
-	err := database.DB.Model(&models.Admin{}).Updates(map[string]any{"token": token, "expires_at": expiresAt}).Error
+	err := database.DB.Model(&models.Admin{}).Where("id = ?", true).Updates(map[string]any{"token": token, "expires_at": expiresAt}).Error
 	if err != nil {
 		return fmt.Errorf("repository.CreateAdminSession: %w", err)
 	}
@@ -34,7 +34,7 @@ func CreateAdminSession(token string, expiresAt time.Time) error {
 }
 
 func DeleteAdminSession() error {
-	err := database.DB.Model(&models.Admin{}).Update("token", "").Error
+	err := database.DB.Model(&models.Admin{}).Where("id = ?", true).Update("token", "").Error
 	if err != nil {
 		return fmt.Errorf("repository.DeleteAdminSession: %w", err)
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -110,7 +111,7 @@ func Login(c *gin.Context) {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	c.SetCookie("user_session", session.Token, session.ExpiresAt.Second(), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
+	c.SetCookie("user_session", session.Token, int((24 * time.Hour).Seconds()), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

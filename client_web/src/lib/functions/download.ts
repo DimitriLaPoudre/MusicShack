@@ -1,4 +1,4 @@
-import { apiFetch } from "./apiFetch";
+import { apiFetch } from "./fetch";
 
 export async function downloadSong(api: string, id: string) {
 	let error: string | null = null

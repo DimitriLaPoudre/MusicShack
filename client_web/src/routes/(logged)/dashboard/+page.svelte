@@ -6,7 +6,10 @@
 
 	afterNavigate(async () => {
 		try {
-			await apiFetch("/me");
+			const res = await apiFetch("/me");
+			if (!res.ok) {
+				return;
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load dashboard";
 		}

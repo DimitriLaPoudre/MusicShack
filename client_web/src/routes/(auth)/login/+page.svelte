@@ -11,7 +11,7 @@
 		});
 
 		if (res.ok) {
-			goto("/");
+			goto("/dashboard");
 			return;
 		}
 	});
@@ -31,7 +31,7 @@
 				return;
 			} else {
 				if (res.status === 403) {
-					goto("/login");
+					goto("/dashboard");
 					return;
 				}
 				const errData = await res.json();

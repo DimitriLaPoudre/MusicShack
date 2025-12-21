@@ -12,7 +12,7 @@ export async function apiFetch(
 		body: JSON.stringify(body),
 	});
 	if (res.status === 401) {
-		goto("/login");
+		await goto("/login");
 		return res;
 	}
 	return res;
@@ -30,7 +30,7 @@ export async function adminFetch(
 		body: JSON.stringify(body),
 	});
 	if (res.status === 401) {
-		goto("/admin/login");
+		await goto("/admin/login");
 		return res;
 	}
 	return res;

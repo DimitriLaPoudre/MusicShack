@@ -14,7 +14,7 @@ func CreateUserSession(userId uint) (*models.UserSession, error) {
 	if err != nil {
 		return nil, fmt.Errorf("CreateUserSession: %w", err)
 	}
-	expiresAt := time.Now().Add(1 * time.Hour)
+	expiresAt := time.Now().Add(24 * time.Hour)
 
 	session := models.UserSession{
 		UserId:    userId,

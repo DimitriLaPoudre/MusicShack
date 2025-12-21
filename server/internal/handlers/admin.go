@@ -52,7 +52,7 @@ func AdminLogin(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("admin_session", token, expiresAt.Second(), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
+	c.SetCookie("admin_session", token, int((1 * time.Hour).Seconds()), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

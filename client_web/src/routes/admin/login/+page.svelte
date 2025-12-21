@@ -1,41 +1,40 @@
 <script lang="ts">
-	import { goto, onNavigate } from "$app/navigation";
+	import { goto, afterNavigate } from "$app/navigation";
 
-	let username: string = "";
 	let password: string = "";
 	let error: string = "";
 
-	onNavigate(async () => {
-		const res = await fetch("/api/me", {
+	afterNavigate(async () => {
+		const res = await fetch("/api/admin", {
 			credentials: "include",
 		});
 
 		if (res.ok) {
-			goto("/");
+			goto("/admin/dashboard");
 			return;
 		}
 	});
 
-	async function handleLogin() {
+	async function handleLogin(e: SubmitEvent) {
+		e.preventDefault();
 		try {
-			const res = await fetch("/api/login", {
+			const res = await fetch("/api/admin/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, password }),
+				body: JSON.stringify({ password }),
 				credentials: "include",
 			});
 
+			const body = await res.json();
 			if (res.ok) {
-				await res.json();
-				goto("/");
+				goto("/admin/dashboard");
 				return;
 			} else {
 				if (res.status === 403) {
 					goto("/login");
 					return;
 				}
-				const errData = await res.json();
-				error = errData.error || "error during login";
+				error = body.error || "error during login";
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";
@@ -44,13 +43,12 @@
 </script>
 
 <div class="body">
-	<h1>Login</h1>
-	<form on:submit|preventDefault={handleLogin}>
+	<h1>Admin Login</h1>
+	<form onsubmit={handleLogin}>
 		<div class="form">
 			{#if error}
 				<p>{error}</p>
 			{/if}
-			<input placeholder="Username" bind:value={username} required />
 			<input
 				type="password"
 				placeholder="Password"
@@ -60,7 +58,6 @@
 			<button>Login</button>
 		</div>
 	</form>
-	<a href="/signup">create an account</a>
 </div>
 
 <style>
