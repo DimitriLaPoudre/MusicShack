@@ -15,24 +15,6 @@ type Plugin interface {
 	Lyrics(context.Context, uint, string) (string, string, error)
 }
 
-// "tags": {
-//             "title": "CASINO (feat. La Fève)",
-//             "artist": "thaHomey; Skuna; La Fève",
-//             "album_artist": "thaHomey",
-//             "album": "HEAT",
-//             "track": "4",
-//             "disc": "1",
-//             "date": "2022",
-//             "year": "2022",
-//             "ISRC": "FR9W12220849",
-//             "REPLAYGAIN_TRACK_GAIN": "-7.77 dB",
-//             "REPLAYGAIN_TRACK_PEAK": "0.987245",
-//             "REPLAYGAIN_ALBUM_GAIN": "-8.98 dB",
-//             "REPLAYGAIN_ALBUM_PEAK": "0.987245",
-//             "comment": "Downloaded from music.binimum.org/tidal.squid.wtf",
-//             "encoder": "Lavf59.27.100"
-//         }
-
 type SongData struct {
 	Id                  string
 	Title               string
