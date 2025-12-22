@@ -13,10 +13,9 @@ services:
     volumes:
       - ./users:/users
     environment:
-      URL: http://localhost
-      PORT: 8080
-      DOWNLOAD: /downloads
-      JWT_SECRET: ${JWT_SECRET}
+      URL: ${URL}
+      PORT: ${PORT}
+      DOWNLOAD: ${DOWNLOAD}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

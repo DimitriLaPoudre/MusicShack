@@ -11,7 +11,6 @@ import (
 
 var PORT string
 var URL url.URL
-var JWT_SECRET []byte
 var DOWNLOAD_FOLDER string
 
 func checkDownloadDirectory(dir string) error {
@@ -46,12 +45,6 @@ func init() {
 		port = "8080"
 	}
 	PORT = port
-
-	secret := os.Getenv("JWT_SECRET")
-	if secret == "" {
-		log.Fatal("JWT_SECRET is missing")
-	}
-	JWT_SECRET = []byte(secret)
 
 	folder := os.Getenv("DOWNLOAD")
 	if folder == "" {
