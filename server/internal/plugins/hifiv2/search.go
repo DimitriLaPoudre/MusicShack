@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
-	"github.com/mitchellh/mapstructure"
 )
 
 func getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchSongData, song string) {
@@ -178,57 +178,68 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	var result models.SearchData
 
 	if len(songData.Data.Songs) != 0 {
-		for index, value := range songData.Data.Songs {
-			songData.Data.Songs[index].CoverUrl = utils.GetImageURL(value.Album.CoverUrl, 640)
+		songs := make([]models.SearchDataSong, 0)
+		for _, song := range songData.Data.Songs {
+			artists := make([]models.SongDataArtist, 0)
+			for _, artist := range song.Artists {
+				artists = append(artists, models.SongDataArtist{
+					Id:   strconv.FormatUint(uint64(artist.Id), 10),
+					Name: artist.Name,
+				})
+			}
+
+			songs = append(songs, models.SearchDataSong{
+				Id:                  strconv.FormatUint(uint64(song.Id), 10),
+				Title:               song.Title,
+				Duration:            song.Duration,
+				MaximalAudioQuality: song.AudioQuality,
+				Popularity:          song.Popularity,
+				Artists:             artists,
+				Album: models.SongDataAlbum{
+					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
+					Title:    song.Album.Title,
+					CoverUrl: utils.GetImageURL(song.Album.CoverUrl, 640),
+				},
+			})
 		}
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			Result:           &result.Songs,
-			TagName:          "useless",
-			WeaklyTypedInput: true,
-		})
-		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Song: mapstructure.NewDecoder: %w", err)
-		}
-		if err := decoder.Decode(songData.Data.Songs); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Song: mapstructure.Decode: %w", err)
-		}
+		result.Songs = songs
 	}
 
 	if len(albumData.Data.Albums.Albums) != 0 {
-		for index, value := range albumData.Data.Albums.Albums {
-			albumData.Data.Albums.Albums[index].CoverUrl = utils.GetImageURL(value.CoverUrl, 640)
+		albums := make([]models.SearchDataAlbum, 0)
+		for _, album := range albumData.Data.Albums.Albums {
+			artists := make([]models.AlbumDataArtist, 0)
+			for _, artist := range album.Artists {
+				artists = append(artists, models.AlbumDataArtist{
+					Id:   strconv.FormatUint(uint64(artist.Id), 10),
+					Name: artist.Name,
+				})
+			}
+
+			albums = append(albums, models.SearchDataAlbum{
+				Id:                  strconv.FormatUint(uint64(album.Id), 10),
+				Title:               album.Title,
+				Duration:            album.Duration,
+				CoverUrl:            utils.GetImageURL(album.CoverUrl, 640),
+				MaximalAudioQuality: album.AudioQuality,
+				Popularity:          album.Popularity,
+				Artists:             artists,
+			})
 		}
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			Result:           &result.Albums,
-			TagName:          "useless",
-			WeaklyTypedInput: true,
-		})
-		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Album: mapstructure.NewDecoder: %w", err)
-		}
-		if err := decoder.Decode(albumData.Data.Albums.Albums); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Album: mapstructure.Decode: %w", err)
-		}
+		result.Albums = albums
 	}
 
 	if len(artistData.Data.Artists.Artists) != 0 {
-		for index, value := range artistData.Data.Artists.Artists {
-			if value.PictureUrl == "" {
-				value.PictureUrl = value.PictureUrlFallback
-			}
-			artistData.Data.Artists.Artists[index].PictureUrl = utils.GetImageURL(value.PictureUrl, 750)
+		artists := make([]models.SearchDataArtist, 0)
+		for _, artist := range artistData.Data.Artists.Artists {
+			artists = append(artists, models.SearchDataArtist{
+				Id:         strconv.FormatUint(uint64(artist.Id), 10),
+				Name:       artist.Name,
+				PictureUrl: utils.GetImageURL(artist.PictureUrl, 750),
+				Popularity: artist.Popularity,
+			})
 		}
-		decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-			Result:           &result.Artists,
-			TagName:          "useless",
-			WeaklyTypedInput: true,
-		})
-		if err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Artist: mapstructure.NewDecoder: %w", err)
-		}
-		if err := decoder.Decode(artistData.Data.Artists.Artists); err != nil {
-			return models.SearchData{}, fmt.Errorf("HifiV2.Search: Artist: mapstructure.Decode: %w", err)
-		}
+		result.Artists = artists
 	}
 
 	return result, nil

@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
-	"github.com/mitchellh/mapstructure"
 )
 
 func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- songData, id string) {
@@ -66,20 +66,34 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", context.Canceled)
 	}
 
-	data.Data.Album.CoverUrl = utils.GetImageURL(data.Data.Album.CoverUrl, 640)
-	data.Data.ReleaseDate = data.Data.ReleaseDate[:10]
-
 	var normalizeSongData models.SongData
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &normalizeSongData,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.SongData{}, fmt.Errorf("HifiV2.Song: mapstructure.NewDecoder: %w", err)
-	}
-	if err := decoder.Decode(data.Data); err != nil {
-		return models.SongData{}, fmt.Errorf("HifiV2.Song: mapstructure.Decode: %w", err)
+	{
+		normalizeSongData.Id = strconv.FormatUint(uint64(data.Data.Id), 10)
+		normalizeSongData.Title = data.Data.Title
+		normalizeSongData.Duration = data.Data.Duration
+		normalizeSongData.ReleaseDate = data.Data.ReleaseDate[:10]
+		normalizeSongData.TrackNumber = data.Data.TrackNumber
+		normalizeSongData.VolumeNumber = data.Data.VolumeNumber
+		normalizeSongData.MaximalAudioQuality = data.Data.AudioQuality
+
+		normalizeSongData.Popularity = data.Data.Popularity
+		normalizeSongData.Isrc = data.Data.Isrc
+
+		artists := make([]models.SongDataArtist, 0)
+		for _, artist := range data.Data.Artists {
+			artists = append(artists, models.SongDataArtist{
+				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				Name: artist.Name,
+			})
+		}
+		normalizeSongData.Artists = artists
+
+		album := models.SongDataAlbum{
+			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
+			Title:    data.Data.Album.Title,
+			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 640),
+		}
+		normalizeSongData.Album = album
 	}
 
 	return normalizeSongData, nil

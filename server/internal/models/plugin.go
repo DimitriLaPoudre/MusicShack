@@ -12,7 +12,6 @@ type Plugin interface {
 	Album(context.Context, uint, string) (AlbumData, error)
 	Artist(context.Context, uint, string) (ArtistData, error)
 	Search(context.Context, uint, string, string, string) (SearchData, error)
-	Cover(context.Context, uint, string) (string, error)
 	Lyrics(context.Context, uint, string) (string, string, error)
 }
 
@@ -35,113 +34,108 @@ type Plugin interface {
 //         }
 
 type SongData struct {
-	Id           string
-	Title        string
-	Duration     uint
-	ReleaseDate  string
-	TrackNumber  uint
-	VolumeNumber uint
-	AudioQuality string
-	Artist       struct {
-		Id   string
-		Name string
-	}
-	Artists []struct {
-		Id   string
-		Name string
-	}
-	Album struct {
-		Id       string
-		Title    string
-		CoverUrl string
-	}
-	DownloadUrl string
+	Id                  string
+	Title               string
+	Duration            uint
+	ReleaseDate         string
+	TrackNumber         uint
+	VolumeNumber        uint
+	MaximalAudioQuality string
+	Popularity          uint
+	Isrc                string
+	CoverUrl            string
+	Artists             []SongDataArtist
+	Album               SongDataAlbum
+}
+
+type SongDataArtist struct {
+	Id   string
+	Name string
+}
+
+type SongDataAlbum struct {
+	Id       string
+	Title    string
+	CoverUrl string
 }
 
 type AlbumData struct {
-	Id            string
-	Title         string
-	Duration      uint
-	ReleaseDate   string
-	NumberTracks  uint
-	NumberVolumes uint
-	Type          string
-	CoverUrl      string
-	AudioQuality  string
-	Artist        struct {
-		Id   string
-		Name string
-	}
-	Artists []struct {
-		Id   string
-		Name string
-	}
-	Limit       uint
-	Offset      uint
-	NumberSongs uint
-	Songs       []struct {
-		Id           string
-		Title        string
-		Duration     uint
-		TrackNumber  uint
-		VolumeNumber uint
-		Artists      []struct {
-			Id   string
-			Name string
-		}
-	}
+	Id                  string
+	Title               string
+	Duration            uint
+	ReleaseDate         string
+	NumberTracks        uint
+	NumberVolumes       uint
+	CoverUrl            string
+	MaximalAudioQuality string
+	Artists             []AlbumDataArtist
+	Songs               []AlbumDataSong
+}
+
+type AlbumDataArtist struct {
+	Id   string
+	Name string
+}
+
+type AlbumDataSong struct {
+	Id                  string
+	Title               string
+	Duration            uint
+	TrackNumber         uint
+	VolumeNumber        uint
+	MaximalAudioQuality string
+	Artists             []SongDataArtist
 }
 
 type ArtistData struct {
 	Id         string
 	Name       string
 	PictureUrl string
-	Albums     []AlbumData
-	// Albums     []struct {
-	// 	Id       string
-	// 	Title    string
-	// 	CoverUrl string
-	// 	Artists  []struct {
-	// 		Id   string
-	// 		Name string
-	// 	}
-	// }
-	Ep []struct {
-		Id       string
-		Title    string
-		CoverUrl string
-	}
-	Singles []struct {
-		Id       string
-		Title    string
-		CoverUrl string
-	}
+	Albums     []ArtistDataAlbum
+	Ep         []ArtistDataAlbum
+	Singles    []ArtistDataAlbum
+}
+
+type ArtistDataAlbum struct {
+	Id          string
+	Title       string
+	Duration    uint
+	ReleaseDate string
+	CoverUrl    string
+	Artists     []AlbumDataArtist
 }
 
 type SearchData struct {
-	Songs []struct {
-		Id       string
-		Title    string
-		CoverUrl string
-		Artists  []struct {
-			Id   string
-			Name string
-		}
-	}
-	Albums []struct {
-		Id       string
-		Title    string
-		CoverUrl string
-		Artists  []struct {
-			Id   string
-			Name string
-		}
-	}
-	Artists []struct {
-		Id         string
-		Name       string
-		PictureUrl string
-	}
+	Songs   []SearchDataSong
+	Albums  []SearchDataAlbum
+	Artists []SearchDataArtist
+}
+
+type SearchDataSong struct {
+	Id                  string
+	Title               string
+	Duration            uint
+	MaximalAudioQuality string
+	Popularity          uint
+	Artists             []SongDataArtist
+	Album               SongDataAlbum
+}
+
+type SearchDataAlbum struct {
+	Id                  string
+	Title               string
+	Duration            uint
+	CoverUrl            string
+	MaximalAudioQuality string
+	Popularity          uint
+	Artists             []AlbumDataArtist
+}
+
+type SearchDataArtist struct {
+	Id         string
+	Name       string
+	PictureUrl string
+	Popularity uint
 }
 
 type Status string

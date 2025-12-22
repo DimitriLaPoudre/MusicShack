@@ -20,12 +20,7 @@
 	});
 </script>
 
-<header
-	onwheel={(e) => {
-		e.stopPropagation();
-		e.preventDefault();
-	}}
->
+<header>
 	<button
 		class="logo"
 		onclick={() => {

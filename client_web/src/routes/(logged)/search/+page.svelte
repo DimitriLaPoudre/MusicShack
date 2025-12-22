@@ -91,7 +91,10 @@
 					>
 						<div class="cover">
 							{#if song.CoverUrl !== ""}
-								<img src={song.CoverUrl} alt={song.Title} />
+								<img
+									src={song.Album.CoverUrl}
+									alt={song.Title}
+								/>
 							{:else}
 								<Disc size={140} />
 							{/if}

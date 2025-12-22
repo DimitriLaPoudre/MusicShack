@@ -35,10 +35,10 @@ func FormatMetadata(path string, data models.SongData) error {
 
 	if err := taglib.WriteTags(path, map[string][]string{
 		taglib.Title:       {data.Title},
-		taglib.Artist:      {data.Artist.Name},
+		taglib.Artist:      {data.Artists[0].Name},
 		taglib.Artists:     artists,
 		taglib.Album:       {data.Album.Title},
-		taglib.AlbumArtist: {data.Artist.Name},
+		taglib.AlbumArtist: {data.Artists[0].Name},
 		taglib.TrackNumber: {trackNumber},
 		taglib.DiscNumber:  {volumeNumber},
 		taglib.Date:        {data.ReleaseDate},

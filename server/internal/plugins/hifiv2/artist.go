@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
-	"github.com/mitchellh/mapstructure"
 )
 
 func getArtistInfo(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistData, id string) {
@@ -61,7 +61,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 	wg.Add(2)
 
 	var data artistData
-	var albums artistAlbums
+	var albumsData artistAlbums
 
 	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
@@ -112,7 +112,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 		case find, ok := <-ch:
 			cancel()
 			if ok {
-				albums = find
+				albumsData = find
 			}
 		case <-ctx.Done():
 			cancel()
@@ -127,45 +127,43 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 	default:
 	}
 
-	var normalizeArtistData models.ArtistData
-
 	if data.Artist.Id == 0 {
 		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", errors.New("can't fetch"))
 	}
 
-	if data.Artist.PictureUrl == "" {
-		data.Artist.PictureUrl = data.Artist.PictureUrlFallback
-	}
-	data.Artist.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 750)
+	var normalizeArtistData models.ArtistData
+	{
+		normalizeArtistData.Id = strconv.FormatUint(uint64(data.Artist.Id), 10)
+		normalizeArtistData.Name = data.Artist.Name
+		if data.Artist.PictureUrl == "" {
+			data.Artist.PictureUrl = data.Artist.PictureUrlFallback
+		}
+		normalizeArtistData.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 750)
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &normalizeArtistData,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	if err != nil {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: mapstructure.NewDecoder: %w", err)
-	}
-	if err := decoder.Decode(data.Artist); err != nil {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: mapstructure.Decode: %w", err)
-	}
+		if albumsData.Albums.Id == "" {
+			return normalizeArtistData, nil
+		}
+		albums := make([]models.ArtistDataAlbum, 0)
+		for _, album := range albumsData.Albums.Rows[0].Modules[0].PagedList.Items {
+			artists := make([]models.AlbumDataArtist, 0)
+			for _, artist := range album.Artists {
+				artists = append(artists, models.AlbumDataArtist{
+					Id:   strconv.FormatUint(uint64(artist.Id), 10),
+					Name: artist.Name,
+				})
+			}
 
-	if albums.Albums.Id == "" {
-		return normalizeArtistData, nil
+			albums = append(albums, models.ArtistDataAlbum{
+				Id:          strconv.FormatUint(uint64(album.Id), 10),
+				Title:       album.Title,
+				Duration:    album.Duration,
+				ReleaseDate: album.ReleaseDate,
+				CoverUrl:    utils.GetImageURL(album.CoverUrl, 640),
+				Artists:     artists,
+			})
+		}
+		normalizeArtistData.Albums = albums
 	}
-
-	for i, item := range albums.Albums.Rows[0].Modules[0].PagedList.Items {
-		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].CoverUrl = utils.GetImageURL(item.CoverUrl, 640)
-		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].ReleaseDate = item.StreamStartDate[:10]
-		albums.Albums.Rows[0].Modules[0].PagedList.Items[i].StreamStartDate = item.StreamStartDate[:10]
-	}
-
-	decoder, _ = mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Result:           &normalizeArtistData.Albums,
-		TagName:          "useless",
-		WeaklyTypedInput: true,
-	})
-	decoder.Decode(albums.Albums.Rows[0].Modules[0].PagedList.Items)
 
 	return normalizeArtistData, nil
 }

@@ -12,9 +12,6 @@ func (p *HifiV2) Name() string {
 	return "hifiV2"
 }
 
-func (p *HifiV2) Cover(ctx context.Context, userId uint, id string) (string, error) {
-	return "", nil
-}
 func (p *HifiV2) Lyrics(ctx context.Context, userId uint, id string) (string, string, error) {
 	return "", "", nil
 }

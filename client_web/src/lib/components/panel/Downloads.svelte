@@ -41,6 +41,7 @@
 			list = body.tasks
 				.slice()
 				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
+			console.log(list);
 			error = null;
 		} catch (e) {
 			error =
@@ -122,8 +123,9 @@
 					>
 						<p>{download.Data.Title}</p>
 						<a
-							href="/artist/{download.Api}/{download.Data.Artist
-								.Id}">{download.Data.Artist.Name}</a
+							href="/artist/{download.Api}/{download.Data
+								.Artists[0].Id}"
+							>{download.Data.Artists[0].Name}</a
 						>
 					</button>
 					<div class="item-btn">
@@ -136,7 +138,7 @@
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									cancelDownload(download.Id);
+									await cancelDownload(download.Id);
 									({ list, error } = await loadDownloads());
 								}}
 							>
@@ -153,7 +155,7 @@
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									retryDownload(download.Id);
+									await retryDownload(download.Id);
 									({ list, error } = await loadDownloads());
 								}}
 							>
@@ -166,7 +168,7 @@
 						{/if}
 						<button
 							onclick={async () => {
-								deleteDownload(download.Id);
+								await deleteDownload(download.Id);
 								({ list, error } = await loadDownloads());
 							}}
 						>
