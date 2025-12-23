@@ -33,6 +33,7 @@
 			}
 			inputAdminPassword = { oldPassword: "", newPassword: "" };
 			errorPassword = null;
+			await logout();
 		} catch (e) {
 			errorPassword =
 				e instanceof Error

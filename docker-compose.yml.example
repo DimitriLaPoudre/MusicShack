@@ -1,6 +1,6 @@
 services:
   musicshack:
-    build: .
+    image: ghcr.io/dimitrilapoudre/musicshack:latest
     depends_on:
       database:
         condition: service_healthy
@@ -23,12 +23,11 @@ services:
 
   database:
     image: postgres:16
+    restart: unless-stopped
     networks:
       - musicshack
-    ports:
-      - "5432:5432"
     volumes:
-      - ./db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -42,3 +41,6 @@ services:
 networks:
   musicshack:
     driver: bridge
+
+volumes:
+  db:

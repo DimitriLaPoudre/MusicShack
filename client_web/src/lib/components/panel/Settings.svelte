@@ -47,6 +47,7 @@
 			username = data.username;
 			errorUser = null;
 			inputUser = { username: "", password: "" };
+			await logout();
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to update user info";
