@@ -48,7 +48,7 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func validateRequestUser(req models.UserRequest) error {
+func validateRequestUser(req models.RequestUser) error {
 	if err := validateUsername(req.Username); err != nil {
 		return fmt.Errorf("validateRequestUser: %w", err)
 	}
@@ -61,7 +61,7 @@ func validateRequestUser(req models.UserRequest) error {
 }
 
 func Login(c *gin.Context) {
-	var req models.UserRequest
+	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

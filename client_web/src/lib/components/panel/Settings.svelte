@@ -3,15 +3,14 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { onMount } from "svelte";
 	import { Pencil, Plus, Trash } from "lucide-svelte";
+	import type { RequestInstance, RequestUser } from "$lib/types/request";
 
 	let errorUser = $state<null | string>(null);
-	let errorInstances = $state<null | string>(null);
-
+	let inputUser = $state<RequestUser>({ username: "", password: "" });
 	let username = $state<null | string>(null);
-	let inputUserUsername = $state<null | string>(null);
-	let inputUserPassword = $state<null | string>(null);
-	let inputInstancesAPI = $state<null | string>(null);
-	let inputInstancesURL = $state<null | string>(null);
+
+	let errorInstances = $state<null | string>(null);
+	let inputInstance = $state<RequestInstance>({ api: "", url: "" });
 	let instances = $state<null | any>(null);
 
 	onMount(() => {
@@ -37,17 +36,14 @@
 	async function changeUser(event: SubmitEvent) {
 		event.preventDefault();
 		try {
-			const res = await apiFetch("/me", "PUT", {
-				username: inputUserUsername,
-				password: inputUserPassword,
-			});
+			const res = await apiFetch("/me", "PUT", inputUser);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to update me");
 			}
 			username = body.user.Username;
 			errorUser = null;
-			inputUserUsername = null;
+			inputUser = { username: "", password: "" };
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to update user info";
@@ -74,23 +70,27 @@
 	async function addInstance(event: SubmitEvent) {
 		event.preventDefault();
 		try {
-			if (!inputInstancesAPI || !inputInstancesURL) {
+			if (!inputInstance.api || !inputInstance.url) {
 				errorInstances = "fill all fields";
 				return;
 			}
-			inputInstancesAPI = inputInstancesAPI.trim();
-			inputInstancesURL = inputInstancesURL.trim();
-			if (inputInstancesURL.endsWith("/")) {
-				inputInstancesURL = inputInstancesURL.substring(
+
+			inputInstance.api = inputInstance.api.trim();
+
+			inputInstance.url = inputInstance.url.trim();
+			if (inputInstance.url.endsWith("/")) {
+				inputInstance.url = inputInstance.url.substring(
 					0,
-					inputInstancesURL.length - 1,
+					inputInstance.url.length - 1,
 				);
 			}
 
-			const res = await apiFetch(`/instances`, "POST", {
-				api: inputInstancesAPI,
-				url: inputInstancesURL,
-			});
+			if (!inputInstance.api || !inputInstance.url) {
+				errorInstances = "fill fields with valid value";
+				return;
+			}
+
+			const res = await apiFetch(`/instances`, "POST", inputInstance);
 			const data = await res.json();
 			if (!res.ok) {
 				throw new Error(
@@ -98,8 +98,7 @@
 				);
 			}
 
-			inputInstancesAPI = "";
-			inputInstancesURL = "";
+			inputInstance = { api: "", url: "" };
 		} catch (e) {
 			errorInstances =
 				e instanceof Error ? e.message : "Failed to add instance";
@@ -151,8 +150,8 @@
 		{/if}
 		<form class="form" onsubmit={changeUser}>
 			<div class="inputs">
-				<input placeholder={username} bind:value={inputUserUsername} />
-				<input placeholder="Password" bind:value={inputUserPassword} />
+				<input placeholder={username} bind:value={inputUser.username} />
+				<input placeholder="Password" bind:value={inputUser.password} />
 			</div>
 			<button>
 				<Pencil />
@@ -168,8 +167,8 @@
 		{/if}
 		<form class="form" onsubmit={addInstance}>
 			<div class="inputs">
-				<input placeholder="API" bind:value={inputInstancesAPI} />
-				<input placeholder="URL" bind:value={inputInstancesURL} />
+				<input placeholder="API" bind:value={inputInstance.api} />
+				<input placeholder="URL" bind:value={inputInstance.url} />
 			</div>
 			<button><Plus /></button>
 		</form>

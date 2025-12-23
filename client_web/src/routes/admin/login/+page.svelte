@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto, afterNavigate } from "$app/navigation";
+	import type { RequestAdmin } from "$lib/types/request";
 
-	let password: string = "";
-	let error: string = "";
+	let credentials = $state<RequestAdmin>({ password: "" });
+	let error = $state<string>("");
 
 	afterNavigate(async () => {
 		const res = await fetch("/api/admin", {
@@ -21,7 +22,7 @@
 			const res = await fetch("/api/admin/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ password }),
+				body: JSON.stringify(credentials),
 				credentials: "include",
 			});
 
@@ -39,7 +40,7 @@
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";
 		}
-		password = "";
+		credentials.password = "";
 	}
 </script>
 
@@ -53,7 +54,7 @@
 			<input
 				type="password"
 				placeholder="Password"
-				bind:value={password}
+				bind:value={credentials.password}
 				required
 			/>
 			<button>Login</button>

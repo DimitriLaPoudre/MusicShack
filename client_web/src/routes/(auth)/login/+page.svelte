@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto, onNavigate } from "$app/navigation";
+	import type { RequestUser } from "$lib/types/request";
 
-	let username: string = "";
-	let password: string = "";
-	let error: string = "";
+	let credentials = $state<RequestUser>({ username: "", password: "" });
+	let error = $state<string>("");
 
 	onNavigate(async () => {
 		const res = await fetch("/api/me", {
@@ -16,12 +16,13 @@
 		}
 	});
 
-	async function handleLogin() {
+	async function handleLogin(e: SubmitEvent) {
+		e.preventDefault();
 		try {
 			const res = await fetch("/api/login", {
 				method: "POST",
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ username, password }),
+				body: JSON.stringify(credentials),
 				credentials: "include",
 			});
 
@@ -45,16 +46,20 @@
 
 <div class="body">
 	<h1>Login</h1>
-	<form on:submit|preventDefault={handleLogin}>
+	<form onsubmit={handleLogin}>
 		<div class="form">
 			{#if error}
 				<p>{error}</p>
 			{/if}
-			<input placeholder="Username" bind:value={username} required />
+			<input
+				placeholder="Username"
+				bind:value={credentials.username}
+				required
+			/>
 			<input
 				type="password"
 				placeholder="Password"
-				bind:value={password}
+				bind:value={credentials.password}
 				required
 			/>
 			<button>Login</button>

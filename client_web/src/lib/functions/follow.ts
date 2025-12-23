@@ -1,3 +1,4 @@
+import type { RequestFollow } from "$lib/types/request";
 import { apiFetch } from "./fetch";
 
 export async function loadFollows() {
@@ -18,12 +19,10 @@ export async function loadFollows() {
 	return { list, error }
 }
 
-export async function addFollow(api: string, id: string) {
+export async function addFollow(req: RequestFollow) {
 	let error = null
 	try {
-		const res = await apiFetch("/follows", "POST", {
-			api, id
-		});
+		const res = await apiFetch("/follows", "POST", req);
 		const body = await res.json();
 		if (!res.ok) {
 			throw new Error(body.error || "Failed to add follow");

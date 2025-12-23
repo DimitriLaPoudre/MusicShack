@@ -39,7 +39,7 @@ func UpdateMe(c *gin.Context) {
 		return
 	}
 
-	var updates models.UserRequest
+	var updates models.RequestUser
 	if err := c.ShouldBindJSON(&updates); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

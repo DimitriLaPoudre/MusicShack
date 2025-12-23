@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { adminFetch } from "$lib/functions/fetch";
+	import type { RequestAdminPassword, RequestUser } from "$lib/types/request";
 	import { Plus, Trash } from "lucide-svelte";
 
 	let errorPassword = $state<null | string>(null);
 	let errorUser = $state<null | string>(null);
 	let errorLogout = $state<null | string>(null);
 
-	let inputNewPassword = $state<null | string>(null);
-	let inputOldPassword = $state<null | string>(null);
-	let inputUserUsername = $state<null | string>(null);
-	let inputUserPassword = $state<null | string>(null);
+	let inputAdminPassword = $state<RequestAdminPassword>({
+		oldPassword: "",
+		newPassword: "",
+	});
 
+	let inputUser = $state<RequestUser>({ username: "", password: "" });
 	let users = $state<null | any>(null);
 
 	afterNavigate(() => {
@@ -20,16 +22,16 @@
 
 	async function changePassword() {
 		try {
-			const res = await adminFetch("/admin/password", "PUT", {
-				oldPassword: inputOldPassword,
-				newPassword: inputNewPassword,
-			});
+			const res = await adminFetch(
+				"/admin/password",
+				"PUT",
+				inputAdminPassword,
+			);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to update password");
 			}
-			inputNewPassword = null;
-			inputOldPassword = null;
+			inputAdminPassword = { oldPassword: "", newPassword: "" };
 			errorPassword = null;
 		} catch (e) {
 			errorPassword =
@@ -55,16 +57,12 @@
 
 	async function createUser() {
 		try {
-			const res = await adminFetch("/users", "POST", {
-				username: inputUserUsername,
-				password: inputUserPassword,
-			});
+			const res = await adminFetch("/users", "POST", inputUser);
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to create user");
 			}
-			inputUserUsername = null;
-			inputUserPassword = null;
+			inputUser = { username: "", password: "" };
 			await loadUsers();
 			errorUser = null;
 		} catch (e) {
@@ -117,11 +115,11 @@
 			<div class="inputs">
 				<input
 					placeholder="New Password"
-					bind:value={inputNewPassword}
+					bind:value={inputAdminPassword.newPassword}
 				/>
 				<input
 					placeholder="Actual Password"
-					bind:value={inputOldPassword}
+					bind:value={inputAdminPassword.oldPassword}
 				/>
 			</div>
 			<button><Plus /></button>
@@ -141,8 +139,8 @@
 			}}
 		>
 			<div class="inputs">
-				<input placeholder="Username" bind:value={inputUserUsername} />
-				<input placeholder="Password" bind:value={inputUserPassword} />
+				<input placeholder="Username" bind:value={inputUser.username} />
+				<input placeholder="Password" bind:value={inputUser.password} />
 			</div>
 			<button><Plus /></button>
 		</form>

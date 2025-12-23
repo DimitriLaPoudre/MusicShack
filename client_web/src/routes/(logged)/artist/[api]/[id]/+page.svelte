@@ -58,7 +58,7 @@
 			<div class="bottom-data">
 				<button
 					onclick={() => {
-						addFollow(page.params.api!, artist.Id);
+						addFollow({ api: page.params.api!, id: artist.Id });
 					}}>Favorite</button
 				>
 				<button

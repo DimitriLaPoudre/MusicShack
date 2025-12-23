@@ -9,7 +9,7 @@ type User struct {
 	Instances ApiInstance `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE"`
 }
 
-type UserRequest struct {
+type RequestUser struct {
 	Username string
 	Password string
 }

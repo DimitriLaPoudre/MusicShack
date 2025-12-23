@@ -87,8 +87,8 @@ func SetupRouters() *graceful.Graceful {
 			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
 			downloads.GET("", handlers.ListDownload)
 			downloads.DELETE("/:id", handlers.DeleteDownload)
-			downloads.POST("/retry/:id", handlers.RetryDownload)
-			downloads.POST("/cancel/:id", handlers.CancelDownload)
+			downloads.POST("/:id/retry", handlers.RetryDownload)
+			downloads.POST("/:id/cancel", handlers.CancelDownload)
 		}
 
 		follows := api.Group("/follows")

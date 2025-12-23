@@ -34,7 +34,7 @@ func GetUserByUsername(username string) (*models.User, error) {
 	return &user, nil
 }
 
-func UpdateUser(id uint, updates *models.UserRequest) error {
+func UpdateUser(id uint, updates *models.RequestUser) error {
 	result := database.DB.Model(&models.User{}).Where("id = ?", id).Updates(updates)
 	if result.Error != nil {
 		return result.Error

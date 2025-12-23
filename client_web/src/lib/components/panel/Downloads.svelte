@@ -54,7 +54,7 @@
 
 	async function retryDownload(id: string) {
 		try {
-			const res = await apiFetch(`/users/downloads/retry/${id}`, "POST");
+			const res = await apiFetch(`/users/downloads/${id}/retry`, "POST");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to retry download");
@@ -66,7 +66,7 @@
 
 	async function cancelDownload(id: string) {
 		try {
-			const res = await apiFetch(`/users/downloads/cancel/${id}`, "POST");
+			const res = await apiFetch(`/users/downloads/${id}/cancel`, "POST");
 			const body = await res.json();
 			if (!res.ok) {
 				throw new Error(body.error || "Failed to cancel download");

@@ -17,7 +17,7 @@ import (
 )
 
 func CreateUser(c *gin.Context) {
-	var req models.UserRequest
+	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -81,7 +81,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	var req models.UserRequest
+	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
