@@ -1,139 +1,77 @@
 # MusicShack
 
-MusicShack is a self-hosted music management platform that lets you browse, download and organize music on your own server. It pairs a modern Svelte frontend with a lightweight Go backend and supports extensible plugins for additional music sources.
+MusicShack is a self-hosted music management platform that lets you browse and download music on your own server. It pairs a modern Svelte frontend with a lightweight Go backend and supports extensible plugins for additional music sources.
 
 ---
 
 ## Purpose
 
-Provide a private, easy-to-run solution to manage your personal music library. MusicShack focuses on privacy, extensibility (plugins) and a simple deployment flow via Docker.
+Provides a private, easy-to-run solution to add new content to your personal music library. MusicShack focuses on privacy, extensibility (plugins) and a simple deployment flow via Docker.
 
 ---
 
 ## Key features
 
-- Browse and search music catalogs through plugins (example: hifi)
-- Download tracks and albums directly to the server
-- Follow artists and manage your library
+- Browse and search music catalogs through plugins (example: [hifi-api](https://github.com/uimaxbai/hifi-api))
+- Download tracks and albums directly to the server with unified formatting across all plugin sources
+- Follow artists — every Friday at 1AM, MusicShack will download any new songs released by artists you follow
 - User authentication and simple user management
-- Plugin architecture to add new data sources
+- Plugin architecture to add new data sources in the future, like Qobuz-DL or even your friends' servers
 - Deployable with Docker / Docker Compose
 
 ---
 
-## Recommended deployment: Docker Compose
+## Important Info
 
-Use Docker Compose to run MusicShack quickly and reliably. The repository includes a `docker-compose.yml` sample. For production, store secrets in a `.env` file (not in version control).
+This project is my first "big" solo project.
 
-**Use the Docker image from Github Container Repository (ghcr.io/dimitrilapoudre/musicshack:latest) for better and easier update handling.**
+Feel free to ask for any features you think are relevant.
 
-1. Clone the repository:
+Song tags are based on the Navidrome standard (I don't know about other music servers).
 
-```bash
-git clone https://github.com/DimitriLaPoudre/MusicShack.git
-cd MusicShack
-```
-
-2. Create a `.env` file at the repository root (recommended):
-
-```env
-JWT_SECRET=change_me_super_secret
-POSTGRES_USER=musicshack
-POSTGRES_PASSWORD=strong_password
-POSTGRES_DB=musicshack
-POSTGRES_HOST=database
-```
-
-3. Start the stack:
-
-```bash
-docker compose up --build -d
-```
-
-The main service listens on port `8080` by default. Downloaded files are persisted under the `./downloads` volume.
-
-> Tip: keep your `.env` file out of source control and never commit secrets.
+The next big step will be to add a new private source to fetch data from projects like DAB Music Player or other Navidrome servers.
 
 ---
 
-### Example `docker-compose.yml` (excerpt)
+## Deployment (Docker Compose)
 
-The repository already contains a `docker-compose.yml`. The example below demonstrates the primary services and environment variables used by MusicShack:
+MusicShack provides two example files for quick deployment:
+- `docker-compose.yml.example`
+- `.env.example`
 
-```yaml
-services:
-  musicshack:
-    image: ghcr.io/dimitrilapoudre/musicshack:latest
-    depends_on:
-      database:
-        condition: service_healthy
-    restart: unless-stopped
-    user: "1000:1000"
-    ports:
-      - "8080:8080"
-    volumes:
-      - ./downloads:/downloads
-    environment:
-      URL: http://localhost
-      PORT: 8080
-      DOWNLOAD: /downloads
-      JWT_SECRET: ${JWT_SECRET}
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+### Deployment steps
 
-  database:
-    image: postgres:16
-    ports:
-      - "5432:5432"
-    volumes:
-      - ./db:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+1. Copy the example files:
+   ```bash
+   cp docker-compose.yml.example docker-compose.yml
+   cp .env.example .env
+   ```
+2. Edit the `.env` file to match your environment:
+   - Set the `URL` (e.g. http://localhost or https://mywebsite.com)
+   - Set the `PORT` (e.g. 8080)
+   - Adjust Postgres credentials for better security
+3. Create the `downloads` folder at the project root (if it doesn't exist):
+   ```bash
+   mkdir downloads
+   ```
+4. Start the stack:
+   ```bash
+   docker compose up -d
+   ```
+5. Access the admin interface:
+   - Go to `http://URL:PORT/admin` (default: http://localhost:8080/admin)
+   - The default admin password is: `changemenow`
+   - Change it immediately after your first login!
+6. Create a user via the admin interface
+7. Access the main interface:
+   - Go to `http://URL:PORT/`
+   - Log in with the user you created
 
-networks:
-  default:
-    name: musicshack
-    driver: bridge
-```
+> ⚠️ Never commit your `.env` file with plain secrets.
 
----
+> Downloaded files will be stored in the `downloads` folder.
 
-## Local development
-
-If you prefer to run the components locally for development:
-
-### Frontend
-
-```bash
-cd client_web
-npm install
-npm run dev
-```
-
-### Backend
-
-```bash
-cd server
-go mod download
-go run main.go
-```
-
-The backend uses environment variables (see `server/internal/config/config.go`): `URL`, `JWT_SECRET`, `DOWNLOAD_FOLDER`, and Postgres connection variables (see `server/internal/db/database.go`) like the Docker Image.
-
----
-
-## Architecture & plugins
-
-The backend loads plugins from `server/internal/plugins`. Each plugin implements the `Plugin` interface (see `server/internal/models/plugin.go`) and lets you add new sources (e.g. `hifi`, `hifiv2`) with plugins.Register().
+Enjoy 🎶
 
 ---
 
