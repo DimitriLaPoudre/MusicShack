@@ -48,6 +48,7 @@
 				throw new Error(data.error || "Failed to fetch users");
 			}
 			users = data;
+			errorUser = null;
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to reload user list";
@@ -182,6 +183,7 @@
 	.loading {
 		text-align: center;
 	}
+
 	.error {
 		text-align: center;
 		background-color: var(--err);
@@ -202,7 +204,6 @@
 			text-align: center;
 			margin-top: 20px;
 		}
-
 		.form {
 			display: grid;
 			grid-template-columns: 1fr auto;
@@ -226,12 +227,10 @@
 				}
 			}
 		}
-
 		.change-password {
 			gap: 16px;
 			width: 100%;
 		}
-
 		.users {
 			display: flex;
 			flex-direction: column;
@@ -244,6 +243,7 @@
 				flex-direction: column;
 				gap: 4px;
 				width: 100%;
+
 				.item {
 					display: grid;
 					grid-template-columns: 1fr auto;
@@ -273,7 +273,6 @@
 				}
 			}
 		}
-
 		.logout {
 			width: 100%;
 			border-color: var(--err);

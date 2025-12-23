@@ -70,8 +70,6 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", context.Canceled)
 	}
 
-	fmt.Println(data)
-
 	var normalizeSongData models.SongData
 	{
 		normalizeSongData.Id = strconv.FormatUint(uint64(data.Data.Id), 10)

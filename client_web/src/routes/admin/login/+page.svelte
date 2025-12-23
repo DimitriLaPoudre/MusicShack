@@ -72,27 +72,26 @@
 		align-items: center;
 		margin-top: 10vh;
 		height: 100vh;
-	}
-	.form {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 1rem;
-		padding: 1rem 2rem;
 
-		p {
-			padding: 8px;
-			margin: 10px;
-			color: var(--err);
-		}
+		.form {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: 1rem;
+			padding: 1rem 2rem;
 
-		input {
-			padding: 8px;
-		}
-
-		button {
-			width: auto;
-			padding: 8px;
+			p {
+				padding: 8px;
+				margin: 10px;
+				color: var(--err);
+			}
+			input {
+				padding: 8px;
+			}
+			button {
+				width: auto;
+				padding: 8px;
+			}
 		}
 	}
 </style>

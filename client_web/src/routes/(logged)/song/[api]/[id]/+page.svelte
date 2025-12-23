@@ -67,7 +67,7 @@
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadSong(page.params.api!, song.id);
+				error = await downloadSong(page.params.api!, song!.id);
 			}}
 		>
 			Download Song
@@ -80,6 +80,7 @@
 		margin-top: 30px;
 		text-align: center;
 	}
+
 	.error {
 		margin-top: 30px;
 		display: flex;
@@ -87,52 +88,42 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
-
-		* {
-			margin: 0;
-		}
 	}
 
 	.header {
 		display: table;
 		margin: 0 auto;
 		border-spacing: 0 10px;
-	}
-	.top {
-		display: table-row;
-	}
+		.top {
+			display: table-row;
 
-	.top-data {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 10px;
-	}
+			.top-data {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
 
-	.cover {
-		width: 160px;
-		height: 160px;
-	}
+				.cover {
+					width: 160px;
+					height: 160px;
+				}
+				.data {
+					display: flex;
+					flex-direction: column;
+					gap: 7px;
 
-	.data {
-		display: flex;
-		flex-direction: column;
-		gap: 7px;
-
-		* {
-			margin: 0;
+					.artists {
+						display: flex;
+						flex-wrap: wrap;
+						gap: 0px 0.5rem;
+					}
+				}
+			}
 		}
-
-		.artists {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0px 0.5rem;
+		.download {
+			display: table-row;
+			width: 100%;
 		}
-	}
-
-	.download {
-		display: table-row;
-		width: 100%;
 	}
 </style>
