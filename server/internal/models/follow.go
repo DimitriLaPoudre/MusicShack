@@ -1,19 +1,19 @@
 package models
 
 type RequestFollow struct {
-	Api string
-	Id  string
+	Api string `json:"api"`
+	Id  string `json:"id"`
 }
 
 type Follow struct {
-	ID       uint   `gorm:"primaryKey"`
-	UserId   uint   `gorm:"not null;uniqueIndex:idx_follow"`
-	Api      string `gorm:"not null;uniqueIndex:idx_follow"`
-	ArtistId string `gorm:"not null;uniqueIndex:idx_follow"`
+	ID       uint   `gorm:"primaryKey" json:"id"`
+	UserId   uint   `gorm:"not null;uniqueIndex:idx_follow" json:"userId"`
+	Api      string `gorm:"not null;uniqueIndex:idx_follow" json:"api"`
+	ArtistId string `gorm:"not null;uniqueIndex:idx_follow" json:"artistId"`
 }
 
 type FollowItem struct {
-	Id     uint
-	Api    string
-	Artist ArtistData
+	Id     uint       `json:"id"`
+	Api    string     `json:"api"`
+	Artist ArtistData `json:"artist"`
 }

@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { apiFetch } from "$lib/functions/fetch";
+	import type {
+		DownloadData,
+		DownloadListResponse,
+		StatusResponse,
+	} from "$lib/types/response";
 	import {
 		CircleAlert,
 		CircleCheck,
@@ -13,7 +18,7 @@
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
 
-	let list = $state<null | any>(null);
+	let list = $state<null | DownloadListResponse>(null);
 	let error = $state<null | string>(null);
 	let buttonHover = $state<null | number>(null);
 
@@ -30,19 +35,16 @@
 	});
 
 	async function loadDownloads() {
-		let list;
-		let error;
+		let list = null;
+		let error = null;
 		try {
-			const res = await apiFetch(`/users/downloads`);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to fetch downloads");
+			const data =
+				await apiFetch<DownloadListResponse>(`/users/downloads`);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch downloads");
 			}
-			list = body.tasks
-				.slice()
-				.sort((a: any, b: any) => Number(b.Id) - Number(a.Id));
-			console.log(list);
-			error = null;
+			console.log(data);
+			list = data.sort((a, b) => Number(b.id) - Number(a.id));
 		} catch (e) {
 			error =
 				e instanceof Error
@@ -52,38 +54,47 @@
 		return { list, error };
 	}
 
-	async function retryDownload(id: string) {
+	async function retryDownload(id: number) {
 		try {
-			const res = await apiFetch(`/users/downloads/${id}/retry`, "POST");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to retry download");
+			const data = await apiFetch<StatusResponse>(
+				`/users/downloads/${id}/retry`,
+				"POST",
+			);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to retry download");
 			}
+			({ list, error } = await loadDownloads());
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to retry download";
 		}
 	}
 
-	async function cancelDownload(id: string) {
+	async function cancelDownload(id: number) {
 		try {
-			const res = await apiFetch(`/users/downloads/${id}/cancel`, "POST");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to cancel download");
+			const data = await apiFetch<StatusResponse>(
+				`/users/downloads/${id}/cancel`,
+				"POST",
+			);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to cancel download");
 			}
+			({ list, error } = await loadDownloads());
 		} catch (e) {
 			error =
 				e instanceof Error ? e.message : "Failed to cancel download";
 		}
 	}
 
-	async function deleteDownload(id: string) {
+	async function deleteDownload(id: number) {
 		try {
-			const res = await apiFetch(`/users/downloads/${id}`, "DELETE");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to delete download");
+			const data = await apiFetch<StatusResponse>(
+				`/users/downloads/${id}`,
+				"DELETE",
+			);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to delete download");
 			}
+			({ list, error } = await loadDownloads());
 		} catch (e) {
 			error =
 				e instanceof Error ? e.message : "Failed to delete download";
@@ -102,10 +113,10 @@
 		<div class="items">
 			{#each list as download, index}
 				<div class="item">
-					{#if download.Data.Album.CoverUrl !== ""}
+					{#if download.data.album.coverUrl !== ""}
 						<img
-							src={download.Data.Album.CoverUrl}
-							alt={download.Data.Album.CoverUrl}
+							src={download.data.album.coverUrl}
+							alt={download.data.album.coverUrl}
 						/>
 					{:else}
 						<Disc />
@@ -118,45 +129,43 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/song/${download.Api}/${download.Data.Id}`);
+							goto(`/song/${download.api}/${download.data.id}`);
 						}}
 					>
-						<p>{download.Data.Title}</p>
+						<p>{download.data.title}</p>
 						<a
-							href="/artist/{download.Api}/{download.Data
-								.Artists[0].Id}"
-							>{download.Data.Artists[0].Name}</a
+							href="/artist/{download.api}/{download.data
+								.artists[0].id}"
+							>{download.data.artists[0].name}</a
 						>
 					</button>
 					<div class="item-btn">
-						{#if download.Status === "done"}
+						{#if download.status === "done"}
 							<button>
 								<CircleCheck />
 							</button>
-						{:else if download.Status === "pending" || download.Status === "running"}
+						{:else if download.status === "pending" || download.status === "running"}
 							<button
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									await cancelDownload(download.Id);
-									({ list, error } = await loadDownloads());
+									await cancelDownload(download.id);
 								}}
 							>
 								{#if buttonHover != null && buttonHover === index}
 									<CircleX />
-								{:else if download.Status === "pending"}
+								{:else if download.status === "pending"}
 									<CircleDashed />
 								{:else}
 									<LoaderCircleIcon />
 								{/if}
 							</button>
-						{:else if download.Status === "failed" || download.Status === "cancel"}
+						{:else if download.status === "failed" || download.status === "cancel"}
 							<button
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									await retryDownload(download.Id);
-									({ list, error } = await loadDownloads());
+									await retryDownload(download.id);
 								}}
 							>
 								{#if buttonHover != null && buttonHover === index}
@@ -168,8 +177,7 @@
 						{/if}
 						<button
 							onclick={async () => {
-								await deleteDownload(download.Id);
-								({ list, error } = await loadDownloads());
+								await deleteDownload(download.id);
 							}}
 						>
 							<Trash />

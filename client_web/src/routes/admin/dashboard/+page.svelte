@@ -2,6 +2,7 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { adminFetch } from "$lib/functions/fetch";
 	import type { RequestAdminPassword, RequestUser } from "$lib/types/request";
+	import type { StatusResponse, UsersResponse } from "$lib/types/response";
 	import { Plus, Trash } from "lucide-svelte";
 
 	let errorPassword = $state<null | string>(null);
@@ -14,7 +15,7 @@
 	});
 
 	let inputUser = $state<RequestUser>({ username: "", password: "" });
-	let users = $state<null | any>(null);
+	let users = $state<null | UsersResponse>(null);
 
 	afterNavigate(() => {
 		loadUsers();
@@ -22,14 +23,13 @@
 
 	async function changePassword() {
 		try {
-			const res = await adminFetch(
+			const data = await adminFetch<StatusResponse>(
 				"/admin/password",
 				"PUT",
 				inputAdminPassword,
 			);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to update password");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to update password");
 			}
 			inputAdminPassword = { oldPassword: "", newPassword: "" };
 			errorPassword = null;
@@ -43,12 +43,11 @@
 
 	async function loadUsers() {
 		try {
-			const res = await adminFetch("/users");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to fetch users");
+			const data = await adminFetch<UsersResponse>("/users");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch users");
 			}
-			users = body;
+			users = data;
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to reload user list";
@@ -57,29 +56,34 @@
 
 	async function createUser() {
 		try {
-			const res = await adminFetch("/users", "POST", inputUser);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to create user");
+			const data = await adminFetch<StatusResponse>(
+				"/users",
+				"POST",
+				inputUser,
+			);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to create user");
 			}
 			inputUser = { username: "", password: "" };
-			await loadUsers();
 			errorUser = null;
+			await loadUsers();
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to create user";
 		}
 	}
 
-	async function deleteUser(userId: string) {
+	async function deleteUser(userId: number) {
 		try {
-			const res = await adminFetch(`/users/${userId}`, "DELETE");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to delete user");
+			const data = await adminFetch<StatusResponse>(
+				`/users/${userId}`,
+				"DELETE",
+			);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to delete user");
 			}
-			await loadUsers();
 			errorUser = null;
+			await loadUsers();
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to delete user";
@@ -88,16 +92,17 @@
 
 	async function logout() {
 		try {
-			const res = await adminFetch(`/admin/logout`, "POST");
-			const data = await res.json();
-			if (!res.ok) {
+			const data = await adminFetch<StatusResponse>(
+				`/admin/logout`,
+				"POST",
+			);
+			if ("error" in data) {
 				throw new Error(data.error || "error while trying to logout");
 			}
 			goto("/admin/login");
 			errorLogout = null;
 		} catch (e) {
 			errorLogout = e instanceof Error ? e.message : "Failed to logout";
-			return;
 		}
 	}
 </script>
@@ -151,12 +156,11 @@
 				{#each users as user}
 					<div class="item">
 						<div class="data">
-							<p>{user.Username}</p>
+							<p>{user.username}</p>
 						</div>
 						<button
 							onclick={async () => {
-								await deleteUser(user.ID);
-								await loadUsers();
+								await deleteUser(user.id);
 							}}
 						>
 							<Trash />

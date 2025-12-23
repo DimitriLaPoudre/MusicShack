@@ -16,81 +16,81 @@ type Plugin interface {
 }
 
 type SongData struct {
-	Id                  string
-	Title               string
-	Duration            uint
-	ReleaseDate         string
-	TrackNumber         uint
-	VolumeNumber        uint
-	MaximalAudioQuality string
-	Popularity          uint
-	Isrc                string
-	CoverUrl            string
-	Artists             []SongDataArtist
-	Album               SongDataAlbum
+	Id                  string           `json:"id"`
+	Title               string           `json:"title"`
+	Duration            uint             `json:"duration"`
+	ReleaseDate         string           `json:"releaseDate"`
+	TrackNumber         uint             `json:"trackNumber"`
+	VolumeNumber        uint             `json:"volumeNumber"`
+	MaximalAudioQuality string           `json:"maximalAudioQuality"`
+	Popularity          uint             `json:"popularity"`
+	Isrc                string           `json:"isrc"`
+	CoverUrl            string           `json:"coverUrl"`
+	Artists             []SongDataArtist `json:"artists"`
+	Album               SongDataAlbum    `json:"album"`
 }
 
 type SongDataArtist struct {
-	Id   string
-	Name string
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type SongDataAlbum struct {
-	Id       string
-	Title    string
-	CoverUrl string
+	Id       string `json:"id"`
+	Title    string `json:"title"`
+	CoverUrl string `json:"coverUrl"`
 }
 
 type AlbumData struct {
-	Id                  string
-	Title               string
-	Duration            uint
-	ReleaseDate         string
-	NumberTracks        uint
-	NumberVolumes       uint
-	CoverUrl            string
-	MaximalAudioQuality string
-	Artists             []AlbumDataArtist
-	Songs               []AlbumDataSong
+	Id                  string            `json:"id"`
+	Title               string            `json:"title"`
+	Duration            uint              `json:"duration"`
+	ReleaseDate         string            `json:"releaseDate"`
+	NumberTracks        uint              `json:"numberTracks"`
+	NumberVolumes       uint              `json:"numberVolumes"`
+	CoverUrl            string            `json:"coverUrl"`
+	MaximalAudioQuality string            `json:"maximalAudioQuality"`
+	Artists             []AlbumDataArtist `json:"artists"`
+	Songs               []AlbumDataSong   `json:"songs"`
 }
 
 type AlbumDataArtist struct {
-	Id   string
-	Name string
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type AlbumDataSong struct {
-	Id                  string
-	Title               string
-	Duration            uint
-	TrackNumber         uint
-	VolumeNumber        uint
-	MaximalAudioQuality string
-	Artists             []SongDataArtist
+	Id                  string           `json:"id"`
+	Title               string           `json:"title"`
+	Duration            uint             `json:"duration"`
+	TrackNumber         uint             `json:"trackNumber"`
+	VolumeNumber        uint             `json:"volumeNumber"`
+	MaximalAudioQuality string           `json:"maximalAudioQuality"`
+	Artists             []SongDataArtist `json:"artists"`
 }
 
 type ArtistData struct {
-	Id         string
-	Name       string
-	PictureUrl string
-	Albums     []ArtistDataAlbum
-	Ep         []ArtistDataAlbum
-	Singles    []ArtistDataAlbum
+	Id         string            `json:"id"`
+	Name       string            `json:"name"`
+	PictureUrl string            `json:"pictureUrl"`
+	Albums     []ArtistDataAlbum `json:"albums"`
+	Ep         []ArtistDataAlbum `json:"ep"`
+	Singles    []ArtistDataAlbum `json:"singles"`
 }
 
 type ArtistDataAlbum struct {
-	Id          string
-	Title       string
-	Duration    uint
-	ReleaseDate string
-	CoverUrl    string
-	Artists     []AlbumDataArtist
+	Id          string            `json:"id"`
+	Title       string            `json:"title"`
+	Duration    uint              `json:"duration"`
+	ReleaseDate string            `json:"releaseDate"`
+	CoverUrl    string            `json:"coverUrl"`
+	Artists     []AlbumDataArtist `json:"artists"`
 }
 
 type SearchData struct {
-	Songs   []SearchDataSong
-	Albums  []SearchDataAlbum
-	Artists []SearchDataArtist
+	Songs   []SearchDataSong   `json:"songs"`
+	Albums  []SearchDataAlbum  `json:"albums"`
+	Artists []SearchDataArtist `json:"artists"`
 }
 
 type SearchDataSong struct {

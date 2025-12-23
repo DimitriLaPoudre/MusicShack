@@ -47,7 +47,6 @@ func SetupRouters() *graceful.Graceful {
 			me.Use(middlewares.Logged())
 			me.GET("", handlers.Me)
 			me.PUT("", handlers.UpdateMe)
-			me.DELETE("", handlers.DeleteMe)
 		}
 
 		api.POST("/login", middlewares.LoggedOut(), handlers.Login)

@@ -1,11 +1,12 @@
 <script lang="ts">
-	import { goto, onNavigate } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 	import type { RequestUser } from "$lib/types/request";
+	import type { ErrorResponse } from "$lib/types/response";
 
 	let credentials = $state<RequestUser>({ username: "", password: "" });
 	let error = $state<string>("");
 
-	onNavigate(async () => {
+	afterNavigate(async () => {
 		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
@@ -27,7 +28,6 @@
 			});
 
 			if (res.ok) {
-				await res.json();
 				goto("/");
 				return;
 			} else {
@@ -35,8 +35,8 @@
 					goto("/dashboard");
 					return;
 				}
-				const errData = await res.json();
-				error = errData.error || "error during login";
+				const data = (await res.json()) as ErrorResponse;
+				throw new Error(data.error || "error during login");
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";
@@ -74,10 +74,6 @@
 		align-items: center;
 		margin-top: 10vh;
 		height: 100vh;
-
-		h1 {
-			margin: 0;
-		}
 	}
 	.form {
 		display: flex;

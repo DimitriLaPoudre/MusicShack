@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, afterNavigate } from "$app/navigation";
 	import type { RequestAdmin } from "$lib/types/request";
+	import type { ErrorResponse, StatusResponse } from "$lib/types/response";
 
 	let credentials = $state<RequestAdmin>({ password: "" });
 	let error = $state<string>("");
@@ -26,16 +27,18 @@
 				credentials: "include",
 			});
 
-			const body = await res.json();
+			let data;
 			if (res.ok) {
+				data = (await res.json()) as StatusResponse;
 				goto("/admin/dashboard");
 				return;
 			} else {
+				data = (await res.json()) as ErrorResponse;
 				if (res.status === 403) {
 					goto("/login");
 					return;
 				}
-				error = body.error || "error during login";
+				error = data.error || "error during login";
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "network failed";

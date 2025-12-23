@@ -1,14 +1,15 @@
 <script lang="ts">
 	import { afterNavigate } from "$app/navigation";
 	import { apiFetch } from "$lib/functions/fetch";
+	import type { StatusResponse } from "$lib/types/response";
 
-	let error = $state<string | null>(null);
+	let error = $state<null | string>(null);
 
 	afterNavigate(async () => {
 		try {
-			const res = await apiFetch("/me");
-			if (!res.ok) {
-				return;
+			const data = await apiFetch<StatusResponse>("/me");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch me");
 			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load dashboard";

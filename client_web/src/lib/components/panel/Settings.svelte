@@ -4,6 +4,11 @@
 	import { onMount } from "svelte";
 	import { Pencil, Plus, Trash } from "lucide-svelte";
 	import type { RequestInstance, RequestUser } from "$lib/types/request";
+	import type {
+		InstancesResponse,
+		StatusResponse,
+		UserResponse,
+	} from "$lib/types/response";
 
 	let errorUser = $state<null | string>(null);
 	let inputUser = $state<RequestUser>({ username: "", password: "" });
@@ -11,7 +16,7 @@
 
 	let errorInstances = $state<null | string>(null);
 	let inputInstance = $state<RequestInstance>({ api: "", url: "" });
-	let instances = $state<null | any>(null);
+	let instances = $state<null | InstancesResponse>(null);
 
 	onMount(() => {
 		loadInstance();
@@ -20,12 +25,11 @@
 
 	async function getUser() {
 		try {
-			const res = await apiFetch("/me");
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to fetch me");
+			const data = await apiFetch<UserResponse>("/me");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch me");
 			}
-			username = body.user.Username;
+			username = data.username;
 			errorUser = null;
 		} catch (e) {
 			errorUser =
@@ -36,12 +40,11 @@
 	async function changeUser(event: SubmitEvent) {
 		event.preventDefault();
 		try {
-			const res = await apiFetch("/me", "PUT", inputUser);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to update me");
+			const data = await apiFetch<UserResponse>("/me", "PUT", inputUser);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to update me");
 			}
-			username = body.user.Username;
+			username = data.username;
 			errorUser = null;
 			inputUser = { username: "", password: "" };
 		} catch (e) {
@@ -52,12 +55,11 @@
 
 	async function loadInstance() {
 		try {
-			const res = await apiFetch(`/instances`);
-			const body = await res.json();
-			if (!res.ok) {
-				throw new Error(body.error || "Failed to fetch instances");
+			const data = await apiFetch<InstancesResponse>(`/instances`);
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch instances");
 			}
-			instances = body;
+			instances = data;
 			errorInstances = null;
 		} catch (e) {
 			errorInstances =
@@ -90,51 +92,53 @@
 				return;
 			}
 
-			const res = await apiFetch(`/instances`, "POST", inputInstance);
-			const data = await res.json();
-			if (!res.ok) {
+			const data = await apiFetch<StatusResponse>(
+				`/instances`,
+				"POST",
+				inputInstance,
+			);
+			if ("error" in data) {
 				throw new Error(
 					data.error || "error while trying to delete Instance",
 				);
 			}
 
 			inputInstance = { api: "", url: "" };
+			loadInstance();
 		} catch (e) {
 			errorInstances =
 				e instanceof Error ? e.message : "Failed to add instance";
 			return;
 		}
-		loadInstance();
 	}
 
 	async function deleteInstance(id: number) {
 		try {
-			const res = await apiFetch(`/instances/${id}`, "DELETE");
-			const data = await res.json();
-			if (!res.ok) {
+			const data = await apiFetch<StatusResponse>(
+				`/instances/${id}`,
+				"DELETE",
+			);
+			if ("error" in data) {
 				throw new Error(
 					data.error || "error while trying to delete Instance",
 				);
 			}
+			loadInstance();
 		} catch (e) {
 			errorInstances =
 				e instanceof Error ? e.message : "Failed to delete instance";
-			return;
 		}
-		loadInstance();
 	}
 
 	async function logout() {
 		try {
-			const res = await apiFetch(`/logout`, "POST");
-			const data = await res.json();
-			if (!res.ok) {
+			const data = await apiFetch<StatusResponse>(`/logout`, "POST");
+			if ("error" in data) {
 				throw new Error(data.error || "error while trying to logout");
 			}
 			goto("/login");
 		} catch (e) {
 			errorUser = e instanceof Error ? e.message : "Failed to logout";
-			return;
 		}
 	}
 </script>
@@ -179,10 +183,10 @@
 				{#each instances as instance}
 					<div class="item">
 						<div class="data">
-							<p>{instance.Api}</p>
-							<p>{instance.Url}</p>
+							<p>{instance.api}</p>
+							<p>{instance.url}</p>
 						</div>
-						<button onclick={() => deleteInstance(instance.Id)}>
+						<button onclick={() => deleteInstance(instance.id)}>
 							<Trash />
 						</button>
 					</div>
