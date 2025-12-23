@@ -9,13 +9,13 @@ services:
     networks:
       - musicshack
     ports:
-      - "8080:8080"
+      - "${PORT}:8080"
     volumes:
-      - ./downloads/:/downloads
+      - ${DOWNLOAD}:/downloads
     environment:
       URL: ${URL}
-      PORT: ${PORT}
-      DOWNLOAD: ${DOWNLOAD}
+      PORT: 8080
+      DOWNLOAD: /downloads
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -23,8 +23,8 @@ services:
 
   database:
     image: postgres:16
-    # networks:
-    #   - musicshack
+    networks:
+      - musicshack
     ports:
       - "5432:5432"
     volumes:
