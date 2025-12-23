@@ -33,6 +33,10 @@ func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data downloadData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -88,6 +92,10 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("downloadTidal: download url request: %w", err)
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, fmt.Errorf("downloadTidal: fetch error: %s", resp.Status)
 	}
 
 	return resp.Body, nil

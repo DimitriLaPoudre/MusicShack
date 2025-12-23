@@ -31,14 +31,14 @@
 	<title>{artist?.Name || "Artist"} - MusicShack</title>
 </svelte:head>
 
-{#if isLoading}
-	<p class="loading">Loading...</p>
-{:else if error}
+{#if error}
 	<div class="error">
 		<h2>Error loading Artist</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
+{:else if isLoading}
+	<p class="loading">Loading...</p>
 {:else}
 	<!-- page top -->
 	<div class="header">

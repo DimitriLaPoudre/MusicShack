@@ -27,6 +27,10 @@ func getArtistInfo(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data artistData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -47,6 +51,10 @@ func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 		return
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return
+	}
 
 	var data artistAlbums
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {

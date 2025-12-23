@@ -94,30 +94,30 @@ type SearchData struct {
 }
 
 type SearchDataSong struct {
-	Id                  string
-	Title               string
-	Duration            uint
-	MaximalAudioQuality string
-	Popularity          uint
-	Artists             []SongDataArtist
-	Album               SongDataAlbum
+	Id                  string           `json:"id"`
+	Title               string           `json:"title"`
+	Duration            uint             `json:"duration"`
+	MaximalAudioQuality string           `json:"maximalAudioQuality"`
+	Popularity          uint             `json:"popularity"`
+	Artists             []SongDataArtist `json:"artists"`
+	Album               SongDataAlbum    `json:"album"`
 }
 
 type SearchDataAlbum struct {
-	Id                  string
-	Title               string
-	Duration            uint
-	CoverUrl            string
-	MaximalAudioQuality string
-	Popularity          uint
-	Artists             []AlbumDataArtist
+	Id                  string            `json:"id"`
+	Title               string            `json:"title"`
+	Duration            uint              `json:"duration"`
+	CoverUrl            string            `json:"coverUrl"`
+	MaximalAudioQuality string            `json:"maximalAudioQuality"`
+	Popularity          uint              `json:"popularity"`
+	Artists             []AlbumDataArtist `json:"artists"`
 }
 
 type SearchDataArtist struct {
-	Id         string
-	Name       string
-	PictureUrl string
-	Popularity uint
+	Id         string `json:"id"`
+	Name       string `json:"name"`
+	PictureUrl string `json:"pictureUrl"`
+	Popularity uint   `json:"popularity"`
 }
 
 type Status string
@@ -131,8 +131,8 @@ const (
 )
 
 type DownloadData struct {
-	Id     uint
-	Data   SongData
-	Api    string
-	Status Status
+	Id     uint     `json:"id"`
+	Data   SongData `json:"data"`
+	Api    string   `json:"api"`
+	Status Status   `json:"status"`
 }

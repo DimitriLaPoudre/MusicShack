@@ -135,3 +135,5 @@ export interface SearchDataArtist {
 	pictureUrl: string;
 	popularity: number;
 }
+
+export type SearchResponse = { [key: string]: SearchData }

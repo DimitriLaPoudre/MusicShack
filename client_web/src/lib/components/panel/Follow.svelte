@@ -21,7 +21,6 @@
 
 <div class="body">
 	<h1>Followed Artist</h1>
-
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}

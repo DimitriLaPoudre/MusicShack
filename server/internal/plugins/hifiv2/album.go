@@ -27,6 +27,10 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data albumData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return

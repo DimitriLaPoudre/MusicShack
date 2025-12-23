@@ -3,71 +3,71 @@
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadSong } from "$lib/functions/download";
+	import type { SongData } from "$lib/types/response";
 
-	let isLoading = $state(true);
-	let error = $state<string | null>(null);
-	let song = $state<any | null>(null);
+	let error = $state<null | string>(null);
+	let song = $state<null | SongData>(null);
 
 	afterNavigate(async () => {
 		try {
-			const res = await apiFetch(
+			const data = await apiFetch<SongData>(
 				`/song/${page.params.api}/${page.params.id}`,
 			);
-			song = await res.json();
-			if (!res.ok) {
-				throw new Error(song.error || "Failed to fetch song");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch song");
 			}
-			song.Duration = `${Math.floor(song.Duration / 60)}:${(song.Duration % 60).toString().padStart(2, "0")}`;
-			isLoading = false;
+			song = data;
+			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
-			isLoading = false;
 		}
 	});
 </script>
 
 <svelte:head>
 	<title
-		>{song?.Title || "Song"} | {song?.Artist?.Name || "Artist"} - MusicShack</title
+		>{song?.title || "Song"} | {song?.artists[0]?.name || "Artist"} - MusicShack</title
 	>
 </svelte:head>
 
-{#if isLoading}
-	<p class="loading">Loading...</p>
-{:else if error}
+{#if error}
 	<div class="error">
 		<h2>Error loading Song</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
+{:else if !song}
+	<p class="loading">Loading...</p>
 {:else}
 	<!-- page top -->
 	<div class="header">
 		<div class="top">
 			<div class="top-data">
-				<img class="cover" src={song.Album.CoverUrl} alt={song.Title} />
+				<img class="cover" src={song.album.coverUrl} alt={song.title} />
 				<div class="data">
-					<h1>{song.Title}</h1>
-					<a href="/album/{page.params.api}/{song.Album.Id}">
-						{song.Album.Title}
+					<h1>{song.title}</h1>
+					<a href="/album/{page.params.api}/{song.album.id}">
+						{song.album.title}
 					</a>
 					<div class="artists">
-						{#each song.Artists as artist}
-							<a href="/artist/{page.params.api}/{artist.Id}">
-								{artist.Name}
+						{#each song.artists as artist}
+							<a href="/artist/{page.params.api}/{artist.id}">
+								{artist.name}
 							</a>
 						{/each}
 					</div>
 					<br />
-					<p>{song.Duration}</p>
-					<p>{song.AudioQuality}</p>
+					<p>
+						{`${Math.floor(song.duration / 60)}:${(song.duration % 60).toString().padStart(2, "0")}`}
+					</p>
+					<p>{song.maximalAudioQuality}</p>
 				</div>
 			</div>
 		</div>
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadSong(page.params.api!, song.Id);
+				error = await downloadSong(page.params.api!, song.id);
 			}}
 		>
 			Download Song

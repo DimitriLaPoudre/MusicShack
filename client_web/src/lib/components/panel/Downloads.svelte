@@ -43,7 +43,6 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch downloads");
 			}
-			console.log(data);
 			list = data.sort((a, b) => Number(b.id) - Number(a.id));
 		} catch (e) {
 			error =
@@ -113,32 +112,46 @@
 		<div class="items">
 			{#each list as download, index}
 				<div class="item">
-					{#if download.data.album.coverUrl !== ""}
-						<img
-							src={download.data.album.coverUrl}
-							alt={download.data.album.coverUrl}
-						/>
+					{#if download.data.id === ""}
+						<div class="img">
+							<Disc />
+						</div>
+						<button class="item-data">
+							<p>Unreleased</p>
+							<p>Unknown</p>
+						</button>
 					{:else}
-						<Disc />
-					{/if}
-					<button
-						class="item-data"
-						onclick={(e) => {
-							if (
-								e.target instanceof Element &&
-								e.target.closest("a")
-							)
-								return;
-							goto(`/song/${download.api}/${download.data.id}`);
-						}}
-					>
-						<p>{download.data.title}</p>
-						<a
-							href="/artist/{download.api}/{download.data
-								.artists[0].id}"
-							>{download.data.artists[0].name}</a
+						<div class="img">
+							{#if download.data.album.coverUrl !== ""}
+								<img
+									src={download.data.album.coverUrl}
+									alt={download.data.album.coverUrl}
+								/>
+							{:else}
+								<Disc />
+							{/if}
+						</div>
+						<button
+							class="item-data"
+							onclick={(e) => {
+								if (
+									e.target instanceof Element &&
+									e.target.closest("a")
+								)
+									return;
+								goto(
+									`/song/${download.api}/${download.data.id}`,
+								);
+							}}
 						>
-					</button>
+							<p>{download.data.title}</p>
+							<a
+								href="/artist/{download.api}/{download.data
+									.artists[0].id}"
+								>{download.data.artists[0].name}</a
+							>
+						</button>
+					{/if}
 					<div class="item-btn">
 						{#if download.status === "done"}
 							<button>
@@ -210,8 +223,7 @@
 			align-items: stretch;
 			container-type: inline-size;
 
-			img {
-				margin: auto;
+			.img {
 				width: 58px;
 				height: 58px;
 				aspect-ratio: 1/1;

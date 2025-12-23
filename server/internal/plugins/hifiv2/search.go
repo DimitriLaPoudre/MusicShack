@@ -27,6 +27,10 @@ func getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data searchSongData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -48,6 +52,10 @@ func getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch c
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data searchAlbumData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -68,6 +76,10 @@ func getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 		return
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		return
+	}
 
 	var data searchArtistData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {

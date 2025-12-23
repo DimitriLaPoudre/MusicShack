@@ -27,6 +27,10 @@ func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- s
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data songData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -65,6 +69,8 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 		routineCancel()
 		return models.SongData{}, fmt.Errorf("HifiV2.Song: %w", context.Canceled)
 	}
+
+	fmt.Println(data)
 
 	var normalizeSongData models.SongData
 	{
