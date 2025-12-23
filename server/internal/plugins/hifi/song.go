@@ -78,8 +78,8 @@ func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- s
 	ch <- data
 }
 
-func (p *Hifi) Song(ctx context.Context, id string) (models.SongData, error) {
-	apiInstances, err := repository.ListApiInstancesByApi(p.Name())
+func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
+	apiInstances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SongData{}, err
 	}

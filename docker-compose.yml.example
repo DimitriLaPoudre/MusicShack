@@ -1,6 +1,6 @@
 services:
   musicshack:
-    build: .
+    image: ghcr.io/dimitrilapoudre/musicshack:latest
     depends_on:
       database:
         condition: service_healthy
@@ -9,14 +9,13 @@ services:
     networks:
       - musicshack
     ports:
-      - "8080:8080"
+      - "${PORT}:8080"
     volumes:
-      - ./users:/users
+      - ${DOWNLOAD}:/downloads
     environment:
-      URL: http://localhost
+      URL: ${URL}
       PORT: 8080
       DOWNLOAD: /downloads
-      JWT_SECRET: ${JWT_SECRET}
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -24,12 +23,11 @@ services:
 
   database:
     image: postgres:16
-    # networks:
-    #   - musicshack
-    ports:
-      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - musicshack
     volumes:
-      - ./db:/var/lib/postgresql/data
+      - db:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -43,3 +41,6 @@ services:
 networks:
   musicshack:
     driver: bridge
+
+volumes:
+  db:

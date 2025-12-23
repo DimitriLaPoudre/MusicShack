@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadAlbum, downloadSong } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
+	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
 
-	let isLoading = $state(true);
-	let error = $state<string | null>(null);
-	let result = $state<any | null>(null);
-	let searchData = $state<string | null>(null);
+	let error = $state<null | string>(null);
+	let searchData = $state<null | string>(null);
 	let api = $state<string>("");
 	let type = $state<string>("songs");
+	let result = $state<SearchResponse | null>(null);
 
 	afterNavigate(async () => {
 		try {
@@ -18,20 +18,23 @@
 			if (!searchData) {
 				throw new Error("No Search");
 			}
-			const res = await apiFetch(`/search?q=${searchData}`);
-			result = await res.json();
-			if (!res.ok) {
-				throw new Error(result.error || "Failed to fetch search");
+			const data = await apiFetch<SearchResponse>(
+				`/search?q=${searchData}`,
+			);
+			if ("error" in data) {
+				throw new Error(
+					(data as ErrorResponse).error || "Failed to fetch search",
+				);
 			}
-			if (Object.keys(result).length === 0) {
+			if (Object.keys(data).length === 0) {
 				throw new Error("instances missing");
 			}
-			api = Object.keys(result)[0];
+			result = data;
+			api = Object.keys(data)[0];
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
 		}
-		isLoading = false;
 	});
 </script>
 
@@ -40,14 +43,14 @@
 </svelte:head>
 
 <h1 class="research">"{searchData}"</h1>
-{#if isLoading}
-	<p class="loading">Searching...</p>
-{:else if error}
+{#if error}
 	<div class="error">
 		<h2>Error loading Search result</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
+{:else if !result}
+	<p class="loading">Searching...</p>
 {:else}
 	<div class="top">
 		<div class="section">
@@ -76,7 +79,7 @@
 	</div>
 	<div class="items">
 		{#if type === "songs"}
-			{#each result[api].Songs as song}
+			{#each result[api].songs as song}
 				<div class="wrap-item">
 					<button
 						class="item"
@@ -86,21 +89,24 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/song/${api}/${song.Id}`);
+							goto(`/song/${api}/${song.id}`);
 						}}
 					>
 						<div class="cover">
-							{#if song.CoverUrl !== ""}
-								<img src={song.CoverUrl} alt={song.Title} />
+							{#if song.album.coverUrl !== ""}
+								<img
+									src={song.album.coverUrl}
+									alt={song.title}
+								/>
 							{:else}
 								<Disc size={140} />
 							{/if}
 						</div>
-						<p>{song.Title}</p>
+						<p>{song.title}</p>
 						<nav>
-							{#each song.Artists as artist}
-								<a href="/artist/{api}/{artist.Id}">
-									{artist.Name}
+							{#each song.artists as artist}
+								<a href="/artist/{api}/{artist.id}">
+									{artist.name}
 								</a>
 							{/each}
 						</nav>
@@ -108,7 +114,7 @@
 					<button
 						class="download"
 						onclick={async () => {
-							error = await downloadSong(api, song.Id);
+							error = await downloadSong(api, song.id);
 						}}
 					>
 						<Download />
@@ -116,7 +122,7 @@
 				</div>
 			{/each}
 		{:else if type === "albums"}
-			{#each result[api].Albums as album}
+			{#each result[api].albums as album}
 				<div class="wrap-item">
 					<button
 						class="item"
@@ -126,21 +132,21 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/song/${api}/${album.Id}`);
+							goto(`/song/${api}/${album.id}`);
 						}}
 					>
 						<div class="cover">
-							{#if album.CoverUrl !== ""}
-								<img src={album.CoverUrl} alt={album.Title} />
+							{#if album.coverUrl !== ""}
+								<img src={album.coverUrl} alt={album.title} />
 							{:else}
 								<DiscAlbum size={140} />
 							{/if}
 						</div>
-						<p>{album.Title}</p>
+						<p>{album.title}</p>
 						<nav>
-							{#each album.Artists as artist}
-								<a href="/artist/{api}/{artist.Id}">
-									{artist.Name}
+							{#each album.artists as artist}
+								<a href="/artist/{api}/{artist.id}">
+									{artist.name}
 								</a>
 							{/each}
 						</nav>
@@ -148,7 +154,7 @@
 					<button
 						class="download"
 						onclick={async () => {
-							error = await downloadAlbum(api, album.Id);
+							error = await downloadAlbum(api, album.id);
 						}}
 					>
 						<Download />
@@ -156,19 +162,19 @@
 				</div>
 			{/each}
 		{:else}
-			{#each result[api].Artists as artist}
+			{#each result[api].artists as artist}
 				<button
 					class="artist"
-					onclick={() => goto(`/artist/${api}/${artist.Id}`)}
+					onclick={() => goto(`/artist/${api}/${artist.id}`)}
 				>
 					<div class="picture">
-						{#if artist.PictureUrl !== ""}
-							<img src={artist.PictureUrl} alt={artist.Name} />
+						{#if artist.pictureUrl !== ""}
+							<img src={artist.pictureUrl} alt={artist.name} />
 						{:else}
 							<User size={140} />
 						{/if}
 					</div>
-					<p>{artist.Name}</p>
+					<p>{artist.name}</p>
 				</button>
 			{/each}
 		{/if}
@@ -192,10 +198,6 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
-
-		* {
-			margin: 0;
-		}
 	}
 
 	.top {

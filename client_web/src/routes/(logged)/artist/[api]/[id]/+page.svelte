@@ -3,42 +3,41 @@
 	import { page } from "$app/state";
 	import { Download } from "lucide-svelte";
 	import { addFollow } from "$lib/functions/follow";
-	import { apiFetch } from "$lib/functions/apiFetch";
+	import { apiFetch } from "$lib/functions/fetch";
 	import { downloadAlbum, downloadArtist } from "$lib/functions/download";
+	import type { ArtistData } from "$lib/types/response";
 
-	let isLoading = $state(true);
-	let error = $state<string | null>(null);
-	let artist = $state<any | null>(null);
+	let error = $state<null | string>(null);
+	let artist = $state<null | ArtistData>(null);
 
 	afterNavigate(async () => {
 		try {
-			const res = await apiFetch(
+			const data = await apiFetch<ArtistData>(
 				`/artist/${page.params.api}/${page.params.id}`,
 			);
-			artist = await res.json();
-			if (!res.ok) {
-				throw new Error(artist.error || "Failed to fetch artist");
+			if ("error" in data) {
+				throw new Error(data.error || "Failed to fetch artist");
 			}
-			isLoading = false;
+			artist = data;
+			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";
-			isLoading = false;
 		}
 	});
 </script>
 
 <svelte:head>
-	<title>{artist?.Name || "Artist"} - MusicShack</title>
+	<title>{artist?.name || "Artist"} - MusicShack</title>
 </svelte:head>
 
-{#if isLoading}
-	<p class="loading">Loading...</p>
-{:else if error}
+{#if error}
 	<div class="error">
 		<h2>Error loading Artist</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
+{:else if !artist}
+	<p class="loading">Loading...</p>
 {:else}
 	<!-- page top -->
 	<div class="header">
@@ -46,11 +45,11 @@
 			<div class="top-data">
 				<img
 					class="picture"
-					src={artist.PictureUrl}
-					alt={artist.Name}
+					src={artist.pictureUrl}
+					alt={artist.name}
 				/>
 				<div class="data">
-					<h1>{artist.Name}</h1>
+					<h1>{artist.name}</h1>
 				</div>
 			</div>
 		</div>
@@ -58,18 +57,20 @@
 			<div class="bottom-data">
 				<button
 					onclick={() => {
-						addFollow(page.params.api!, artist.Id);
-					}}>Favorite</button
+						addFollow({ api: page.params.api!, id: artist!.id });
+					}}
 				>
+					Follow
+				</button>
 				<button
 					onclick={async () => {
 						error = await downloadArtist(
 							page.params.api!,
-							artist.Id,
+							artist!.id,
 						);
 					}}
 				>
-					Download Song
+					Download Discography
 				</button>
 			</div>
 		</div>
@@ -80,7 +81,7 @@
 		<div>
 			<h2>Albums</h2>
 			<div class="container">
-				{#each artist.Albums as album}
+				{#each artist.albums as album}
 					<div class="wrap-item">
 						<button
 							class="item"
@@ -90,18 +91,18 @@
 									e.target.closest("a")
 								)
 									return;
-								goto(`/album/${page.params.api}/${album.Id}`);
+								goto(`/album/${page.params.api}/${album.id}`);
 							}}
 						>
-							<img src={album.CoverUrl} alt={album.Title} />
-							<p>{album.Title}</p>
+							<img src={album.coverUrl} alt={album.title} />
+							<p>{album.title}</p>
 							<nav>
-								{#each album.Artists as artist}
+								{#each album.artists as artist}
 									<a
 										href="/artist/{page.params
-											.api}/{artist.Id}"
+											.api}/{artist.id}"
 									>
-										{artist.Name}
+										{artist.name}
 									</a>
 								{/each}
 							</nav>
@@ -111,7 +112,7 @@
 							onclick={async () =>
 								(error = await downloadAlbum(
 									page.params.api!,
-									album.Id,
+									album.id,
 								))}
 						>
 							<Download />
@@ -123,19 +124,19 @@
 		<div>
 			<h2>EPs</h2>
 			<div class="container">
-				{#each artist.Ep as ep}
+				{#each artist.ep as ep}
 					<button
 						class="item"
 						onclick={() => {
-							goto(`/album/${page.params.api}/${ep.Id}`);
+							goto(`/album/${page.params.api}/${ep.id}`);
 						}}
 					>
-						<img src={ep.CoverUrl} alt={ep.Title} />
-						<p>{ep.Title}</p>
+						<img src={ep.coverUrl} alt={ep.title} />
+						<p>{ep.title}</p>
 						<div class="list">
-							{#each ep.Artists as artist}
-								<a href="/artist/{page.params.api}/{artist.Id}">
-									{artist.Name}
+							{#each ep.artists as artist}
+								<a href="/artist/{page.params.api}/{artist.id}">
+									{artist.name}
 								</a>
 							{/each}
 						</div>
@@ -146,20 +147,20 @@
 		<div>
 			<h2>Singles</h2>
 			<div class="container">
-				{#each artist.Singles as single}
+				{#each artist.singles as single}
 					<button
 						class="item"
 						onclick={() => {
-							goto(`/album/${page.params.api}/${single.Id}`);
+							goto(`/album/${page.params.api}/${single.id}`);
 						}}
 					>
-						<img src={single.CoverUrl} alt={single.Title} />
-						<p>{single.Title}</p>
+						<img src={single.coverUrl} alt={single.title} />
+						<p>{single.title}</p>
 
 						<div class="list">
-							{#each single.Artists as artist}
-								<a href="/artist/{page.params.api}/{artist.Id}">
-									{artist.Name}
+							{#each single.artists as artist}
+								<a href="/artist/{page.params.api}/{artist.id}">
+									{artist.name}
 								</a>
 							{/each}
 						</div>
@@ -175,6 +176,7 @@
 		margin-top: 30px;
 		text-align: center;
 	}
+
 	.error {
 		margin-top: 30px;
 		display: flex;
@@ -182,48 +184,44 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
-
-		* {
-			margin: 0;
-		}
 	}
 
 	.header {
 		display: table;
 		margin: 0 auto;
 		border-spacing: 0 10px;
-	}
-	.top {
-		display: table-row;
-	}
 
-	.top-data {
-		display: flex;
-		flex-direction: row;
-		flex-wrap: wrap;
-		justify-content: center;
-		gap: 10px;
-	}
+		.top {
+			display: table-row;
 
-	.picture {
-		width: 160px;
-		height: 160px;
-	}
+			.top-data {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				justify-content: center;
+				gap: 10px;
 
-	.data {
-		margin: auto;
-	}
+				.picture {
+					width: 160px;
+					height: 160px;
+				}
+				.data {
+					margin: auto;
+				}
+			}
+		}
+		.bottom {
+			display: table-row;
 
-	.bottom {
-		display: table-row;
+			.bottom-data {
+				display: flex;
+				flex-direction: row;
+				flex-wrap: wrap;
+				gap: 10px;
 
-		.bottom-data {
-			display: flex;
-			flex-direction: row;
-			flex-wrap: wrap;
-			gap: 10px;
-			button {
-				flex: 1 1 calc(50% - 5px);
+				button {
+					flex: 1 1 calc(50% - 5px);
+				}
 			}
 		}
 	}
@@ -232,9 +230,11 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 10px;
+
 		.wrap-item {
 			width: 200px;
 			height: auto;
+
 			.item {
 				display: flex;
 				flex-direction: column;
@@ -248,7 +248,6 @@
 					width: 160px;
 					height: 160px;
 				}
-
 				nav {
 					display: flex;
 					flex-direction: column;

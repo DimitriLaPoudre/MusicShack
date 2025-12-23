@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -46,7 +48,7 @@ func validatePassword(password string) error {
 	return nil
 }
 
-func validateRequestUser(req models.UserRequest) error {
+func validateRequestUser(req models.RequestUser) error {
 	if err := validateUsername(req.Username); err != nil {
 		return fmt.Errorf("validateRequestUser: %w", err)
 	}
@@ -58,35 +60,8 @@ func validateRequestUser(req models.UserRequest) error {
 	return nil
 }
 
-func Signup(c *gin.Context) {
-	var req models.UserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := validateRequestUser(req); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	if err := repository.CreateUser(&models.User{Username: req.Username, Password: string(hashPassword)}); err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
 func Login(c *gin.Context) {
-	var req models.UserRequest
+	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -94,11 +69,6 @@ func Login(c *gin.Context) {
 	}
 	user, err := repository.GetUserByUsername(req.Username)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			fmt.Println(err)
-			c.JSON(http.StatusNotFound, gin.H{"error": "username not found"})
-			return
-		}
 		fmt.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
@@ -108,18 +78,38 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	token, err := services.GetTokenForID(user.ID)
+
+	session, err := services.CreateUserSession(user.ID)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
+	c.SetCookie("user_session", session.Token, int((24 * time.Hour).Seconds()), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 
-	c.SetCookie("token", token, 0, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func Logout(c *gin.Context) {
-	c.SetCookie("token", "", -1, "/", "", true, true)
-	c.JSON(200, gin.H{"status": "ok"})
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	token, err := c.Cookie("user_session")
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := repository.DeleteUserSession(userId, token); err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.SetCookie("user_session", "", -1, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

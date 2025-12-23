@@ -20,12 +20,7 @@
 	});
 </script>
 
-<header
-	onwheel={(e) => {
-		e.stopPropagation();
-		e.preventDefault();
-	}}
->
+<header>
 	<button
 		class="logo"
 		onclick={() => {
@@ -107,53 +102,49 @@
 		justify-content: space-between;
 		align-items: center;
 		z-index: 1000;
+
+		.logo {
+			text-transform: uppercase;
+			font-size: 3rem;
+			border: none;
+			padding: 10px;
+		}
+		.logo:hover {
+			background-color: inherit;
+			color: inherit;
+		}
+		.bar {
+			display: flex;
+			flex-direction: row;
+			gap: 0px 10px;
+			button {
+				aspect-ratio: 1/1;
+			}
+		}
+		.panel-search {
+			width: 70vw;
+			max-height: calc(95vh - 135px);
+			overflow-y: auto;
+			outline: 1px solid #ffffff;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+		.panel-default {
+			width: 70vw;
+			max-height: calc(95vh - 135px);
+			overflow-y: auto;
+			outline: 1px solid #ffffff;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+			padding: 8px;
+		}
 	}
 
 	main {
 		padding-top: 130px;
 		width: 70vw;
 		margin: 0 auto;
-	}
-
-	.logo {
-		text-transform: uppercase;
-		font-size: 3rem;
-		border: none;
-		padding: 10px;
-	}
-
-	.logo:hover {
-		background-color: inherit;
-		color: inherit;
-	}
-
-	.bar {
-		display: flex;
-		flex-direction: row;
-		gap: 0px 10px;
-		button {
-			aspect-ratio: 1/1;
-		}
-	}
-
-	.panel-search {
-		width: 70vw;
-		max-height: calc(95vh - 135px);
-		overflow-y: auto;
-		outline: 1px solid #ffffff;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.panel-default {
-		width: 70vw;
-		max-height: calc(95vh - 135px);
-		overflow-y: auto;
-		outline: 1px solid #ffffff;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		padding: 8px;
 	}
 </style>

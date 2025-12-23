@@ -85,7 +85,7 @@ func ListDownload(c *gin.Context) {
 	}
 
 	tasks := services.DownloadManager.List(userId)
-	c.JSON(http.StatusOK, gin.H{"tasks": tasks})
+	c.JSON(http.StatusOK, tasks)
 }
 
 func DeleteDownload(c *gin.Context) {

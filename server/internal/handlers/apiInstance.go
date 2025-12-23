@@ -62,8 +62,6 @@ func ListInstances(c *gin.Context) {
 	for index, instance := range instancesRaw {
 		instances[index] = models.ApiInstanceItem{Id: instance.ID, Api: instance.Api, Url: instance.Url}
 	}
-	fmt.Println(instancesRaw)
-	fmt.Println(instances)
 
 	c.JSON(http.StatusOK, instances)
 

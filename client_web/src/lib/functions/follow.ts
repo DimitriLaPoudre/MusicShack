@@ -1,15 +1,16 @@
-import { apiFetch } from "./apiFetch";
+import type { RequestFollow } from "$lib/types/request";
+import type { FollowsResponse, StatusResponse } from "$lib/types/response";
+import { apiFetch } from "./fetch";
 
 export async function loadFollows() {
 	let list = null
 	let error = null
 	try {
-		const res = await apiFetch("/follows");
-		const body = await res.json();
-		if (!res.ok) {
-			throw new Error(body.error || "Failed to fetch follows");
+		const data = await apiFetch<FollowsResponse>("/follows");
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to fetch follows");
 		}
-		list = body;
+		list = data;
 	} catch (e) {
 		error =
 			e instanceof Error
@@ -18,15 +19,12 @@ export async function loadFollows() {
 	return { list, error }
 }
 
-export async function addFollow(api: string, id: string) {
+export async function addFollow(req: RequestFollow) {
 	let error = null
 	try {
-		const res = await apiFetch("/follows", "POST", {
-			api, id
-		});
-		const body = await res.json();
-		if (!res.ok) {
-			throw new Error(body.error || "Failed to add follow");
+		const data = await apiFetch<StatusResponse>("/follows", "POST", req);
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to add follow");
 		}
 	} catch (e) {
 		error =
@@ -37,13 +35,12 @@ export async function addFollow(api: string, id: string) {
 	return error
 }
 
-export async function removeFollow(id: string) {
+export async function removeFollow(id: number) {
 	let error = null
 	try {
-		const res = await apiFetch(`/follows/${id}`, "DELETE");
-		const body = await res.json();
-		if (!res.ok) {
-			throw new Error(body.error || "Failed to add follow");
+		const data = await apiFetch<StatusResponse>(`/follows/${id}`, "DELETE");
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to add follow");
 		}
 	} catch (e) {
 		error =

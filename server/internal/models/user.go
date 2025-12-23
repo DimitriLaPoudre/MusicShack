@@ -1,14 +1,15 @@
 package models
 
 type User struct {
-	ID        uint        `gorm:"primaryKey"`
-	Username  string      `gorm:"not null;unique"`
-	Password  string      `gorm:"not null"`
-	Follows   Follow      `gorm:"foreignKey:UserId"`
-	Instances ApiInstance `gorm:"foreignKey:UserId"`
+	ID        uint        `gorm:"primaryKey" json:"id"`
+	Username  string      `gorm:"not null;uniqueIndex" json:"username"`
+	Password  string      `gorm:"not null" json:"password"`
+	Sessions  UserSession `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"sessions"`
+	Follows   Follow      `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"follows"`
+	Instances ApiInstance `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"instances"`
 }
 
-type UserRequest struct {
-	Username string
-	Password string
+type RequestUser struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

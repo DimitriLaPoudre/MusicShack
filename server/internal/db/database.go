@@ -6,11 +6,25 @@ import (
 	"os"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var DB *gorm.DB
+
+func initAdmin() (*models.Admin, error) {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("changemenow"), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, fmt.Errorf("initAdmin: %w", err)
+	}
+
+	admin := models.Admin{
+		Password: string(hashedPassword),
+	}
+	return &admin, nil
+}
 
 func init() {
 	postgresHost := os.Getenv("POSTGRES_HOST")
@@ -24,6 +38,17 @@ func init() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.ApiInstance{}, &models.Follow{})
+	db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.ApiInstance{}, &models.Follow{}, &models.Admin{})
+
+	admin, err := initAdmin()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = db.Clauses(clause.OnConflict{DoNothing: true}).Create(admin).Error
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	DB = db
 }

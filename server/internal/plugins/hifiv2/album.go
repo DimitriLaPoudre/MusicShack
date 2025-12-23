@@ -27,6 +27,10 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode >= 400 {
+		return
+	}
+
 	var data albumData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return
@@ -69,60 +73,58 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 	}
 
 	var normalizeAlbumData models.AlbumData
-
-	normalizeAlbumData.Limit = data.Data.Limit
-	normalizeAlbumData.Offset = data.Data.Offset
-	normalizeAlbumData.NumberSongs = data.Data.TotalNumberOfItems
-	normalizeAlbumData.ReleaseDate = ""
-	for _, wrappedSong := range data.Data.Items {
-		dirtySong := wrappedSong.Item
-		var artists []struct {
-			Id   string
-			Name string
+	{
+		if len(data.Data.Items) == 0 {
+			return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %w", errors.New("album songs not found"))
 		}
-		for _, artist := range dirtySong.Artists {
-			artists = append(artists, struct {
-				Id   string
-				Name string
-			}{
-				strconv.FormatUint(uint64(artist.Id), 10),
-				artist.Name,
+
+		firstSong := data.Data.Items[0].Item
+
+		normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
+		normalizeAlbumData.Title = firstSong.Album.Title
+		normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
+		normalizeAlbumData.Artists = append(normalizeAlbumData.Artists,
+			models.AlbumDataArtist{
+				Id:   strconv.FormatUint(uint64(firstSong.Artist.Id), 10),
+				Name: firstSong.Artist.Name,
+			})
+
+		songs := make([]models.AlbumDataSong, 0)
+		for _, item := range data.Data.Items {
+			song := item.Item
+
+			normalizeAlbumData.Duration += song.Duration
+			if normalizeAlbumData.ReleaseDate < song.ReleaseDate {
+				normalizeAlbumData.ReleaseDate = song.ReleaseDate
+			}
+			normalizeAlbumData.NumberTracks++
+			if normalizeAlbumData.NumberVolumes < song.VolumeNumber {
+				normalizeAlbumData.NumberVolumes = song.VolumeNumber
+			}
+			if normalizeAlbumData.MaximalAudioQuality > song.AudioQuality {
+				normalizeAlbumData.MaximalAudioQuality = song.AudioQuality
+			}
+
+			artists := make([]models.SongDataArtist, 0)
+			for _, artist := range song.Artists {
+				artists = append(artists, models.SongDataArtist{
+					Id:   strconv.FormatUint(uint64(artist.Id), 10),
+					Name: artist.Name,
+				})
+			}
+
+			songs = append(songs, models.AlbumDataSong{
+				Id:                  strconv.FormatUint(uint64(song.Id), 10),
+				Title:               song.Title,
+				Duration:            song.Duration,
+				TrackNumber:         song.TrackNumber,
+				VolumeNumber:        song.VolumeNumber,
+				MaximalAudioQuality: song.AudioQuality,
+				Artists:             artists,
 			})
 		}
-		song := struct {
-			Id           string
-			Title        string
-			Duration     uint
-			TrackNumber  uint
-			VolumeNumber uint
-			Artists      []struct {
-				Id   string
-				Name string
-			}
-		}{strconv.FormatUint(uint64(dirtySong.Id), 10),
-			dirtySong.Title,
-			dirtySong.Duration,
-			dirtySong.TrackNumber,
-			dirtySong.VolumeNumber,
-			artists,
-		}
-		normalizeAlbumData.Duration += song.Duration
-		normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, song)
-
-		tmpReleaseDate := dirtySong.ReleaseDate[:10]
-		if normalizeAlbumData.ReleaseDate < tmpReleaseDate {
-			normalizeAlbumData.ReleaseDate = tmpReleaseDate
-		}
+		normalizeAlbumData.Songs = songs
 	}
-	if len(normalizeAlbumData.Songs) == 0 {
-		return models.AlbumData{}, fmt.Errorf("HifiV2.Album: %v: %w", normalizeAlbumData, errors.New("songs not found"))
-	}
-
-	firstSong := data.Data.Items[0].Item
-
-	normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
-	normalizeAlbumData.Title = firstSong.Album.Title
-	normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
 
 	return normalizeAlbumData, nil
 }

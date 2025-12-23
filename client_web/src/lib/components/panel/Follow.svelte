@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { loadFollows, removeFollow } from "$lib/functions/follow";
+	import type { FollowsResponse } from "$lib/types/response";
 	import { HeartIcon, HeartOff } from "lucide-svelte";
 	import { onMount } from "svelte";
 
-	let list = $state<null | any>(null);
+	let list = $state<null | FollowsResponse>(null);
 	let error = $state<null | string>(null);
 
 	onMount(() => {
@@ -20,7 +21,6 @@
 
 <div class="body">
 	<h1>Followed Artist</h1>
-
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}
@@ -30,16 +30,16 @@
 		<div class="list">
 			{#each list as item}
 				<div class="artist">
-					<a class="data" href="/artist/{item.Api}/{item.Artist.Id}">
+					<a class="data" href="/artist/{item.api}/{item.artist.id}">
 						<img
-							src={item.Artist.PictureUrl}
-							alt={item.Artist.Name}
+							src={item.artist.pictureUrl}
+							alt={item.artist.name}
 						/>
-						<p>{item.Artist.Name}</p>
+						<p>{item.artist.name}</p>
 					</a>
 					<button
 						onclick={async () => {
-							await removeFollow(item.Id);
+							await removeFollow(item.id);
 						}}
 					>
 						<div class="nothover">

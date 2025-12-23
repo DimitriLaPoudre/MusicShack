@@ -84,6 +84,7 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 		api:            api,
 		songId:         songId,
 		quality:        quality,
+		songData:       models.SongData{},
 		status:         models.StatusPending,
 		retryDownload:  make(chan struct{}),
 		cancelDownload: make(chan struct{}),
@@ -127,13 +128,13 @@ func saveSong(userId uint, reader io.ReadCloser, extension string, data models.S
 	}
 	defer root.Close()
 
-	filename := filepath.Join(data.Artist.Name, data.Album.Title, fmt.Sprintf("%d - %s.%s", data.TrackNumber, data.Title, extension))
+	filename := filepath.Join(data.Artists[0].Name, data.Album.Title, fmt.Sprintf("%d - %s.%s", data.TrackNumber, data.Title, extension))
 
-	if err := root.Mkdir(data.Artist.Name, 0755); err != nil && !os.IsExist(err) {
+	if err := root.Mkdir(data.Artists[0].Name, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("saveSong: %w", err)
 	}
 
-	if err := root.Mkdir(filepath.Join(data.Artist.Name, data.Album.Title), 0755); err != nil && !os.IsExist(err) {
+	if err := root.Mkdir(filepath.Join(data.Artists[0].Name, data.Album.Title), 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("saveSong: %w", err)
 	}
 

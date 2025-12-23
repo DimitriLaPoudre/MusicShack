@@ -47,12 +47,18 @@ func SetupRouters() *graceful.Graceful {
 			me.Use(middlewares.Logged())
 			me.GET("", handlers.Me)
 			me.PUT("", handlers.UpdateMe)
-			me.DELETE("", handlers.DeleteMe)
 		}
 
-		api.POST("/signup", middlewares.LoggedOut(), handlers.Signup)
 		api.POST("/login", middlewares.LoggedOut(), handlers.Login)
 		api.POST("/logout", middlewares.Logged(), handlers.Logout)
+
+		admin := api.Group("/admin")
+		{
+			admin.GET("", middlewares.Admin(), handlers.Admin)
+			admin.POST("/login", middlewares.RateLimiter("5-M"), middlewares.Admout(), handlers.AdminLogin)
+			admin.PUT("/password", middlewares.Admin(), handlers.AdminPassword)
+			admin.POST("/logout", middlewares.Admin(), handlers.AdminLogout)
+		}
 
 		apiInstance := api.Group("/instances")
 		{
@@ -80,8 +86,8 @@ func SetupRouters() *graceful.Graceful {
 			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
 			downloads.GET("", handlers.ListDownload)
 			downloads.DELETE("/:id", handlers.DeleteDownload)
-			downloads.POST("/retry/:id", handlers.RetryDownload)
-			downloads.POST("/cancel/:id", handlers.CancelDownload)
+			downloads.POST("/:id/retry", handlers.RetryDownload)
+			downloads.POST("/:id/cancel", handlers.CancelDownload)
 		}
 
 		follows := api.Group("/follows")
