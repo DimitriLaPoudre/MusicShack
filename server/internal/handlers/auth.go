@@ -84,7 +84,7 @@ func Login(c *gin.Context) {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	c.SetCookie("user_session", session.Token, int((24 * time.Hour).Seconds()), "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
+	c.SetCookie("user_session", session.Token, int((24 * time.Hour).Seconds()), "/", "", config.HTTPS, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -110,6 +110,6 @@ func Logout(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("user_session", "", -1, "/", config.URL.Hostname(), config.URL.Scheme == "https", true)
+	c.SetCookie("user_session", "", -1, "/", "", config.HTTPS, true)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
