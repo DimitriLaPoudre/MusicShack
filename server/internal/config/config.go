@@ -2,15 +2,15 @@ package config
 
 import (
 	"log"
-	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
 
 var PORT string
-var URL url.URL
+var HTTPS bool
 var DOWNLOAD_FOLDER string
 
 func checkDownloadDirectory(dir string) error {
@@ -29,15 +29,12 @@ func checkDownloadDirectory(dir string) error {
 func init() {
 	godotenv.Load("../.env")
 
-	urlRaw := os.Getenv("URL")
-	if urlRaw == "" {
-		log.Fatal("URL is missing")
-	}
-	parsed, err := url.Parse(urlRaw)
+	https, err := strconv.ParseBool(os.Getenv("HTTPS"))
 	if err != nil {
-		log.Fatal("URL invalid: ", err)
+		log.Println("HTTPS is invalid: ", err.Error())
+		https = false
 	}
-	URL = *parsed
+	HTTPS = https
 
 	port := os.Getenv("PORT")
 	if port == "" {
