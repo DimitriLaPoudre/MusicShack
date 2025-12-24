@@ -36,30 +36,31 @@ The next big step will be to add a new private source to fetch data from project
 ## Deployment (Docker Compose)
 
 MusicShack provides two example files for quick deployment:
-- `docker-compose.yml.example`
-- `.env.example`
+- `example.docker-compose.yml`
+- `example.env`
 
 ### Deployment steps
 
 1. Copy the example files:
    ```bash
-   cp docker-compose.yml.example docker-compose.yml
-   cp .env.example .env
+   cp example.docker-compose.yml docker-compose.yml
+   cp example.env .env
    ```
 2. Edit the `.env` file to match your environment:
-   - Set the `URL` (e.g. http://localhost or https://mywebsite.com)
+   - Set the `HTTPS` (e.g. true if you use https with your domain)
    - Set the `PORT` (e.g. 8080)
+   - Set the `DOWNLOAD` (e.g. ./download)
    - Adjust Postgres credentials for better security
 3. Create the `downloads` folder at the project root (if it doesn't exist):
    ```bash
-   mkdir downloads
+   mkdir ./download
    ```
 4. Start the stack:
    ```bash
    docker compose up -d
    ```
 5. Access the admin interface:
-   - Go to `http://URL:PORT/admin` (default: http://localhost:8080/admin)
+   - Go to `http://URL:PORT/admin`
    - The default admin password is: `changemenow`
    - Change it immediately after your first login!
 6. Create a user via the admin interface
@@ -69,7 +70,7 @@ MusicShack provides two example files for quick deployment:
 
 > ⚠️ Never commit your `.env` file with plain secrets.
 
-> Downloaded files will be stored in the `downloads` folder.
+> Downloaded files will be stored in the `DOWNLOAD` folder.
 
 Enjoy 🎶
 

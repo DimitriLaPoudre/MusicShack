@@ -13,7 +13,7 @@ services:
     volumes:
       - ${DOWNLOAD}:/downloads
     environment:
-      URL: ${URL}
+      HTTPS: ${HTTPS}
       PORT: 8080
       DOWNLOAD: /downloads
       POSTGRES_HOST: ${POSTGRES_HOST}
