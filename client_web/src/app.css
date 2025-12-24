@@ -27,7 +27,7 @@ body {
   color: var(--fg);
   font-family: var(--font-mono);
   overflow-x: hidden;
-  font-size: 13px;
+  font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
