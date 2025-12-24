@@ -21,6 +21,12 @@ Provides a private, easy-to-run solution to add new content to your personal mus
 
 ---
 
+## Plugins
+
+- "hifiV2" based on [hifi-api](https://github.com/uimaxbai/hifi-api) find public instances at [hifi-instances](https://github.com/EduardPrigoana/hifi-instances)
+
+---
+
 ## Important Info
 
 This project is my first "big" solo project.
