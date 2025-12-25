@@ -21,3 +21,10 @@ export interface RequestFollow {
 	api: string;
 	id: string;
 }
+
+export interface RequestDownload {
+	api: string;
+	type: string;
+	id: string;
+	quality: string;
+}

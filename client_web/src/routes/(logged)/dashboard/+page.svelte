@@ -24,7 +24,9 @@
 		<a href="/">Go to Home</a>
 	</div>
 {:else}
-	<h1 style="text-align: center;">Dashboard</h1>
+	<div class="body">
+		<h1>Dashboard</h1>
+	</div>
 {/if}
 
 <style>
@@ -35,5 +37,13 @@
 		justify-content: center;
 		align-items: center;
 		gap: 10px;
+	}
+
+	.body {
+		margin-top: 30px;
+
+		h1 {
+			text-align: center;
+		}
 	}
 </style>

@@ -3,7 +3,7 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadAlbum, downloadSong } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { AlbumData } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
@@ -65,7 +65,12 @@
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadAlbum(page.params.api!, album!.id);
+				error = await download({
+					api: page.params.api!,
+					type: "album",
+					id: album!.id,
+					quality: "LOSSLESS",
+				});
 			}}
 		>
 			Download Album
@@ -103,7 +108,12 @@
 				<button
 					class="download"
 					onclick={async () => {
-						error = await downloadSong(page.params.api!, song.id);
+						error = await download({
+							api: page.params.api!,
+							type: "song",
+							id: song!.id,
+							quality: "lossless",
+						});
 					}}
 				>
 					<Download />

@@ -2,7 +2,7 @@
 	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadSong } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { SongData } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
@@ -67,7 +67,12 @@
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadSong(page.params.api!, song!.id);
+				error = await download({
+					api: page.params.api!,
+					type: "song",
+					id: song!.id,
+					quality: "LOSSLESS",
+				});
 			}}
 		>
 			Download Song

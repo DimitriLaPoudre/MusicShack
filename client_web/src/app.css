@@ -34,12 +34,6 @@ body {
   min-height: 100vh;
 }
 
-/* 3. Styles généraux pour tous les liens */
-a {
-  color: inherit; /* pas de couleur spécifique */
-  text-decoration: none;
-}
-
 /* 4. Titres pour cohérence */
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
@@ -47,10 +41,12 @@ h1, h2, h3, h4, h5, h6 {
 
 /* 5. Paragraphes */
 p {
+  font-size: 16px;
 }
 
 /* 6. Listes */
 ul, ol {
+  font-size: 16px;
 }
 
 /* 7. Images */
@@ -62,13 +58,16 @@ img {
 /* 8. Inputs et boutons pour cohérence */
 /* Liens */
 a {
+  color: inherit; /* pas de couleur spécifique */
   text-decoration: underline;
+  font-size: 16px;
   cursor: pointer;
 }
 
 /* Boutons */
 button {
   font-family: inherit;
+  font-size: 16px;
   color: inherit;
   background: none;
   border: 1px solid #ffffff;
@@ -86,6 +85,7 @@ button.active {
 /* Inputs simples */
 input, textarea, select {
   font-family: inherit;
+  font-size: 16px;
   color: inherit;
   background-color: #0e0e0e;
   border: 1px solid #ffffff;

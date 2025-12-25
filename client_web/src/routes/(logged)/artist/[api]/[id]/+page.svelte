@@ -4,7 +4,7 @@
 	import { Download } from "lucide-svelte";
 	import { addFollow } from "$lib/functions/follow";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadAlbum, downloadArtist } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { ArtistData } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
@@ -64,10 +64,12 @@
 				</button>
 				<button
 					onclick={async () => {
-						error = await downloadArtist(
-							page.params.api!,
-							artist!.id,
-						);
+						error = await download({
+							api: page.params.api!,
+							type: "artist",
+							id: artist!.id,
+							quality: "LOSSLESS",
+						});
 					}}
 				>
 					Download Discography
@@ -110,10 +112,12 @@
 						<button
 							class="download"
 							onclick={async () =>
-								(error = await downloadAlbum(
-									page.params.api!,
-									album.id,
-								))}
+								(error = await download({
+									api: page.params.api!,
+									type: "album",
+									id: album!.id,
+									quality: "lossless",
+								}))}
 						>
 							<Download />
 						</button>
