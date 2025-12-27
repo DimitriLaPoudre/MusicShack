@@ -1,6 +1,7 @@
 export interface RequestUser {
 	username: string;
 	password: string;
+	bestQuality: boolean;
 }
 
 export interface RequestAdmin {

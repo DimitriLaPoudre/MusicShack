@@ -192,6 +192,18 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	if len(songData.Data.Songs) != 0 {
 		songs := make([]models.SearchDataSong, 0)
 		for _, song := range songData.Data.Songs {
+			var audioQuality models.Quality
+			switch song.AudioQuality {
+			case "HI_RES_LOSSLESS":
+				audioQuality = 4
+			case "LOSSLESS":
+				audioQuality = 3
+			case "HIGH":
+				audioQuality = 2
+			case "LOW":
+				audioQuality = 1
+			}
+
 			artists := make([]models.SongDataArtist, 0)
 			for _, artist := range song.Artists {
 				artists = append(artists, models.SongDataArtist{
@@ -201,12 +213,12 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 			}
 
 			songs = append(songs, models.SearchDataSong{
-				Id:                  strconv.FormatUint(uint64(song.Id), 10),
-				Title:               song.Title,
-				Duration:            song.Duration,
-				MaximalAudioQuality: song.AudioQuality,
-				Popularity:          song.Popularity,
-				Artists:             artists,
+				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				Title:        song.Title,
+				Duration:     song.Duration,
+				AudioQuality: audioQuality,
+				Popularity:   song.Popularity,
+				Artists:      artists,
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
 					Title:    song.Album.Title,
@@ -220,6 +232,18 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	if len(albumData.Data.Albums.Albums) != 0 {
 		albums := make([]models.SearchDataAlbum, 0)
 		for _, album := range albumData.Data.Albums.Albums {
+			var audioQuality models.Quality
+			switch album.AudioQuality {
+			case "HI_RES_LOSSLESS":
+				audioQuality = 4
+			case "LOSSLESS":
+				audioQuality = 3
+			case "HIGH":
+				audioQuality = 2
+			case "LOW":
+				audioQuality = 1
+			}
+
 			artists := make([]models.AlbumDataArtist, 0)
 			for _, artist := range album.Artists {
 				artists = append(artists, models.AlbumDataArtist{
@@ -229,13 +253,13 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 			}
 
 			albums = append(albums, models.SearchDataAlbum{
-				Id:                  strconv.FormatUint(uint64(album.Id), 10),
-				Title:               album.Title,
-				Duration:            album.Duration,
-				CoverUrl:            utils.GetImageURL(album.CoverUrl, 640),
-				MaximalAudioQuality: album.AudioQuality,
-				Popularity:          album.Popularity,
-				Artists:             artists,
+				Id:           strconv.FormatUint(uint64(album.Id), 10),
+				Title:        album.Title,
+				Duration:     album.Duration,
+				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+				AudioQuality: audioQuality,
+				Popularity:   album.Popularity,
+				Artists:      artists,
 			})
 		}
 		result.Albums = albums

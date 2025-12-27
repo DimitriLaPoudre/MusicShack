@@ -35,11 +35,11 @@ func GetUserByUsername(username string) (*models.User, error) {
 }
 
 func UpdateUser(id uint, updates *models.RequestUser) error {
-	result := database.DB.Model(&models.User{}).Where("id = ?", id).Updates(updates)
+	result := database.DB.Model(&models.User{}).Where("id = ?", id).Select("best_quality").Updates(updates)
 	if result.Error != nil {
 		return result.Error
 	}
-	if result.RowsAffected == 0 {
+	if result.RowsAffected == 0 && (updates.Username != "" || updates.Password != "") {
 		return gorm.ErrRecordNotFound
 	}
 	return nil

@@ -1,9 +1,7 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -23,9 +21,6 @@ func SetupRouters() *graceful.Graceful {
 	r.Use(cors.Default())
 
 	buildDir := "../client_web/build"
-	if _, err := os.Stat(buildDir); os.IsNotExist(err) {
-		fmt.Println("not exist")
-	}
 
 	r.Static("/_app", filepath.Join(buildDir, "_app"))
 	r.Static("/assets", filepath.Join(buildDir, "assets"))
@@ -46,7 +41,7 @@ func SetupRouters() *graceful.Graceful {
 		{
 			me.Use(middlewares.Logged())
 			me.GET("", handlers.Me)
-			me.PUT("", handlers.UpdateMe)
+			me.PUT("", handlers.MeUpdate)
 		}
 
 		api.POST("/login", middlewares.LoggedOut(), handlers.Login)

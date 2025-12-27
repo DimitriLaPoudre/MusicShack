@@ -14,7 +14,11 @@
 		newPassword: "",
 	});
 
-	let inputUser = $state<RequestUser>({ username: "", password: "" });
+	let inputUser = $state<RequestUser>({
+		username: "",
+		password: "",
+		bestQuality: true,
+	});
 	let users = $state<null | UsersResponse>(null);
 
 	afterNavigate(() => {
@@ -66,7 +70,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to create user");
 			}
-			inputUser = { username: "", password: "" };
+			inputUser = { username: "", password: "", bestQuality: true };
 			errorUser = null;
 			await loadUsers();
 		} catch (e) {

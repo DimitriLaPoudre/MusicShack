@@ -6,6 +6,7 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { ArtistData } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -68,7 +69,7 @@
 							api: page.params.api!,
 							type: "artist",
 							id: artist!.id,
-							quality: "LOSSLESS",
+							quality: "",
 						});
 					}}
 				>
@@ -108,6 +109,7 @@
 									</a>
 								{/each}
 							</nav>
+							<p>{quality[album.audioQuality]}</p>
 						</button>
 						<button
 							class="download"
@@ -177,12 +179,12 @@
 
 <style>
 	.loading {
-		margin-top: 30px;
+		margin-top: 15px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 30px;
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -247,6 +249,7 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
+				gap: 8px;
 
 				img {
 					width: 160px;

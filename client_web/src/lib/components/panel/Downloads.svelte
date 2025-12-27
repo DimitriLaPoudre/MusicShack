@@ -209,6 +209,9 @@
 
 				.item-btn {
 					grid-template-columns: 1fr;
+					button {
+						aspect-ratio: auto;
+					}
 				}
 			}
 		}

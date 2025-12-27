@@ -75,6 +75,16 @@ func (m *downloadManager) AddAlbum(userId uint, api models.Plugin, albumId strin
 }
 
 func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string, quality string) {
+	if quality == "" {
+		user, err := repository.GetUserByID(userId)
+		if err != nil {
+			fmt.Printf("downloadManager.AddSong: %v\n", err)
+		} else if !user.BestQuality {
+			fmt.Println("compressed")
+			quality = "HIGH"
+		}
+	}
+
 	taskId := m.generateId(userId)
 	ctx, cancel := context.WithCancel(context.Background())
 

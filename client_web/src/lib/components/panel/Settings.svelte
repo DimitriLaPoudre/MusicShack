@@ -11,7 +11,11 @@
 	} from "$lib/types/response";
 
 	let errorUser = $state<null | string>(null);
-	let inputUser = $state<RequestUser>({ username: "", password: "" });
+	let inputUser = $state<RequestUser>({
+		username: "",
+		password: "",
+		bestQuality: true,
+	});
 	let username = $state<null | string>(null);
 
 	let errorInstances = $state<null | string>(null);
@@ -30,6 +34,7 @@
 				throw new Error(data.error || "Failed to fetch me");
 			}
 			username = data.username;
+			inputUser.bestQuality = data.bestQuality;
 			errorUser = null;
 		} catch (e) {
 			errorUser =
@@ -46,8 +51,20 @@
 			}
 			username = data.username;
 			errorUser = null;
-			inputUser = { username: "", password: "" };
-			await logout();
+			if (inputUser.username !== "" || inputUser.password !== "") {
+				inputUser = {
+					username: "",
+					password: "",
+					bestQuality: data.bestQuality,
+				};
+				await logout();
+			} else {
+				inputUser = {
+					username: "",
+					password: "",
+					bestQuality: data.bestQuality,
+				};
+			}
 		} catch (e) {
 			errorUser =
 				e instanceof Error ? e.message : "Failed to update user info";
@@ -154,11 +171,45 @@
 			</p>
 		{/if}
 		<form class="form" onsubmit={changeUser}>
-			<div class="inputs">
-				<input placeholder={username} bind:value={inputUser.username} />
-				<input placeholder="Password" bind:value={inputUser.password} />
+			<div class="wrap-form">
+				<div class="inputs">
+					<input
+						placeholder={username}
+						bind:value={inputUser.username}
+					/>
+					<input
+						placeholder="Password"
+						bind:value={inputUser.password}
+					/>
+				</div>
+				<div class="qualities">
+					<button
+						class="item"
+						class:active={inputUser.bestQuality !== true}
+						type="button"
+						onclick={() => {
+							inputUser.bestQuality = !inputUser.bestQuality
+								? true
+								: false;
+						}}
+					>
+						Compressed Quality
+					</button>
+					<button
+						class="item"
+						class:active={inputUser.bestQuality === true}
+						type="button"
+						onclick={() => {
+							inputUser.bestQuality = inputUser.bestQuality
+								? false
+								: true;
+						}}
+					>
+						Best possible Quality
+					</button>
+				</div>
 			</div>
-			<button>
+			<button class="edit">
 				<Pencil />
 			</button>
 		</form>
@@ -204,11 +255,83 @@
 		flex-direction: column;
 		padding: 8px;
 		gap: 8px;
+
 		.error {
 			text-align: center;
 			background-color: var(--err);
 			padding: 0.5rem;
-			margin: 0;
+		}
+		.form {
+			display: grid;
+			grid-template-columns: 1fr auto;
+			gap: 8px;
+			align-items: stretch;
+			container-type: inline-size;
+
+			.wrap-form {
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+
+				.inputs {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 8px;
+				}
+				.qualities {
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 8px;
+
+					.item {
+						padding: 18.5px 0;
+						outline: none;
+						border: none;
+						background-color: inherit;
+						color: inherit;
+					}
+					.item:hover {
+						outline: 1px solid #ffffff;
+						outline-offset: -1px;
+						border: none;
+						background-color: inherit;
+						color: inherit;
+					}
+					.item:active {
+						background-color: #ffffff;
+						color: #0e0e0e;
+					}
+					.item.active {
+						text-decoration: underline;
+					}
+				}
+			}
+			.edit {
+				aspect-ratio: 1/1;
+			}
+			@container (max-width: 420px) {
+				.inputs {
+					grid-template-columns: 1fr;
+				}
+				.qualities {
+					grid-template-columns: 1fr;
+				}
+				.edit {
+					aspect-ratio: auto;
+				}
+			}
+		}
+	}
+
+	.instances {
+		display: flex;
+		flex-direction: column;
+		padding: 8px;
+		gap: 16px;
+		.error {
+			text-align: center;
+			background-color: var(--err);
+			padding: 0.5rem;
 		}
 		.form {
 			display: grid;
@@ -225,80 +348,50 @@
 			button {
 				aspect-ratio: 1/1;
 			}
-
 			@container (max-width: 420px) {
 				.inputs {
 					grid-template-columns: 1fr;
 				}
+				button {
+					aspect-ratio: auto;
+				}
 			}
 		}
-	}
-
-	.instances {
-		display: flex;
-		flex-direction: column;
-		padding: 8px;
-		gap: 16px;
-	}
-	.error {
-		text-align: center;
-		background-color: var(--err);
-		padding: 0.5rem;
-		margin: 0;
-	}
-	.form {
-		display: grid;
-		grid-template-columns: 1fr auto;
-		gap: 8px;
-		align-items: stretch;
-		container-type: inline-size;
-
-		.inputs {
-			display: grid;
-			grid-template-columns: 1fr 1fr;
-			gap: 8px;
+		.loading {
+			text-align: center;
 		}
-		button {
-			aspect-ratio: 1/1;
-		}
-
-		@container (max-width: 420px) {
-			.inputs {
-				grid-template-columns: 1fr;
-			}
-		}
-	}
-	.loading {
-		text-align: center;
-	}
-	.items {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-		.item {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 8px;
-			align-items: stretch;
-			container-type: inline-size;
-
-			.data {
+		.items {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			.item {
 				display: grid;
-				grid-template-columns: 1fr 1fr;
+				grid-template-columns: 1fr auto;
 				gap: 8px;
-				align-items: center;
-				padding: 1rem;
-			}
-			.data:hover {
-				outline: 1px solid #ffffff;
-				outline-offset: -1px;
-			}
-			button {
-				aspect-ratio: 1/1;
-			}
-			@container (max-width: 420px) {
+				align-items: stretch;
+				container-type: inline-size;
+
 				.data {
-					grid-template-columns: 1fr;
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 8px;
+					align-items: center;
+					padding: 1rem;
+				}
+				.data:hover {
+					outline: 1px solid #ffffff;
+					outline-offset: -1px;
+				}
+				button {
+					aspect-ratio: 1/1;
+				}
+				@container (max-width: 420px) {
+					.data {
+						grid-template-columns: 1fr;
+					}
+					button {
+						aspect-ratio: auto;
+					}
 				}
 			}
 		}

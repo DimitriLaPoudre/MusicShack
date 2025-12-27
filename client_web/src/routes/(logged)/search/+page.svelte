@@ -5,6 +5,7 @@
 	import { download } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
@@ -110,6 +111,7 @@
 								</a>
 							{/each}
 						</nav>
+						<p>{quality[song.audioQuality]}</p>
 					</button>
 					<button
 						class="download"
@@ -118,7 +120,7 @@
 								api: api,
 								type: "song",
 								id: song!.id,
-								quality: "LOSSLESS",
+								quality: "",
 							});
 						}}
 					>
@@ -155,6 +157,7 @@
 								</a>
 							{/each}
 						</nav>
+						<p>{quality[album.audioQuality]}</p>
 					</button>
 					<button
 						class="download"
@@ -163,7 +166,7 @@
 								api: api,
 								type: "album",
 								id: album!.id,
-								quality: "LOSSLESS",
+								quality: "",
 							});
 						}}
 					>
@@ -198,11 +201,11 @@
 	}
 
 	.loading {
-		/* margin-top: 30px; */
+		margin-top: 15px;
 		text-align: center;
 	}
 	.error {
-		/* margin-top: 30px; */
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -241,6 +244,7 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
+				gap: 8px;
 
 				.cover {
 					width: 160px;

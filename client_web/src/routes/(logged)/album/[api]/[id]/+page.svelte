@@ -5,6 +5,7 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { AlbumData } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
@@ -58,7 +59,7 @@
 					<p>
 						{`${Math.floor(album.duration / 60)}:${(album.duration % 60).toString().padStart(2, "0")}`}
 					</p>
-					<p>{album.maximalAudioQuality}</p>
+					<p>{quality[album.audioQuality]}</p>
 				</div>
 			</div>
 		</div>
@@ -69,7 +70,7 @@
 					api: page.params.api!,
 					type: "album",
 					id: album!.id,
-					quality: "LOSSLESS",
+					quality: "",
 				});
 			}}
 		>
@@ -125,12 +126,12 @@
 
 <style>
 	.loading {
-		margin-top: 30px;
+		margin-top: 15px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 30px;
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
