@@ -72,13 +72,23 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 
 	var normalizeSongData models.SongData
 	{
+
 		normalizeSongData.Id = strconv.FormatUint(uint64(data.Data.Id), 10)
 		normalizeSongData.Title = data.Data.Title
 		normalizeSongData.Duration = data.Data.Duration
 		normalizeSongData.ReleaseDate = data.Data.ReleaseDate[:10]
 		normalizeSongData.TrackNumber = data.Data.TrackNumber
 		normalizeSongData.VolumeNumber = data.Data.VolumeNumber
-		normalizeSongData.MaximalAudioQuality = data.Data.AudioQuality
+		switch data.Data.AudioQuality {
+		case "HI_RES_LOSSLESS":
+			normalizeSongData.AudioQuality = 4
+		case "LOSSLESS":
+			normalizeSongData.AudioQuality = 3
+		case "HIGH":
+			normalizeSongData.AudioQuality = 2
+		case "LOW":
+			normalizeSongData.AudioQuality = 1
+		}
 
 		normalizeSongData.Popularity = data.Data.Popularity
 		normalizeSongData.Isrc = data.Data.Isrc

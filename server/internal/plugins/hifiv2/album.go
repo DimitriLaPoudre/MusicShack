@@ -101,8 +101,21 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 			if normalizeAlbumData.NumberVolumes < song.VolumeNumber {
 				normalizeAlbumData.NumberVolumes = song.VolumeNumber
 			}
-			if normalizeAlbumData.MaximalAudioQuality > song.AudioQuality {
-				normalizeAlbumData.MaximalAudioQuality = song.AudioQuality
+
+			var audioQuality models.Quality
+			switch song.AudioQuality {
+			case "HI_RES_LOSSLESS":
+				audioQuality = 4
+			case "LOSSLESS":
+				audioQuality = 3
+			case "HIGH":
+				audioQuality = 2
+			case "LOW":
+				audioQuality = 1
+			}
+
+			if normalizeAlbumData.AudioQuality > audioQuality {
+				normalizeAlbumData.AudioQuality = audioQuality
 			}
 
 			artists := make([]models.SongDataArtist, 0)
@@ -114,13 +127,13 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 			}
 
 			songs = append(songs, models.AlbumDataSong{
-				Id:                  strconv.FormatUint(uint64(song.Id), 10),
-				Title:               song.Title,
-				Duration:            song.Duration,
-				TrackNumber:         song.TrackNumber,
-				VolumeNumber:        song.VolumeNumber,
-				MaximalAudioQuality: song.AudioQuality,
-				Artists:             artists,
+				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				Title:        song.Title,
+				Duration:     song.Duration,
+				TrackNumber:  song.TrackNumber,
+				VolumeNumber: song.VolumeNumber,
+				AudioQuality: audioQuality,
+				Artists:      artists,
 			})
 		}
 		normalizeAlbumData.Songs = songs

@@ -219,3 +219,35 @@ type manifestTidal struct {
 	EncryptionType string
 	Urls           []string
 }
+
+type manifestMPD struct {
+	Periods []Period `xml:"Period"`
+}
+
+type Period struct {
+	AdaptationSets []AdaptationSet `xml:"AdaptationSet"`
+}
+
+type AdaptationSet struct {
+	Representations []Representation `xml:"Representation"`
+}
+
+type Representation struct {
+	SegmentTemplate SegmentTemplate `xml:"SegmentTemplate"`
+}
+
+type SegmentTemplate struct {
+	Initialization string          `xml:"initialization,attr"`
+	Media          string          `xml:"media,attr"`
+	StartNumber    int             `xml:"startNumber,attr"`
+	Timeline       SegmentTimeline `xml:"SegmentTimeline"`
+}
+
+type SegmentTimeline struct {
+	Segments []Segment `xml:"S"`
+}
+
+type Segment struct {
+	D int `xml:"d,attr"`
+	R int `xml:"r,attr"`
+}

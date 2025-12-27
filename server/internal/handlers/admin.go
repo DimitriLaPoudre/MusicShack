@@ -65,6 +65,13 @@ func AdminPassword(c *gin.Context) {
 		return
 	}
 
+	if req.NewPassword == "" {
+		err := "new Password can't be empty"
+		fmt.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
 	admin, err := repository.GetAdmin()
 	if err != nil {
 		fmt.Println(err)

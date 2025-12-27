@@ -2,9 +2,10 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadAlbum, downloadSong } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
@@ -110,11 +111,17 @@
 								</a>
 							{/each}
 						</nav>
+						<p>{quality[song.audioQuality]}</p>
 					</button>
 					<button
 						class="download"
 						onclick={async () => {
-							error = await downloadSong(api, song.id);
+							error = await download({
+								api: api,
+								type: "song",
+								id: song!.id,
+								quality: "",
+							});
 						}}
 					>
 						<Download />
@@ -132,7 +139,7 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/song/${api}/${album.id}`);
+							goto(`/album/${api}/${album.id}`);
 						}}
 					>
 						<div class="cover">
@@ -150,11 +157,17 @@
 								</a>
 							{/each}
 						</nav>
+						<p>{quality[album.audioQuality]}</p>
 					</button>
 					<button
 						class="download"
 						onclick={async () => {
-							error = await downloadAlbum(api, album.id);
+							error = await download({
+								api: api,
+								type: "album",
+								id: album!.id,
+								quality: "",
+							});
 						}}
 					>
 						<Download />
@@ -188,11 +201,11 @@
 	}
 
 	.loading {
-		/* margin-top: 30px; */
+		margin-top: 15px;
 		text-align: center;
 	}
 	.error {
-		/* margin-top: 30px; */
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -231,6 +244,7 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
+				gap: 8px;
 
 				.cover {
 					width: 160px;

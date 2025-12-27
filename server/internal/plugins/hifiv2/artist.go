@@ -153,6 +153,18 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 		}
 		albums := make([]models.ArtistDataAlbum, 0)
 		for _, album := range albumsData.Albums.Rows[0].Modules[0].PagedList.Items {
+			var audioQuality models.Quality
+			switch album.AudioQuality {
+			case "HI_RES_LOSSLESS":
+				audioQuality = 4
+			case "LOSSLESS":
+				audioQuality = 3
+			case "HIGH":
+				audioQuality = 2
+			case "LOW":
+				audioQuality = 1
+			}
+
 			artists := make([]models.AlbumDataArtist, 0)
 			for _, artist := range album.Artists {
 				artists = append(artists, models.AlbumDataArtist{
@@ -162,12 +174,13 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 			}
 
 			albums = append(albums, models.ArtistDataAlbum{
-				Id:          strconv.FormatUint(uint64(album.Id), 10),
-				Title:       album.Title,
-				Duration:    album.Duration,
-				ReleaseDate: album.ReleaseDate,
-				CoverUrl:    utils.GetImageURL(album.CoverUrl, 640),
-				Artists:     artists,
+				Id:           strconv.FormatUint(uint64(album.Id), 10),
+				Title:        album.Title,
+				Duration:     album.Duration,
+				ReleaseDate:  album.ReleaseDate,
+				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+				AudioQuality: audioQuality,
+				Artists:      artists,
 			})
 		}
 		normalizeArtistData.Albums = albums

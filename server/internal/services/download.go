@@ -75,6 +75,15 @@ func (m *downloadManager) AddAlbum(userId uint, api models.Plugin, albumId strin
 }
 
 func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string, quality string) {
+	if quality == "" {
+		user, err := repository.GetUserByID(userId)
+		if err != nil {
+			fmt.Printf("downloadManager.AddSong: %v\n", err)
+		} else if !user.BestQuality {
+			quality = "HIGH"
+		}
+	}
+
 	taskId := m.generateId(userId)
 	ctx, cancel := context.WithCancel(context.Background())
 
@@ -178,12 +187,11 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				status <- models.StatusCancel
-				return
 			} else {
 				status <- models.StatusFailed
 				fmt.Println("downloadManager.startMaster: goroutine: ", err)
-				return
 			}
+			return
 		}
 
 		status <- models.StatusDone
@@ -221,6 +229,7 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 							status <- models.StatusFailed
 							fmt.Println("downloadManager.startMaster: goroutine: ", err)
 						}
+						return
 					}
 
 					status <- models.StatusDone

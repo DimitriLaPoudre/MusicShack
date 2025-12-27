@@ -1,9 +1,7 @@
 package routes
 
 import (
-	"fmt"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 
@@ -23,9 +21,6 @@ func SetupRouters() *graceful.Graceful {
 	r.Use(cors.Default())
 
 	buildDir := "../client_web/build"
-	if _, err := os.Stat(buildDir); os.IsNotExist(err) {
-		fmt.Println("not exist")
-	}
 
 	r.Static("/_app", filepath.Join(buildDir, "_app"))
 	r.Static("/assets", filepath.Join(buildDir, "assets"))
@@ -46,7 +41,7 @@ func SetupRouters() *graceful.Graceful {
 		{
 			me.Use(middlewares.Logged())
 			me.GET("", handlers.Me)
-			me.PUT("", handlers.UpdateMe)
+			me.PUT("", handlers.MeUpdate)
 		}
 
 		api.POST("/login", middlewares.LoggedOut(), handlers.Login)
@@ -78,12 +73,10 @@ func SetupRouters() *graceful.Graceful {
 			users.DELETE("/:id", handlers.DeleteUser)
 		}
 
-		downloads := api.Group("/users/downloads")
+		downloads := api.Group("/downloads")
 		{
 			downloads.Use(middlewares.Logged())
-			downloads.POST("/song/:api/:id", handlers.AddDownloadSong)
-			downloads.POST("/album/:api/:id", handlers.AddDownloadAlbum)
-			downloads.POST("/artist/:api/:id", handlers.AddDownloadArtist)
+			downloads.POST("", handlers.AddDownload)
 			downloads.GET("", handlers.ListDownload)
 			downloads.DELETE("/:id", handlers.DeleteDownload)
 			downloads.POST("/:id/retry", handlers.RetryDownload)

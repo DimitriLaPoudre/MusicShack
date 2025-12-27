@@ -10,6 +10,7 @@ export interface User {
 	id: number;
 	username: string;
 	password: string;
+	bestQuality: boolean;
 }
 
 export type UserResponse = User;
@@ -46,7 +47,7 @@ export interface SongData {
 	releaseDate: string;
 	trackNumber: number;
 	volumeNumber: number;
-	maximalAudioQuality: string;
+	audioQuality: number;
 	popularity: number;
 	isrc: string;
 	coverUrl: string;
@@ -71,7 +72,7 @@ export interface AlbumData {
 	numberTracks: number;
 	numberVolumes: number;
 	coverUrl: string;
-	maximalAudioQuality: string;
+	audioQuality: number;
 	artists: AlbumDataArtist[];
 	songs: AlbumDataSong[];
 }
@@ -85,7 +86,7 @@ export interface AlbumDataSong {
 	duration: number;
 	trackNumber: number;
 	volumeNumber: number;
-	maximalAudioQuality: string;
+	audioQuality: number;
 	artists: SongDataArtist[];
 }
 
@@ -103,6 +104,7 @@ export interface ArtistDataAlbum {
 	duration: number;
 	releaseDate: string;
 	coverUrl: string;
+	audioQuality: number;
 	artists: AlbumDataArtist[];
 }
 
@@ -115,7 +117,7 @@ export interface SearchDataSong {
 	id: string;
 	title: string;
 	duration: number;
-	maximalAudioQuality: string;
+	audioQuality: number;
 	popularity: number;
 	artists: SongDataArtist[];
 	album: SongDataAlbum;
@@ -125,7 +127,7 @@ export interface SearchDataAlbum {
 	title: string;
 	duration: number;
 	coverUrl: string;
-	maximalAudioQuality: string;
+	audioQuality: number;
 	popularity: number;
 	artists: AlbumDataArtist[];
 }

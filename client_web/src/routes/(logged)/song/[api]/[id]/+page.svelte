@@ -2,8 +2,9 @@
 	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadSong } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { SongData } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
@@ -60,14 +61,19 @@
 					<p>
 						{`${Math.floor(song.duration / 60)}:${(song.duration % 60).toString().padStart(2, "0")}`}
 					</p>
-					<p>{song.maximalAudioQuality}</p>
+					<p>{quality[song.audioQuality]}</p>
 				</div>
 			</div>
 		</div>
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadSong(page.params.api!, song!.id);
+				error = await download({
+					api: page.params.api!,
+					type: "song",
+					id: song!.id,
+					quality: "",
+				});
 			}}
 		>
 			Download Song
@@ -77,12 +83,12 @@
 
 <style>
 	.loading {
-		margin-top: 30px;
+		margin-top: 15px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 30px;
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

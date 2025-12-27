@@ -17,6 +17,7 @@ COPY server/ .
 RUN go build -o server main.go
 
 FROM alpine:3.20
+RUN apk add --no-cache ffmpeg
 
 WORKDIR /app
 COPY --from=go-builder /app/server ./server/

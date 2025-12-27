@@ -3,8 +3,9 @@
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadAlbum, downloadSong } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { AlbumData } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
@@ -58,14 +59,19 @@
 					<p>
 						{`${Math.floor(album.duration / 60)}:${(album.duration % 60).toString().padStart(2, "0")}`}
 					</p>
-					<p>{album.maximalAudioQuality}</p>
+					<p>{quality[album.audioQuality]}</p>
 				</div>
 			</div>
 		</div>
 		<button
 			class="download"
 			onclick={async () => {
-				error = await downloadAlbum(page.params.api!, album!.id);
+				error = await download({
+					api: page.params.api!,
+					type: "album",
+					id: album!.id,
+					quality: "",
+				});
 			}}
 		>
 			Download Album
@@ -103,7 +109,12 @@
 				<button
 					class="download"
 					onclick={async () => {
-						error = await downloadSong(page.params.api!, song.id);
+						error = await download({
+							api: page.params.api!,
+							type: "song",
+							id: song!.id,
+							quality: "",
+						});
 					}}
 				>
 					<Download />
@@ -115,12 +126,12 @@
 
 <style>
 	.loading {
-		margin-top: 30px;
+		margin-top: 15px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 30px;
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;

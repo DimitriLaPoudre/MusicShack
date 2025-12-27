@@ -31,7 +31,7 @@ func Me(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func UpdateMe(c *gin.Context) {
+func MeUpdate(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
 		fmt.Println(err)
@@ -78,7 +78,14 @@ func UpdateMe(c *gin.Context) {
 
 	if err := repository.UpdateUser(userId, &updates); err != nil {
 		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -88,13 +95,6 @@ func UpdateMe(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
-	}
-
-	user, err := repository.GetUserByID(userId)
-	if err != nil {
-		fmt.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
 	}
 
 	c.JSON(http.StatusOK, user)

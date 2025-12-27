@@ -4,8 +4,9 @@
 	import { Download } from "lucide-svelte";
 	import { addFollow } from "$lib/functions/follow";
 	import { apiFetch } from "$lib/functions/fetch";
-	import { downloadAlbum, downloadArtist } from "$lib/functions/download";
+	import { download } from "$lib/functions/download";
 	import type { ArtistData } from "$lib/types/response";
+	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -64,10 +65,12 @@
 				</button>
 				<button
 					onclick={async () => {
-						error = await downloadArtist(
-							page.params.api!,
-							artist!.id,
-						);
+						error = await download({
+							api: page.params.api!,
+							type: "artist",
+							id: artist!.id,
+							quality: "",
+						});
 					}}
 				>
 					Download Discography
@@ -106,14 +109,17 @@
 									</a>
 								{/each}
 							</nav>
+							<p>{quality[album.audioQuality]}</p>
 						</button>
 						<button
 							class="download"
 							onclick={async () =>
-								(error = await downloadAlbum(
-									page.params.api!,
-									album.id,
-								))}
+								(error = await download({
+									api: page.params.api!,
+									type: "album",
+									id: album!.id,
+									quality: "",
+								}))}
 						>
 							<Download />
 						</button>
@@ -173,12 +179,12 @@
 
 <style>
 	.loading {
-		margin-top: 30px;
+		margin-top: 15px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 30px;
+		margin-top: 15px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -243,6 +249,7 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
+				gap: 8px;
 
 				img {
 					width: 160px;

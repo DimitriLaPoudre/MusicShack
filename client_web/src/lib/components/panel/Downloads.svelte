@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
+	import {
+		cancelDownload,
+		deleteDownload,
+		loadDownloads,
+		retryDownload,
+	} from "$lib/functions/download";
 	import { apiFetch } from "$lib/functions/fetch";
 	import type {
 		DownloadData,
@@ -33,72 +39,6 @@
 		}, 500);
 		return () => clearInterval(interval);
 	});
-
-	async function loadDownloads() {
-		let list = null;
-		let error = null;
-		try {
-			const data =
-				await apiFetch<DownloadListResponse>(`/users/downloads`);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch downloads");
-			}
-			list = data.sort((a, b) => Number(b.id) - Number(a.id));
-		} catch (e) {
-			error =
-				e instanceof Error
-					? e.message
-					: "Failed to reload download queue";
-		}
-		return { list, error };
-	}
-
-	async function retryDownload(id: number) {
-		try {
-			const data = await apiFetch<StatusResponse>(
-				`/users/downloads/${id}/retry`,
-				"POST",
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to retry download");
-			}
-			({ list, error } = await loadDownloads());
-		} catch (e) {
-			error = e instanceof Error ? e.message : "Failed to retry download";
-		}
-	}
-
-	async function cancelDownload(id: number) {
-		try {
-			const data = await apiFetch<StatusResponse>(
-				`/users/downloads/${id}/cancel`,
-				"POST",
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to cancel download");
-			}
-			({ list, error } = await loadDownloads());
-		} catch (e) {
-			error =
-				e instanceof Error ? e.message : "Failed to cancel download";
-		}
-	}
-
-	async function deleteDownload(id: number) {
-		try {
-			const data = await apiFetch<StatusResponse>(
-				`/users/downloads/${id}`,
-				"DELETE",
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to delete download");
-			}
-			({ list, error } = await loadDownloads());
-		} catch (e) {
-			error =
-				e instanceof Error ? e.message : "Failed to delete download";
-		}
-	}
 </script>
 
 <div class="body">
@@ -162,7 +102,11 @@
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									await cancelDownload(download.id);
+									error = await cancelDownload(download.id);
+									if (!error) {
+										({ list, error } =
+											await loadDownloads());
+									}
 								}}
 							>
 								{#if buttonHover != null && buttonHover === index}
@@ -178,7 +122,11 @@
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
-									await retryDownload(download.id);
+									error = await retryDownload(download.id);
+									if (!error) {
+										({ list, error } =
+											await loadDownloads());
+									}
 								}}
 							>
 								{#if buttonHover != null && buttonHover === index}
@@ -190,7 +138,10 @@
 						{/if}
 						<button
 							onclick={async () => {
-								await deleteDownload(download.id);
+								error = await deleteDownload(download.id);
+								if (!error) {
+									({ list, error } = await loadDownloads());
+								}
 							}}
 						>
 							<Trash />
@@ -258,6 +209,9 @@
 
 				.item-btn {
 					grid-template-columns: 1fr;
+					button {
+						aspect-ratio: auto;
+					}
 				}
 			}
 		}

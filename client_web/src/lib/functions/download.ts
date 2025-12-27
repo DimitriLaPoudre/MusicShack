@@ -1,61 +1,92 @@
-import type { StatusResponse } from "$lib/types/response";
+import type { RequestDownload } from "$lib/types/request";
+import type { DownloadListResponse, StatusResponse } from "$lib/types/response";
 import { apiFetch } from "./fetch";
 
-export async function downloadSong(api: string, id: string) {
+export async function download(req: RequestDownload) {
 	let error: string | null = null
 	try {
 		const data = await apiFetch<StatusResponse>(
-			`/users/downloads/song/${api}/${id}`,
-			"POST"
+			`/downloads`,
+			"POST",
+			req
 		);
 		if ("error" in data) {
-			throw new Error(data.error || "Failed to download song");
+			throw new Error(data.error || "Failed to download " + req.type);
 		}
 	} catch (e) {
 		error =
 			e instanceof Error
 				? e.message
-				: "Failed to load download song";
+				: "Failed to load download " + req.type;
 	}
 	return error
 }
 
-export async function downloadAlbum(api: string, id: string) {
-	let error: string | null = null
+export async function loadDownloads() {
+	let list = null;
+	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(
-			`/users/downloads/album/${api}/${id}`,
-			"POST"
-		);
+		const data =
+			await apiFetch<DownloadListResponse>(`/downloads`);
 		if ("error" in data) {
-			throw new Error(data.error || "Failed to download album");
+			throw new Error(data.error || "Failed to fetch downloads");
 		}
+		list = data.sort((a, b) => Number(b.id) - Number(a.id));
 	} catch (e) {
 		error =
 			e instanceof Error
 				? e.message
-				: "Failed to load download album";
+				: "Failed to reload download queue";
 	}
-	return error
+	return { list, error };
 }
 
-
-export async function downloadArtist(api: string, id: string) {
-	let error: string | null = null
+export async function retryDownload(id: number) {
+	let error = null;
 	try {
 		const data = await apiFetch<StatusResponse>(
-			`/users/downloads/artist/${api}/${id}`,
-			"POST"
+			`/downloads/${id}/retry`,
+			"POST",
 		);
 		if ("error" in data) {
+			throw new Error(data.error || "Failed to retry download");
+		}
+	} catch (e) {
+		error = e instanceof Error ? e.message : "Failed to retry download";
+	}
+	return error;
+}
 
-			throw new Error(data.error || "Failed to download artist");
+export async function cancelDownload(id: number) {
+	let error = null;
+	try {
+		const data = await apiFetch<StatusResponse>(
+			`/downloads/${id}/cancel`,
+			"POST",
+		);
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to cancel download");
 		}
 	} catch (e) {
 		error =
-			e instanceof Error
-				? e.message
-				: "Failed to load download artist";
+			e instanceof Error ? e.message : "Failed to cancel download";
 	}
-	return error
+	return error;
+}
+
+export async function deleteDownload(id: number) {
+	let error = null;
+	try {
+		const data = await apiFetch<StatusResponse>(
+			`/downloads/${id}`,
+			"DELETE",
+		);
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to delete download");
+		}
+	} catch (e) {
+		error =
+			e instanceof Error ? e.message : "Failed to delete download";
+	}
+	return error;
 }

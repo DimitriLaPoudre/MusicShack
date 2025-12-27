@@ -1,6 +1,7 @@
 export interface RequestUser {
 	username: string;
 	password: string;
+	bestQuality: boolean;
 }
 
 export interface RequestAdmin {
@@ -20,4 +21,11 @@ export interface RequestInstance {
 export interface RequestFollow {
 	api: string;
 	id: string;
+}
+
+export interface RequestDownload {
+	api: string;
+	type: string;
+	id: string;
+	quality: string;
 }
