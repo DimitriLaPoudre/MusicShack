@@ -118,7 +118,7 @@
 									api: page.params.api!,
 									type: "album",
 									id: album!.id,
-									quality: "lossless",
+									quality: "",
 								}))}
 						>
 							<Download />

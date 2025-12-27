@@ -80,7 +80,6 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 		if err != nil {
 			fmt.Printf("downloadManager.AddSong: %v\n", err)
 		} else if !user.BestQuality {
-			fmt.Println("compressed")
 			quality = "HIGH"
 		}
 	}
@@ -188,12 +187,11 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				status <- models.StatusCancel
-				return
 			} else {
 				status <- models.StatusFailed
 				fmt.Println("downloadManager.startMaster: goroutine: ", err)
-				return
 			}
+			return
 		}
 
 		status <- models.StatusDone
@@ -231,6 +229,7 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 							status <- models.StatusFailed
 							fmt.Println("downloadManager.startMaster: goroutine: ", err)
 						}
+						return
 					}
 
 					status <- models.StatusDone

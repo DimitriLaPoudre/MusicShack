@@ -113,7 +113,7 @@
 							api: page.params.api!,
 							type: "song",
 							id: song!.id,
-							quality: "lossless",
+							quality: "",
 						});
 					}}
 				>

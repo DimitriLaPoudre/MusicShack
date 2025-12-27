@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -192,6 +193,45 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	return fullReader, nil
 }
 
+func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
+	cmd := exec.Command("ffmpeg",
+		"-i", "pipe:0",
+		"-c", "copy",
+		"-c:a", "flac",
+		"-f", "flac",
+		"pipe:1")
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
+	}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
+	}
+
+	go func() {
+		defer stdin.Close()
+		io.Copy(stdin, reader)
+	}()
+
+	newReader, writer := io.Pipe()
+
+	go func() {
+		io.Copy(writer, stdout)
+
+		if err := cmd.Wait(); err != nil {
+			writer.CloseWithError(err)
+		} else {
+			writer.Close()
+		}
+	}()
+	return newReader, nil
+}
+
 func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
 	song, err := p.Song(ctx, userId, id)
 	if err != nil {
@@ -220,14 +260,17 @@ func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality s
 	}
 
 	if err != nil {
-		reader.Close()
 		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
 	}
 
 	var extension string
 	switch info.AudioQuality {
 	case "HI_RES_LOSSLESS":
-		extension = "m4a"
+		reader, err = remuxM4AtoFLAC(reader)
+		if err != nil {
+			return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
+		}
+		extension = "flac"
 	case "LOSSLESS":
 		extension = "flac"
 	case "HIGH":
