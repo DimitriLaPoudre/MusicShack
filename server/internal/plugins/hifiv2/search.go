@@ -192,16 +192,14 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	if len(songData.Data.Songs) != 0 {
 		songs := make([]models.SearchDataSong, 0)
 		for _, song := range songData.Data.Songs {
-			var audioQuality models.Quality
-			switch song.AudioQuality {
-			case "HI_RES_LOSSLESS":
-				audioQuality = 4
-			case "LOSSLESS":
-				audioQuality = 3
-			case "HIGH":
-				audioQuality = 2
-			case "LOW":
-				audioQuality = 1
+			audioQuality := models.QualityHigh
+			for _, quality := range song.MediaMetadata.Tags {
+				switch quality {
+				case "HIRES_LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityHiresLossless)
+				case "LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityLossless)
+				}
 			}
 
 			artists := make([]models.SongDataArtist, 0)
@@ -232,16 +230,14 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	if len(albumData.Data.Albums.Albums) != 0 {
 		albums := make([]models.SearchDataAlbum, 0)
 		for _, album := range albumData.Data.Albums.Albums {
-			var audioQuality models.Quality
-			switch album.AudioQuality {
-			case "HI_RES_LOSSLESS":
-				audioQuality = 4
-			case "LOSSLESS":
-				audioQuality = 3
-			case "HIGH":
-				audioQuality = 2
-			case "LOW":
-				audioQuality = 1
+			audioQuality := models.QualityHigh
+			for _, quality := range album.MediaMetadata.Tags {
+				switch quality {
+				case "HIRES_LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityHiresLossless)
+				case "LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityLossless)
+				}
 			}
 
 			artists := make([]models.AlbumDataArtist, 0)

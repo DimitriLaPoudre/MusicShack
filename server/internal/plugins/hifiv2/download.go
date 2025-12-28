@@ -195,9 +195,12 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 
 func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 	cmd := exec.Command("ffmpeg",
+		"-nostdin",
+		"-fflags", "+genpts",
 		"-i", "pipe:0",
-		"-c", "copy",
-		"-c:a", "flac",
+		"-map", "0:a:0",
+		"-map_metadata", "0",
+		"-c:a", "copy",
 		"-f", "flac",
 		"pipe:1")
 	stdin, err := cmd.StdinPipe()

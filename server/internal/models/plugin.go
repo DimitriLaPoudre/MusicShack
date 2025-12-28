@@ -18,7 +18,8 @@ type Plugin interface {
 type Quality uint
 
 const (
-	QualityLow Quality = 1
+	QualityNone Quality = iota
+	QualityLow
 	QualityHigh
 	QualityLossless
 	QualityHiresLossless

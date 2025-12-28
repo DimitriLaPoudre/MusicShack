@@ -153,16 +153,14 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 		}
 		albums := make([]models.ArtistDataAlbum, 0)
 		for _, album := range albumsData.Albums.Rows[0].Modules[0].PagedList.Items {
-			var audioQuality models.Quality
-			switch album.AudioQuality {
-			case "HI_RES_LOSSLESS":
-				audioQuality = 4
-			case "LOSSLESS":
-				audioQuality = 3
-			case "HIGH":
-				audioQuality = 2
-			case "LOW":
-				audioQuality = 1
+			audioQuality := models.QualityHigh
+			for _, quality := range album.MediaMetadata.Tags {
+				switch quality {
+				case "HIRES_LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityHiresLossless)
+				case "LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityLossless)
+				}
 			}
 
 			artists := make([]models.AlbumDataArtist, 0)

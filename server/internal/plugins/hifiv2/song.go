@@ -79,15 +79,15 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 		normalizeSongData.ReleaseDate = data.Data.ReleaseDate[:10]
 		normalizeSongData.TrackNumber = data.Data.TrackNumber
 		normalizeSongData.VolumeNumber = data.Data.VolumeNumber
-		switch data.Data.AudioQuality {
-		case "HI_RES_LOSSLESS":
-			normalizeSongData.AudioQuality = 4
-		case "LOSSLESS":
-			normalizeSongData.AudioQuality = 3
-		case "HIGH":
-			normalizeSongData.AudioQuality = 2
-		case "LOW":
-			normalizeSongData.AudioQuality = 1
+
+		normalizeSongData.AudioQuality = models.QualityHigh
+		for _, quality := range data.Data.MediaMetadata.Tags {
+			switch quality {
+			case "HIRES_LOSSLESS":
+				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityHiresLossless)
+			case "LOSSLESS":
+				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityLossless)
+			}
 		}
 
 		normalizeSongData.Popularity = data.Data.Popularity

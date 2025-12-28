@@ -83,6 +83,7 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 		normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
 		normalizeAlbumData.Title = firstSong.Album.Title
 		normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
+		normalizeAlbumData.AudioQuality = models.QualityHiresLossless
 		normalizeAlbumData.Artists = append(normalizeAlbumData.Artists,
 			models.AlbumDataArtist{
 				Id:   strconv.FormatUint(uint64(firstSong.Artist.Id), 10),
@@ -94,29 +95,21 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 			song := item.Item
 
 			normalizeAlbumData.Duration += song.Duration
-			if normalizeAlbumData.ReleaseDate < song.ReleaseDate {
-				normalizeAlbumData.ReleaseDate = song.ReleaseDate
-			}
+			normalizeAlbumData.ReleaseDate = max(normalizeAlbumData.ReleaseDate, song.ReleaseDate)
 			normalizeAlbumData.NumberTracks++
-			if normalizeAlbumData.NumberVolumes < song.VolumeNumber {
-				normalizeAlbumData.NumberVolumes = song.VolumeNumber
+			normalizeAlbumData.NumberVolumes = max(normalizeAlbumData.NumberVolumes, song.VolumeNumber)
+
+			audioQuality := models.QualityHigh
+			for _, quality := range song.MediaMetadata.Tags {
+				switch quality {
+				case "HIRES_LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityHiresLossless)
+				case "LOSSLESS":
+					audioQuality = max(audioQuality, models.QualityLossless)
+				}
 			}
 
-			var audioQuality models.Quality
-			switch song.AudioQuality {
-			case "HI_RES_LOSSLESS":
-				audioQuality = 4
-			case "LOSSLESS":
-				audioQuality = 3
-			case "HIGH":
-				audioQuality = 2
-			case "LOW":
-				audioQuality = 1
-			}
-
-			if normalizeAlbumData.AudioQuality > audioQuality {
-				normalizeAlbumData.AudioQuality = audioQuality
-			}
+			normalizeAlbumData.AudioQuality = min(normalizeAlbumData.AudioQuality, audioQuality)
 
 			artists := make([]models.SongDataArtist, 0)
 			for _, artist := range song.Artists {
