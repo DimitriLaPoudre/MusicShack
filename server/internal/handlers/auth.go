@@ -18,6 +18,10 @@ import (
 )
 
 func validateUsername(username string) error {
+	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-.]+$`)
+	if !regexUsername.MatchString(username) {
+		return fmt.Errorf("validatePassword: %s", "username must only contain alphanumeric characters, _, ., -")
+	}
 	if len(username) < 3 || len(username) > 32 {
 		return fmt.Errorf("validateUsername: %s", "username must be between 3 and 32 characters long")
 	}
@@ -33,11 +37,6 @@ func validateUsername(username string) error {
 }
 
 func validatePassword(password string) error {
-	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-.]+$`)
-	if !regexUsername.MatchString(password) {
-		return fmt.Errorf("validatePassword: %s", "password must only contain alphanumeric characters, _, ., -")
-	}
-
 	if len(password) < 8 || len(password) > 128 {
 		return fmt.Errorf("validatePassword: %s", "password must be between 8 and 128 characters long")
 	}

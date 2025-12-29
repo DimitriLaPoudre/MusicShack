@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
@@ -137,7 +138,11 @@ func saveSong(userId uint, reader io.ReadCloser, extension string, data models.S
 	}
 	defer root.Close()
 
-	filename := filepath.Join(data.Artists[0].Name, data.Album.Title, fmt.Sprintf("%d - %s.%s", data.TrackNumber, data.Title, extension))
+	artistName := strings.ReplaceAll(data.Artists[0].Name, "/", "_")
+	albumTitle := strings.ReplaceAll(data.Album.Title, "/", "_")
+	songTitle := strings.ReplaceAll(data.Title, "/", "_")
+
+	filename := filepath.Join(artistName, albumTitle, fmt.Sprintf("%d - %s.%s", data.TrackNumber, songTitle, extension))
 
 	if err := root.Mkdir(data.Artists[0].Name, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("saveSong: %w", err)
