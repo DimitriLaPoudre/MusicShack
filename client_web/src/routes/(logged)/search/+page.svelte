@@ -27,6 +27,7 @@
 					(data as ErrorResponse).error || "Failed to fetch search",
 				);
 			}
+			console.log(data);
 			if (Object.keys(data).length === 0) {
 				throw new Error("instances missing");
 			}
@@ -40,7 +41,7 @@
 </script>
 
 <svelte:head>
-	<title>{"Search"} | {searchData} - MusicShack</title>
+	<title>Search | {searchData} - MusicShack</title>
 </svelte:head>
 
 <h1 class="research">"{searchData}"</h1>
@@ -80,6 +81,9 @@
 	</div>
 	<div class="items">
 		{#if type === "songs"}
+			{#if result[api].songs.length === 0}
+				<p>No song found</p>
+			{/if}
 			{#each result[api].songs as song}
 				<div class="wrap-item">
 					<button
@@ -129,6 +133,9 @@
 				</div>
 			{/each}
 		{:else if type === "albums"}
+			{#if result[api].albums.length === 0}
+				<p>No album found</p>
+			{/if}
 			{#each result[api].albums as album}
 				<div class="wrap-item">
 					<button
@@ -175,6 +182,9 @@
 				</div>
 			{/each}
 		{:else}
+			{#if result[api].artists.length === 0}
+				<p>No artist found</p>
+			{/if}
 			{#each result[api].artists as artist}
 				<button
 					class="artist"

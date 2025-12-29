@@ -194,7 +194,7 @@
 
 	.header {
 		display: table;
-		margin: 0 auto;
+		margin: 15px auto 0;
 		border-spacing: 0 10px;
 
 		.top {

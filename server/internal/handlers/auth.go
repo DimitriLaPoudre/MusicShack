@@ -60,7 +60,7 @@ func validateRequestUser(req models.RequestUser) error {
 }
 
 func Login(c *gin.Context) {
-	var req models.RequestUser
+	var req models.RequestUserLogin
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

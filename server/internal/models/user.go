@@ -10,6 +10,11 @@ type User struct {
 	Instances   ApiInstance `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"instances"`
 }
 
+type RequestUserLogin struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
 type RequestUser struct {
 	Username    string `json:"username"`
 	Password    string `json:"password"`

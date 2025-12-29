@@ -3,6 +3,7 @@ package hifiv2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -101,6 +102,9 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	if err != nil {
 		return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", err)
 	}
+	if len(instances) == 0 {
+		return models.SearchData{}, fmt.Errorf("HifiV2.Search: %w", errors.New("not found"))
+	}
 
 	go func() {
 		defer wg.Done()
@@ -187,7 +191,11 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 	default:
 	}
 
-	var result models.SearchData
+	result := models.SearchData{
+		Songs:   []models.SearchDataSong{},
+		Albums:  []models.SearchDataAlbum{},
+		Artists: []models.SearchDataArtist{},
+	}
 
 	if len(songData.Data.Songs) != 0 {
 		songs := make([]models.SearchDataSong, 0)
@@ -197,7 +205,7 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 				switch quality {
 				case "HIRES_LOSSLESS":
 					audioQuality = max(audioQuality, models.QualityHiresLossless)
-				case "LOSSLESS":
+				case "LOSSLESS", "DOLBY_ATMOS":
 					audioQuality = max(audioQuality, models.QualityLossless)
 				}
 			}
@@ -235,7 +243,7 @@ func (p *HifiV2) Search(ctx context.Context, userId uint, song, album, artist st
 				switch quality {
 				case "HIRES_LOSSLESS":
 					audioQuality = max(audioQuality, models.QualityHiresLossless)
-				case "LOSSLESS":
+				case "LOSSLESS", "DOLBY_ATMOS":
 					audioQuality = max(audioQuality, models.QualityLossless)
 				}
 			}

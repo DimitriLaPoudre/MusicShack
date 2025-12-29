@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
-	import type { RequestUser } from "$lib/types/request";
+	import type { RequestUserLogin } from "$lib/types/request";
 	import type { ErrorResponse } from "$lib/types/response";
 
-	let credentials = $state<RequestUser>({ username: "", password: "" });
+	let credentials = $state<RequestUserLogin>({ username: "", password: "" });
 	let error = $state<string>("");
 
 	afterNavigate(async () => {
@@ -43,6 +43,10 @@
 		}
 	}
 </script>
+
+<svelte:head>
+	<title>Login - MusicShack</title>
+</svelte:head>
 
 <div class="body">
 	<h1>Login</h1>

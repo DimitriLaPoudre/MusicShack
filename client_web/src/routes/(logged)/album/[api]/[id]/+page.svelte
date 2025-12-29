@@ -140,8 +140,8 @@
 	}
 
 	.header {
+		margin: 15px auto 0;
 		display: table;
-		margin: 0 auto;
 		border-spacing: 0 10px;
 
 		.top {

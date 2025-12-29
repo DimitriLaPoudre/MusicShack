@@ -1,3 +1,8 @@
+export interface RequestUserLogin {
+	username: string;
+	password: string;
+}
+
 export interface RequestUser {
 	username: string;
 	password: string;

@@ -113,6 +113,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Admin | Dashboard - MusicShack</title>
+</svelte:head>
+
 <div class="body">
 	<h1 class="title">Admin Dashboard</h1>
 	<h2>Password</h2>

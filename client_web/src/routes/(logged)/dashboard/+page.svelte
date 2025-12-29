@@ -17,6 +17,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>Dashboard - MusicShack</title>
+</svelte:head>
+
 {#if error}
 	<div class="error">
 		<h2>Error loading Dashboard</h2>

@@ -47,6 +47,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>Admin | Login - MusicShack</title>
+</svelte:head>
+
 <div class="body">
 	<h1>Admin Login</h1>
 	<form onsubmit={handleLogin}>

@@ -126,6 +126,9 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 	if err != nil {
 		return models.SearchData{}, err
 	}
+	if len(apiInstances) == 0 {
+		return models.SearchData{}, errors.New("not found")
+	}
 
 	go func() {
 		defer wg.Done()
@@ -212,7 +215,11 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 	default:
 	}
 
-	var result models.SearchData
+	result := models.SearchData{
+		Songs:   []models.SearchDataSong{},
+		Albums:  []models.SearchDataAlbum{},
+		Artists: []models.SearchDataArtist{},
+	}
 
 	if len(songData.Songs) != 0 {
 		for index, value := range songData.Songs {

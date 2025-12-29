@@ -252,10 +252,10 @@ func (m *downloadManager) startMaster(t *downloadTask) {
 func (m *downloadManager) Retry(userId uint, taskId uint) error {
 	m.mu.Lock()
 	task, ok := m.tasks[userId][taskId]
+	m.mu.Unlock()
 	if !ok {
 		return errors.New("download not found")
 	}
-	m.mu.Unlock()
 	task.retryDownload <- struct{}{}
 	return nil
 }
@@ -263,10 +263,10 @@ func (m *downloadManager) Retry(userId uint, taskId uint) error {
 func (m *downloadManager) Cancel(userId uint, taskId uint) error {
 	m.mu.Lock()
 	task, ok := m.tasks[userId][taskId]
+	m.mu.Unlock()
 	if !ok {
 		return errors.New("download not found")
 	}
-	m.mu.Unlock()
 	task.cancelDownload <- struct{}{}
 	return nil
 }
@@ -275,6 +275,7 @@ func (m *downloadManager) Remove(userId uint, taskId uint) error {
 	m.mu.Lock()
 	task, ok := m.tasks[userId][taskId]
 	if !ok {
+		m.mu.Unlock()
 		return errors.New("download not found")
 	}
 	task.cancel()

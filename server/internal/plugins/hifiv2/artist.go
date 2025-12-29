@@ -158,7 +158,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 				switch quality {
 				case "HIRES_LOSSLESS":
 					audioQuality = max(audioQuality, models.QualityHiresLossless)
-				case "LOSSLESS":
+				case "LOSSLESS", "DOLBY_ATMOS":
 					audioQuality = max(audioQuality, models.QualityLossless)
 				}
 			}

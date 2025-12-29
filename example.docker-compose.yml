@@ -1,7 +1,6 @@
 services:
   musicshack:
-    # image: ghcr.io/dimitrilapoudre/musicshack:latest
-    build: .
+    image: ghcr.io/dimitrilapoudre/musicshack:latest
     depends_on:
       database:
         condition: service_healthy

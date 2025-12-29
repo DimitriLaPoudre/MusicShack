@@ -85,7 +85,7 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 			switch quality {
 			case "HIRES_LOSSLESS":
 				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityHiresLossless)
-			case "LOSSLESS":
+			case "LOSSLESS", "DOLBY_ATMOS":
 				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityLossless)
 			}
 		}

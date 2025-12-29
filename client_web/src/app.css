@@ -76,13 +76,18 @@ button {
 }
 
 button:hover,
-button:active,
 button.active {
   background-color: #ffffff;
   color: #0e0e0e;
 }
 
-/* Inputs simples */
+button:active {
+  background-color: inherit;
+  color: inherit;
+  outline: 1px solid #ffffff;
+  outline-offset: -1px;
+}
+
 input, textarea, select {
   font-family: inherit;
   font-size: 16px;
@@ -98,7 +103,6 @@ input:focus, textarea:focus, select:focus {
 }
 
 
-/* 9. Scrollbar custom simple (optionnel) */
 ::-webkit-scrollbar {
   width: 8px;
 }
