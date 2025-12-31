@@ -19,7 +19,7 @@
 	let username = $state<null | string>(null);
 
 	let errorInstances = $state<null | string>(null);
-	let inputInstance = $state<RequestInstance>({ api: "", url: "" });
+	let inputInstance = $state<RequestInstance>({ url: "" });
 	let instances = $state<null | InstancesResponse>(null);
 
 	onMount(() => {
@@ -90,13 +90,6 @@
 	async function addInstance(event: SubmitEvent) {
 		event.preventDefault();
 		try {
-			if (!inputInstance.api || !inputInstance.url) {
-				errorInstances = "fill all fields";
-				return;
-			}
-
-			inputInstance.api = inputInstance.api.trim();
-
 			inputInstance.url = inputInstance.url.trim();
 			if (inputInstance.url.endsWith("/")) {
 				inputInstance.url = inputInstance.url.substring(
@@ -105,8 +98,8 @@
 				);
 			}
 
-			if (!inputInstance.api || !inputInstance.url) {
-				errorInstances = "fill fields with valid value";
+			if (!inputInstance.url) {
+				errorInstances = "fill url with valid value";
 				return;
 			}
 
@@ -121,7 +114,7 @@
 				);
 			}
 
-			inputInstance = { api: "", url: "" };
+			inputInstance = { url: "" };
 			loadInstance();
 		} catch (e) {
 			errorInstances =
@@ -223,7 +216,6 @@
 		{/if}
 		<form class="form" onsubmit={addInstance}>
 			<div class="inputs">
-				<input placeholder="API" bind:value={inputInstance.api} />
 				<input placeholder="URL" bind:value={inputInstance.url} />
 			</div>
 			<button><Plus /></button>
@@ -237,6 +229,11 @@
 						<div class="data">
 							<p>{instance.api}</p>
 							<p>{instance.url}</p>
+							{#if instance.ping === 0}
+								<p>failed</p>
+							{:else}
+								<p>{instance.ping}ms</p>
+							{/if}
 						</div>
 						<button onclick={() => deleteInstance(instance.id)}>
 							<Trash />
@@ -342,7 +339,7 @@
 
 			.inputs {
 				display: grid;
-				grid-template-columns: 1fr 1fr;
+				grid-template-columns: 1fr;
 				gap: 8px;
 			}
 			button {
@@ -373,7 +370,7 @@
 
 				.data {
 					display: grid;
-					grid-template-columns: 1fr 1fr;
+					grid-template-columns: 1fr 1fr auto;
 					gap: 8px;
 					align-items: center;
 					padding: 1rem;

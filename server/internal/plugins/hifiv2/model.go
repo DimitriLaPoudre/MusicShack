@@ -1,5 +1,11 @@
 package hifiv2
 
+type status struct {
+	Version string `json:"version"`
+	HifiApi string `json:"HIFI-API"`
+	Repo    string `json:"Repo"`
+}
+
 type artistData struct {
 	Version string
 	Artist  artistItem

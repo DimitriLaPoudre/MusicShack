@@ -7,6 +7,7 @@ import (
 
 type Plugin interface {
 	Name() string
+	Status(ctx context.Context, url string) error
 	Download(context.Context, uint, string, string, chan<- SongData) (io.ReadCloser, string, error)
 	Song(context.Context, uint, string) (SongData, error)
 	Album(context.Context, uint, string) (AlbumData, error)
