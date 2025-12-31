@@ -72,10 +72,12 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 
 	var normalizeSongData models.SongData
 	{
-
+		normalizeSongData.Api = p.Name()
 		normalizeSongData.Id = strconv.FormatUint(uint64(data.Data.Id), 10)
 		normalizeSongData.Title = data.Data.Title
 		normalizeSongData.Duration = data.Data.Duration
+		normalizeSongData.ReplayGain = data.Data.ReplayGain
+		normalizeSongData.Peak = data.Data.Peak
 		normalizeSongData.ReleaseDate = data.Data.ReleaseDate[:10]
 		normalizeSongData.TrackNumber = data.Data.TrackNumber
 		normalizeSongData.VolumeNumber = data.Data.VolumeNumber

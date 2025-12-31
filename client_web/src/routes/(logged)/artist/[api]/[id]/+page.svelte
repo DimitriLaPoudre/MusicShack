@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { Download } from "lucide-svelte";
-	import { addFollow } from "$lib/functions/follow";
+	import { Download, HeartIcon, HeartOff } from "lucide-svelte";
+	import {
+		addFollow,
+		loadFollows,
+		removeFollow,
+	} from "$lib/functions/follow";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { ArtistData } from "$lib/types/response";
@@ -10,6 +14,7 @@
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
+	let followed = $state<null | number>(null);
 
 	afterNavigate(async () => {
 		try {
@@ -24,7 +29,27 @@
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";
 		}
+		setFollowButton();
 	});
+
+	async function setFollowButton() {
+		{
+			const { list, error } = await loadFollows();
+			if (error) {
+				return;
+			}
+			const follow = list?.find(
+				(item) =>
+					item.api === page.params.api &&
+					item.artistId === page.params.id,
+			);
+			if (follow) {
+				followed = follow.id;
+			} else {
+				followed = null;
+			}
+		}
+	}
 </script>
 
 <svelte:head>
@@ -57,11 +82,26 @@
 		<div class="bottom">
 			<div class="bottom-data">
 				<button
-					onclick={() => {
-						addFollow({ api: page.params.api!, id: artist!.id });
+					onclick={async () => {
+						if (followed) {
+							await removeFollow(followed);
+							await setFollowButton();
+						} else {
+							await addFollow({
+								api: page.params.api!,
+								id: artist!.id,
+							});
+							await setFollowButton();
+						}
 					}}
 				>
-					Follow
+					{#if followed}
+						<HeartOff />
+						<p>Unfollow</p>
+					{:else}
+						<HeartIcon />
+						<p>Follow</p>
+					{/if}
 				</button>
 				<button
 					onclick={async () => {
@@ -73,7 +113,8 @@
 						});
 					}}
 				>
-					Download Discography
+					<Download />
+					<p>Download Discography</p>
 				</button>
 			</div>
 		</div>

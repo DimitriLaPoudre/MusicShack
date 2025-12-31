@@ -26,9 +26,12 @@ const (
 )
 
 type SongData struct {
+	Api          string           `json:"api"`
 	Id           string           `json:"id"`
 	Title        string           `json:"title"`
 	Duration     uint             `json:"duration"`
+	ReplayGain   float64          `json:"replayGain"`
+	Peak         float64          `json:"peak"`
 	ReleaseDate  string           `json:"releaseDate"`
 	TrackNumber  uint             `json:"trackNumber"`
 	VolumeNumber uint             `json:"volumeNumber"`
@@ -52,6 +55,7 @@ type SongDataAlbum struct {
 }
 
 type AlbumData struct {
+	Api           string            `json:"api"`
 	Id            string            `json:"id"`
 	Title         string            `json:"title"`
 	Duration      uint              `json:"duration"`
@@ -80,6 +84,7 @@ type AlbumDataSong struct {
 }
 
 type ArtistData struct {
+	Api        string            `json:"api"`
 	Id         string            `json:"id"`
 	Name       string            `json:"name"`
 	PictureUrl string            `json:"pictureUrl"`

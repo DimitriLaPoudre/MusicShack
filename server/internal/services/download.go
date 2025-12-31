@@ -13,7 +13,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/metadata"
 )
 
 type downloadManager struct {
@@ -166,7 +166,7 @@ func saveSong(userId uint, reader io.ReadCloser, extension string, data models.S
 		return fmt.Errorf("saveSong: %w", err)
 	}
 
-	if err := utils.FormatMetadata(filepath.Join(root.Name(), filename), data); err != nil {
+	if err := metadata.FormatMetadata(userId, filepath.Join(root.Name(), filename), data); err != nil {
 		return fmt.Errorf("saveSong: %w", err)
 	}
 	return nil

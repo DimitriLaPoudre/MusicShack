@@ -30,12 +30,12 @@
 		<div class="list">
 			{#each list as item}
 				<div class="artist">
-					<a class="data" href="/artist/{item.api}/{item.artist.id}">
+					<a class="data" href="/artist/{item.api}/{item.artistId}">
 						<img
-							src={item.artist.pictureUrl}
-							alt={item.artist.name}
+							src={item.artistPictureUrl}
+							alt={item.artistName}
 						/>
-						<p>{item.artist.name}</p>
+						<p>{item.artistName}</p>
 					</a>
 					<button
 						onclick={async () => {
