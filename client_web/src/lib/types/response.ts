@@ -21,6 +21,7 @@ export interface InstanceItem {
 	id: number;
 	api: string;
 	url: string;
+	ping: number;
 }
 export type InstancesResponse = InstanceItem[];
 

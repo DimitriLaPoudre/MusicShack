@@ -19,7 +19,6 @@ export interface RequestAdminPassword {
 }
 
 export interface RequestInstance {
-	api: string;
 	url: string;
 }
 
