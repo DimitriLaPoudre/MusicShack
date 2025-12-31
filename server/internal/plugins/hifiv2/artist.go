@@ -141,6 +141,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 
 	var normalizeArtistData models.ArtistData
 	{
+		normalizeArtistData.Api = p.Name()
 		normalizeArtistData.Id = strconv.FormatUint(uint64(data.Artist.Id), 10)
 		normalizeArtistData.Name = data.Artist.Name
 		if data.Artist.PictureUrl == "" {

@@ -41,9 +41,12 @@ export interface DownloadData {
 export type DownloadListResponse = DownloadData[];
 
 export interface SongData {
+	api: string;
 	id: string;
 	title: string;
 	duration: number;
+	replayGain: number;
+	peak: number;
 	releaseDate: string;
 	trackNumber: number;
 	volumeNumber: number;
@@ -65,6 +68,7 @@ export interface SongDataAlbum {
 }
 
 export interface AlbumData {
+	api: string;
 	id: string;
 	title: string;
 	duration: number;
@@ -91,6 +95,7 @@ export interface AlbumDataSong {
 }
 
 export interface ArtistData {
+	api: string;
 	id: string;
 	name: string;
 	pictureUrl: string;
