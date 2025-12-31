@@ -5,11 +5,13 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-func AddFollow(userId uint, api string, id string) error {
+func AddFollow(userId uint, api string, artistId string, artistName string, artistPictureUrl string) error {
 	return database.DB.Create(&models.Follow{
-		UserId:   userId,
-		Api:      api,
-		ArtistId: id,
+		UserId:           userId,
+		Api:              api,
+		ArtistId:         artistId,
+		ArtistName:       artistName,
+		ArtistPictureUrl: artistPictureUrl,
 	}).Error
 }
 

@@ -27,7 +27,9 @@ export type InstancesResponse = InstanceItem[];
 export interface FollowItem {
 	id: number;
 	api: string;
-	artist: ArtistData;
+	artistId: string;
+	artistName: string;
+	artistPictureUrl: string;
 }
 export type FollowsResponse = FollowItem[];
 
