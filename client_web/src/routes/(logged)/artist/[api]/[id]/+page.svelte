@@ -265,7 +265,7 @@
 			.bottom-data {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
-				gap: 1rem;
+				gap: 0.5rem;
 			}
 		}
 	}
@@ -295,7 +295,7 @@
 					height: auto;
 					overflow: hidden;
 					border-bottom: none;
-					gap: 1rem;
+					gap: 0.5rem;
 
 					.cover {
 						width: 160px;

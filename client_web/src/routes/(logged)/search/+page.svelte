@@ -107,8 +107,8 @@
 								<Disc size={140} />
 							{/if}
 						</div>
-						<p>{song.title}</p>
-						<nav>
+						<p class="title">{song.title}</p>
+						<nav class="artists">
 							{#each song.artists as artist}
 								<a href="/artist/{api}/{artist.id}">
 									{artist.name}
@@ -156,8 +156,8 @@
 								<DiscAlbum size={140} />
 							{/if}
 						</div>
-						<p>{album.title}</p>
-						<nav>
+						<p class="title">{album.title}</p>
+						<nav class="artists">
 							{#each album.artists as artist}
 								<a href="/artist/{api}/{artist.id}">
 									{artist.name}
@@ -226,22 +226,23 @@
 	.top {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		padding: 10px 0;
+		gap: 0.5rem;
+		padding: 1rem 0;
 		.section {
 			display: flex;
 			flex-direction: row;
-			gap: 10px;
+			gap: 0.5rem;
 			button {
-				padding: 10px;
+				padding: 0.75rem;
 			}
 		}
 	}
 
 	.items {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, 200px);
+		justify-content: center;
+		gap: 1rem;
 
 		.wrap-item {
 			width: 200px;
@@ -254,17 +255,20 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
-				gap: 8px;
+				gap: 0.5rem;
 
 				.cover {
 					width: 160px;
 					height: 160px;
 				}
-
-				nav {
+				.title {
+					font-weight: bolder;
+				}
+				.artists {
 					display: flex;
 					flex-direction: column;
 					gap: 0.2rem 1rem;
+					font-style: italic;
 				}
 			}
 			.download {
@@ -280,7 +284,9 @@
 		.picture {
 			width: 160px;
 			height: 160px;
-			border-radius: 50%;
+			img {
+				border-radius: 50%;
+			}
 		}
 	}
 </style>
