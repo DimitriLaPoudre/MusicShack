@@ -122,7 +122,7 @@
 			}
 		}
 		.panel-search {
-			width: 70vw;
+			width: clamp(320px, 70vw + 20px, 1200px);
 			max-height: calc(95vh - 135px);
 			overflow-y: auto;
 			outline: 1px solid #ffffff;
@@ -131,7 +131,7 @@
 			gap: 8px;
 		}
 		.panel-default {
-			width: 70vw;
+			width: clamp(320px, 70vw + 20px, 1200px);
 			max-height: calc(95vh - 135px);
 			overflow-y: auto;
 			outline: 1px solid #ffffff;
@@ -144,7 +144,7 @@
 
 	main {
 		padding-top: 130px;
-		width: 70vw;
+		width: clamp(320px, 70vw + 20px, 1200px);
 		margin: 0 auto;
 	}
 </style>

@@ -86,6 +86,7 @@
 				});
 			}}
 		>
+			<Download />
 			Download Album
 		</button>
 	</div>
@@ -95,7 +96,7 @@
 		{#each discs as disc, i}
 			{#if disc !== undefined}
 				<div class="disc">
-					<h1>Disc {i}</h1>
+					<h2>Disc {i}</h2>
 					{#each disc as song}
 						{#if song !== undefined}
 							<div class="item">
@@ -115,7 +116,7 @@
 									<p class="number">{song.trackNumber}</p>
 									<div class="data">
 										<p class="title">{song.title}</p>
-										<div class="artists">
+										<nav class="artists">
 											{#each song.artists as artist}
 												<a
 													href="/artist/{page.params
@@ -124,7 +125,7 @@
 													{artist.name}
 												</a>
 											{/each}
-										</div>
+										</nav>
 									</div>
 									<div class="duration">
 										<Clock4 size={16} />
@@ -186,8 +187,8 @@
 				gap: 10px;
 
 				.cover {
-					width: 160px;
-					height: 160px;
+					width: 280px;
+					height: 280px;
 				}
 				.data {
 					display: flex;
@@ -212,12 +213,17 @@
 			}
 		}
 		.download {
-			display: table-row;
+			display: flex;
+			flex-direction: row;
+			gap: 0.5rem;
 			width: 100%;
+			align-items: center;
+			justify-content: center;
 		}
 	}
 
 	.discs {
+		padding-top: 2rem;
 		display: flex;
 		flex-direction: column;
 		gap: 2rem;
@@ -226,6 +232,11 @@
 			display: grid;
 			gap: 10px;
 			padding: 0 0 0 5px;
+
+			h2 {
+				text-align: center;
+				font-weight: bold;
+			}
 
 			.item {
 				display: grid;
