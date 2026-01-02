@@ -192,7 +192,7 @@ func (t *downloadTask) run(ctx context.Context) {
 			if errors.Is(err, context.Canceled) {
 				t.status = models.StatusCancel
 			} else {
-				t.cancel()
+				t.downloadCancel()
 				t.status = models.StatusFailed
 				fmt.Println("downloadTask.run: ", err)
 			}
@@ -213,7 +213,7 @@ func (t *downloadTask) run(ctx context.Context) {
 		if errors.Is(err, context.Canceled) {
 			t.status = models.StatusCancel
 		} else {
-			t.cancel()
+			t.downloadCancel()
 			t.status = models.StatusFailed
 			fmt.Println("downloadTask.run: ", err)
 		}
