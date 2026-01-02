@@ -286,7 +286,7 @@
 					button {
 						aspect-ratio: 1/1;
 					}
-					@container (max-width: 420px) {
+					@container (max-width: 520px) {
 						.data {
 							grid-template-columns: 1fr;
 						}

@@ -257,20 +257,20 @@
 						justify-content: center;
 						align-items: center;
 						width: 100%;
-						gap: 1rem;
+						gap: 0.5rem;
 
 						.title {
 							font-weight: bolder;
-							flex: 0 0 49%;
+							word-break: break-word;
 						}
 						.artists {
 							font-style: italic;
-							flex: 0 0 49%;
 							display: flex;
 							flex-wrap: wrap;
 							justify-content: center;
 							align-items: center;
 							gap: 0.25rem 0.5rem;
+							word-break: break-word;
 						}
 					}
 					.duration {

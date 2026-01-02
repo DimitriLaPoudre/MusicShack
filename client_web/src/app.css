@@ -1,6 +1,3 @@
-/* global.css */
-
-/* 1. Reset de base pour uniformiser les navigateurs */
 * {
   margin: 0;
   padding: 0;
@@ -20,7 +17,6 @@
   --accent-dim: rgba(255, 255, 255, 0.1);
 }
 
-/* 2. Styles globaux du body */
 html { scroll-behavior: smooth; }
 body {
   background-color: var(--bg);
@@ -34,40 +30,33 @@ body {
   min-height: 100vh;
 }
 
-/* 4. Titres pour cohérence */
 h1, h2, h3, h4, h5, h6 {
   font-weight: normal;
 }
 
-/* 5. Paragraphes */
 p {
   font-size: 16px;
 }
 
-/* 6. Listes */
 ul, ol {
   font-size: 16px;
 }
 
-/* 7. Images */
 img {
   max-width: 100%;
   display: block;
 }
 
-/* 8. Inputs et boutons pour cohérence */
-/* Liens */
 a {
-  color: inherit; /* pas de couleur spécifique */
-  text-decoration: underline;
   font-size: 16px;
+  color: inherit;
+  text-decoration: underline;
   cursor: pointer;
 }
 
-/* Boutons */
 button {
-  font-family: inherit;
   font-size: 16px;
+  font-family: inherit;
   color: inherit;
   background: none;
   border: 1px solid #ffffff;

@@ -6,12 +6,7 @@
 		loadDownloads,
 		retryDownload,
 	} from "$lib/functions/download";
-	import { apiFetch } from "$lib/functions/fetch";
-	import type {
-		DownloadData,
-		DownloadListResponse,
-		StatusResponse,
-	} from "$lib/types/response";
+	import type { DownloadListResponse } from "$lib/types/response";
 	import {
 		CircleAlert,
 		CircleCheck,
@@ -84,8 +79,9 @@
 								);
 							}}
 						>
-							<p>{download.data.title}</p>
+							<p class="title">{download.data.title}</p>
 							<a
+								class="artist"
 								href="/artist/{download.api}/{download.data
 									.artists[0].id}"
 								>{download.data.artists[0].name}</a
@@ -154,6 +150,9 @@
 </div>
 
 <style>
+	h1 {
+		font-weight: bolder;
+	}
 	.loading {
 		text-align: center;
 	}
@@ -161,31 +160,39 @@
 		text-align: center;
 		background-color: var(--err);
 		padding: 0.5rem;
-		margin: 0;
 	}
 	.items {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
+		gap: 0.25rem;
 		.item {
 			display: grid;
 			grid-template-columns: auto 1fr auto;
-			gap: 8px;
+			gap: 0.75rem;
 			align-items: stretch;
 			container-type: inline-size;
 
 			.img {
 				width: 58px;
 				height: 58px;
-				aspect-ratio: 1/1;
+				align-self: center;
 			}
 
 			.item-data {
+				align-self: center;
 				display: grid;
 				grid-template-columns: 1fr 1fr;
 				align-items: center;
-				justify-items: left;
+				justify-items: center;
 				border: none;
+				gap: 0.5rem 0.5rem;
+
+				.title {
+					font-weight: bolder;
+				}
+				.artist {
+					font-style: italic;
+				}
 			}
 			.item-data:hover {
 				outline: 1px solid #ffffff;
@@ -202,7 +209,7 @@
 				}
 			}
 
-			@container (max-width: 420px) {
+			@container (max-width: 520px) {
 				.item-data {
 					grid-template-columns: 1fr;
 				}

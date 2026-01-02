@@ -155,8 +155,8 @@
 </script>
 
 <div class="body">
-	<h1>Settings</h1>
-	<h2>User</h2>
+	<h1 class="title">Settings</h1>
+	<h2 class="sub-title">User</h2>
 	<div class="user">
 		{#if errorUser}
 			<p class="error">
@@ -207,7 +207,7 @@
 			</button>
 		</form>
 	</div>
-	<h2>Instances</h2>
+	<h2 class="sub-title">Instances</h2>
 	<div class="instances">
 		{#if errorInstances}
 			<p class="error">
@@ -227,13 +227,15 @@
 				{#each instances as instance}
 					<div class="item">
 						<div class="data">
-							<p>{instance.api}</p>
-							<p>{instance.url}</p>
-							{#if instance.ping === 0}
-								<p>failed</p>
-							{:else}
-								<p>{instance.ping}ms</p>
-							{/if}
+							<p class="url">{instance.url}</p>
+							<p class="api">{instance.api}</p>
+							<p class="ping">
+								{#if instance.ping === 0}
+									failed
+								{:else}
+									{instance.ping}ms
+								{/if}
+							</p>
 						</div>
 						<button onclick={() => deleteInstance(instance.id)}>
 							<Trash />
@@ -247,11 +249,17 @@
 </div>
 
 <style>
+	.title {
+		font-weight: bolder;
+	}
+	.sub-title {
+		font-weight: bolder;
+	}
 	.user {
 		display: flex;
 		flex-direction: column;
-		padding: 8px;
-		gap: 8px;
+		padding: 0.75rem;
+		gap: 0.75rem;
 
 		.error {
 			text-align: center;
@@ -261,27 +269,27 @@
 		.form {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			gap: 8px;
+			gap: 0.75rem;
 			align-items: stretch;
 			container-type: inline-size;
 
 			.wrap-form {
 				display: flex;
 				flex-direction: column;
-				gap: 8px;
+				gap: 0.75rem;
 
 				.inputs {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
-					gap: 8px;
+					gap: 0.75rem;
 				}
 				.qualities {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
-					gap: 8px;
+					gap: 0.75rem;
 
 					.item {
-						padding: 18.5px 0;
+						padding: 1rem 0;
 						outline: none;
 						border: none;
 						background-color: inherit;
@@ -302,19 +310,13 @@
 						text-decoration: underline;
 					}
 				}
-			}
-			.edit {
-				aspect-ratio: 1/1;
-			}
-			@container (max-width: 420px) {
-				.inputs {
-					grid-template-columns: 1fr;
-				}
-				.qualities {
-					grid-template-columns: 1fr;
-				}
-				.edit {
-					aspect-ratio: auto;
+				@container (max-width: 520px) {
+					.inputs {
+						grid-template-columns: 1fr;
+					}
+					.qualities {
+						grid-template-columns: 1fr;
+					}
 				}
 			}
 		}
@@ -370,24 +372,28 @@
 
 				.data {
 					display: grid;
-					grid-template-columns: 1fr 1fr auto;
+					grid-template-columns: 1fr auto 6ch;
 					gap: 8px;
 					align-items: center;
 					padding: 1rem;
+
+					.url {
+						word-break: break-word;
+					}
+					.api {
+						word-break: break-word;
+					}
+					.ping {
+						align-self: right;
+					}
 				}
 				.data:hover {
 					outline: 1px solid #ffffff;
 					outline-offset: -1px;
 				}
-				button {
-					aspect-ratio: 1/1;
-				}
-				@container (max-width: 420px) {
+				@container (max-width: 520px) {
 					.data {
 						grid-template-columns: 1fr;
-					}
-					button {
-						aspect-ratio: auto;
 					}
 				}
 			}

@@ -145,7 +145,6 @@
 	main {
 		padding-top: 130px;
 		width: clamp(320px, 70vw + 20px, 1200px);
-		width: 70vw;
 		margin: 0 auto;
 	}
 </style>
