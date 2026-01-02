@@ -14,7 +14,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 )
 
@@ -235,13 +234,7 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 	return newReader, nil
 }
 
-func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string, data chan<- models.SongData) (io.ReadCloser, string, error) {
-	song, err := p.Song(ctx, userId, id)
-	if err != nil {
-		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)
-	}
-	data <- song
-
+func (p *HifiV2) Download(ctx context.Context, userId uint, id string, quality string) (io.ReadCloser, string, error) {
 	info, err := p.downloadInfo(ctx, userId, id, quality)
 	if err != nil {
 		return nil, "", fmt.Errorf("HifiV2.Download: %w", err)

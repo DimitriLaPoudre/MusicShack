@@ -103,7 +103,6 @@ func RetryDownload(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-
 }
 
 func CancelDownload(c *gin.Context) {
@@ -127,5 +126,28 @@ func CancelDownload(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
 
+func RetryDownloads(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	services.DownloadManager.RetryAll(userId)
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
+
+func DoneDownloads(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	services.DownloadManager.Done(userId)
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

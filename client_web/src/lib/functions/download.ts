@@ -57,11 +57,44 @@ export async function retryDownload(id: number) {
 	return error;
 }
 
+export async function retryAllDownload() {
+	let error = null;
+	try {
+		const data = await apiFetch<StatusResponse>(
+			`/downloads/retry`,
+			"POST",
+		);
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to retry download");
+		}
+	} catch (e) {
+		error = e instanceof Error ? e.message : "Failed to retry download";
+	}
+	return error;
+}
+
 export async function cancelDownload(id: number) {
 	let error = null;
 	try {
 		const data = await apiFetch<StatusResponse>(
 			`/downloads/${id}/cancel`,
+			"POST",
+		);
+		if ("error" in data) {
+			throw new Error(data.error || "Failed to cancel download");
+		}
+	} catch (e) {
+		error =
+			e instanceof Error ? e.message : "Failed to cancel download";
+	}
+	return error;
+}
+
+export async function doneDownload() {
+	let error = null;
+	try {
+		const data = await apiFetch<StatusResponse>(
+			`/downloads/done`,
 			"POST",
 		);
 		if ("error" in data) {

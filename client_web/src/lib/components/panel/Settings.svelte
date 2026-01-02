@@ -215,9 +215,7 @@
 			</p>
 		{/if}
 		<form class="form" onsubmit={addInstance}>
-			<div class="inputs">
-				<input placeholder="URL" bind:value={inputInstance.url} />
-			</div>
+			<input placeholder="URL" bind:value={inputInstance.url} />
 			<button><Plus /></button>
 		</form>
 		{#if !instances}
@@ -339,21 +337,8 @@
 			align-items: stretch;
 			container-type: inline-size;
 
-			.inputs {
-				display: grid;
-				grid-template-columns: 1fr;
-				gap: 8px;
-			}
-			button {
-				aspect-ratio: 1/1;
-			}
-			@container (max-width: 420px) {
-				.inputs {
-					grid-template-columns: 1fr;
-				}
-				button {
-					aspect-ratio: auto;
-				}
+			input {
+				width: 100%;
 			}
 		}
 		.loading {
