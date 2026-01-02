@@ -49,23 +49,25 @@
 </svelte:head>
 
 <div class="body">
-	<h1>Login</h1>
+	<h1 class="title">Login</h1>
 	<form onsubmit={handleLogin}>
+		{#if error}
+			<p class="error">{error}</p>
+		{/if}
 		<div class="form">
-			{#if error}
-				<p>{error}</p>
-			{/if}
-			<input
-				placeholder="Username"
-				bind:value={credentials.username}
-				required
-			/>
-			<input
-				type="password"
-				placeholder="Password"
-				bind:value={credentials.password}
-				required
-			/>
+			<div class="inputs">
+				<input
+					placeholder="Username"
+					bind:value={credentials.username}
+					required
+				/>
+				<input
+					type="password"
+					placeholder="Password"
+					bind:value={credentials.password}
+					required
+				/>
+			</div>
 			<button>Login</button>
 		</div>
 	</form>
@@ -76,9 +78,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		margin-top: 10vh;
+		margin: 10vh auto;
+		width: clamp(320px, 70vw + 20px, 1200px);
 		height: 100vh;
 
+		.title {
+			font-weight: bolder;
+		}
+		.error {
+			padding: 0.75rem;
+			margin: 1rem;
+			color: var(--err);
+		}
 		.form {
 			display: flex;
 			flex-direction: column;
@@ -86,17 +97,18 @@
 			gap: 1rem;
 			padding: 1rem 2rem;
 
-			p {
-				padding: 8px;
-				margin: 10px;
-				color: var(--err);
-			}
-			input {
-				padding: 8px;
+			.inputs {
+				display: flex;
+				flex-direction: column;
+				gap: 0.5rem;
+
+				input {
+					padding: 0.75rem;
+				}
 			}
 			button {
-				width: 60%;
-				padding: 8px;
+				width: 200px;
+				padding: 0.75rem;
 			}
 		}
 	}

@@ -52,12 +52,12 @@
 </svelte:head>
 
 <div class="body">
-	<h1>Admin Login</h1>
+	<h1 class="title">Admin Login</h1>
+	{#if error}
+		<p class="error">{error}</p>
+	{/if}
 	<form onsubmit={handleLogin}>
 		<div class="form">
-			{#if error}
-				<p>{error}</p>
-			{/if}
 			<input
 				type="password"
 				placeholder="Password"
@@ -74,9 +74,18 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		margin-top: 10vh;
+		margin: 10vh auto;
 		height: 100vh;
+		width: clamp(320px, 70vw + 20px, 1200px);
 
+		.title {
+			font-weight: bolder;
+		}
+		.error {
+			padding: 0.75rem;
+			margin: 1rem;
+			color: var(--err);
+		}
 		.form {
 			display: flex;
 			flex-direction: column;
@@ -84,17 +93,12 @@
 			gap: 1rem;
 			padding: 1rem 2rem;
 
-			p {
-				padding: 8px;
-				margin: 10px;
-				color: var(--err);
-			}
 			input {
-				padding: 8px;
+				padding: 0.75rem;
 			}
 			button {
-				width: auto;
-				padding: 8px;
+				width: 200px;
+				padding: 0.75rem;
 			}
 		}
 	}
