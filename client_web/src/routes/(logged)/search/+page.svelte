@@ -228,6 +228,7 @@
 		flex-direction: column;
 		gap: 0.5rem;
 		padding: 1rem 0;
+		align-items: center;
 		.section {
 			display: flex;
 			flex-direction: row;
@@ -278,16 +279,19 @@
 				border-top: none;
 			}
 		}
-	}
+		.artist {
+			width: 200px;
+			height: auto;
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
 
-	.artist {
-		width: 200px;
-		height: auto;
-		.picture {
-			width: 160px;
-			height: 160px;
-			img {
-				border-radius: 50%;
+			.picture {
+				width: 160px;
+				height: 160px;
+				img {
+					border-radius: 50%;
+				}
 			}
 		}
 	}

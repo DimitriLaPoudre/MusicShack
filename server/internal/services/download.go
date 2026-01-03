@@ -17,10 +17,11 @@ import (
 )
 
 type downloadManager struct {
-	mTasks sync.Mutex
-	tasks  map[uint]map[uint]*downloadTask
-	mIds   sync.Mutex
-	ids    map[uint]uint
+	mTasks      sync.Mutex
+	tasks       map[uint]map[uint]*downloadTask
+	mIds        sync.Mutex
+	ids         map[uint]uint
+	limitGlobal chan struct{}
 }
 
 type downloadTask struct {
@@ -35,10 +36,24 @@ type downloadTask struct {
 }
 
 var DownloadManager = downloadManager{
-	mTasks: sync.Mutex{},
-	tasks:  make(map[uint]map[uint]*downloadTask),
-	mIds:   sync.Mutex{},
-	ids:    make(map[uint]uint),
+	mTasks:      sync.Mutex{},
+	tasks:       make(map[uint]map[uint]*downloadTask),
+	mIds:        sync.Mutex{},
+	ids:         make(map[uint]uint),
+	limitGlobal: make(chan struct{}, 4),
+}
+
+func (m *downloadManager) acquireLimitGlobal(ctx context.Context) error {
+	select {
+	case m.limitGlobal <- struct{}{}:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (m *downloadManager) releaseLimitGlobal() {
+	<-m.limitGlobal
 }
 
 func (m *downloadManager) generateId(userId uint) uint {
@@ -178,7 +193,6 @@ func (t *downloadTask) start() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	t.downloadCancel = cancel
-	t.status = models.StatusRunning
 	t.mu.Unlock()
 
 	go t.run(ctx)
@@ -190,7 +204,9 @@ func (t *downloadTask) run(ctx context.Context) {
 		t.mu.Lock()
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				t.status = models.StatusCancel
+				if t.status != models.StatusFailed {
+					t.status = models.StatusCancel
+				}
 			} else {
 				t.downloadCancel()
 				t.status = models.StatusFailed
@@ -202,6 +218,18 @@ func (t *downloadTask) run(ctx context.Context) {
 		t.mu.Unlock()
 	}()
 
+	if err := DownloadManager.acquireLimitGlobal(ctx); err != nil {
+		t.mu.Lock()
+		t.status = models.StatusCancel
+		t.mu.Unlock()
+		return
+	} else {
+		t.mu.Lock()
+		t.status = models.StatusRunning
+		t.mu.Unlock()
+	}
+	defer DownloadManager.releaseLimitGlobal()
+
 	reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality)
 
 	if err == nil {
@@ -211,7 +239,9 @@ func (t *downloadTask) run(ctx context.Context) {
 	t.mu.Lock()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			t.status = models.StatusCancel
+			if t.status != models.StatusFailed {
+				t.status = models.StatusCancel
+			}
 		} else {
 			t.downloadCancel()
 			t.status = models.StatusFailed

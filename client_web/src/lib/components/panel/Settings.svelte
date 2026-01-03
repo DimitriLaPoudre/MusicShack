@@ -181,9 +181,7 @@
 						class:active={inputUser.bestQuality !== true}
 						type="button"
 						onclick={() => {
-							inputUser.bestQuality = !inputUser.bestQuality
-								? true
-								: false;
+							inputUser.bestQuality = false;
 						}}
 					>
 						Compressed Quality
@@ -193,12 +191,10 @@
 						class:active={inputUser.bestQuality === true}
 						type="button"
 						onclick={() => {
-							inputUser.bestQuality = inputUser.bestQuality
-								? false
-								: true;
+							inputUser.bestQuality = true;
 						}}
 					>
-						Best possible Quality
+						LOSSLESS Quality
 					</button>
 				</div>
 			</div>
@@ -267,14 +263,14 @@
 		.form {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			gap: 0.75rem;
+			gap: 0.5rem;
 			align-items: stretch;
 			container-type: inline-size;
 
 			.wrap-form {
 				display: flex;
 				flex-direction: column;
-				gap: 0.75rem;
+				gap: 0.5rem;
 
 				.inputs {
 					display: grid;
@@ -336,8 +332,8 @@
 	.instances {
 		display: flex;
 		flex-direction: column;
-		padding: 8px;
-		gap: 16px;
+		padding: 0.75rem;
+		gap: 1.25rem;
 		.error {
 			text-align: center;
 			background-color: var(--err);
@@ -346,7 +342,7 @@
 		.form {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			gap: 8px;
+			gap: 0.5rem;
 			align-items: stretch;
 			container-type: inline-size;
 
@@ -360,18 +356,18 @@
 		.items {
 			display: flex;
 			flex-direction: column;
-			gap: 4px;
+			gap: 0.5rem;
 			.item {
 				display: grid;
 				grid-template-columns: 1fr auto;
-				gap: 8px;
+				gap: 0.5rem;
 				align-items: stretch;
 				container-type: inline-size;
 
 				.data {
 					display: grid;
 					grid-template-columns: 1fr auto 6ch;
-					gap: 8px;
+					gap: 0.75rem;
 					align-items: center;
 					padding: 1rem;
 
@@ -400,7 +396,7 @@
 
 	.logout {
 		width: 100%;
-		padding: 8px;
+		padding: 0.75rem;
 		border-color: var(--err);
 	}
 	.logout:hover {
