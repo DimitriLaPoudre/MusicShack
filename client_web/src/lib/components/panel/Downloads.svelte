@@ -3,15 +3,12 @@
 	import {
 		cancelDownload,
 		deleteDownload,
+		doneDownload,
 		loadDownloads,
+		retryAllDownload,
 		retryDownload,
 	} from "$lib/functions/download";
-	import { apiFetch } from "$lib/functions/fetch";
-	import type {
-		DownloadData,
-		DownloadListResponse,
-		StatusResponse,
-	} from "$lib/types/response";
+	import type { DownloadListResponse } from "$lib/types/response";
 	import {
 		CircleAlert,
 		CircleCheck,
@@ -49,6 +46,34 @@
 	{#if !list}
 		<p class="loading">Loading...</p>
 	{:else}
+		{#if list.some((task) => task.status === "failed" || task.status === "cancel" || task.status === "done")}
+			<div class="all">
+				{#if list.some((task) => task.status === "failed" || task.status === "cancel")}
+					<button
+						onclick={async () => {
+							error = await retryAllDownload();
+							if (!error) {
+								({ list, error } = await loadDownloads());
+							}
+						}}
+					>
+						<RotateCcw />
+					</button>
+				{/if}
+				{#if list.some((task) => task.status === "done")}
+					<button
+						onclick={async () => {
+							error = await doneDownload();
+							if (!error) {
+								({ list, error } = await loadDownloads());
+							}
+						}}
+					>
+						<CircleCheck />
+					</button>
+				{/if}
+			</div>
+		{/if}
 		<div class="items">
 			{#each list as download, index}
 				<div class="item">
@@ -84,8 +109,9 @@
 								);
 							}}
 						>
-							<p>{download.data.title}</p>
+							<p class="title">{download.data.title}</p>
 							<a
+								class="artist"
 								href="/artist/{download.api}/{download.data
 									.artists[0].id}"
 								>{download.data.artists[0].name}</a
@@ -154,6 +180,9 @@
 </div>
 
 <style>
+	h1 {
+		font-weight: bolder;
+	}
 	.loading {
 		text-align: center;
 	}
@@ -161,56 +190,86 @@
 		text-align: center;
 		background-color: var(--err);
 		padding: 0.5rem;
-		margin: 0;
 	}
-	.items {
+
+	.body {
 		display: flex;
 		flex-direction: column;
-		gap: 4px;
-		.item {
-			display: grid;
-			grid-template-columns: auto 1fr auto;
-			gap: 8px;
-			align-items: stretch;
-			container-type: inline-size;
+		gap: 0.5rem;
 
-			.img {
-				width: 58px;
-				height: 58px;
-				aspect-ratio: 1/1;
+		.all {
+			display: flex;
+			flex-direction: row;
+			justify-content: center;
+			align-items: center;
+			gap: 0.5rem;
+
+			button {
+				width: 100%;
+				padding: 0.5rem 0;
 			}
-
-			.item-data {
+		}
+		.items {
+			display: flex;
+			flex-direction: column;
+			gap: 0.25rem;
+			.item {
 				display: grid;
-				grid-template-columns: 1fr 1fr;
-				align-items: center;
-				justify-items: left;
-				border: none;
-			}
-			.item-data:hover {
-				outline: 1px solid #ffffff;
-				outline-offset: -1px;
-				background-color: inherit;
-				color: inherit;
-			}
+				grid-template-columns: auto 1fr auto;
+				gap: 0.75rem;
+				align-items: stretch;
+				container-type: inline-size;
 
-			.item-btn {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				button {
-					aspect-ratio: 1/1;
+				.img {
+					width: 58px;
+					height: 58px;
+					align-self: center;
 				}
-			}
 
-			@container (max-width: 420px) {
 				.item-data {
-					grid-template-columns: 1fr;
+					align-self: center;
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					align-items: center;
+					justify-items: center;
+					border: none;
+					gap: 0.5rem 0.5rem;
+					height: 100%;
+
+					.title {
+						font-weight: bolder;
+					}
+					.artist {
+						font-style: italic;
+					}
+				}
+				.item-data:hover {
+					outline: 1px solid #ffffff;
+					outline-offset: -1px;
+					background-color: inherit;
+					color: inherit;
 				}
 
 				.item-btn {
-					grid-template-columns: 1fr;
+					display: grid;
+					grid-template-columns: 1fr 1fr;
+					gap: 0.25rem;
+
 					button {
-						aspect-ratio: auto;
+						aspect-ratio: 1/1;
+					}
+				}
+
+				@container (max-width: 520px) {
+					.item-data {
+						grid-template-columns: 1fr;
+					}
+
+					.item-btn {
+						grid-template-columns: 1fr;
+						button {
+							aspect-ratio: auto;
+						}
 					}
 				}
 			}

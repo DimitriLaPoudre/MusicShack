@@ -17,38 +17,39 @@ import (
 )
 
 type downloadManager struct {
-	mu    sync.Mutex
-	tasks map[uint]map[uint]*downloadTask
-	ids   map[uint]uint
+	mTasks sync.Mutex
+	tasks  map[uint]map[uint]*downloadTask
+	mIds   sync.Mutex
+	ids    map[uint]uint
 }
 
 type downloadTask struct {
-	id             uint
+	mu             sync.Mutex
 	userId         uint
 	api            models.Plugin
 	songId         string
 	quality        string
 	songData       models.SongData
-	status         models.Status // depend-on a chan to be change
-	retryDownload  chan struct{}
-	cancelDownload chan struct{}
-	ctx            context.Context
-	cancel         context.CancelFunc
+	status         models.Status
+	downloadCancel context.CancelFunc
 }
 
 var DownloadManager = downloadManager{
-	mu:    sync.Mutex{},
-	tasks: make(map[uint]map[uint]*downloadTask),
-	ids:   make(map[uint]uint),
+	mTasks: sync.Mutex{},
+	tasks:  make(map[uint]map[uint]*downloadTask),
+	mIds:   sync.Mutex{},
+	ids:    make(map[uint]uint),
 }
 
 func (m *downloadManager) generateId(userId uint) uint {
+	m.mIds.Lock()
 	id, ok := m.ids[userId]
 	if !ok {
 		id = 0
 	}
 	id++
 	m.ids[userId] = id
+	m.mIds.Unlock()
 
 	return id
 }
@@ -86,32 +87,28 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 	}
 
 	taskId := m.generateId(userId)
-	ctx, cancel := context.WithCancel(context.Background())
 
 	newTask := &downloadTask{
-		id:             taskId,
+		mu:             sync.Mutex{},
 		userId:         userId,
 		api:            api,
 		songId:         songId,
 		quality:        quality,
 		songData:       models.SongData{},
 		status:         models.StatusPending,
-		retryDownload:  make(chan struct{}),
-		cancelDownload: make(chan struct{}),
-		ctx:            ctx,
-		cancel:         cancel,
+		downloadCancel: nil,
 	}
 
-	m.mu.Lock()
+	m.mTasks.Lock()
 	userTasks, ok := m.tasks[userId]
 	if !ok {
 		userTasks = make(map[uint]*downloadTask)
 		m.tasks[userId] = userTasks
 	}
 	userTasks[taskId] = newTask
-	m.mu.Unlock()
+	m.mTasks.Unlock()
 
-	go m.startMaster(newTask)
+	go newTask.start()
 }
 
 func saveSong(userId uint, reader io.ReadCloser, extension string, data models.SongData) error {
@@ -172,130 +169,154 @@ func saveSong(userId uint, reader io.ReadCloser, extension string, data models.S
 	return nil
 }
 
-func (m *downloadManager) startMaster(t *downloadTask) {
-	defer close(t.retryDownload)
-	defer close(t.cancelDownload)
+func (t *downloadTask) start() {
+	t.mu.Lock()
+	if t.status == models.StatusRunning {
+		t.mu.Unlock()
+		return
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	status := make(chan models.Status)
-	data := make(chan models.SongData)
+	t.downloadCancel = cancel
+	t.status = models.StatusRunning
+	t.mu.Unlock()
 
-	t.status = models.StatusPending
+	go t.run(ctx)
+}
+
+func (t *downloadTask) run(ctx context.Context) {
 	go func() {
-		status <- models.StatusRunning
-
-		reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality, data)
-		if err == nil {
-			err = saveSong(t.userId, reader, extension, t.songData)
-		}
-
+		song, err := t.api.Song(ctx, t.userId, t.songId)
+		t.mu.Lock()
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
-				status <- models.StatusCancel
+				t.status = models.StatusCancel
 			} else {
-				status <- models.StatusFailed
-				fmt.Println("downloadManager.startMaster: goroutine: ", err)
+				t.downloadCancel()
+				t.status = models.StatusFailed
+				fmt.Println("downloadTask.run: ", err)
 			}
-			return
+		} else {
+			t.songData = song
 		}
-
-		status <- models.StatusDone
+		t.mu.Unlock()
 	}()
 
-	for {
-		select {
-		case res := <-data:
-			t.songData = res
-		case res := <-status:
-			t.status = res
-			if res == models.StatusDone {
-				cancel()
-				return
-			}
-		case <-t.retryDownload:
-			if t.status == models.StatusCancel || t.status == models.StatusFailed {
-				ctx, cancel = context.WithCancel(context.Background())
-				status = make(chan models.Status)
-				data = make(chan models.SongData)
+	reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality)
 
-				t.status = models.StatusPending
-				go func() {
-					status <- models.StatusRunning
-
-					reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality, data)
-					if err == nil {
-						err = saveSong(t.userId, reader, extension, t.songData)
-					}
-
-					if err != nil {
-						if errors.Is(err, context.Canceled) {
-							status <- models.StatusCancel
-						} else {
-							status <- models.StatusFailed
-							fmt.Println("downloadManager.startMaster: goroutine: ", err)
-						}
-						return
-					}
-
-					status <- models.StatusDone
-				}()
-			}
-		case <-t.cancelDownload:
-			cancel()
-		case <-t.ctx.Done():
-			cancel()
-			return
-		}
+	if err == nil {
+		err = saveSong(t.userId, reader, extension, t.songData)
 	}
+
+	t.mu.Lock()
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			t.status = models.StatusCancel
+		} else {
+			t.downloadCancel()
+			t.status = models.StatusFailed
+			fmt.Println("downloadTask.run: ", err)
+		}
+	} else {
+		t.status = models.StatusDone
+	}
+	t.mu.Unlock()
+}
+
+func (t *downloadTask) cancel() {
+	t.mu.Lock()
+	if t.status == models.StatusRunning {
+		t.downloadCancel()
+		t.status = models.StatusCancel
+	}
+	t.mu.Unlock()
+}
+
+func (t *downloadTask) retry() {
+	t.mu.Lock()
+	if t.status != models.StatusCancel && t.status != models.StatusFailed {
+		t.mu.Unlock()
+		return
+	}
+	t.status = models.StatusPending
+	t.mu.Unlock()
+
+	t.start()
 }
 
 func (m *downloadManager) Retry(userId uint, taskId uint) error {
-	m.mu.Lock()
+	m.mTasks.Lock()
 	task, ok := m.tasks[userId][taskId]
-	m.mu.Unlock()
+	m.mTasks.Unlock()
 	if !ok {
 		return errors.New("download not found")
 	}
-	task.retryDownload <- struct{}{}
+	task.retry()
 	return nil
+}
+
+func (m *downloadManager) RetryAll(userId uint) {
+	m.mTasks.Lock()
+	for _, task := range m.tasks[userId] {
+		task.retry()
+	}
+	m.mTasks.Unlock()
 }
 
 func (m *downloadManager) Cancel(userId uint, taskId uint) error {
-	m.mu.Lock()
+	m.mTasks.Lock()
 	task, ok := m.tasks[userId][taskId]
-	m.mu.Unlock()
+	m.mTasks.Unlock()
 	if !ok {
 		return errors.New("download not found")
 	}
-	task.cancelDownload <- struct{}{}
+	task.cancel()
 	return nil
 }
 
+func (m *downloadManager) Done(userId uint) {
+	m.mTasks.Lock()
+	var doneList []uint
+	for id, task := range m.tasks[userId] {
+		task.mu.Lock()
+		if task.status == models.StatusDone {
+			doneList = append(doneList, id)
+		}
+		task.mu.Unlock()
+	}
+	for _, id := range doneList {
+		delete(m.tasks[userId], id)
+	}
+	m.mTasks.Unlock()
+}
+
 func (m *downloadManager) Remove(userId uint, taskId uint) error {
-	m.mu.Lock()
+	m.mTasks.Lock()
 	task, ok := m.tasks[userId][taskId]
 	if !ok {
-		m.mu.Unlock()
+		m.mTasks.Unlock()
 		return errors.New("download not found")
 	}
 	task.cancel()
 	delete(m.tasks[userId], taskId)
-	m.mu.Unlock()
+	m.mTasks.Unlock()
 	return nil
 }
 
 func (m *downloadManager) List(userId uint) []models.DownloadData {
-	m.mu.Lock()
+	m.mTasks.Lock()
 	tasks := make([]models.DownloadData, 0, len(m.tasks))
-	for _, value := range m.tasks[userId] {
+	for id, task := range m.tasks[userId] {
+		task.mu.Lock()
 		tmp := models.DownloadData{
-			Id:     value.id,
-			Data:   value.songData,
-			Api:    value.api.Name(),
-			Status: value.status,
+			Id:     id,
+			Data:   task.songData,
+			Api:    task.api.Name(),
+			Status: task.status,
 		}
+		task.mu.Unlock()
 		tasks = append(tasks, tmp)
 	}
-	m.mu.Unlock()
+	m.mTasks.Unlock()
 	return tasks
 }

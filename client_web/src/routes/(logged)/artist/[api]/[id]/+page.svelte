@@ -74,9 +74,7 @@
 					src={artist.pictureUrl}
 					alt={artist.name}
 				/>
-				<div class="data">
-					<h1>{artist.name}</h1>
-				</div>
+				<h1 class="name">{artist.name}</h1>
 			</div>
 		</div>
 		<div class="bottom">
@@ -85,22 +83,21 @@
 					onclick={async () => {
 						if (followed) {
 							await removeFollow(followed);
-							await setFollowButton();
 						} else {
 							await addFollow({
 								api: page.params.api!,
 								id: artist!.id,
 							});
-							await setFollowButton();
 						}
+						await setFollowButton();
 					}}
 				>
 					{#if followed}
-						<HeartOff />
 						<p>Unfollow</p>
+						<HeartOff />
 					{:else}
-						<HeartIcon />
 						<p>Follow</p>
+						<HeartIcon />
 					{/if}
 				</button>
 				<button
@@ -113,8 +110,8 @@
 						});
 					}}
 				>
-					<Download />
 					<p>Download Discography</p>
+					<Download />
 				</button>
 			</div>
 		</div>
@@ -122,7 +119,7 @@
 
 	<!-- page body -->
 	<div>
-		<div>
+		<div class="wrap-container">
 			<h2>Albums</h2>
 			<div class="container">
 				{#each artist.albums as album}
@@ -138,9 +135,13 @@
 								goto(`/album/${page.params.api}/${album.id}`);
 							}}
 						>
-							<img src={album.coverUrl} alt={album.title} />
-							<p>{album.title}</p>
-							<nav>
+							<img
+								class="cover"
+								src={album.coverUrl}
+								alt={album.title}
+							/>
+							<p class="title">{album.title}</p>
+							<nav class="artists">
 								{#each album.artists as artist}
 									<a
 										href="/artist/{page.params
@@ -220,12 +221,12 @@
 
 <style>
 	.loading {
-		margin-top: 15px;
+		margin-top: 30px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 15px;
+		margin-top: 30px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -249,10 +250,11 @@
 				gap: 10px;
 
 				.picture {
-					width: 160px;
-					height: 160px;
+					width: 280px;
+					height: 280px;
 				}
-				.data {
+				.name {
+					font-weight: bolder;
 					margin: auto;
 				}
 			}
@@ -261,50 +263,59 @@
 			display: table-row;
 
 			.bottom-data {
-				display: flex;
-				flex-direction: row;
-				flex-wrap: wrap;
-				gap: 10px;
-
-				button {
-					flex: 1 1 calc(50% - 5px);
-				}
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 0.5rem;
 			}
 		}
 	}
 
-	.container {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
+	.wrap-container {
+		padding-top: 2rem;
+		h2 {
+			text-align: center;
+			font-weight: bold;
+		}
 
-		.wrap-item {
-			width: 200px;
-			height: auto;
+		.container {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, 200px);
+			justify-content: center;
+			gap: 1rem;
 
-			.item {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
+			.wrap-item {
 				width: 200px;
 				height: auto;
-				overflow: hidden;
-				border-bottom: none;
-				gap: 8px;
 
-				img {
-					width: 160px;
-					height: 160px;
-				}
-				nav {
+				.item {
 					display: flex;
 					flex-direction: column;
-					gap: 0.2rem 1rem;
+					align-items: center;
+					width: 200px;
+					height: auto;
+					overflow: hidden;
+					border-bottom: none;
+					gap: 0.5rem;
+
+					.cover {
+						width: 160px;
+						height: 160px;
+					}
+					.title {
+						font-weight: bolder;
+					}
+					.artists {
+						display: flex;
+						flex-direction: column;
+						gap: 0.2rem 1rem;
+						font-style: italic;
+					}
 				}
-			}
-			.download {
-				width: 100%;
-				border-top: none;
+				.download {
+					width: 100%;
+					border-top: none;
+					padding: 0.75rem;
+				}
 			}
 		}
 	}

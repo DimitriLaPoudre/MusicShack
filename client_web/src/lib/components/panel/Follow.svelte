@@ -32,10 +32,11 @@
 				<div class="artist">
 					<a class="data" href="/artist/{item.api}/{item.artistId}">
 						<img
+							class="picture"
 							src={item.artistPictureUrl}
 							alt={item.artistName}
 						/>
-						<p>{item.artistName}</p>
+						<p class="artist">{item.artistName}</p>
 					</a>
 					<button
 						onclick={async () => {
@@ -56,6 +57,9 @@
 </div>
 
 <style>
+	h1 {
+		font-weight: bolder;
+	}
 	.error {
 		text-align: center;
 		background-color: var(--err);
@@ -66,38 +70,44 @@
 		text-align: center;
 	}
 	.list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+
 		.artist {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			gap: 8px;
+			gap: 0.75rem;
 
 			.data {
 				display: grid;
 				grid-template-columns: auto 1fr;
 				align-items: stretch;
-				gap: 8px;
+				gap: 0.75rem;
 
-				img {
+				.picture {
 					width: 58px;
-					height: auto;
-					aspect-ratio: 1/1;
+					height: 58px;
+					align-self: center;
 				}
 
-				p {
-					padding-left: 8px;
+				.artist {
+					font-style: italic;
+					padding-left: 0.75rem;
 					display: flex;
 					align-items: center;
 				}
 			}
 			.data:hover {
-				p {
+				.artist {
 					outline: 1px solid #ffffff;
 					outline-offset: -1px;
 				}
 			}
 
 			button {
-				aspect-ratio: 1/1;
+				/* align-self: center; */
+				/* aspect-ratio: 1/1; */
 				.nothover {
 					display: block;
 				}

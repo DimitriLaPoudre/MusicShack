@@ -35,7 +35,7 @@
 
 <style>
 	.error {
-		margin-top: 15px;
+		margin-top: 30px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -44,10 +44,11 @@
 	}
 
 	.body {
-		margin-top: 15px;
+		margin-top: 30px;
 
 		h1 {
 			text-align: center;
+			font-weight: bolder;
 		}
 	}
 </style>

@@ -119,14 +119,20 @@
 
 <div class="body">
 	<h1 class="title">Admin Dashboard</h1>
-	<h2>Password</h2>
+	<h2 class="sub-title">Password</h2>
 	<div class="change-password">
 		{#if errorPassword}
 			<p class="error">
 				{errorPassword}
 			</p>
 		{/if}
-		<form class="form" onsubmit={changePassword}>
+		<form
+			class="form"
+			onsubmit={(e) => {
+				e.preventDefault();
+				changePassword();
+			}}
+		>
 			<div class="inputs">
 				<input
 					placeholder="New Password"
@@ -140,7 +146,7 @@
 			<button><Plus /></button>
 		</form>
 	</div>
-	<h2>Users</h2>
+	<h2 class="sub-title">Users</h2>
 	<div class="users">
 		{#if errorUser}
 			<p class="error">
@@ -149,7 +155,8 @@
 		{/if}
 		<form
 			class="form"
-			onsubmit={async () => {
+			onsubmit={async (e) => {
+				e.preventDefault();
 				await createUser();
 			}}
 		>
@@ -200,23 +207,28 @@
 		width: 100%;
 	}
 
+	.sub-title {
+		font-weight: bolder;
+	}
+
 	.body {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		width: 70vw;
+		width: clamp(320px, 70vw + 20px, 1200px);
 		height: 100vh;
 		margin: 0 auto;
 		gap: 16px;
 
 		.title {
 			text-align: center;
+			font-weight: bolder;
 			margin-top: 20px;
 		}
 		.form {
 			display: grid;
 			grid-template-columns: 1fr auto;
-			gap: 8px;
+			gap: 0.75rem;
 			width: 100%;
 			align-items: stretch;
 			container-type: inline-size;
@@ -224,19 +236,19 @@
 			.inputs {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
-				gap: 8px;
-			}
-			button {
-				aspect-ratio: 1/1;
+				gap: 0.75rem;
 			}
 
-			@container (max-width: 420px) {
+			@container (max-width: 520px) {
 				.inputs {
 					grid-template-columns: 1fr;
 				}
 			}
 		}
 		.change-password {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
 			gap: 16px;
 			width: 100%;
 		}
@@ -274,7 +286,7 @@
 					button {
 						aspect-ratio: 1/1;
 					}
-					@container (max-width: 420px) {
+					@container (max-width: 520px) {
 						.data {
 							grid-template-columns: 1fr;
 						}
