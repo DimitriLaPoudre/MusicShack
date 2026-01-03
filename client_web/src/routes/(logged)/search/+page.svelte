@@ -206,16 +206,16 @@
 
 <style>
 	.research {
-		margin-top: 15px;
+		margin-top: 30px;
 		text-align: center;
 	}
 
 	.loading {
-		margin-top: 15px;
+		margin-top: 30px;
 		text-align: center;
 	}
 	.error {
-		margin-top: 15px;
+		margin-top: 30px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
@@ -247,6 +247,7 @@
 		.wrap-item {
 			width: 200px;
 			height: auto;
+
 			.item {
 				display: flex;
 				flex-direction: column;
@@ -255,7 +256,7 @@
 				height: auto;
 				overflow: hidden;
 				border-bottom: none;
-				gap: 0.5rem;
+				gap: 0.75rem;
 
 				.cover {
 					width: 160px;
@@ -273,6 +274,7 @@
 			}
 			.download {
 				width: 100%;
+				padding: 0.75rem;
 				border-top: none;
 			}
 		}

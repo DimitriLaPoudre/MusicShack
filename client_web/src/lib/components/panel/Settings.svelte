@@ -293,16 +293,29 @@
 						background-color: inherit;
 						color: inherit;
 					}
-					.item:hover {
-						outline: 1px solid #ffffff;
-						outline-offset: -1px;
-						border: none;
-						background-color: inherit;
-						color: inherit;
+
+					@media not all and (pointer: coarse) and (hover: none) {
+						.item:hover {
+							outline: 1px solid #ffffff;
+							outline-offset: -1px;
+							border: none;
+							background-color: inherit;
+							color: inherit;
+						}
+						.item:active {
+							background-color: #ffffff;
+							color: #0e0e0e;
+						}
 					}
-					.item:active {
-						background-color: #ffffff;
-						color: #0e0e0e;
+
+					@media (pointer: coarse) and (hover: none) {
+						.item:active {
+							outline: 1px solid #ffffff;
+							outline-offset: -1px;
+							border: none;
+							background-color: inherit;
+							color: inherit;
+						}
 					}
 					.item.active {
 						text-decoration: underline;

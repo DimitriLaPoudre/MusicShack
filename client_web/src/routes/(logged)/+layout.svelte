@@ -113,6 +113,12 @@
 			background-color: inherit;
 			color: inherit;
 		}
+		.logo:active {
+			background-color: inherit;
+			color: inherit;
+			outline: none;
+		}
+
 		.bar {
 			display: flex;
 			flex-direction: row;

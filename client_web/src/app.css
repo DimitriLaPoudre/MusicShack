@@ -191,17 +191,30 @@ button {
   cursor: pointer;
 }
 
-button:hover,
+@media not all and (pointer: coarse) and (hover: none) {
+  button:hover {
+    background-color: #ffffff;
+    color: #0e0e0e;
+  }
+
+  button:active {
+    background-color: inherit;
+    color: inherit;
+    outline: 1px solid #ffffff;
+    outline-offset: -1px;
+  }
+}
+
+@media (pointer: coarse) and (hover: none) {
+  button:active {
+    background-color: #ffffff;
+    color: #0e0e0e;
+  }
+}
+
 button.active {
   background-color: #ffffff;
   color: #0e0e0e;
-}
-
-button:active {
-  background-color: inherit;
-  color: inherit;
-  outline: 1px solid #ffffff;
-  outline-offset: -1px;
 }
 
 input, textarea, select {

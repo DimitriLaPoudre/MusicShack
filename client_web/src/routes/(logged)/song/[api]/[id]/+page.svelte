@@ -93,12 +93,12 @@
 
 <style>
 	.loading {
-		margin-top: 15px;
+		margin-top: 30px;
 		text-align: center;
 	}
 
 	.error {
-		margin-top: 15px;
+		margin-top: 30px;
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
