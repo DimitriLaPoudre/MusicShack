@@ -123,10 +123,9 @@ type albumItem struct {
 }
 
 type albumItemComparaison struct {
-	Title        string
-	ReleaseDate  string
-	TrackNumber  uint
-	VolumeNumber uint
+	Title       string
+	ReleaseDate string
+	TrackNumber uint
 }
 
 type songData struct {

@@ -157,16 +157,14 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 		best := make(map[albumItemComparaison]*albumItem)
 		for _, album := range albumsData.Albums.Items {
 			if bestVersion, ok := best[albumItemComparaison{
-				Title:        album.Title,
-				ReleaseDate:  album.ReleaseDate,
-				TrackNumber:  album.NumberOfTracks,
-				VolumeNumber: album.NumberOfVolumes,
+				Title:       album.Title,
+				ReleaseDate: album.ReleaseDate,
+				TrackNumber: album.NumberOfTracks,
 			}]; !ok || (!bestVersion.Explicit && album.Explicit) || (bestVersion.Explicit == album.Explicit && len(bestVersion.MediaMetadata.Tags) < len(album.MediaMetadata.Tags)) {
 				best[albumItemComparaison{
-					Title:        album.Title,
-					ReleaseDate:  album.ReleaseDate,
-					TrackNumber:  album.NumberOfTracks,
-					VolumeNumber: album.NumberOfVolumes,
+					Title:       album.Title,
+					ReleaseDate: album.ReleaseDate,
+					TrackNumber: album.NumberOfTracks,
 				}] = &album
 			}
 		}

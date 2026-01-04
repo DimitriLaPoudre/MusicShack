@@ -41,6 +41,26 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 		}
 	}
 
+	for _, ep := range artist.Ep {
+		if ep.ReleaseDate > lastFetchDate {
+			newReleases = append(newReleases, release{
+				userId:  userId,
+				api:     p,
+				albumId: ep.Id,
+			})
+		}
+	}
+
+	for _, single := range artist.Singles {
+		if single.ReleaseDate > lastFetchDate {
+			newReleases = append(newReleases, release{
+				userId:  userId,
+				api:     p,
+				albumId: single.Id,
+			})
+		}
+	}
+
 	return newReleases, nil
 }
 
