@@ -72,33 +72,41 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		return models.AlbumData{}, fmt.Errorf("Hifi.Album: %w", context.Canceled)
 	}
 
-	var normalizeAlbumData models.AlbumData
+	normalizeAlbumData := models.AlbumData{
+		Api:           p.Name(),
+		Id:            strconv.FormatUint(uint64(data.Data.Id), 10),
+		Title:         data.Data.Title,
+		Duration:      data.Data.Duration,
+		ReleaseDate:   data.Data.ReleaseDate,
+		NumberTracks:  data.Data.NumberOfTracks,
+		NumberVolumes: data.Data.NumberOfVolumes,
+		CoverUrl:      utils.GetImageURL(data.Data.CoverUrl, 640),
+		Songs:         make([]models.AlbumDataSong, 0),
+	}
 	{
+		for _, quality := range data.Data.MediaMetadata.Tags {
+			switch quality {
+			case "HIRES_LOSSLESS":
+				normalizeAlbumData.AudioQuality = max(normalizeAlbumData.AudioQuality, models.QualityHiresLossless)
+			case "LOSSLESS", "DOLBY_ATMOS":
+				normalizeAlbumData.AudioQuality = max(normalizeAlbumData.AudioQuality, models.QualityLossless)
+			}
+		}
+
+		for _, artist := range data.Data.Artists {
+			normalizeAlbumData.Artists = append(normalizeAlbumData.Artists,
+				models.AlbumDataArtist{
+					Id:   strconv.FormatUint(uint64(artist.Id), 10),
+					Name: artist.Name,
+				})
+		}
+
 		if len(data.Data.Items) == 0 {
 			return models.AlbumData{}, fmt.Errorf("Hifi.Album: %w", errors.New("album songs not found"))
 		}
 
-		firstSong := data.Data.Items[0].Item
-
-		normalizeAlbumData.Api = p.Name()
-		normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
-		normalizeAlbumData.Title = firstSong.Album.Title
-		normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
-		normalizeAlbumData.AudioQuality = models.QualityHiresLossless
-		normalizeAlbumData.Artists = append(normalizeAlbumData.Artists,
-			models.AlbumDataArtist{
-				Id:   strconv.FormatUint(uint64(firstSong.Artist.Id), 10),
-				Name: firstSong.Artist.Name,
-			})
-
-		songs := make([]models.AlbumDataSong, 0)
 		for _, item := range data.Data.Items {
 			song := item.Item
-
-			normalizeAlbumData.Duration += song.Duration
-			normalizeAlbumData.ReleaseDate = max(normalizeAlbumData.ReleaseDate, song.ReleaseDate)
-			normalizeAlbumData.NumberTracks++
-			normalizeAlbumData.NumberVolumes = max(normalizeAlbumData.NumberVolumes, song.VolumeNumber)
 
 			audioQuality := models.QualityHigh
 			for _, quality := range song.MediaMetadata.Tags {
@@ -110,8 +118,6 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 				}
 			}
 
-			normalizeAlbumData.AudioQuality = min(normalizeAlbumData.AudioQuality, audioQuality)
-
 			artists := make([]models.SongDataArtist, 0)
 			for _, artist := range song.Artists {
 				artists = append(artists, models.SongDataArtist{
@@ -120,7 +126,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 				})
 			}
 
-			songs = append(songs, models.AlbumDataSong{
+			normalizeAlbumData.Songs = append(normalizeAlbumData.Songs, models.AlbumDataSong{
 				Id:           strconv.FormatUint(uint64(song.Id), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
@@ -130,7 +136,6 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 				Artists:      artists,
 			})
 		}
-		normalizeAlbumData.Songs = songs
 	}
 
 	return normalizeAlbumData, nil

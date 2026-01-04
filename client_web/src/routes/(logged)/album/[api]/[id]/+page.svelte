@@ -65,12 +65,17 @@
 						{/each}
 					</div>
 					<br />
+					<p>{album.numberTracks} Tracks</p>
+					{#if album.numberVolumes > 1}
+						<p>{album.numberVolumes} Discs</p>
+					{/if}
 					<div class="duration">
 						<Clock4 size={16} />
 						<p>
 							{`${Math.floor(album.duration / 60)}:${(album.duration % 60).toString().padStart(2, "0")}`}
 						</p>
 					</div>
+					<p>{album.releaseDate}</p>
 					<p>{quality[album.audioQuality]}</p>
 				</div>
 			</div>
@@ -94,11 +99,13 @@
 	<!-- page body -->
 	<div class="discs">
 		{#each discs as disc, i}
-			{#if disc !== undefined}
+			{#if disc}
 				<div class="disc">
-					<h2>Disc {i}</h2>
+					{#if album.numberVolumes > 1}
+						<h2>Disc {i}</h2>
+					{/if}
 					{#each disc as song}
-						{#if song !== undefined}
+						{#if song}
 							<div class="item">
 								<button
 									class="song"

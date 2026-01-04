@@ -44,10 +44,41 @@ type artistItem struct {
 type albumData struct {
 	Version string
 	Data    struct {
-		Limit              uint
-		Offset             uint
-		TotalNumberOfItems uint
-		Items              []struct {
+		Id                     uint
+		Title                  string
+		Duration               uint
+		StreamReady            bool
+		PayToStream            bool
+		AdSupportedStreamReady bool
+		DjReady                bool
+		StemReady              bool
+		StreamStartDate        string
+		AllowStreaming         bool
+		PremiumStreamingOnly   bool
+		NumberOfTracks         uint
+		NumberOfVideos         uint
+		NumberOfVolumes        uint
+		ReleaseDate            string
+		Copyright              string
+		Type                   string
+		Url                    string
+		CoverUrl               string `json:"cover"`
+		VibrantColor           string
+		Explicit               bool
+		Upc                    string
+		Popularity             uint
+		AudioQuality           string
+		AudioModes             []string
+		MediaMetadata          struct {
+			Tags []string
+		}
+		Upload  bool
+		Artists []struct {
+			Id   uint
+			Name string
+			Type string
+		}
+		Items []struct {
 			Item songItem
 			Type string
 		}
@@ -92,9 +123,10 @@ type albumItem struct {
 }
 
 type albumItemComparaison struct {
-	Title       string
-	Duration    uint
-	ReleaseDate string
+	Title        string
+	ReleaseDate  string
+	TrackNumber  uint
+	VolumeNumber uint
 }
 
 type songData struct {
