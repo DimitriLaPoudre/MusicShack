@@ -7,7 +7,6 @@ require (
 	github.com/gin-contrib/graceful v1.1.4
 	github.com/gin-gonic/gin v1.11.0
 	github.com/joho/godotenv v1.5.1
-	github.com/mitchellh/mapstructure v1.5.0
 	github.com/robfig/cron/v3 v3.0.0
 	go.senan.xyz/taglib v0.11.1
 	golang.org/x/crypto v0.42.0

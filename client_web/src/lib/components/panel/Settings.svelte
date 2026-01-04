@@ -184,7 +184,7 @@
 							inputUser.bestQuality = false;
 						}}
 					>
-						Compressed Quality
+						AAC 320kbps Quality
 					</button>
 					<button
 						class="item"

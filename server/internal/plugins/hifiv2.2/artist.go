@@ -1,4 +1,4 @@
-package hifiv2
+package hifiv2_2
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 	"sync"
 
@@ -64,7 +65,7 @@ func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 	ch <- data
 }
 
-func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.ArtistData, error) {
+func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.ArtistData, error) {
 	var wg sync.WaitGroup
 	wg.Add(2)
 
@@ -73,7 +74,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 
 	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", err)
+		return models.ArtistData{}, fmt.Errorf("Hifi.Artist: %w", err)
 	}
 
 	go func() {
@@ -131,12 +132,12 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 
 	select {
 	case <-ctx.Done():
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", context.Canceled)
+		return models.ArtistData{}, fmt.Errorf("Hifi.Artist: %w", context.Canceled)
 	default:
 	}
 
 	if data.Artist.Id == 0 {
-		return models.ArtistData{}, fmt.Errorf("HifiV2.Artist: %w", errors.New("can't fetch"))
+		return models.ArtistData{}, fmt.Errorf("Hifi.Artist: %w", errors.New("can't fetch"))
 	}
 
 	normalizeArtistData := models.ArtistData{
@@ -153,10 +154,34 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 		}
 		normalizeArtistData.PictureUrl = utils.GetImageURL(data.Artist.PictureUrl, 750)
 
-		if albumsData.Albums.Id == "" {
-			return normalizeArtistData, nil
+		best := make(map[albumItemComparaison]*albumItem)
+		for _, album := range albumsData.Albums.Items {
+			if bestVersion, ok := best[albumItemComparaison{
+				Title:       album.Title,
+				ReleaseDate: album.ReleaseDate,
+			}]; !ok || (!bestVersion.Explicit && album.Explicit) || (bestVersion.Explicit == album.Explicit && len(bestVersion.MediaMetadata.Tags) < len(album.MediaMetadata.Tags)) {
+				best[albumItemComparaison{
+					Title:       album.Title,
+					ReleaseDate: album.ReleaseDate,
+				}] = &album
+			}
 		}
-		for _, album := range albumsData.Albums.Rows[0].Modules[0].PagedList.Items {
+
+		list := []*albumItem{}
+		for _, album := range best {
+			list = append(list, album)
+		}
+		slices.SortFunc(list, func(a, b *albumItem) int {
+			if a.ReleaseDate > b.ReleaseDate {
+				return -1
+			}
+			if a.ReleaseDate < b.ReleaseDate {
+				return 1
+			}
+			return 0
+		})
+
+		for _, album := range list {
 			audioQuality := models.QualityHigh
 			for _, quality := range album.MediaMetadata.Tags {
 				switch quality {
@@ -175,15 +200,38 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 				})
 			}
 
-			normalizeArtistData.Albums = append(normalizeArtistData.Albums, models.ArtistDataAlbum{
-				Id:           strconv.FormatUint(uint64(album.Id), 10),
-				Title:        album.Title,
-				Duration:     album.Duration,
-				ReleaseDate:  album.ReleaseDate,
-				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
-				AudioQuality: audioQuality,
-				Artists:      artists,
-			})
+			switch album.Type {
+			case "ALBUM":
+				normalizeArtistData.Albums = append(normalizeArtistData.Albums, models.ArtistDataAlbum{
+					Id:           strconv.FormatUint(uint64(album.Id), 10),
+					Title:        album.Title,
+					Duration:     album.Duration,
+					ReleaseDate:  album.ReleaseDate,
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					AudioQuality: audioQuality,
+					Artists:      artists,
+				})
+			case "EP":
+				normalizeArtistData.Ep = append(normalizeArtistData.Ep, models.ArtistDataAlbum{
+					Id:           strconv.FormatUint(uint64(album.Id), 10),
+					Title:        album.Title,
+					Duration:     album.Duration,
+					ReleaseDate:  album.ReleaseDate,
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					AudioQuality: audioQuality,
+					Artists:      artists,
+				})
+			case "SINGLE":
+				normalizeArtistData.Singles = append(normalizeArtistData.Singles, models.ArtistDataAlbum{
+					Id:           strconv.FormatUint(uint64(album.Id), 10),
+					Title:        album.Title,
+					Duration:     album.Duration,
+					ReleaseDate:  album.ReleaseDate,
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					AudioQuality: audioQuality,
+					Artists:      artists,
+				})
+			}
 		}
 	}
 

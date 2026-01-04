@@ -9,11 +9,18 @@
 	} from "$lib/functions/follow";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
-	import type { ArtistData } from "$lib/types/response";
+	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
+	let albums = $state<Record<"Albums" | "EP" | "Singles", ArtistDataAlbum[]>>(
+		{
+			Albums: [],
+			EP: [],
+			Singles: [],
+		},
+	);
 	let followed = $state<null | number>(null);
 
 	afterNavigate(async () => {
@@ -25,6 +32,9 @@
 				throw new Error(data.error || "Failed to fetch artist");
 			}
 			artist = data;
+			albums["Albums"] = artist.albums;
+			albums["EP"] = artist.ep;
+			albums["Singles"] = artist.singles;
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";
@@ -119,103 +129,62 @@
 
 	<!-- page body -->
 	<div>
-		<div class="wrap-container">
-			<h2>Albums</h2>
-			<div class="container">
-				{#each artist.albums as album}
-					<div class="wrap-item">
-						<button
-							class="item"
-							onclick={(e) => {
-								if (
-									e.target instanceof Element &&
-									e.target.closest("a")
-								)
-									return;
-								goto(`/album/${page.params.api}/${album.id}`);
-							}}
-						>
-							<img
-								class="cover"
-								src={album.coverUrl}
-								alt={album.title}
-							/>
-							<p class="title">{album.title}</p>
-							<nav class="artists">
-								{#each album.artists as artist}
-									<a
-										href="/artist/{page.params
-											.api}/{artist.id}"
-									>
-										{artist.name}
-									</a>
-								{/each}
-							</nav>
-							<p>{quality[album.audioQuality]}</p>
-						</button>
-						<button
-							class="download"
-							onclick={async () =>
-								(error = await download({
-									api: page.params.api!,
-									type: "album",
-									id: album!.id,
-									quality: "",
-								}))}
-						>
-							<Download />
-						</button>
+		{#each Object.entries(albums) as [type, list]}
+			{#if list && list.length > 0}
+				<div class="wrap-container">
+					<h2>{type}</h2>
+					<div class="container">
+						{#each list as album}
+							<div class="wrap-item">
+								<button
+									class="item"
+									onclick={(e) => {
+										if (
+											e.target instanceof Element &&
+											e.target.closest("a")
+										)
+											return;
+										goto(
+											`/album/${page.params.api}/${album.id}`,
+										);
+									}}
+								>
+									<img
+										class="cover"
+										src={album.coverUrl}
+										alt={album.title}
+									/>
+									<p class="title">{album.title}</p>
+									<nav class="artists">
+										{#each album.artists as artist}
+											<a
+												href="/artist/{page.params
+													.api}/{artist.id}"
+											>
+												{artist.name}
+											</a>
+										{/each}
+									</nav>
+									<p>{quality[album.audioQuality]}</p>
+								</button>
+								<button
+									class="download"
+									onclick={async () =>
+										(error = await download({
+											api: page.params.api!,
+											type: "album",
+											id: album!.id,
+											quality: "",
+										}))}
+								>
+									<Download />
+								</button>
+							</div>
+						{/each}
 					</div>
-				{/each}
-			</div>
-		</div>
-		<div>
-			<h2>EPs</h2>
-			<div class="container">
-				{#each artist.ep as ep}
-					<button
-						class="item"
-						onclick={() => {
-							goto(`/album/${page.params.api}/${ep.id}`);
-						}}
-					>
-						<img src={ep.coverUrl} alt={ep.title} />
-						<p>{ep.title}</p>
-						<div class="list">
-							{#each ep.artists as artist}
-								<a href="/artist/{page.params.api}/{artist.id}">
-									{artist.name}
-								</a>
-							{/each}
-						</div>
-					</button>
-				{/each}
-			</div>
-		</div>
-		<div>
-			<h2>Singles</h2>
-			<div class="container">
-				{#each artist.singles as single}
-					<button
-						class="item"
-						onclick={() => {
-							goto(`/album/${page.params.api}/${single.id}`);
-						}}
-					>
-						<img src={single.coverUrl} alt={single.title} />
-						<p>{single.title}</p>
-
-						<div class="list">
-							{#each single.artists as artist}
-								<a href="/artist/{page.params.api}/{artist.id}">
-									{artist.name}
-								</a>
-							{/each}
-						</div>
-					</button>
-				{/each}
-			</div>
-		</div>
+				</div>
+			{/if}
+		{/each}
 	</div>
 {/if}
 
