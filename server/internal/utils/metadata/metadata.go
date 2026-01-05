@@ -66,7 +66,7 @@ func FormatMetadata(userId uint, path string, data models.SongData) error {
 		taglib.Album:            {data.Album.Title},
 		taglib.TrackNumber:      {trackNumber},
 		taglib.DiscNumber:       {volumeNumber},
-		taglib.ReleaseDate:      {data.ReleaseDate},
+		taglib.ReleaseDate:      {album.ReleaseDate},
 		"replaygain_album_gain": {albumGain},
 		"replaygain_album_peak": {albumPeak},
 		"replaygain_track_gain": {trackGain},
