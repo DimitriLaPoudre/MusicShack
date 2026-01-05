@@ -131,6 +131,7 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 			})
 		}
 		normalizeAlbumData.Songs = songs
+		normalizeAlbumData.ReleaseDate = normalizeAlbumData.ReleaseDate[:10]
 	}
 
 	return normalizeAlbumData, nil
