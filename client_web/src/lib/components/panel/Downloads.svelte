@@ -16,6 +16,7 @@
 		CircleX,
 		Disc,
 		LoaderCircleIcon,
+		LoaderIcon,
 		RotateCcw,
 		Trash,
 	} from "lucide-svelte";
@@ -122,9 +123,9 @@
 					{/if}
 					<div class="item-btn">
 						{#if download.status === "done"}
-							<button class="hover-full">
+							<div style="padding: 1rem 1rem;">
 								<CircleCheck />
-							</button>
+							</div>
 						{:else if download.status === "pending" || download.status === "running"}
 							<button
 								class="hover-full"
@@ -143,7 +144,7 @@
 								{:else if download.status === "pending"}
 									<CircleDashed />
 								{:else}
-									<LoaderCircleIcon />
+									<LoaderIcon />
 								{/if}
 							</button>
 						{:else if download.status === "failed" || download.status === "cancel"}
