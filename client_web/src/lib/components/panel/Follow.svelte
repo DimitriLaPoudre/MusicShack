@@ -39,6 +39,7 @@
 						<p class="artist">{item.artistName}</p>
 					</a>
 					<button
+						class="hover-full"
 						onclick={async () => {
 							await removeFollow(item.id);
 						}}
@@ -98,10 +99,15 @@
 					align-items: center;
 				}
 			}
-			.data:hover {
-				.artist {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
+
+			@media not all and (pointer: coarse) and (hover: none) {
+				.data:hover {
+					.artist {
+						color: inherit;
+						background-color: inherit;
+						outline: 1px solid var(--fg);
+						outline-offset: -1px;
+					}
 				}
 			}
 

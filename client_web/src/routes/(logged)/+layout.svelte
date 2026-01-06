@@ -32,6 +32,7 @@
 	</button>
 	<div class="bar">
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "search" ? null : "search";
 			}}
@@ -40,6 +41,7 @@
 			<SearchIcon />
 		</button>
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "follow" ? null : "follow";
 			}}
@@ -48,6 +50,7 @@
 			<Heart />
 		</button>
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "download" ? null : "download";
 			}}
@@ -56,10 +59,11 @@
 			<DownloadIcon />
 		</button>
 		<button
+			class="hover-full"
+			class:active={barState === "settings"}
 			onclick={() => {
 				barState = barState === "settings" ? null : "settings";
 			}}
-			class:active={barState === "settings"}
 		>
 			<SettingsIcon />
 		</button>
@@ -68,21 +72,7 @@
 
 <main>
 	{#if barState}
-		<div
-			class="wrap-panel"
-			onscroll={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			}}
-			onwheel={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			}}
-			ontouchmove={(e) => {
-				e.preventDefault();
-				e.stopPropagation();
-			}}
-		>
+		<div class="wrap-panel">
 			{#if barState === "search"}
 				<div class="panel-search">
 					<Search />
@@ -124,17 +114,7 @@
 		.logo {
 			text-transform: uppercase;
 			font-size: 3rem;
-			border: none;
 			padding: 10px;
-		}
-		.logo:hover {
-			background-color: inherit;
-			color: inherit;
-		}
-		.logo:active {
-			background-color: inherit;
-			color: inherit;
-			outline: none;
 		}
 
 		.bar {
@@ -151,7 +131,7 @@
 		.wrap-panel {
 			position: fixed;
 			z-index: 1000;
-			top: 146px;
+			top: 144px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;

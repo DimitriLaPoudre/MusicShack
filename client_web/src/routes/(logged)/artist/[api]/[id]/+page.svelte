@@ -90,6 +90,7 @@
 		<div class="bottom">
 			<div class="bottom-data">
 				<button
+					class="hover-full"
 					onclick={async () => {
 						if (followed) {
 							await removeFollow(followed);
@@ -111,6 +112,7 @@
 					{/if}
 				</button>
 				<button
+					class="hover-full"
 					onclick={async () => {
 						error = await download({
 							api: page.params.api!,
@@ -137,7 +139,7 @@
 						{#each list as album}
 							<div class="wrap-item">
 								<button
-									class="item"
+									class="item hover-full"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -168,7 +170,7 @@
 									<p>{quality[album.audioQuality]}</p>
 								</button>
 								<button
-									class="download"
+									class="download hover-full"
 									onclick={async () =>
 										(error = await download({
 											api: page.params.api!,
@@ -263,7 +265,10 @@
 					width: 200px;
 					height: auto;
 					overflow: hidden;
-					border-bottom: none;
+					box-shadow:
+						inset 0 1px 0 var(--fg),
+						inset 1px 0 0 var(--fg),
+						inset -1px 0 0 var(--fg);
 					gap: 0.5rem;
 
 					.cover {
@@ -282,7 +287,10 @@
 				}
 				.download {
 					width: 100%;
-					border-top: none;
+					box-shadow:
+						inset 0 -1px 0 var(--fg),
+						inset 1px 0 0 var(--fg),
+						inset -1px 0 0 var(--fg);
 					padding: 0.75rem;
 				}
 			}

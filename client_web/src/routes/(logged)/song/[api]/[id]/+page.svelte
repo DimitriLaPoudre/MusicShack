@@ -75,7 +75,7 @@
 			</div>
 		</div>
 		<button
-			class="download"
+			class="download hover-full"
 			onclick={async () => {
 				error = await download({
 					api: page.params.api!,

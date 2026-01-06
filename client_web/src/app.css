@@ -1,245 +1,291 @@
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Thin.woff2') format('woff2');
-  font-weight: 100;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Thin.woff2') format('woff2');
+	font-weight: 100;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ThinItalic.woff2') format('woff2');
-  font-weight: 100;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ThinItalic.woff2') format('woff2');
+	font-weight: 100;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLight.woff2') format('woff2');
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLight.woff2') format('woff2');
+	font-weight: 200;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLightItalic.woff2') format('woff2');
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLightItalic.woff2') format('woff2');
+	font-weight: 200;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Light.woff2') format('woff2');
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Light.woff2') format('woff2');
+	font-weight: 300;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-LightItalic.woff2') format('woff2');
-  font-weight: 300;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-LightItalic.woff2') format('woff2');
+	font-weight: 300;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Regular.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Regular.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Italic.woff2') format('woff2');
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Italic.woff2') format('woff2');
+	font-weight: 400;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Medium.woff2') format('woff2');
-  font-weight: 500;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Medium.woff2') format('woff2');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-MediumItalic.woff2') format('woff2');
-  font-weight: 500;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-MediumItalic.woff2') format('woff2');
+	font-weight: 500;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBold.woff2') format('woff2');
-  font-weight: 600;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBold.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBoldItalic.woff2') format('woff2');
-  font-weight: 600;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBoldItalic.woff2') format('woff2');
+	font-weight: 600;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Bold.woff2') format('woff2');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-BoldItalic.woff2') format('woff2');
-  font-weight: 700;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-BoldItalic.woff2') format('woff2');
+	font-weight: 700;
+	font-style: italic;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBold.woff2') format('woff2');
-  font-weight: 800;
-  font-style: normal;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBold.woff2') format('woff2');
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
 }
 
 @font-face {
-  font-family: 'JetBrainsMono';
-  src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBoldItalic.woff2') format('woff2');
-  font-weight: 800;
-  font-style: italic;
-  font-display: swap;
+	font-family: 'JetBrainsMono';
+	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBoldItalic.woff2') format('woff2');
+	font-weight: 800;
+	font-style: italic;
+	font-display: swap;
 }
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
 }
 
 :root {
-  --bg: #0e0e0e;
-  --fg: #e0e0e0;
-  --err: #ef1010;
-  --border: #1a1a1a;
-  --border-light: #2a2a2a;
-  --grid-dim: #050505;
-  --font-mono: 'JetBrainsMono', 'Courier New', Courier, monospace;
-  --accent: #ffffff;
-  --accent-dim: rgba(255, 255, 255, 0.1);
+	--bg: #0e0e0e;
+	--fg: #e0e0e0;
+	--err: #ef1010;
+	--border: #1a1a1a;
+	--border-light: #2a2a2a;
+	--grid-dim: #050505;
+	--font-mono: 'JetBrainsMono', 'Courier New', Courier, monospace;
+	--accent: #ffffff;
+	--accent-dim: rgba(255, 255, 255, 0.1);
 }
 
-html { scroll-behavior: smooth; }
+html {
+	scroll-behavior: smooth;
+}
+
 body {
-  background-color: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-mono);
-  overflow-x: hidden;
-  font-size: 16px;
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
+	background-color: var(--bg);
+	color: var(--fg);
+	font-family: var(--font-mono);
+	overflow-x: hidden;
+	font-size: 16px;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	min-height: 100vh;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-weight: normal;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight: normal;
 }
 
 p {
-  font-size: 16px;
+	font-size: 16px;
 }
 
-ul, ol {
-  font-size: 16px;
+ul,
+ol {
+	font-size: 16px;
 }
 
 img {
-  max-width: 100%;
-  display: block;
+	max-width: 100%;
+	display: block;
 }
 
 a {
-  font-size: 16px;
-  color: inherit;
-  text-decoration: underline;
-  cursor: pointer;
+	font-size: 16px;
+	color: inherit;
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 button {
-  font-size: 16px;
-  font-family: inherit;
-  color: inherit;
-  background: none;
-  border: 1px solid #ffffff;
-  padding: 1rem 1rem;
-  cursor: pointer;
+	font-size: 16px;
+	font-family: inherit;
+	color: inherit;
+	background-color: inherit;
+	padding: 1rem 1rem;
+	cursor: pointer;
+	border: none;
 }
 
 @media not all and (pointer: coarse) and (hover: none) {
-  button:hover {
-    background-color: #ffffff;
-    color: #0e0e0e;
-  }
+	.hover-full {
+		color: inherit;
+		background-color: inherit;
+		box-shadow: inset 0 0 0 1px var(--fg);
+	}
 
-  button:active {
-    background-color: inherit;
-    color: inherit;
-    outline: 1px solid #ffffff;
-    outline-offset: -1px;
-  }
+	.hover-full:hover,
+	.hover-full.active {
+		color: var(--bg);
+		background-color: var(--fg);
+	}
+
+	.hover-full:active {
+		color: inherit;
+		background-color: inherit;
+		box-shadow: inset 0 0 0 1px var(--fg);
+	}
+
+	.hover-soft {
+		color: inherit;
+		background-color: inherit;
+	}
+
+	.hover-soft:hover,
+	.hover-soft.active {
+		color: inherit;
+		background-color: inherit;
+		box-shadow: inset 0 0 0 1px var(--fg);
+	}
+
+	.hover-soft:active {
+		color: inherit;
+		background-color: inherit;
+	}
 }
 
 @media (pointer: coarse) and (hover: none) {
-  button:active {
-    background-color: #ffffff;
-    color: #0e0e0e;
-  }
+	.hover-full {
+		color: inherit;
+		background-color: inherit;
+		box-shadow: inset 0 0 0 1px var(--fg);
+	}
+
+	.hover-full:active {
+		color: inherit;
+		background-color: inherit;
+	}
+
+	.hover-soft {}
+
+	.hover-soft:hover {}
+
+	.hover-soft:active {
+		box-shadow: inset 0 0 0 1px var(--fg);
+	}
 }
 
-button.active {
-  background-color: #ffffff;
-  color: #0e0e0e;
+input,
+textarea,
+select {
+	font-family: inherit;
+	font-size: 16px;
+	color: inherit;
+	background-color: var(--bg);
+	border: 1px solid var(--fg);
+	padding: 0.5rem;
+	outline: none;
 }
 
-input, textarea, select {
-  font-family: inherit;
-  font-size: 16px;
-  color: inherit;
-  background-color: #0e0e0e;
-  border: 1px solid #ffffff;
-  padding: 0.5rem;
-  outline: none;
-}
-
-input:focus, textarea:focus, select:focus {
-  border-color: #ffffff;
+input:focus,
+textarea:focus,
+select:focus {
+	border-color: #ffffff;
 }
 
 
 ::-webkit-scrollbar {
-  width: 8px;
-}
-::-webkit-scrollbar-thumb {
-  background-color: #2e2e2e;
-  border-radius: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #0e0e0e;
+	width: 8px;
 }
 
+::-webkit-scrollbar-thumb {
+	background-color: #2e2e2e;
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+	background: #0e0e0e;
+}

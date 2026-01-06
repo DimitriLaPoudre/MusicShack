@@ -143,7 +143,7 @@
 					bind:value={inputAdminPassword.oldPassword}
 				/>
 			</div>
-			<button><Plus /></button>
+			<button class="hover-full"><Plus /></button>
 		</form>
 	</div>
 	<h2 class="sub-title">Users</h2>
@@ -164,7 +164,7 @@
 				<input placeholder="Username" bind:value={inputUser.username} />
 				<input placeholder="Password" bind:value={inputUser.password} />
 			</div>
-			<button><Plus /></button>
+			<button class="hover-full"><Plus /></button>
 		</form>
 		{#if !users}
 			<p class="loading">Loading...</p>
@@ -172,10 +172,11 @@
 			<div class="items">
 				{#each users as user}
 					<div class="item">
-						<div class="data">
+						<div class="data hover-soft">
 							<p>{user.username}</p>
 						</div>
 						<button
+							class="hover-full"
 							onclick={async () => {
 								await deleteUser(user.id);
 							}}
@@ -278,10 +279,6 @@
 						gap: 8px;
 						align-items: center;
 						padding: 1rem;
-					}
-					.data:hover {
-						outline: 1px solid #ffffff;
-						outline-offset: -1px;
 					}
 					button {
 						aspect-ratio: 1/1;

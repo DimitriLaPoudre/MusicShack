@@ -64,7 +64,7 @@
 				bind:value={credentials.password}
 				required
 			/>
-			<button>Login</button>
+			<button class="hover-full">Login</button>
 		</div>
 	</form>
 </div>

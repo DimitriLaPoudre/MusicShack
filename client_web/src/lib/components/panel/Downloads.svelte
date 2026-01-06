@@ -50,6 +50,7 @@
 			<div class="all">
 				{#if list.some((task) => task.status === "failed" || task.status === "cancel")}
 					<button
+						class="hover-full"
 						onclick={async () => {
 							error = await retryAllDownload();
 							if (!error) {
@@ -62,6 +63,7 @@
 				{/if}
 				{#if list.some((task) => task.status === "done")}
 					<button
+						class="hover-full"
 						onclick={async () => {
 							error = await doneDownload();
 							if (!error) {
@@ -81,7 +83,7 @@
 						<div class="img">
 							<Disc />
 						</div>
-						<button class="item-data">
+						<button class="item-data hover-soft">
 							<p>Unreleased</p>
 							<p>Unknown</p>
 						</button>
@@ -97,7 +99,7 @@
 							{/if}
 						</div>
 						<button
-							class="item-data"
+							class="item-data hover-soft"
 							onclick={(e) => {
 								if (
 									e.target instanceof Element &&
@@ -120,11 +122,12 @@
 					{/if}
 					<div class="item-btn">
 						{#if download.status === "done"}
-							<button>
+							<button class="hover-full">
 								<CircleCheck />
 							</button>
 						{:else if download.status === "pending" || download.status === "running"}
 							<button
+								class="hover-full"
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
@@ -145,6 +148,7 @@
 							</button>
 						{:else if download.status === "failed" || download.status === "cancel"}
 							<button
+								class="hover-full"
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
@@ -163,6 +167,7 @@
 							</button>
 						{/if}
 						<button
+							class="hover-full"
 							onclick={async () => {
 								error = await deleteDownload(download.id);
 								if (!error) {
@@ -206,7 +211,7 @@
 
 			button {
 				width: 100%;
-				padding: 0.5rem 0;
+				padding: 0.75rem 0;
 			}
 		}
 		.items {
@@ -216,7 +221,7 @@
 			.item {
 				display: grid;
 				grid-template-columns: auto 1fr auto;
-				gap: 0.75rem;
+				gap: 0.5rem;
 				align-items: stretch;
 				container-type: inline-size;
 
@@ -225,7 +230,6 @@
 					height: 58px;
 					align-self: center;
 				}
-
 				.item-data {
 					align-self: center;
 					display: grid;
@@ -243,33 +247,18 @@
 						font-style: italic;
 					}
 				}
-				.item-data:hover {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
-					background-color: inherit;
-					color: inherit;
-				}
-
 				.item-btn {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 					gap: 0.25rem;
-
-					button {
-						aspect-ratio: 1/1;
-					}
 				}
 
 				@container (max-width: 520px) {
 					.item-data {
 						grid-template-columns: 1fr;
 					}
-
 					.item-btn {
 						grid-template-columns: 1fr;
-						button {
-							aspect-ratio: auto;
-						}
 					}
 				}
 			}

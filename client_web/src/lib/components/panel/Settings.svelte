@@ -179,7 +179,6 @@
 					<button
 						class="item"
 						class:active={inputUser.bestQuality !== true}
-						type="button"
 						onclick={() => {
 							inputUser.bestQuality = false;
 						}}
@@ -189,7 +188,6 @@
 					<button
 						class="item"
 						class:active={inputUser.bestQuality === true}
-						type="button"
 						onclick={() => {
 							inputUser.bestQuality = true;
 						}}
@@ -198,7 +196,7 @@
 					</button>
 				</div>
 			</div>
-			<button class="edit">
+			<button class="edit hover-full">
 				<Pencil />
 			</button>
 		</form>
@@ -212,7 +210,7 @@
 		{/if}
 		<form class="form" onsubmit={addInstance}>
 			<input placeholder="URL" bind:value={inputInstance.url} />
-			<button><Plus /></button>
+			<button class="hover-full"><Plus /></button>
 		</form>
 		{#if !instances}
 			<p class="loading">Loading...</p>
@@ -220,7 +218,7 @@
 			<div class="items">
 				{#each instances as instance}
 					<div class="item">
-						<div class="data">
+						<div class="data hover-soft">
 							<p class="url">{instance.url}</p>
 							<p class="api">{instance.api}</p>
 							<p class="ping">
@@ -231,7 +229,10 @@
 								{/if}
 							</p>
 						</div>
-						<button onclick={() => deleteInstance(instance.id)}>
+						<button
+							class="hover-full"
+							onclick={() => deleteInstance(instance.id)}
+						>
 							<Trash />
 						</button>
 					</div>
@@ -239,7 +240,7 @@
 			</div>
 		{/if}
 	</div>
-	<button class="logout" onclick={logout}> Logout </button>
+	<button class="logout hover-full" onclick={logout}> Logout </button>
 </div>
 
 <style>
@@ -275,38 +276,34 @@
 				.inputs {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
-					gap: 0.75rem;
+					gap: 0.5rem;
 				}
 				.qualities {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
-					gap: 0.75rem;
+					gap: 0.5rem;
 
 					.item {
 						padding: 1rem 0;
-						outline: none;
-						border: none;
-						background-color: inherit;
-						color: inherit;
 					}
 
 					@media not all and (pointer: coarse) and (hover: none) {
 						.item:hover {
-							outline: 1px solid #ffffff;
+							outline: 1px solid var(--fg);
 							outline-offset: -1px;
 							border: none;
 							background-color: inherit;
 							color: inherit;
 						}
 						.item:active {
-							background-color: #ffffff;
-							color: #0e0e0e;
+							background-color: var(--fg);
+							color: var(--bg);
 						}
 					}
 
 					@media (pointer: coarse) and (hover: none) {
 						.item:active {
-							outline: 1px solid #ffffff;
+							outline: 1px solid var(--fg);
 							outline-offset: -1px;
 							border: none;
 							background-color: inherit;
@@ -381,10 +378,6 @@
 						align-self: right;
 					}
 				}
-				.data:hover {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
-				}
 				@container (max-width: 520px) {
 					.data {
 						grid-template-columns: 1fr;
@@ -397,7 +390,8 @@
 	.logout {
 		width: 100%;
 		padding: 0.75rem;
-		border-color: var(--err);
+
+		outline-color: var(--err);
 	}
 	.logout:hover {
 		background-color: var(--err);

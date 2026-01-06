@@ -57,23 +57,30 @@
 	<div class="top">
 		<div class="section">
 			{#each Object.entries(result as Record<string, any>) as [key, _]}
-				<button onclick={() => (api = key)} class:active={api === key}>
+				<button
+					class="hover-full"
+					onclick={() => (api = key)}
+					class:active={api === key}
+				>
 					{key}</button
 				>
 			{/each}
 		</div>
 		<div class="section">
 			<button
+				class="hover-full"
 				onclick={() => (type = "songs")}
 				class:active={type === "songs"}
 			>
 				Songs</button
 			>
 			<button
+				class="hover-full"
 				onclick={() => (type = "albums")}
 				class:active={type === "albums"}>Albums</button
 			>
 			<button
+				class="hover-full"
 				onclick={() => (type = "artists")}
 				class:active={type === "artists"}>Artists</button
 			>
@@ -87,7 +94,7 @@
 			{#each result[api].songs as song}
 				<div class="wrap-item">
 					<button
-						class="item"
+						class="item hover-full"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -118,7 +125,7 @@
 						<p>{quality[song.audioQuality]}</p>
 					</button>
 					<button
-						class="download"
+						class="download hover-full"
 						onclick={async () => {
 							error = await download({
 								api: api,
@@ -139,7 +146,7 @@
 			{#each result[api].albums as album}
 				<div class="wrap-item">
 					<button
-						class="item"
+						class="item hover-full"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -167,7 +174,7 @@
 						<p>{quality[album.audioQuality]}</p>
 					</button>
 					<button
-						class="download"
+						class="download hover-full"
 						onclick={async () => {
 							error = await download({
 								api: api,
@@ -187,7 +194,7 @@
 			{/if}
 			{#each result[api].artists as artist}
 				<button
-					class="artist"
+					class="artist hover-full"
 					onclick={() => goto(`/artist/${api}/${artist.id}`)}
 				>
 					<div class="picture">
@@ -256,8 +263,11 @@
 				width: 200px;
 				height: auto;
 				overflow: hidden;
-				border-bottom: none;
 				gap: 0.75rem;
+				box-shadow:
+					inset 0 1px 0 var(--fg),
+					inset 1px 0 0 var(--fg),
+					inset -1px 0 0 var(--fg);
 
 				.cover {
 					width: 160px;
@@ -276,7 +286,10 @@
 			.download {
 				width: 100%;
 				padding: 0.75rem;
-				border-top: none;
+				box-shadow:
+					inset 0 -1px 0 var(--fg),
+					inset 1px 0 0 var(--fg),
+					inset -1px 0 0 var(--fg);
 			}
 		}
 		.artist {

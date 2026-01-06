@@ -81,7 +81,7 @@
 			</div>
 		</div>
 		<button
-			class="download"
+			class="download hover-full"
 			onclick={async () => {
 				error = await download({
 					api: page.params.api!,
@@ -108,7 +108,7 @@
 						{#if song}
 							<div class="item">
 								<button
-									class="song"
+									class="song hover-soft"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -142,7 +142,7 @@
 									</div>
 								</button>
 								<button
-									class="download"
+									class="download hover-full"
 									onclick={async () => {
 										error = await download({
 											api: page.params.api!,
@@ -285,12 +285,6 @@
 						align-items: center;
 						gap: 0.25rem;
 					}
-				}
-				.song:hover {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
-					background-color: inherit;
-					color: inherit;
 				}
 				.download {
 					height: auto;
