@@ -64,27 +64,45 @@
 			<SettingsIcon />
 		</button>
 	</div>
-
-	{#if barState === "search"}
-		<div class="panel-search">
-			<Search />
-		</div>
-	{:else if barState === "follow"}
-		<div class="panel-default">
-			<Follow />
-		</div>
-	{:else if barState === "download"}
-		<div class="panel-default">
-			<Downloads />
-		</div>
-	{:else if barState === "settings"}
-		<div class="panel-default">
-			<Settings />
-		</div>
-	{/if}
 </header>
 
 <main>
+	{#if barState}
+		<div
+			class="wrap-panel"
+			onscroll={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+			}}
+			onwheel={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+			}}
+			ontouchmove={(e) => {
+				e.preventDefault();
+				e.stopPropagation();
+			}}
+		>
+			{#if barState === "search"}
+				<div class="panel-search">
+					<Search />
+				</div>
+			{:else if barState === "follow"}
+				<div class="panel-default">
+					<Follow />
+				</div>
+			{:else if barState === "download"}
+				<div class="panel-default">
+					<Downloads />
+				</div>
+			{:else if barState === "settings"}
+				<div class="panel-default">
+					<Settings />
+				</div>
+			{/if}
+		</div>
+	{/if}
+
 	{@render children?.()}
 </main>
 
@@ -127,28 +145,32 @@
 				aspect-ratio: 1/1;
 			}
 		}
-		.panel-search {
-			width: clamp(320px, 70vw + 20px, 1200px);
-			max-height: calc(95vh - 135px);
-			overflow-y: auto;
-			outline: 1px solid #ffffff;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
-		.panel-default {
-			width: clamp(320px, 70vw + 20px, 1200px);
-			max-height: calc(95vh - 135px);
-			overflow-y: auto;
-			outline: 1px solid #ffffff;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-			padding: 8px;
-		}
 	}
 
 	main {
+		.wrap-panel {
+			position: fixed;
+			z-index: 1000;
+			top: 146px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			background-color: #0e0e0e;
+
+			.panel-search {
+				width: clamp(320px, 70vw + 20px, 1200px);
+				max-height: calc(95vh - 135px);
+				overflow-y: auto;
+				outline: 1px solid #ffffff;
+			}
+			.panel-default {
+				padding: 0.75rem;
+				width: clamp(320px, 70vw + 20px, 1200px);
+				max-height: calc(95vh - 135px);
+				overflow-y: auto;
+				outline: 1px solid #ffffff;
+			}
+		}
 		padding-top: 130px;
 		width: clamp(320px, 70vw + 20px, 1200px);
 		margin: 0 auto;
