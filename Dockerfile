@@ -23,6 +23,8 @@ WORKDIR /app
 COPY --from=go-builder /app/server ./server/
 COPY --from=svelte-builder /app/build ./client_web/build
 
+ENV GIN_MODE=release
+
 WORKDIR /app/server
 ENTRYPOINT ["./server"]
 
