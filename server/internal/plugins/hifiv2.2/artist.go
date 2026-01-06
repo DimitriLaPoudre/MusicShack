@@ -44,7 +44,7 @@ func getArtistInfo(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistAlbums, id string) {
 	defer wg.Done()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/artist/?f="+id, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/artist/?f="+id+"&skip_tracks=1", nil)
 	if err != nil {
 		return
 	}
