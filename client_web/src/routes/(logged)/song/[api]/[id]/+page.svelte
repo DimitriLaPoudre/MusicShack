@@ -6,6 +6,7 @@
 	import type { SongData } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
 	import { Clock4, Download } from "lucide-svelte";
+	import Quality from "$lib/components/quality.svelte";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
@@ -70,7 +71,7 @@
 							{`${Math.floor(song.duration / 60)}:${(song.duration % 60).toString().padStart(2, "0")}`}
 						</p>
 					</div>
-					<p>{quality[song.audioQuality]}</p>
+					<Quality quality={quality[song.audioQuality]} />
 				</div>
 			</div>
 		</div>

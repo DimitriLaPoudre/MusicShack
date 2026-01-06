@@ -6,6 +6,7 @@
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
@@ -122,7 +123,7 @@
 								</a>
 							{/each}
 						</nav>
-						<p>{quality[song.audioQuality]}</p>
+						<Quality quality={quality[song.audioQuality]} />
 					</button>
 					<button
 						class="download hover-full"

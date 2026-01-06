@@ -11,6 +11,7 @@
 	import { download } from "$lib/functions/download";
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -167,7 +168,9 @@
 											</a>
 										{/each}
 									</nav>
-									<p>{quality[album.audioQuality]}</p>
+									<Quality
+										quality={quality[album.audioQuality]}
+									/>
 								</button>
 								<button
 									class="download hover-full"

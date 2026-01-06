@@ -103,8 +103,8 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		background-color: #0e0e0e;
-		color: #fff;
+		background-color: var(--bg);
+		color: var(--fg);
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -120,7 +120,7 @@
 		.bar {
 			display: flex;
 			flex-direction: row;
-			gap: 0px 10px;
+			gap: 0 10px;
 			button {
 				aspect-ratio: 1/1;
 			}
@@ -135,20 +135,20 @@
 			display: flex;
 			flex-direction: column;
 			align-items: center;
-			background-color: #0e0e0e;
+			background-color: var(--bg);
 
 			.panel-search {
 				width: clamp(320px, 70vw + 20px, 1200px);
 				max-height: calc(95vh - 135px);
 				overflow-y: auto;
-				outline: 1px solid #ffffff;
+				outline: 1px solid var(--fg);
 			}
 			.panel-default {
 				padding: 0.75rem;
 				width: clamp(320px, 70vw + 20px, 1200px);
 				max-height: calc(95vh - 135px);
 				overflow-y: auto;
-				outline: 1px solid #ffffff;
+				outline: 1px solid var(--fg);
 			}
 		}
 		padding-top: 130px;

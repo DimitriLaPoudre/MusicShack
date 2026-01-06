@@ -6,6 +6,7 @@
 	import { download } from "$lib/functions/download";
 	import type { AlbumData, AlbumDataSong } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
@@ -76,7 +77,7 @@
 						</p>
 					</div>
 					<p>{album.releaseDate}</p>
-					<p>{quality[album.audioQuality]}</p>
+					<Quality quality={quality[album.audioQuality]} />
 				</div>
 			</div>
 		</div>
