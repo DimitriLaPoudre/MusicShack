@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { adminFetch } from "$lib/functions/fetch";
 	import type { RequestAdminPassword, RequestUser } from "$lib/types/request";
 	import type { StatusResponse, UsersResponse } from "$lib/types/response";
 	import { Plus, Trash } from "lucide-svelte";
+	import { onMount } from "svelte";
 
 	let errorPassword = $state<null | string>(null);
 	let errorUser = $state<null | string>(null);
@@ -21,7 +22,7 @@
 	});
 	let users = $state<null | UsersResponse>(null);
 
-	afterNavigate(() => {
+	onMount(() => {
 		loadUsers();
 	});
 

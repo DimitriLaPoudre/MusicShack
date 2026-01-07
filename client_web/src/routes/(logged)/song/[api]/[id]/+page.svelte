@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
@@ -8,11 +7,12 @@
 	import { Clock4, Download } from "lucide-svelte";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<SongData>(
 				`/song/${page.params.api}/${page.params.id}`,

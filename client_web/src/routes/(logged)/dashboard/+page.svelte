@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
 	import { apiFetch } from "$lib/functions/fetch";
 	import type { StatusResponse } from "$lib/types/response";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<StatusResponse>("/me");
 			if ("error" in data) {

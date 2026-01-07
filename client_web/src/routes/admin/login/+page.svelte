@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { goto, afterNavigate } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import type { RequestAdmin } from "$lib/types/request";
 	import type { ErrorResponse, StatusResponse } from "$lib/types/response";
+	import { onMount } from "svelte";
 
 	let credentials = $state<RequestAdmin>({ password: "" });
 	let error = $state<string>("");
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		const res = await fetch("/api/admin", {
 			credentials: "include",
 		});

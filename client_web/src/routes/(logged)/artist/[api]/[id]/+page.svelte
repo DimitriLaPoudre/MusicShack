@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Download, HeartIcon, HeartOff } from "lucide-svelte";
 	import {
@@ -13,6 +13,7 @@
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -25,7 +26,7 @@
 	);
 	let followed = $state<null | number>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<ArtistData>(
 				`/artist/${page.params.api}/${page.params.id}`,

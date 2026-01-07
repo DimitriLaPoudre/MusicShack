@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
@@ -8,6 +8,7 @@
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
@@ -15,7 +16,7 @@
 	let type = $state<string>("songs");
 	let result = $state<SearchResponse | null>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			searchData = page.url.searchParams.get("q");
 			if (!searchData) {

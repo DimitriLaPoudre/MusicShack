@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Clock4, Download } from "lucide-svelte";
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
@@ -8,12 +8,13 @@
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
 	let discs = $state<null | AlbumDataSong[][]>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<AlbumData>(
 				`/album/${page.params.api}/${page.params.id}`,
