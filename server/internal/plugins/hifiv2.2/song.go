@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -15,32 +14,59 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, id string, ch chan<- songData) {
-	defer wg.Done()
+func fetchSong(ctx context.Context, url string, id string) (songData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/info/?id="+id, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url+"/info/?id="+id, nil)
 	if err != nil {
-		return
+		return songData{}, fmt.Errorf("fetchSong: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return songData{}, fmt.Errorf("fetchSong: http.DefaultClient.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return
+		return songData{}, fmt.Errorf("fetchSong: %w", errors.New("http error "+strconv.FormatInt(400, 10)))
 	}
 
 	var data songData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return
+		return songData{}, fmt.Errorf("fetchSong: json.Decode: %w", err)
 	}
 
-	select {
-	case ch <- data:
-	case <-ctx.Done():
+	return data, nil
+}
+
+func getSong(ctx context.Context, instances []models.ApiInstance, id string) (songData, error) {
+	type res struct {
+		data songData
+		err  error
 	}
+
+	ch := make(chan res, len(instances))
+	for _, instance := range instances {
+		go func(url string) {
+			data, err := fetchSong(ctx, url, id)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
+	}
+
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return songData{}, ctx.Err()
+		}
+	}
+	return songData{}, fmt.Errorf("getSong: %w", lastErr)
 }
 
 func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
@@ -49,72 +75,47 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer routineCancel()
-	ch := make(chan songData)
-	var wg sync.WaitGroup
-	wg.Add(len(instances))
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
-	for _, instance := range instances {
-		go getSong(routineCtx, &wg, instance.Url, id, ch)
+	data, err := getSong(ctx, instances, id)
+	if err != nil {
+		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	var data songData
-	select {
-	case find, ok := <-ch:
-		routineCancel()
-		if !ok {
-			return models.SongData{}, fmt.Errorf("Hifi.Song: %w", errors.New("can't fetch"))
-		}
-		data = find
-	case <-ctx.Done():
-		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", context.Canceled)
-	}
-
-	var normalizeSongData models.SongData
-	{
-		normalizeSongData.Api = p.Name()
-		normalizeSongData.Id = strconv.FormatUint(uint64(data.Data.Id), 10)
-		normalizeSongData.Title = data.Data.Title
-		normalizeSongData.Duration = data.Data.Duration
-		normalizeSongData.ReplayGain = data.Data.ReplayGain
-		normalizeSongData.Peak = data.Data.Peak
-		normalizeSongData.ReleaseDate = data.Data.ReleaseDate[:10]
-		normalizeSongData.TrackNumber = data.Data.TrackNumber
-		normalizeSongData.VolumeNumber = data.Data.VolumeNumber
-
-		normalizeSongData.AudioQuality = models.QualityHigh
-		for _, quality := range data.Data.MediaMetadata.Tags {
-			switch quality {
-			case "HIRES_LOSSLESS":
-				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityHiresLossless)
-			case "LOSSLESS", "DOLBY_ATMOS":
-				normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityLossless)
-			}
-		}
-
-		normalizeSongData.Explicit = data.Data.Explicit
-		normalizeSongData.Popularity = data.Data.Popularity
-		normalizeSongData.Isrc = data.Data.Isrc
-
-		artists := make([]models.SongDataArtist, 0)
-		for _, artist := range data.Data.Artists {
-			artists = append(artists, models.SongDataArtist{
-				Id:   strconv.FormatUint(uint64(artist.Id), 10),
-				Name: artist.Name,
-			})
-		}
-		normalizeSongData.Artists = artists
-
-		album := models.SongDataAlbum{
+	normalizeSongData := models.SongData{
+		Api:          p.Name(),
+		Id:           strconv.FormatUint(uint64(data.Data.Id), 10),
+		Title:        data.Data.Title,
+		Duration:     data.Data.Duration,
+		ReplayGain:   data.Data.ReplayGain,
+		Peak:         data.Data.Peak,
+		ReleaseDate:  data.Data.ReleaseDate[:10],
+		TrackNumber:  data.Data.TrackNumber,
+		VolumeNumber: data.Data.VolumeNumber,
+		AudioQuality: models.QualityHigh,
+		Explicit:     data.Data.Explicit,
+		Popularity:   data.Data.Popularity,
+		Isrc:         data.Data.Isrc,
+		Artists:      make([]models.SongDataArtist, 0),
+		Album: models.SongDataAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
 			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
+		},
+	}
+
+	for _, quality := range data.Data.MediaMetadata.Tags {
+		switch quality {
+		case "HIRES_LOSSLESS":
+			normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityHiresLossless)
+		case "LOSSLESS", "DOLBY_ATMOS":
+			normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityLossless)
 		}
-		normalizeSongData.Album = album
+	}
+
+	for _, artist := range data.Data.Artists {
+		normalizeSongData.Artists = append(normalizeSongData.Artists, models.SongDataArtist{
+			Id:   strconv.FormatUint(uint64(artist.Id), 10),
+			Name: artist.Name,
+		})
 	}
 
 	return normalizeSongData, nil

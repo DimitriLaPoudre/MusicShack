@@ -5,7 +5,7 @@ type status struct {
 	Repo    string `json:"Repo"`
 }
 
-type artistData struct {
+type artistInfo struct {
 	Version string
 	Artist  artistItem
 	Cover   struct {

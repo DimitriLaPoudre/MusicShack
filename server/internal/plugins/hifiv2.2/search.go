@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -16,98 +15,210 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchSongData, song string) {
-	defer wg.Done()
+func fetchSearchSong(ctx context.Context, urlApi string, song string) (searchSongData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
 	if err != nil {
-		return
+		return searchSongData{}, fmt.Errorf("fetchSearchSong: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return searchSongData{}, fmt.Errorf("fetchSearchSong: http.DefaultClient.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return
+		return searchSongData{}, fmt.Errorf("fetchSearchSong: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 	}
 
 	var data searchSongData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return
+		return searchSongData{}, fmt.Errorf("fetchSearchSong: json.Decode: %w", err)
 	}
 
-	select {
-	case ch <- data:
-	case <-ctx.Done():
-	}
+	return data, nil
 }
 
-func getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchAlbumData, album string) {
-	defer wg.Done()
+func getSearchSong(ctx context.Context, instances []models.ApiInstance, song string) (searchSongData, error) {
+	type res struct {
+		data searchSongData
+		err  error
+	}
+
+	ch := make(chan res, len(instances))
+	for _, instance := range instances {
+		go func(url string) {
+			data, err := fetchSearchSong(ctx, url, song)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
+	}
+
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return searchSongData{}, ctx.Err()
+		}
+	}
+	return searchSongData{}, fmt.Errorf("getSearchSong: %w", lastErr)
+}
+
+func fetchSearchAlbum(ctx context.Context, urlApi string, album string) (searchAlbumData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
 	if err != nil {
-		return
+		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: http.DefaultClient.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return
+		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 	}
 
 	var data searchAlbumData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return
+		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: json.Decode: %w", err)
 	}
 
-	select {
-	case ch <- data:
-	case <-ctx.Done():
-	}
+	return data, nil
 }
 
-func getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchArtistData, artist string) {
-	defer wg.Done()
+func getSearchAlbum(ctx context.Context, instances []models.ApiInstance, album string) (searchAlbumData, error) {
+	type res struct {
+		data searchAlbumData
+		err  error
+	}
+
+	ch := make(chan res, len(instances))
+	for _, instance := range instances {
+		go func(url string) {
+			data, err := fetchSearchAlbum(ctx, url, album)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
+	}
+
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return searchAlbumData{}, ctx.Err()
+		}
+	}
+	return searchAlbumData{}, fmt.Errorf("getSearchAlbum: %w", lastErr)
+}
+
+func fetchSearchArtist(ctx context.Context, urlApi string, artist string) (searchArtistData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
 	if err != nil {
-		return
+		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: http.DefaultClient.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return
+		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 	}
 
 	var data searchArtistData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return
+		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: json.Decode: %w", err)
 	}
 
-	select {
-	case ch <- data:
-	case <-ctx.Done():
-	}
+	return data, nil
 }
 
-func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
-	var wg sync.WaitGroup
-	wg.Add(3)
+func getSearchArtist(ctx context.Context, instances []models.ApiInstance, artist string) (searchArtistData, error) {
+	type res struct {
+		data searchArtistData
+		err  error
+	}
+
+	ch := make(chan res, len(instances))
+	for _, instance := range instances {
+		go func(url string) {
+			data, err := fetchSearchArtist(ctx, url, artist)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
+	}
+
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return searchArtistData{}, ctx.Err()
+		}
+	}
+	return searchArtistData{}, fmt.Errorf("getSearchArtist: %w", lastErr)
+}
+
+func getSearchData(ctx context.Context, instances []models.ApiInstance, song, album, artist string) (searchSongData, searchAlbumData, searchArtistData, error) {
+	type res struct {
+		data any
+		err  error
+	}
+
+	ch := make(chan res, 3)
+	go func() {
+		data, err := getSearchSong(ctx, instances, song)
+		ch <- res{data: data, err: err}
+	}()
+	go func() {
+		data, err := getSearchAlbum(ctx, instances, album)
+		ch <- res{data: data, err: err}
+	}()
+	go func() {
+		data, err := getSearchArtist(ctx, instances, artist)
+		ch <- res{data: data, err: err}
+	}()
 
 	var songData searchSongData
 	var albumData searchAlbumData
 	var artistData searchArtistData
+	for range 3 {
+		res := <-ch
+		switch v := res.data.(type) {
+		case searchSongData:
+			songData = v
+		case searchAlbumData:
+			albumData = v
+		case searchArtistData:
+			artistData = v
+		}
+	}
 
+	return songData, albumData, artistData, nil
+}
+
+func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
 	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", err)
@@ -116,185 +227,96 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", errors.New("not found"))
 	}
 
-	go func() {
-		defer wg.Done()
-
-		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
-		defer routineCancel()
-		ch := make(chan searchSongData)
-		var wgRoutine sync.WaitGroup
-
-		wgRoutine.Add(len(instances))
-		go func() {
-			wgRoutine.Wait()
-			close(ch)
-		}()
-		for _, instance := range instances {
-			go getSearchSong(routineCtx, &wgRoutine, instance.Url, ch, song)
-		}
-		select {
-		case find, ok := <-ch:
-			defer routineCancel()
-			if ok {
-				songData = find
-			}
-		case <-ctx.Done():
-			defer routineCancel()
-		}
-
-	}()
-	go func() {
-		defer wg.Done()
-
-		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
-		defer routineCancel()
-		ch := make(chan searchAlbumData)
-		var wgRoutine sync.WaitGroup
-
-		wgRoutine.Add(len(instances))
-		go func() {
-			wgRoutine.Wait()
-			close(ch)
-		}()
-		for _, instance := range instances {
-			go getSearchAlbum(routineCtx, &wgRoutine, instance.Url, ch, album)
-		}
-		select {
-		case find, ok := <-ch:
-			routineCancel()
-			if ok {
-				albumData = find
-			}
-		case <-ctx.Done():
-			routineCancel()
-		}
-	}()
-	go func() {
-		defer wg.Done()
-
-		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
-		defer routineCancel()
-		ch := make(chan searchArtistData)
-		var wgRoutine sync.WaitGroup
-
-		wgRoutine.Add(len(instances))
-		go func() {
-			wgRoutine.Wait()
-			close(ch)
-		}()
-		for _, instance := range instances {
-			go getSearchArtist(routineCtx, &wgRoutine, instance.Url, ch, artist)
-		}
-		select {
-		case find, ok := <-ch:
-			routineCancel()
-			if ok {
-				artistData = find
-			}
-		case <-ctx.Done():
-			routineCancel()
-		}
-	}()
-
-	wg.Wait()
-
-	select {
-	case <-ctx.Done():
-		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", context.Canceled)
-	default:
+	songData, albumData, artistData, err := getSearchData(ctx, instances, song, album, artist)
+	if err != nil {
+		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", err)
 	}
 
 	result := models.SearchData{
-		Songs:   []models.SearchDataSong{},
-		Albums:  []models.SearchDataAlbum{},
-		Artists: []models.SearchDataArtist{},
+		Songs:   make([]models.SearchDataSong, 0),
+		Albums:  make([]models.SearchDataAlbum, 0),
+		Artists: make([]models.SearchDataArtist, 0),
 	}
 
 	if len(songData.Data.Songs) != 0 {
-		songs := make([]models.SearchDataSong, 0)
-		for _, song := range songData.Data.Songs {
-			audioQuality := models.QualityHigh
-			for _, quality := range song.MediaMetadata.Tags {
+		for _, rawSong := range songData.Data.Songs {
+			song := models.SearchDataSong{
+				Id:           strconv.FormatUint(uint64(rawSong.Id), 10),
+				Title:        rawSong.Title,
+				Duration:     rawSong.Duration,
+				AudioQuality: models.QualityHigh,
+				Popularity:   rawSong.Popularity,
+				Explicit:     rawSong.Explicit,
+				Artists:      make([]models.SongDataArtist, 0),
+				Album: models.SongDataAlbum{
+					Id:       strconv.FormatUint(uint64(rawSong.Album.Id), 10),
+					Title:    rawSong.Album.Title,
+					CoverUrl: utils.GetImageURL(rawSong.Album.CoverUrl, 1280),
+				},
+			}
+
+			for _, quality := range rawSong.MediaMetadata.Tags {
 				switch quality {
 				case "HIRES_LOSSLESS":
-					audioQuality = max(audioQuality, models.QualityHiresLossless)
+					song.AudioQuality = max(song.AudioQuality, models.QualityHiresLossless)
 				case "LOSSLESS", "DOLBY_ATMOS":
-					audioQuality = max(audioQuality, models.QualityLossless)
+					song.AudioQuality = max(song.AudioQuality, models.QualityLossless)
 				}
 			}
 
-			artists := make([]models.SongDataArtist, 0)
-			for _, artist := range song.Artists {
-				artists = append(artists, models.SongDataArtist{
+			for _, artist := range rawSong.Artists {
+				song.Artists = append(song.Artists, models.SongDataArtist{
 					Id:   strconv.FormatUint(uint64(artist.Id), 10),
 					Name: artist.Name,
 				})
 			}
 
-			songs = append(songs, models.SearchDataSong{
-				Id:           strconv.FormatUint(uint64(song.Id), 10),
-				Title:        song.Title,
-				Duration:     song.Duration,
-				AudioQuality: audioQuality,
-				Popularity:   song.Popularity,
-				Explicit:     song.Explicit,
-				Artists:      artists,
-				Album: models.SongDataAlbum{
-					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
-					Title:    song.Album.Title,
-					CoverUrl: utils.GetImageURL(song.Album.CoverUrl, 1280),
-				},
-			})
+			result.Songs = append(result.Songs, song)
 		}
-		result.Songs = songs
 	}
 
 	if len(albumData.Data.Albums.Albums) != 0 {
-		albums := make([]models.SearchDataAlbum, 0)
-		for _, album := range albumData.Data.Albums.Albums {
-			audioQuality := models.QualityHigh
-			for _, quality := range album.MediaMetadata.Tags {
+		for _, rawAlbum := range albumData.Data.Albums.Albums {
+			album := models.SearchDataAlbum{
+				Id:           strconv.FormatUint(uint64(rawAlbum.Id), 10),
+				Title:        rawAlbum.Title,
+				Duration:     rawAlbum.Duration,
+				CoverUrl:     utils.GetImageURL(rawAlbum.CoverUrl, 1280),
+				AudioQuality: models.QualityHigh,
+				Explicit:     rawAlbum.Explicit,
+				Popularity:   rawAlbum.Popularity,
+				Artists:      make([]models.AlbumDataArtist, 0),
+			}
+
+			for _, quality := range rawAlbum.MediaMetadata.Tags {
 				switch quality {
 				case "HIRES_LOSSLESS":
-					audioQuality = max(audioQuality, models.QualityHiresLossless)
+					album.AudioQuality = max(album.AudioQuality, models.QualityHiresLossless)
 				case "LOSSLESS", "DOLBY_ATMOS":
-					audioQuality = max(audioQuality, models.QualityLossless)
+					album.AudioQuality = max(album.AudioQuality, models.QualityLossless)
 				}
 			}
 
-			artists := make([]models.AlbumDataArtist, 0)
-			for _, artist := range album.Artists {
-				artists = append(artists, models.AlbumDataArtist{
+			for _, artist := range rawAlbum.Artists {
+				album.Artists = append(album.Artists, models.AlbumDataArtist{
 					Id:   strconv.FormatUint(uint64(artist.Id), 10),
 					Name: artist.Name,
 				})
 			}
 
-			albums = append(albums, models.SearchDataAlbum{
-				Id:           strconv.FormatUint(uint64(album.Id), 10),
-				Title:        album.Title,
-				Duration:     album.Duration,
-				CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
-				AudioQuality: audioQuality,
-				Explicit:     album.Explicit,
-				Popularity:   album.Popularity,
-				Artists:      artists,
-			})
+			result.Albums = append(result.Albums, album)
 		}
-		result.Albums = albums
 	}
 
 	if len(artistData.Data.Artists.Artists) != 0 {
-		artists := make([]models.SearchDataArtist, 0)
-		for _, artist := range artistData.Data.Artists.Artists {
-			artists = append(artists, models.SearchDataArtist{
-				Id:         strconv.FormatUint(uint64(artist.Id), 10),
-				Name:       artist.Name,
-				PictureUrl: utils.GetImageURL(artist.PictureUrl, 750),
-				Popularity: artist.Popularity,
+		for _, rawArtist := range artistData.Data.Artists.Artists {
+			result.Artists = append(result.Artists, models.SearchDataArtist{
+				Id:         strconv.FormatUint(uint64(rawArtist.Id), 10),
+				Name:       rawArtist.Name,
+				PictureUrl: utils.GetImageURL(rawArtist.PictureUrl, 750),
+				Popularity: rawArtist.Popularity,
 			})
 		}
-		result.Artists = artists
 	}
 
 	return result, nil

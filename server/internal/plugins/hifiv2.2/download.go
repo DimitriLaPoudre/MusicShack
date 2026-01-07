@@ -12,85 +12,76 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 )
 
-func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id string, quality string, ch chan<- downloadData) {
-	defer wg.Done()
+func fetchDownloadInfo(ctx context.Context, api string, id string, quality string) (downloadData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
-	url := apiUrl + "/track/?id=" + id
+	url := api + "/track/?id=" + id
 	if quality != "" {
 		url += "&quality=" + quality
 	}
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: http.DefaultClient.Do: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		return
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 	}
 
 	var data downloadData
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: json.Decode: %w", err)
 	}
 
-	select {
-	case ch <- data:
-	case <-ctx.Done():
-	}
+	return data, nil
 }
 
-func (p *Hifi) downloadInfo(ctx context.Context, userId uint, id string, quality string) (downloadItem, error) {
-	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
-	if err != nil {
-		return downloadItem{}, fmt.Errorf("Hifi.DownloadInfo: %w", err)
+func getDownloadInfo(ctx context.Context, instances []models.ApiInstance, id string, quality string) (downloadData, error) {
+	type res struct {
+		data downloadData
+		err  error
 	}
 
-	routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
-	defer routineCancel()
-
-	ch := make(chan downloadData)
-	var wg sync.WaitGroup
-	wg.Add(len(instances))
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
+	ch := make(chan res, len(instances))
 	for _, instance := range instances {
-		go getDownloadInfo(routineCtx, &wg, instance.Url, id, quality, ch)
+		go func(url string) {
+			data, err := fetchDownloadInfo(ctx, url, id, quality)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
 	}
 
-	var data downloadData
-	select {
-	case find, ok := <-ch:
-		routineCancel()
-		if !ok {
-			return downloadItem{}, fmt.Errorf("Hifi.DownloadInfo: %w", errors.New("can't be fetch"))
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return downloadData{}, ctx.Err()
 		}
-		data = find
-	case <-ctx.Done():
-		routineCancel()
-		return downloadItem{}, fmt.Errorf("Hifi.DownloadInfo: %w", context.Canceled)
 	}
-
-	return data.Data, nil
+	return downloadData{}, fmt.Errorf("getDownloadInfo: %w", lastErr)
 }
 
 func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, error) {
 	var manifest manifestTidal
 	if err := json.Unmarshal(manifestRaw, &manifest); err != nil {
-		return nil, fmt.Errorf("downloadTidal: unmarshal manisfestRaw: %w", err)
+		return nil, fmt.Errorf("downloadTidal: json.Unmarshal: %w", err)
 	}
 
 	if len(manifest.Urls) <= 0 {
@@ -98,15 +89,15 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 	}
 	req, err := http.NewRequestWithContext(ctx, "GET", manifest.Urls[0], nil)
 	if err != nil {
-		return nil, fmt.Errorf("downloadTidal: newRequest: %w", err)
+		return nil, fmt.Errorf("downloadTidal: http.NewRequestWithContext: %w", err)
 	}
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("downloadTidal: download url request: %w", err)
+		return nil, fmt.Errorf("downloadTidal: http.DefaultClient.Do: %w", err)
 	}
 
 	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("downloadTidal: fetch error: %s", resp.Status)
+		return nil, fmt.Errorf("downloadTidal: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 	}
 
 	return resp.Body, nil
@@ -147,7 +138,7 @@ func (c *concatReadCloser) Close() error {
 func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	var mpd manifestMPD
 	if err := xml.Unmarshal(manifest, &mpd); err != nil {
-		return nil, fmt.Errorf("downloadMPD: unmarshal manisfest: %w", err)
+		return nil, fmt.Errorf("downloadMPD: xml.Unmarshal: %w", err)
 	}
 
 	rep := mpd.Periods[0].
@@ -178,17 +169,17 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	for _, url := range segments {
 		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 		if err != nil {
-			return nil, fmt.Errorf("downloadMPD: newRequest segment: %w", err)
+			return nil, fmt.Errorf("downloadMPD: http.NewRequestWithContext: %w", err)
 		}
 
 		resp, err := http.DefaultClient.Do(req)
 		if err != nil {
-			return nil, fmt.Errorf("downloadMPD: fetch segment: %w", err)
+			return nil, fmt.Errorf("downloadMPD: http.DefaultClient.Do: %w", err)
 		}
 
 		if resp.StatusCode >= 400 {
 			defer resp.Body.Close()
-			return nil, fmt.Errorf("downloadMPD: fetch segment resp status: %s", resp.Status)
+			return nil, fmt.Errorf("downloadMPD: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
 		}
 
 		readers = append(readers, resp.Body)
@@ -242,18 +233,23 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 }
 
 func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality string) (io.ReadCloser, string, error) {
-	info, err := p.downloadInfo(ctx, userId, id, quality)
+	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return nil, "", fmt.Errorf("Hifi.Download: %w", err)
 	}
 
-	manifest, err := base64.StdEncoding.DecodeString(info.Manifest)
+	info, err := getDownloadInfo(ctx, instances, id, quality)
+	if err != nil {
+		return nil, "", fmt.Errorf("Hifi.Download: %w", err)
+	}
+
+	manifest, err := base64.StdEncoding.DecodeString(info.Data.Manifest)
 	if err != nil {
 		return nil, "", fmt.Errorf("Hifi.Download: manifest decoding: %w", err)
 	}
 
 	var reader io.ReadCloser
-	switch info.ManifestMimeType {
+	switch info.Data.ManifestMimeType {
 	case "application/vnd.tidal.bts":
 		reader, err = downloadTidal(ctx, manifest)
 	case "application/dash+xml":
@@ -267,7 +263,7 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality str
 	}
 
 	var extension string
-	switch info.AudioQuality {
+	switch info.Data.AudioQuality {
 	case "HI_RES_LOSSLESS":
 		reader, err = remuxM4AtoFLAC(reader)
 		if err != nil {
