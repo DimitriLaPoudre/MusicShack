@@ -54,6 +54,10 @@ func FormatMetadata(userId uint, path string, data models.SongData) error {
 		artists = append(artists, artist.Name)
 	}
 
+	explicit := "false"
+	if data.Explicit {
+		explicit = "true"
+	}
 	trackNumber := strconv.FormatUint(uint64(data.TrackNumber), 10)
 	volumeNumber := strconv.FormatUint(uint64(data.VolumeNumber), 10)
 	trackGain := strconv.FormatFloat(data.ReplayGain, 'f', -1, 64)
@@ -67,6 +71,7 @@ func FormatMetadata(userId uint, path string, data models.SongData) error {
 		taglib.TrackNumber:      {trackNumber},
 		taglib.DiscNumber:       {volumeNumber},
 		taglib.ReleaseDate:      {album.ReleaseDate},
+		"itunesadvisory":        {explicit},
 		"replaygain_album_gain": {albumGain},
 		"replaygain_album_peak": {albumPeak},
 		"replaygain_track_gain": {trackGain},
