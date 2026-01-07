@@ -167,11 +167,11 @@
 			<div class="wrap-form">
 				<div class="inputs">
 					<input
-						placeholder={username}
+						placeholder={username || "username"}
 						bind:value={inputUser.username}
 					/>
 					<input
-						placeholder="Password"
+						placeholder="password"
 						bind:value={inputUser.password}
 					/>
 				</div>

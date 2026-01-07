@@ -9,7 +9,6 @@ type ApiInstance struct {
 	UserId uint   `gorm:"not null;uniqueIndex:idx_instance" json:"userId"`
 	Api    string `gorm:"not null" json:"api"`
 	Url    string `gorm:"not null;uniqueIndex:idx_instance" json:"url"`
-	Ping   int64  `gorm:"" json:"ping"`
 }
 
 type ApiInstanceItem struct {

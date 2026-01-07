@@ -20,3 +20,8 @@ type RequestUser struct {
 	Password    string `json:"password"`
 	BestQuality bool   `json:"bestQuality"`
 }
+
+type ResponseUser struct {
+	Username    string `json:"username"`
+	BestQuality bool   `json:"bestQuality"`
+}
