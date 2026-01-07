@@ -83,7 +83,7 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 		normalizeAlbumData.Api = p.Name()
 		normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
 		normalizeAlbumData.Title = firstSong.Album.Title
-		normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 640)
+		normalizeAlbumData.CoverUrl = utils.GetImageURL(firstSong.Album.CoverUrl, 1280)
 		normalizeAlbumData.AudioQuality = models.QualityHiresLossless
 		normalizeAlbumData.Artists = append(normalizeAlbumData.Artists,
 			models.AlbumDataArtist{

@@ -27,22 +27,23 @@ const (
 )
 
 type SongData struct {
-	Api          string           `json:"api"`
-	Id           string           `json:"id"`
-	Title        string           `json:"title"`
-	Duration     uint             `json:"duration"`
-	ReplayGain   float64          `json:"replayGain"`
-	Peak         float64          `json:"peak"`
-	ReleaseDate  string           `json:"releaseDate"`
-	TrackNumber  uint             `json:"trackNumber"`
-	VolumeNumber uint             `json:"volumeNumber"`
-	AudioQuality Quality          `json:"audioQuality"`
-	Explicit     bool             `json:"explicit"`
-	Popularity   uint             `json:"popularity"`
-	Isrc         string           `json:"isrc"`
-	CoverUrl     string           `json:"coverUrl"`
-	Artists      []SongDataArtist `json:"artists"`
-	Album        SongDataAlbum    `json:"album"`
+	Api             string           `json:"api"`
+	Id              string           `json:"id"`
+	Title           string           `json:"title"`
+	Duration        uint             `json:"duration"`
+	ReplayGain      float64          `json:"replayGain"`
+	Peak            float64          `json:"peak"`
+	AlbumReplayGain float64          `json:"albumReplayGain"`
+	AlbumPeak       float64          `json:"albumPeak"`
+	ReleaseDate     string           `json:"releaseDate"`
+	TrackNumber     uint             `json:"trackNumber"`
+	VolumeNumber    uint             `json:"volumeNumber"`
+	AudioQuality    Quality          `json:"audioQuality"`
+	Explicit        bool             `json:"explicit"`
+	Popularity      uint             `json:"popularity"`
+	Isrc            string           `json:"isrc"`
+	Artists         []SongDataArtist `json:"artists"`
+	Album           SongDataAlbum    `json:"album"`
 }
 
 type SongDataArtist struct {

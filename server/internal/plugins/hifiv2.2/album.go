@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -36,7 +37,10 @@ func getAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- 
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumData, error) {
@@ -45,7 +49,8 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		return models.AlbumData{}, fmt.Errorf("Hifi.Album: %w", err)
 	}
 
-	routineCtx, cancel := context.WithCancel(context.Background())
+	routineCtx, routineCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer routineCancel()
 	ch := make(chan albumData)
 	var wg sync.WaitGroup
 
@@ -61,14 +66,13 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 	var data albumData
 	select {
 	case find, ok := <-ch:
-		cancel()
+		routineCancel()
 		if !ok {
 			return models.AlbumData{}, fmt.Errorf("Hifi.Album: %w", errors.New("can't fetch"))
 		} else {
 			data = find
 		}
 	case <-ctx.Done():
-		cancel()
 		return models.AlbumData{}, fmt.Errorf("Hifi.Album: %w", context.Canceled)
 	}
 
@@ -80,7 +84,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		ReleaseDate:   data.Data.ReleaseDate,
 		NumberTracks:  data.Data.NumberOfTracks,
 		NumberVolumes: data.Data.NumberOfVolumes,
-		CoverUrl:      utils.GetImageURL(data.Data.CoverUrl, 640),
+		CoverUrl:      utils.GetImageURL(data.Data.CoverUrl, 1280),
 		Explicit:      data.Data.Explicit,
 		Songs:         make([]models.AlbumDataSong, 0),
 	}

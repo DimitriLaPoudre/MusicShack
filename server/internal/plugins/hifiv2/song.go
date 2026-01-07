@@ -107,7 +107,7 @@ func (p *HifiV2) Song(ctx context.Context, userId uint, id string) (models.SongD
 		album := models.SongDataAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
-			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 640),
+			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
 		}
 		normalizeSongData.Album = album
 	}

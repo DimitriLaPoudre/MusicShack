@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 )
@@ -24,6 +25,7 @@ func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id 
 	if quality != "" {
 		url += "&quality=" + quality
 	}
+
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return
@@ -43,7 +45,10 @@ func getDownloadInfo(ctx context.Context, wg *sync.WaitGroup, apiUrl string, id 
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func (p *Hifi) downloadInfo(ctx context.Context, userId uint, id string, quality string) (downloadItem, error) {
@@ -52,7 +57,9 @@ func (p *Hifi) downloadInfo(ctx context.Context, userId uint, id string, quality
 		return downloadItem{}, fmt.Errorf("Hifi.DownloadInfo: %w", err)
 	}
 
-	routineCtx, routineCancel := context.WithCancel(context.Background())
+	routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer routineCancel()
+
 	ch := make(chan downloadData)
 	var wg sync.WaitGroup
 	wg.Add(len(instances))

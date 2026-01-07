@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -37,7 +38,10 @@ func getSearchSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchAlbumData, album string) {
@@ -62,7 +66,10 @@ func getSearchAlbum(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch c
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- searchArtistData, artist string) {
@@ -87,7 +94,10 @@ func getSearchArtist(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
@@ -109,7 +119,8 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 	go func() {
 		defer wg.Done()
 
-		routineCtx, cancel := context.WithCancel(context.Background())
+		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer routineCancel()
 		ch := make(chan searchSongData)
 		var wgRoutine sync.WaitGroup
 
@@ -123,19 +134,20 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 		}
 		select {
 		case find, ok := <-ch:
-			cancel()
+			defer routineCancel()
 			if ok {
 				songData = find
 			}
 		case <-ctx.Done():
-			cancel()
+			defer routineCancel()
 		}
 
 	}()
 	go func() {
 		defer wg.Done()
 
-		routineCtx, cancel := context.WithCancel(context.Background())
+		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer routineCancel()
 		ch := make(chan searchAlbumData)
 		var wgRoutine sync.WaitGroup
 
@@ -149,18 +161,19 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 		}
 		select {
 		case find, ok := <-ch:
-			cancel()
+			routineCancel()
 			if ok {
 				albumData = find
 			}
 		case <-ctx.Done():
-			cancel()
+			routineCancel()
 		}
 	}()
 	go func() {
 		defer wg.Done()
 
-		routineCtx, cancel := context.WithCancel(context.Background())
+		routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
+		defer routineCancel()
 		ch := make(chan searchArtistData)
 		var wgRoutine sync.WaitGroup
 
@@ -174,12 +187,12 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 		}
 		select {
 		case find, ok := <-ch:
-			cancel()
+			routineCancel()
 			if ok {
 				artistData = find
 			}
 		case <-ctx.Done():
-			cancel()
+			routineCancel()
 		}
 	}()
 
@@ -229,7 +242,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
 					Title:    song.Album.Title,
-					CoverUrl: utils.GetImageURL(song.Album.CoverUrl, 640),
+					CoverUrl: utils.GetImageURL(song.Album.CoverUrl, 1280),
 				},
 			})
 		}
@@ -261,7 +274,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Id:           strconv.FormatUint(uint64(album.Id), 10),
 				Title:        album.Title,
 				Duration:     album.Duration,
-				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+				CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
 				AudioQuality: audioQuality,
 				Explicit:     album.Explicit,
 				Popularity:   album.Popularity,

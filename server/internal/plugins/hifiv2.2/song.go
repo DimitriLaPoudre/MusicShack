@@ -8,13 +8,14 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- songData, id string) {
+func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, id string, ch chan<- songData) {
 	defer wg.Done()
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/info/?id="+id, nil)
@@ -36,7 +37,10 @@ func getSong(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- s
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
@@ -45,7 +49,8 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	routineCtx, routineCancel := context.WithCancel(context.Background())
+	routineCtx, routineCancel := context.WithTimeout(ctx, 5*time.Second)
+	defer routineCancel()
 	ch := make(chan songData)
 	var wg sync.WaitGroup
 	wg.Add(len(instances))
@@ -54,7 +59,7 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		close(ch)
 	}()
 	for _, instance := range instances {
-		go getSong(routineCtx, &wg, instance.Url, ch, id)
+		go getSong(routineCtx, &wg, instance.Url, id, ch)
 	}
 
 	var data songData
@@ -66,7 +71,6 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		}
 		data = find
 	case <-ctx.Done():
-		routineCancel()
 		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", context.Canceled)
 	}
 
@@ -108,7 +112,7 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		album := models.SongDataAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
-			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 640),
+			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
 		}
 		normalizeSongData.Album = album
 	}

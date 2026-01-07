@@ -13,8 +13,15 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func getCover(data *models.SongData) (*[]byte, error) {
-	resp, err := http.Get(data.Album.CoverUrl)
+func getCover(ctx context.Context, url string) (*[]byte, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("getCover: %w", err)
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("getCover: %w", err)
 	}
@@ -28,14 +35,11 @@ func getCover(data *models.SongData) (*[]byte, error) {
 	return &image, nil
 }
 
-func FormatMetadata(userId uint, path string, data models.SongData) error {
+func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
 	api, ok := plugins.Get(data.Api)
 	if !ok {
 		return fmt.Errorf("FormatMetadata: plugins.Get: invalid api name")
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
 
 	album, err := api.Album(ctx, userId, data.Album.Id)
 	if err != nil {
@@ -46,8 +50,8 @@ func FormatMetadata(userId uint, path string, data models.SongData) error {
 		albumArtists = append(albumArtists, artist.Name)
 	}
 
-	albumGain := strconv.FormatFloat(0.0, 'f', -1, 64)
-	albumPeak := strconv.FormatFloat(0.0, 'f', -1, 64)
+	albumGain := strconv.FormatFloat(data.AlbumReplayGain, 'f', -1, 64)
+	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
 
 	var artists []string
 	for _, artist := range data.Artists {
@@ -81,7 +85,7 @@ func FormatMetadata(userId uint, path string, data models.SongData) error {
 		return fmt.Errorf("FormatMetadata: taglib.WriteTags: %w", err)
 	}
 
-	image, err := getCover(&data)
+	image, err := getCover(ctx, data.Album.CoverUrl)
 	if err != nil {
 		return fmt.Errorf("FormatMetadata: getCover: %w", err)
 	}

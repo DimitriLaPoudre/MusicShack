@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -38,7 +39,10 @@ func getArtistInfo(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch ch
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch chan<- artistAlbums, id string) {
@@ -63,7 +67,10 @@ func getArtistAlbums(ctx context.Context, wg *sync.WaitGroup, urlApi string, ch 
 		return
 	}
 
-	ch <- data
+	select {
+	case ch <- data:
+	case <-ctx.Done():
+	}
 }
 
 func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.ArtistData, error) {
@@ -81,7 +88,8 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 	go func() {
 		defer wg.Done()
 
-		routineCtx, cancel := context.WithCancel(context.Background())
+		routineCtx, routineCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer routineCancel()
 		ch := make(chan artistData)
 		var wgRoutine sync.WaitGroup
 
@@ -95,18 +103,19 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 		}
 		select {
 		case find, ok := <-ch:
-			cancel()
+			routineCancel()
 			if ok {
 				data = find
 			}
 		case <-ctx.Done():
-			cancel()
+			routineCancel()
 		}
 	}()
 	go func() {
 		defer wg.Done()
 
-		routineCtx, cancel := context.WithCancel(context.Background())
+		routineCtx, routineCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer routineCancel()
 		ch := make(chan artistAlbums)
 		var wgRoutine sync.WaitGroup
 
@@ -120,12 +129,12 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 		}
 		select {
 		case find, ok := <-ch:
-			cancel()
+			routineCancel()
 			if ok {
 				albumsData = find
 			}
 		case <-ctx.Done():
-			cancel()
+			routineCancel()
 		}
 	}()
 
@@ -210,7 +219,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					Title:        album.Title,
 					Duration:     album.Duration,
 					ReleaseDate:  album.ReleaseDate,
-					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
 					AudioQuality: audioQuality,
 					Explicit:     album.Explicit,
 					Artists:      artists,
@@ -221,7 +230,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					Title:        album.Title,
 					Duration:     album.Duration,
 					ReleaseDate:  album.ReleaseDate,
-					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
 					AudioQuality: audioQuality,
 					Explicit:     album.Explicit,
 					Artists:      artists,
@@ -232,7 +241,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					Title:        album.Title,
 					Duration:     album.Duration,
 					ReleaseDate:  album.ReleaseDate,
-					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+					CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
 					AudioQuality: audioQuality,
 					Explicit:     album.Explicit,
 					Artists:      artists,

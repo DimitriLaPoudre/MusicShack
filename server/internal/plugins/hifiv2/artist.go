@@ -180,7 +180,7 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 				Title:        album.Title,
 				Duration:     album.Duration,
 				ReleaseDate:  album.ReleaseDate,
-				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
+				CoverUrl:     utils.GetImageURL(album.CoverUrl, 1280),
 				AudioQuality: audioQuality,
 				Artists:      artists,
 			})

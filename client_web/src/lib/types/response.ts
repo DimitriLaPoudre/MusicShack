@@ -56,7 +56,6 @@ export interface SongData {
 	audioQuality: number;
 	popularity: number;
 	isrc: string;
-	coverUrl: string;
 	explicit: boolean;
 	artists: SongDataArtist[];
 	album: SongDataAlbum;
