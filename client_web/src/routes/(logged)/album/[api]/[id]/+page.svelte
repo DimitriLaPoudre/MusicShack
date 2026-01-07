@@ -7,6 +7,7 @@
 	import type { AlbumData, AlbumDataSong } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
@@ -57,7 +58,12 @@
 			<div class="top-data">
 				<img class="cover" src={album.coverUrl} alt={album.title} />
 				<div class="data">
-					<h1 class="title">{album.title}</h1>
+					<h1 class="title">
+						{album.title}
+						{#if album.explicit}
+							<Explicit />
+						{/if}
+					</h1>
 					<div class="artists">
 						{#each album.artists as artist}
 							<a href="/artist/{page.params.api}/{artist.id}">
@@ -123,7 +129,12 @@
 								>
 									<p class="number">{song.trackNumber}</p>
 									<div class="data">
-										<p class="title">{song.title}</p>
+										<p class="title">
+											{song.title}
+											{#if song.explicit}
+												<Explicit />
+											{/if}
+										</p>
 										<nav class="artists">
 											{#each song.artists as artist}
 												<a
@@ -204,6 +215,11 @@
 					gap: 7px;
 
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artists {
@@ -268,6 +284,11 @@
 						gap: 0.5rem;
 
 						.title {
+							display: flex;
+							flex-direction: row;
+							align-items: center;
+							justify-content: center;
+							gap: 0.5rem;
 							font-weight: bolder;
 							word-break: break-word;
 						}

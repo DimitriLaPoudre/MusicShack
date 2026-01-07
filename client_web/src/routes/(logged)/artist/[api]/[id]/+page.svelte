@@ -12,6 +12,7 @@
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -157,7 +158,12 @@
 										src={album.coverUrl}
 										alt={album.title}
 									/>
-									<p class="title">{album.title}</p>
+									<p class="title">
+										{album.title}
+										{#if album.explicit}
+											<Explicit />
+										{/if}
+									</p>
 									<nav class="artists">
 										{#each album.artists as artist}
 											<a
@@ -279,6 +285,11 @@
 						height: 160px;
 					}
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artists {

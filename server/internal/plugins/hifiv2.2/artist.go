@@ -212,6 +212,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					ReleaseDate:  album.ReleaseDate,
 					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
 					AudioQuality: audioQuality,
+					Explicit:     album.Explicit,
 					Artists:      artists,
 				})
 			case "EP":
@@ -222,6 +223,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					ReleaseDate:  album.ReleaseDate,
 					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
 					AudioQuality: audioQuality,
+					Explicit:     album.Explicit,
 					Artists:      artists,
 				})
 			case "SINGLE":
@@ -232,6 +234,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 					ReleaseDate:  album.ReleaseDate,
 					CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
 					AudioQuality: audioQuality,
+					Explicit:     album.Explicit,
 					Artists:      artists,
 				})
 			}

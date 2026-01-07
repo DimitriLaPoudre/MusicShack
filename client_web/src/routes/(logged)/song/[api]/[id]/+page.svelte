@@ -7,6 +7,7 @@
 	import { quality } from "$lib/types/quality";
 	import { Clock4, Download } from "lucide-svelte";
 	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
@@ -50,7 +51,12 @@
 			<div class="top-data">
 				<img class="cover" src={song.album.coverUrl} alt={song.title} />
 				<div class="data">
-					<h1 class="title">{song.title}</h1>
+					<h1 class="title">
+						{song.title}
+						{#if song.explicit}
+							<Explicit />
+						{/if}
+					</h1>
 					<a
 						class="album"
 						href="/album/{page.params.api}/{song.album.id}"
@@ -132,6 +138,11 @@
 					gap: 7px;
 
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.album {

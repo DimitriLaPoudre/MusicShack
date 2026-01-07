@@ -224,6 +224,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Duration:     song.Duration,
 				AudioQuality: audioQuality,
 				Popularity:   song.Popularity,
+				Explicit:     song.Explicit,
 				Artists:      artists,
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
@@ -262,6 +263,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Duration:     album.Duration,
 				CoverUrl:     utils.GetImageURL(album.CoverUrl, 640),
 				AudioQuality: audioQuality,
+				Explicit:     album.Explicit,
 				Popularity:   album.Popularity,
 				Artists:      artists,
 			})

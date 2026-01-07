@@ -81,6 +81,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		NumberTracks:  data.Data.NumberOfTracks,
 		NumberVolumes: data.Data.NumberOfVolumes,
 		CoverUrl:      utils.GetImageURL(data.Data.CoverUrl, 640),
+		Explicit:      data.Data.Explicit,
 		Songs:         make([]models.AlbumDataSong, 0),
 	}
 	{
@@ -133,6 +134,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 				TrackNumber:  song.TrackNumber,
 				VolumeNumber: song.VolumeNumber,
 				AudioQuality: audioQuality,
+				Explicit:     song.Explicit,
 				Artists:      artists,
 			})
 		}

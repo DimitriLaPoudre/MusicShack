@@ -92,6 +92,7 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 			}
 		}
 
+		normalizeSongData.Explicit = data.Data.Explicit
 		normalizeSongData.Popularity = data.Data.Popularity
 		normalizeSongData.Isrc = data.Data.Isrc
 

@@ -15,12 +15,12 @@
 		CircleDashed,
 		CircleX,
 		Disc,
-		LoaderCircleIcon,
 		LoaderIcon,
 		RotateCcw,
 		Trash,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
+	import Explicit from "../explicit.svelte";
 
 	let list = $state<null | DownloadListResponse>(null);
 	let error = $state<null | string>(null);
@@ -112,7 +112,12 @@
 								);
 							}}
 						>
-							<p class="title">{download.data.title}</p>
+							<p class="title">
+								{download.data.title}
+								{#if download.data.explicit}
+									<Explicit />
+								{/if}
+							</p>
 							<a
 								class="artist"
 								href="/artist/{download.api}/{download.data
@@ -242,6 +247,11 @@
 					height: 100%;
 
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artist {
