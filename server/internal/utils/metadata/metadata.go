@@ -50,9 +50,6 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 		albumArtists = append(albumArtists, artist.Name)
 	}
 
-	albumGain := strconv.FormatFloat(data.AlbumReplayGain, 'f', -1, 64)
-	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
-
 	var artists []string
 	for _, artist := range data.Artists {
 		artists = append(artists, artist.Name)
@@ -66,6 +63,8 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 	volumeNumber := strconv.FormatUint(uint64(data.VolumeNumber), 10)
 	trackGain := strconv.FormatFloat(data.ReplayGain, 'f', -1, 64)
 	trackPeak := strconv.FormatFloat(data.Peak, 'f', -1, 64)
+	albumGain := strconv.FormatFloat(data.AlbumReplayGain, 'f', -1, 64)
+	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
 
 	if err := taglib.WriteTags(path, map[string][]string{
 		taglib.Title:            {data.Title},

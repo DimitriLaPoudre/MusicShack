@@ -69,32 +69,75 @@ func getSong(ctx context.Context, instances []models.ApiInstance, id string) (so
 	return songData{}, fmt.Errorf("getSong: %w", lastErr)
 }
 
+func getSongData(ctx context.Context, instances []models.ApiInstance, id string) (songData, downloadData, error) {
+	type res struct {
+		data any
+		err  error
+	}
+
+	ch := make(chan res, 2)
+	go func() {
+		info, err := getSong(ctx, instances, id)
+		ch <- res{data: info, err: err}
+	}()
+	go func() {
+		albums, err := getDownloadInfo(ctx, instances, id, "")
+		ch <- res{data: albums, err: err}
+	}()
+
+	var song songData
+	var downloadInfo downloadData
+	var songErr, downloadErr error
+	for range 2 {
+		res := <-ch
+		switch v := res.data.(type) {
+		case songData:
+			song = v
+			songErr = res.err
+		case downloadData:
+			downloadInfo = v
+			downloadErr = res.err
+		}
+	}
+
+	if songErr != nil {
+		return songData{}, downloadData{}, fmt.Errorf("getArtistData: %w", songErr)
+	}
+	if downloadErr != nil {
+		return songData{}, downloadData{}, fmt.Errorf("getArtistData: %w", downloadErr)
+	}
+
+	return song, downloadInfo, nil
+}
+
 func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
 	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	data, err := getSong(ctx, instances, id)
+	data, downloadInfo, err := getSongData(ctx, instances, id)
 	if err != nil {
 		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
 	normalizeSongData := models.SongData{
-		Api:          p.Name(),
-		Id:           strconv.FormatUint(uint64(data.Data.Id), 10),
-		Title:        data.Data.Title,
-		Duration:     data.Data.Duration,
-		ReplayGain:   data.Data.ReplayGain,
-		Peak:         data.Data.Peak,
-		ReleaseDate:  data.Data.ReleaseDate[:10],
-		TrackNumber:  data.Data.TrackNumber,
-		VolumeNumber: data.Data.VolumeNumber,
-		AudioQuality: models.QualityHigh,
-		Explicit:     data.Data.Explicit,
-		Popularity:   data.Data.Popularity,
-		Isrc:         data.Data.Isrc,
-		Artists:      make([]models.SongDataArtist, 0),
+		Api:             p.Name(),
+		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
+		Title:           data.Data.Title,
+		Duration:        data.Data.Duration,
+		ReplayGain:      downloadInfo.Data.TrackReplayGain,
+		Peak:            downloadInfo.Data.TrackPeakAmplitude,
+		AlbumReplayGain: downloadInfo.Data.AlbumReplayGain,
+		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
+		ReleaseDate:     data.Data.ReleaseDate[:10],
+		TrackNumber:     data.Data.TrackNumber,
+		VolumeNumber:    data.Data.VolumeNumber,
+		AudioQuality:    models.QualityHigh,
+		Explicit:        data.Data.Explicit,
+		Popularity:      data.Data.Popularity,
+		Isrc:            data.Data.Isrc,
+		Artists:         make([]models.SongDataArtist, 0),
 		Album: models.SongDataAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
