@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
@@ -13,7 +16,7 @@
 	let type = $state<string>("songs");
 	let result = $state<SearchResponse | null>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			searchData = page.url.searchParams.get("q");
 			if (!searchData) {
@@ -57,23 +60,30 @@
 	<div class="top">
 		<div class="section">
 			{#each Object.entries(result as Record<string, any>) as [key, _]}
-				<button onclick={() => (api = key)} class:active={api === key}>
+				<button
+					class="hover-full"
+					onclick={() => (api = key)}
+					class:active={api === key}
+				>
 					{key}</button
 				>
 			{/each}
 		</div>
 		<div class="section">
 			<button
+				class="hover-full"
 				onclick={() => (type = "songs")}
 				class:active={type === "songs"}
 			>
 				Songs</button
 			>
 			<button
+				class="hover-full"
 				onclick={() => (type = "albums")}
 				class:active={type === "albums"}>Albums</button
 			>
 			<button
+				class="hover-full"
 				onclick={() => (type = "artists")}
 				class:active={type === "artists"}>Artists</button
 			>
@@ -87,7 +97,7 @@
 			{#each result[api].songs as song}
 				<div class="wrap-item">
 					<button
-						class="item"
+						class="item hover-full"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -107,7 +117,12 @@
 								<Disc size={140} />
 							{/if}
 						</div>
-						<p class="title">{song.title}</p>
+						<p class="title">
+							{song.title}
+							{#if song.explicit}
+								<Explicit />
+							{/if}
+						</p>
 						<nav class="artists">
 							{#each song.artists as artist}
 								<a href="/artist/{api}/{artist.id}">
@@ -115,10 +130,10 @@
 								</a>
 							{/each}
 						</nav>
-						<p>{quality[song.audioQuality]}</p>
+						<Quality quality={quality[song.audioQuality]} />
 					</button>
 					<button
-						class="download"
+						class="download hover-full"
 						onclick={async () => {
 							error = await download({
 								api: api,
@@ -139,7 +154,7 @@
 			{#each result[api].albums as album}
 				<div class="wrap-item">
 					<button
-						class="item"
+						class="item hover-full"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -156,7 +171,12 @@
 								<DiscAlbum size={140} />
 							{/if}
 						</div>
-						<p class="title">{album.title}</p>
+						<p class="title">
+							{album.title}
+							{#if album.explicit}
+								<Explicit />
+							{/if}
+						</p>
 						<nav class="artists">
 							{#each album.artists as artist}
 								<a href="/artist/{api}/{artist.id}">
@@ -167,7 +187,7 @@
 						<p>{quality[album.audioQuality]}</p>
 					</button>
 					<button
-						class="download"
+						class="download hover-full"
 						onclick={async () => {
 							error = await download({
 								api: api,
@@ -187,7 +207,7 @@
 			{/if}
 			{#each result[api].artists as artist}
 				<button
-					class="artist"
+					class="artist hover-full"
 					onclick={() => goto(`/artist/${api}/${artist.id}`)}
 				>
 					<div class="picture">
@@ -256,14 +276,22 @@
 				width: 200px;
 				height: auto;
 				overflow: hidden;
-				border-bottom: none;
 				gap: 0.75rem;
+				box-shadow:
+					inset 0 1px 0 var(--fg),
+					inset 1px 0 0 var(--fg),
+					inset -1px 0 0 var(--fg);
 
 				.cover {
 					width: 160px;
 					height: 160px;
 				}
 				.title {
+					display: flex;
+					flex-direction: row;
+					align-items: center;
+					justify-content: center;
+					gap: 0.5rem;
 					font-weight: bolder;
 				}
 				.artists {
@@ -276,7 +304,10 @@
 			.download {
 				width: 100%;
 				padding: 0.75rem;
-				border-top: none;
+				box-shadow:
+					inset 0 -1px 0 var(--fg),
+					inset 1px 0 0 var(--fg),
+					inset -1px 0 0 var(--fg);
 			}
 		}
 		.artist {

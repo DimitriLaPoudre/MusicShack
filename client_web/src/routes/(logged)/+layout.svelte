@@ -32,6 +32,7 @@
 	</button>
 	<div class="bar">
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "search" ? null : "search";
 			}}
@@ -40,6 +41,7 @@
 			<SearchIcon />
 		</button>
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "follow" ? null : "follow";
 			}}
@@ -48,6 +50,7 @@
 			<Heart />
 		</button>
 		<button
+			class="hover-full"
 			onclick={() => {
 				barState = barState === "download" ? null : "download";
 			}}
@@ -56,35 +59,40 @@
 			<DownloadIcon />
 		</button>
 		<button
+			class="hover-full"
+			class:active={barState === "settings"}
 			onclick={() => {
 				barState = barState === "settings" ? null : "settings";
 			}}
-			class:active={barState === "settings"}
 		>
 			<SettingsIcon />
 		</button>
 	</div>
-
-	{#if barState === "search"}
-		<div class="panel-search">
-			<Search />
-		</div>
-	{:else if barState === "follow"}
-		<div class="panel-default">
-			<Follow />
-		</div>
-	{:else if barState === "download"}
-		<div class="panel-default">
-			<Downloads />
-		</div>
-	{:else if barState === "settings"}
-		<div class="panel-default">
-			<Settings />
-		</div>
-	{/if}
 </header>
 
 <main>
+	{#if barState}
+		<div class="wrap-panel">
+			{#if barState === "search"}
+				<div class="panel-search">
+					<Search />
+				</div>
+			{:else if barState === "follow"}
+				<div class="panel-default">
+					<Follow />
+				</div>
+			{:else if barState === "download"}
+				<div class="panel-default">
+					<Downloads />
+				</div>
+			{:else if barState === "settings"}
+				<div class="panel-default">
+					<Settings />
+				</div>
+			{/if}
+		</div>
+	{/if}
+
 	{@render children?.()}
 </main>
 
@@ -95,8 +103,8 @@
 		top: 0;
 		left: 0;
 		width: 100%;
-		background-color: #0e0e0e;
-		color: #fff;
+		background-color: var(--bg);
+		color: var(--fg);
 		display: flex;
 		flex-direction: column;
 		justify-content: space-between;
@@ -106,49 +114,43 @@
 		.logo {
 			text-transform: uppercase;
 			font-size: 3rem;
-			border: none;
 			padding: 10px;
-		}
-		.logo:hover {
-			background-color: inherit;
-			color: inherit;
-		}
-		.logo:active {
-			background-color: inherit;
-			color: inherit;
-			outline: none;
 		}
 
 		.bar {
 			display: flex;
 			flex-direction: row;
-			gap: 0px 10px;
+			gap: 0 10px;
 			button {
 				aspect-ratio: 1/1;
 			}
 		}
-		.panel-search {
-			width: clamp(320px, 70vw + 20px, 1200px);
-			max-height: calc(95vh - 135px);
-			overflow-y: auto;
-			outline: 1px solid #ffffff;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-		}
-		.panel-default {
-			width: clamp(320px, 70vw + 20px, 1200px);
-			max-height: calc(95vh - 135px);
-			overflow-y: auto;
-			outline: 1px solid #ffffff;
-			display: flex;
-			flex-direction: column;
-			gap: 8px;
-			padding: 8px;
-		}
 	}
 
 	main {
+		.wrap-panel {
+			position: fixed;
+			z-index: 1000;
+			top: 144px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			background-color: var(--bg);
+
+			.panel-search {
+				width: clamp(320px, 70vw + 20px, 1200px);
+				max-height: calc(95vh - 135px);
+				overflow-y: auto;
+				outline: 1px solid var(--fg);
+			}
+			.panel-default {
+				padding: 0.75rem;
+				width: clamp(320px, 70vw + 20px, 1200px);
+				max-height: calc(95vh - 135px);
+				overflow-y: auto;
+				outline: 1px solid var(--fg);
+			}
+		}
 		padding-top: 130px;
 		width: clamp(320px, 70vw + 20px, 1200px);
 		margin: 0 auto;

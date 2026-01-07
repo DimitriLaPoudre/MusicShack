@@ -1,12 +1,13 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import type { RequestUserLogin } from "$lib/types/request";
 	import type { ErrorResponse } from "$lib/types/response";
+	import { onMount } from "svelte";
 
 	let credentials = $state<RequestUserLogin>({ username: "", password: "" });
 	let error = $state<string>("");
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		const res = await fetch("/api/me", {
 			credentials: "include",
 		});
@@ -68,7 +69,7 @@
 					required
 				/>
 			</div>
-			<button>Login</button>
+			<button class="hover-full">Login</button>
 		</div>
 	</form>
 </div>

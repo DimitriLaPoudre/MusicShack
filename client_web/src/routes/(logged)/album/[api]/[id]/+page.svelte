@@ -1,17 +1,20 @@
 <script lang="ts">
 	import { Clock4, Download } from "lucide-svelte";
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { AlbumData, AlbumDataSong } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
 	let discs = $state<null | AlbumDataSong[][]>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<AlbumData>(
 				`/album/${page.params.api}/${page.params.id}`,
@@ -56,7 +59,12 @@
 			<div class="top-data">
 				<img class="cover" src={album.coverUrl} alt={album.title} />
 				<div class="data">
-					<h1 class="title">{album.title}</h1>
+					<h1 class="title">
+						{album.title}
+						{#if album.explicit}
+							<Explicit />
+						{/if}
+					</h1>
 					<div class="artists">
 						{#each album.artists as artist}
 							<a href="/artist/{page.params.api}/{artist.id}">
@@ -76,12 +84,12 @@
 						</p>
 					</div>
 					<p>{album.releaseDate}</p>
-					<p>{quality[album.audioQuality]}</p>
+					<Quality quality={quality[album.audioQuality]} />
 				</div>
 			</div>
 		</div>
 		<button
-			class="download"
+			class="download hover-full"
 			onclick={async () => {
 				error = await download({
 					api: page.params.api!,
@@ -108,7 +116,7 @@
 						{#if song}
 							<div class="item">
 								<button
-									class="song"
+									class="song hover-soft"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -122,7 +130,12 @@
 								>
 									<p class="number">{song.trackNumber}</p>
 									<div class="data">
-										<p class="title">{song.title}</p>
+										<p class="title">
+											{song.title}
+											{#if song.explicit}
+												<Explicit />
+											{/if}
+										</p>
 										<nav class="artists">
 											{#each song.artists as artist}
 												<a
@@ -142,7 +155,7 @@
 									</div>
 								</button>
 								<button
-									class="download"
+									class="download hover-full"
 									onclick={async () => {
 										error = await download({
 											api: page.params.api!,
@@ -203,6 +216,11 @@
 					gap: 7px;
 
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artists {
@@ -267,6 +285,11 @@
 						gap: 0.5rem;
 
 						.title {
+							display: flex;
+							flex-direction: row;
+							align-items: center;
+							justify-content: center;
+							gap: 0.5rem;
 							font-weight: bolder;
 							word-break: break-word;
 						}
@@ -285,12 +308,6 @@
 						align-items: center;
 						gap: 0.25rem;
 					}
-				}
-				.song:hover {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
-					background-color: inherit;
-					color: inherit;
 				}
 				.download {
 					height: auto;

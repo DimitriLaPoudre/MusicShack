@@ -126,7 +126,7 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 	go newTask.start()
 }
 
-func saveSong(userId uint, reader io.ReadCloser, extension string, data models.SongData) error {
+func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension string, data models.SongData) error {
 	defer reader.Close()
 
 	user, err := repository.GetUserByID(userId)
@@ -178,7 +178,10 @@ func saveSong(userId uint, reader io.ReadCloser, extension string, data models.S
 		return fmt.Errorf("saveSong: %w", err)
 	}
 
-	if err := metadata.FormatMetadata(userId, filepath.Join(root.Name(), filename), data); err != nil {
+	if err := metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data); err != nil {
+		path := file.Name()
+		file.Close()
+		os.Remove(path)
 		return fmt.Errorf("saveSong: %w", err)
 	}
 	return nil
@@ -233,7 +236,7 @@ func (t *downloadTask) run(ctx context.Context) {
 	reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality)
 
 	if err == nil {
-		err = saveSong(t.userId, reader, extension, t.songData)
+		err = saveSong(ctx, t.userId, reader, extension, t.songData)
 	}
 
 	t.mu.Lock()

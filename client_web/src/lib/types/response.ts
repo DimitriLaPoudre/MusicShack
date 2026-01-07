@@ -7,9 +7,7 @@ export interface ErrorResponse {
 }
 
 export interface User {
-	id: number;
 	username: string;
-	password: string;
 	bestQuality: boolean;
 }
 
@@ -56,7 +54,7 @@ export interface SongData {
 	audioQuality: number;
 	popularity: number;
 	isrc: string;
-	coverUrl: string;
+	explicit: boolean;
 	artists: SongDataArtist[];
 	album: SongDataAlbum;
 }
@@ -80,6 +78,7 @@ export interface AlbumData {
 	numberVolumes: number;
 	coverUrl: string;
 	audioQuality: number;
+	explicit: boolean;
 	artists: AlbumDataArtist[];
 	songs: AlbumDataSong[];
 }
@@ -94,6 +93,7 @@ export interface AlbumDataSong {
 	trackNumber: number;
 	volumeNumber: number;
 	audioQuality: number;
+	explicit: boolean;
 	artists: SongDataArtist[];
 }
 
@@ -113,6 +113,7 @@ export interface ArtistDataAlbum {
 	releaseDate: string;
 	coverUrl: string;
 	audioQuality: number;
+	explicit: boolean;
 	artists: AlbumDataArtist[];
 }
 
@@ -127,6 +128,7 @@ export interface SearchDataSong {
 	duration: number;
 	audioQuality: number;
 	popularity: number;
+	explicit: boolean;
 	artists: SongDataArtist[];
 	album: SongDataAlbum;
 }
@@ -136,6 +138,7 @@ export interface SearchDataAlbum {
 	duration: number;
 	coverUrl: string;
 	audioQuality: number;
+	explicit: boolean;
 	popularity: number;
 	artists: AlbumDataArtist[];
 }

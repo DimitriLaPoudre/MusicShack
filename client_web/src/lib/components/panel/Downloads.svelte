@@ -15,11 +15,12 @@
 		CircleDashed,
 		CircleX,
 		Disc,
-		LoaderCircleIcon,
+		LoaderIcon,
 		RotateCcw,
 		Trash,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
+	import Explicit from "../explicit.svelte";
 
 	let list = $state<null | DownloadListResponse>(null);
 	let error = $state<null | string>(null);
@@ -50,6 +51,7 @@
 			<div class="all">
 				{#if list.some((task) => task.status === "failed" || task.status === "cancel")}
 					<button
+						class="hover-full"
 						onclick={async () => {
 							error = await retryAllDownload();
 							if (!error) {
@@ -62,6 +64,7 @@
 				{/if}
 				{#if list.some((task) => task.status === "done")}
 					<button
+						class="hover-full"
 						onclick={async () => {
 							error = await doneDownload();
 							if (!error) {
@@ -81,7 +84,7 @@
 						<div class="img">
 							<Disc />
 						</div>
-						<button class="item-data">
+						<button class="item-data hover-soft">
 							<p>Unreleased</p>
 							<p>Unknown</p>
 						</button>
@@ -97,7 +100,7 @@
 							{/if}
 						</div>
 						<button
-							class="item-data"
+							class="item-data hover-soft"
 							onclick={(e) => {
 								if (
 									e.target instanceof Element &&
@@ -109,7 +112,12 @@
 								);
 							}}
 						>
-							<p class="title">{download.data.title}</p>
+							<p class="title">
+								{download.data.title}
+								{#if download.data.explicit}
+									<Explicit />
+								{/if}
+							</p>
 							<a
 								class="artist"
 								href="/artist/{download.api}/{download.data
@@ -120,11 +128,12 @@
 					{/if}
 					<div class="item-btn">
 						{#if download.status === "done"}
-							<button>
+							<div style="padding: 1rem 1rem;">
 								<CircleCheck />
-							</button>
+							</div>
 						{:else if download.status === "pending" || download.status === "running"}
 							<button
+								class="hover-full"
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
@@ -140,11 +149,12 @@
 								{:else if download.status === "pending"}
 									<CircleDashed />
 								{:else}
-									<LoaderCircleIcon />
+									<LoaderIcon />
 								{/if}
 							</button>
 						{:else if download.status === "failed" || download.status === "cancel"}
 							<button
+								class="hover-full"
 								onmouseenter={() => (buttonHover = index)}
 								onmouseleave={() => (buttonHover = null)}
 								onclick={async () => {
@@ -163,6 +173,7 @@
 							</button>
 						{/if}
 						<button
+							class="hover-full"
 							onclick={async () => {
 								error = await deleteDownload(download.id);
 								if (!error) {
@@ -206,7 +217,7 @@
 
 			button {
 				width: 100%;
-				padding: 0.5rem 0;
+				padding: 0.75rem 0;
 			}
 		}
 		.items {
@@ -216,7 +227,7 @@
 			.item {
 				display: grid;
 				grid-template-columns: auto 1fr auto;
-				gap: 0.75rem;
+				gap: 0.5rem;
 				align-items: stretch;
 				container-type: inline-size;
 
@@ -225,7 +236,6 @@
 					height: 58px;
 					align-self: center;
 				}
-
 				.item-data {
 					align-self: center;
 					display: grid;
@@ -237,39 +247,29 @@
 					height: 100%;
 
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artist {
 						font-style: italic;
 					}
 				}
-				.item-data:hover {
-					outline: 1px solid #ffffff;
-					outline-offset: -1px;
-					background-color: inherit;
-					color: inherit;
-				}
-
 				.item-btn {
 					display: grid;
 					grid-template-columns: 1fr 1fr;
 					gap: 0.25rem;
-
-					button {
-						aspect-ratio: 1/1;
-					}
 				}
 
 				@container (max-width: 520px) {
 					.item-data {
 						grid-template-columns: 1fr;
 					}
-
 					.item-btn {
 						grid-template-columns: 1fr;
-						button {
-							aspect-ratio: auto;
-						}
 					}
 				}
 			}

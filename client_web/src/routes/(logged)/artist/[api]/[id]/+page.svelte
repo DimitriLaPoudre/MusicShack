@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Download, HeartIcon, HeartOff } from "lucide-svelte";
 	import {
@@ -11,6 +11,9 @@
 	import { download } from "$lib/functions/download";
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
 	import { quality } from "$lib/types/quality";
+	import Quality from "$lib/components/quality.svelte";
+	import Explicit from "$lib/components/explicit.svelte";
+	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -23,7 +26,7 @@
 	);
 	let followed = $state<null | number>(null);
 
-	afterNavigate(async () => {
+	onMount(async () => {
 		try {
 			const data = await apiFetch<ArtistData>(
 				`/artist/${page.params.api}/${page.params.id}`,
@@ -90,6 +93,7 @@
 		<div class="bottom">
 			<div class="bottom-data">
 				<button
+					class="hover-full"
 					onclick={async () => {
 						if (followed) {
 							await removeFollow(followed);
@@ -111,6 +115,7 @@
 					{/if}
 				</button>
 				<button
+					class="hover-full"
 					onclick={async () => {
 						error = await download({
 							api: page.params.api!,
@@ -137,7 +142,7 @@
 						{#each list as album}
 							<div class="wrap-item">
 								<button
-									class="item"
+									class="item hover-full"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -154,7 +159,12 @@
 										src={album.coverUrl}
 										alt={album.title}
 									/>
-									<p class="title">{album.title}</p>
+									<p class="title">
+										{album.title}
+										{#if album.explicit}
+											<Explicit />
+										{/if}
+									</p>
 									<nav class="artists">
 										{#each album.artists as artist}
 											<a
@@ -165,10 +175,12 @@
 											</a>
 										{/each}
 									</nav>
-									<p>{quality[album.audioQuality]}</p>
+									<Quality
+										quality={quality[album.audioQuality]}
+									/>
 								</button>
 								<button
-									class="download"
+									class="download hover-full"
 									onclick={async () =>
 										(error = await download({
 											api: page.params.api!,
@@ -263,7 +275,10 @@
 					width: 200px;
 					height: auto;
 					overflow: hidden;
-					border-bottom: none;
+					box-shadow:
+						inset 0 1px 0 var(--fg),
+						inset 1px 0 0 var(--fg),
+						inset -1px 0 0 var(--fg);
 					gap: 0.5rem;
 
 					.cover {
@@ -271,6 +286,11 @@
 						height: 160px;
 					}
 					.title {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: center;
+						gap: 0.5rem;
 						font-weight: bolder;
 					}
 					.artists {
@@ -282,7 +302,10 @@
 				}
 				.download {
 					width: 100%;
-					border-top: none;
+					box-shadow:
+						inset 0 -1px 0 var(--fg),
+						inset 1px 0 0 var(--fg),
+						inset -1px 0 0 var(--fg);
 					padding: 0.75rem;
 				}
 			}
