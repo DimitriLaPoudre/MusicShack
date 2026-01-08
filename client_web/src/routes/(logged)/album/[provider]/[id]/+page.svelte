@@ -222,7 +222,6 @@
 						display: flex;
 						flex-direction: row;
 						align-items: center;
-						justify-content: center;
 						gap: 0.5rem;
 						font-weight: bolder;
 					}

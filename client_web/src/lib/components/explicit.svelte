@@ -9,9 +9,8 @@
 
 <style>
 	div {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		display: grid;
+		place-content: center;
 		min-width: 18px;
 		width: 18px;
 		min-height: 18px;
