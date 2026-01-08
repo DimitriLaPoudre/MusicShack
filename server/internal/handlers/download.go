@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
@@ -26,20 +25,13 @@ func AddDownload(c *gin.Context) {
 		return
 	}
 
-	p, ok := plugins.Get(req.Api)
-	if !ok {
-		fmt.Println("invalid api name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
-		return
-	}
-
 	switch req.Type {
 	case "song":
-		services.DownloadManager.AddSong(userId, p, req.Id, req.Quality)
+		services.DownloadManager.AddSong(userId, req.Provider, req.Id, req.Quality)
 	case "album":
-		services.DownloadManager.AddAlbum(userId, p, req.Id, req.Quality)
+		services.DownloadManager.AddAlbum(userId, req.Provider, req.Id, req.Quality)
 	case "artist":
-		services.DownloadManager.AddArtist(userId, p, req.Id, req.Quality)
+		services.DownloadManager.AddArtist(userId, req.Provider, req.Id, req.Quality)
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return

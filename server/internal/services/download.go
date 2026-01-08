@@ -12,6 +12,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/metadata"
 )
@@ -27,7 +28,7 @@ type downloadManager struct {
 type downloadTask struct {
 	mu             sync.Mutex
 	userId         uint
-	api            models.Plugin
+	provider       string
 	songId         string
 	quality        string
 	songData       models.SongData
@@ -40,7 +41,7 @@ var DownloadManager = downloadManager{
 	tasks:       make(map[uint]map[uint]*downloadTask),
 	mIds:        sync.Mutex{},
 	ids:         make(map[uint]uint),
-	limitGlobal: make(chan struct{}, 4),
+	limitGlobal: make(chan struct{}, 3),
 }
 
 func (m *downloadManager) acquireLimitGlobal(ctx context.Context) error {
@@ -69,29 +70,29 @@ func (m *downloadManager) generateId(userId uint) uint {
 	return id
 }
 
-func (m *downloadManager) AddArtist(userId uint, api models.Plugin, artistId string, quality string) {
-	artist, err := api.Artist(context.Background(), userId, artistId)
+func (m *downloadManager) AddArtist(userId uint, provider string, artistId string, quality string) {
+	artist, err := plugins.GetArtist(context.Background(), userId, provider, artistId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddArtist: %v\n", err)
 		return
 	}
 	for _, album := range artist.Albums {
-		m.AddAlbum(userId, api, album.Id, quality)
+		m.AddAlbum(userId, provider, album.Id, quality)
 	}
 }
 
-func (m *downloadManager) AddAlbum(userId uint, api models.Plugin, albumId string, quality string) {
-	album, err := api.Album(context.Background(), userId, albumId)
+func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string, quality string) {
+	album, err := plugins.GetAlbum(context.Background(), userId, provider, albumId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddAlbum: %v\n", err)
 		return
 	}
 	for _, song := range album.Songs {
-		m.AddSong(userId, api, song.Id, quality)
+		m.AddSong(userId, provider, song.Id, quality)
 	}
 }
 
-func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string, quality string) {
+func (m *downloadManager) AddSong(userId uint, provider string, songId string, quality string) {
 	if quality == "" {
 		user, err := repository.GetUserByID(userId)
 		if err != nil {
@@ -106,7 +107,7 @@ func (m *downloadManager) AddSong(userId uint, api models.Plugin, songId string,
 	newTask := &downloadTask{
 		mu:             sync.Mutex{},
 		userId:         userId,
-		api:            api,
+		provider:       provider,
 		songId:         songId,
 		quality:        quality,
 		songData:       models.SongData{},
@@ -203,7 +204,7 @@ func (t *downloadTask) start() {
 
 func (t *downloadTask) run(ctx context.Context) {
 	go func() {
-		song, err := t.api.Song(ctx, t.userId, t.songId)
+		song, err := plugins.GetSong(ctx, t.userId, t.provider, t.songId)
 		t.mu.Lock()
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
@@ -233,7 +234,7 @@ func (t *downloadTask) run(ctx context.Context) {
 	}
 	defer DownloadManager.releaseLimitGlobal()
 
-	reader, extension, err := t.api.Download(ctx, t.userId, t.songId, t.quality)
+	reader, extension, err := plugins.Download(ctx, t.userId, t.provider, t.songId, t.quality)
 
 	if err == nil {
 		err = saveSong(ctx, t.userId, reader, extension, t.songData)
@@ -342,10 +343,10 @@ func (m *downloadManager) List(userId uint) []models.DownloadData {
 	for id, task := range m.tasks[userId] {
 		task.mu.Lock()
 		tmp := models.DownloadData{
-			Id:     id,
-			Data:   task.songData,
-			Api:    task.api.Name(),
-			Status: task.status,
+			Id:       id,
+			Data:     task.songData,
+			Provider: task.provider,
+			Status:   task.status,
 		}
 		task.mu.Unlock()
 		tasks = append(tasks, tmp)

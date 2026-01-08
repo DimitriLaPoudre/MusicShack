@@ -18,11 +18,11 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 )
 
-func fetchDownloadInfo(ctx context.Context, api string, id string, quality string) (downloadData, error) {
+func fetchDownloadInfo(ctx context.Context, url string, id string, quality string) (downloadData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	url := api + "/track/?id=" + id
+	url += "/track/?id=" + id
 	if quality != "" {
 		url += "&quality=" + quality
 	}
@@ -49,7 +49,7 @@ func fetchDownloadInfo(ctx context.Context, api string, id string, quality strin
 	return data, nil
 }
 
-func getDownloadInfo(ctx context.Context, instances []models.ApiInstance, id string, quality string) (downloadData, error) {
+func getDownloadInfo(ctx context.Context, instances []models.Instance, id string, quality string) (downloadData, error) {
 	type res struct {
 		data downloadData
 		err  error

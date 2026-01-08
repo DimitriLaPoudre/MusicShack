@@ -40,7 +40,7 @@ func fetchSong(ctx context.Context, url string, id string) (songData, error) {
 	return data, nil
 }
 
-func getSong(ctx context.Context, instances []models.ApiInstance, id string) (songData, error) {
+func getSong(ctx context.Context, instances []models.Instance, id string) (songData, error) {
 	type res struct {
 		data songData
 		err  error
@@ -69,7 +69,7 @@ func getSong(ctx context.Context, instances []models.ApiInstance, id string) (so
 	return songData{}, fmt.Errorf("getSong: %w", lastErr)
 }
 
-func getSongData(ctx context.Context, instances []models.ApiInstance, id string) (songData, downloadData, error) {
+func getSongData(ctx context.Context, instances []models.Instance, id string) (songData, downloadData, error) {
 	type res struct {
 		data any
 		err  error
@@ -122,6 +122,7 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 	}
 
 	normalizeSongData := models.SongData{
+		Provider:        p.Provider(),
 		Api:             p.Name(),
 		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
 		Title:           data.Data.Title,

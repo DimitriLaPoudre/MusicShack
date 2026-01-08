@@ -30,7 +30,10 @@
 		<div class="list">
 			{#each list as item}
 				<div class="artist">
-					<a class="data" href="/artist/{item.api}/{item.artistId}">
+					<a
+						class="data"
+						href="/artist/{item.provider}/{item.artistId}"
+					>
 						<img
 							class="picture"
 							src={item.artistPictureUrl}

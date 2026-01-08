@@ -14,19 +14,26 @@ import (
 )
 
 type release struct {
-	userId  uint
-	api     models.Plugin
-	albumId string
+	userId   uint
+	provider string
+	albumId  string
 }
 
-func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id string, lastFetchDate string) ([]release, error) {
+func getNewReleasesOfArtist(ctx context.Context, userId uint, provider string, id string, lastFetchDate string) ([]release, error) {
 	var newReleases []release
-	p, ok := plugins.Get(api)
+	plugins, ok := plugins.GetProvider(provider)
 	if !ok {
-		return newReleases, fmt.Errorf("api name invalid")
+		return newReleases, fmt.Errorf("invalid provider name")
 	}
 
-	artist, err := p.Artist(ctx, userId, id)
+	var artist models.ArtistData
+	var err error
+	for _, plugin := range plugins {
+		artist, err = plugin.Artist(ctx, userId, id)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		return newReleases, err
 	}
@@ -34,9 +41,9 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 	for _, album := range artist.Albums {
 		if album.ReleaseDate > lastFetchDate {
 			newReleases = append(newReleases, release{
-				userId:  userId,
-				api:     p,
-				albumId: album.Id,
+				userId:   userId,
+				provider: artist.Provider,
+				albumId:  album.Id,
 			})
 		}
 	}
@@ -44,9 +51,9 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 	for _, ep := range artist.Ep {
 		if ep.ReleaseDate > lastFetchDate {
 			newReleases = append(newReleases, release{
-				userId:  userId,
-				api:     p,
-				albumId: ep.Id,
+				userId:   userId,
+				provider: artist.Provider,
+				albumId:  ep.Id,
 			})
 		}
 	}
@@ -54,9 +61,9 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 	for _, single := range artist.Singles {
 		if single.ReleaseDate > lastFetchDate {
 			newReleases = append(newReleases, release{
-				userId:  userId,
-				api:     p,
-				albumId: single.Id,
+				userId:   userId,
+				provider: artist.Provider,
+				albumId:  single.Id,
 			})
 		}
 	}
@@ -67,7 +74,7 @@ func getNewReleasesOfArtist(ctx context.Context, userId uint, api string, id str
 func getNewReleases(ctx context.Context, follows []models.Follow, lastFetchDate string) ([]release, error) {
 	var newReleases []release
 	for _, follow := range follows {
-		tmpReleases, _ := getNewReleasesOfArtist(ctx, follow.UserId, follow.Api, follow.ArtistId, lastFetchDate)
+		tmpReleases, _ := getNewReleasesOfArtist(ctx, follow.UserId, follow.Provider, follow.ArtistId, lastFetchDate)
 		newReleases = append(newReleases, tmpReleases...)
 	}
 	return newReleases, nil
@@ -83,7 +90,7 @@ func fetch(ctx context.Context) error {
 	}
 
 	for _, release := range releases {
-		services.DownloadManager.AddAlbum(release.userId, release.api, release.albumId, "")
+		services.DownloadManager.AddAlbum(release.userId, release.provider, release.albumId, "")
 	}
 	return nil
 }

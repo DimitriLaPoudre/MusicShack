@@ -18,6 +18,7 @@ export type UsersResponse = User[];
 export interface InstanceItem {
 	id: number;
 	api: string;
+	provider: string;
 	url: string;
 	ping: number;
 }
@@ -25,7 +26,7 @@ export type InstancesResponse = InstanceItem[];
 
 export interface FollowItem {
 	id: number;
-	api: string;
+	provider: string;
 	artistId: string;
 	artistName: string;
 	artistPictureUrl: string;
@@ -35,13 +36,14 @@ export type FollowsResponse = FollowItem[];
 export interface DownloadData {
 	id: number;
 	data: SongData;
-	api: string;
+	provider: string;
 	status: "pending" | "running" | "done" | "failed" | "cancel";
 }
 
 export type DownloadListResponse = DownloadData[];
 
 export interface SongData {
+	provider: string;
 	api: string;
 	id: string;
 	title: string;
@@ -69,6 +71,7 @@ export interface SongDataAlbum {
 }
 
 export interface AlbumData {
+	provider: string;
 	api: string;
 	id: string;
 	title: string;
@@ -98,6 +101,7 @@ export interface AlbumDataSong {
 }
 
 export interface ArtistData {
+	provider: string;
 	api: string;
 	id: string;
 	name: string;

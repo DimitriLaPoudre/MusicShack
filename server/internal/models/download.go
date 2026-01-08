@@ -11,15 +11,15 @@ const (
 )
 
 type RequestDownload struct {
-	Api     string `json:"api"`
-	Type    string `json:"type"`
-	Id      string `json:"id"`
-	Quality string `json:"quality"`
+	Provider string `json:"provider"`
+	Type     string `json:"type"`
+	Id       string `json:"id"`
+	Quality  string `json:"quality"`
 }
 
 type DownloadData struct {
-	Id     uint     `json:"id"`
-	Data   SongData `json:"data"`
-	Api    string   `json:"api"`
-	Status Status   `json:"status"`
+	Id       uint     `json:"id"`
+	Provider string   `json:"provider"`
+	Data     SongData `json:"data"`
+	Status   Status   `json:"status"`
 }

@@ -29,7 +29,7 @@
 	onMount(async () => {
 		try {
 			const data = await apiFetch<ArtistData>(
-				`/artist/${page.params.api}/${page.params.id}`,
+				`/artist/${page.params.provider}/${page.params.id}`,
 			);
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch artist");
@@ -53,7 +53,7 @@
 			}
 			const follow = list?.find(
 				(item) =>
-					item.api === page.params.api &&
+					item.provider === page.params.provider &&
 					item.artistId === page.params.id,
 			);
 			if (follow) {
@@ -99,7 +99,7 @@
 							await removeFollow(followed);
 						} else {
 							await addFollow({
-								api: page.params.api!,
+								provider: page.params.provider!,
 								id: artist!.id,
 							});
 						}
@@ -118,7 +118,7 @@
 					class="hover-full"
 					onclick={async () => {
 						error = await download({
-							api: page.params.api!,
+							provider: page.params.provider!,
 							type: "artist",
 							id: artist!.id,
 							quality: "",
@@ -150,7 +150,7 @@
 										)
 											return;
 										goto(
-											`/album/${page.params.api}/${album.id}`,
+											`/album/${page.params.provider}/${album.id}`,
 										);
 									}}
 								>
@@ -169,7 +169,7 @@
 										{#each album.artists as artist}
 											<a
 												href="/artist/{page.params
-													.api}/{artist.id}"
+													.provider}/{artist.id}"
 											>
 												{artist.name}
 											</a>
@@ -183,7 +183,7 @@
 									class="download hover-full"
 									onclick={async () =>
 										(error = await download({
-											api: page.params.api!,
+											provider: page.params.provider!,
 											type: "album",
 											id: album!.id,
 											quality: "",

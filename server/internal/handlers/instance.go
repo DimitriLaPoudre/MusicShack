@@ -23,7 +23,7 @@ func AddInstance(c *gin.Context) {
 		return
 	}
 
-	var req models.RequestApiInstance
+	var req models.RequestInstance
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -38,7 +38,7 @@ func AddInstance(c *gin.Context) {
 		return
 	}
 
-	if err := repository.AddInstance(userId, api.Name(), req.Url); err != nil {
+	if err := repository.AddInstance(userId, api, req.Url); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -62,11 +62,11 @@ func ListInstances(c *gin.Context) {
 		return
 	}
 
-	instances := make([]models.ApiInstanceItem, len(instancesRaw))
+	instances := make([]models.InstanceItem, len(instancesRaw))
 	for index, instance := range instancesRaw {
 		var ping int64
 
-		api, ok := plugins.Get(instance.Api)
+		api, ok := plugins.GetName(instance.Api)
 		if ok {
 			start := time.Now()
 			if err := api.Status(c.Request.Context(), instance.Url); err == nil {
@@ -74,7 +74,7 @@ func ListInstances(c *gin.Context) {
 			}
 		}
 
-		instances[index] = models.ApiInstanceItem{Id: instance.ID, Api: instance.Api, Url: instance.Url, Ping: ping}
+		instances[index] = models.InstanceItem{Id: instance.ID, Api: instance.Api, Provider: instance.Provider, Url: instance.Url, Ping: ping}
 	}
 
 	c.JSON(http.StatusOK, instances)

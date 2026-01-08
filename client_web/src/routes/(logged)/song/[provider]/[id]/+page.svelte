@@ -15,7 +15,7 @@
 	onMount(async () => {
 		try {
 			const data = await apiFetch<SongData>(
-				`/song/${page.params.api}/${page.params.id}`,
+				`/song/${page.params.provider}/${page.params.id}`,
 			);
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch song");
@@ -59,13 +59,16 @@
 					</h1>
 					<a
 						class="album"
-						href="/album/{page.params.api}/{song.album.id}"
+						href="/album/{page.params.provider}/{song.album.id}"
 					>
 						{song.album.title}
 					</a>
 					<nav class="artists">
 						{#each song.artists as artist}
-							<a href="/artist/{page.params.api}/{artist.id}">
+							<a
+								href="/artist/{page.params
+									.provider}/{artist.id}"
+							>
 								{artist.name}
 							</a>
 						{/each}
@@ -85,7 +88,7 @@
 			class="download hover-full"
 			onclick={async () => {
 				error = await download({
-					api: page.params.api!,
+					provider: page.params.provider!,
 					type: "song",
 					id: song!.id,
 					quality: "",

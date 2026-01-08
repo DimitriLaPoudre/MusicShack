@@ -38,7 +38,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.ApiInstance{}, &models.Follow{}, &models.Admin{})
+	db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.Instance{}, &models.Follow{}, &models.Admin{})
 
 	admin, err := initAdmin()
 	if err != nil {

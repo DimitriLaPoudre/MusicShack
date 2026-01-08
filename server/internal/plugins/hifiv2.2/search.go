@@ -41,7 +41,7 @@ func fetchSearchSong(ctx context.Context, urlApi string, song string) (searchSon
 	return data, nil
 }
 
-func getSearchSong(ctx context.Context, instances []models.ApiInstance, song string) (searchSongData, error) {
+func getSearchSong(ctx context.Context, instances []models.Instance, song string) (searchSongData, error) {
 	type res struct {
 		data searchSongData
 		err  error
@@ -96,7 +96,7 @@ func fetchSearchAlbum(ctx context.Context, urlApi string, album string) (searchA
 	return data, nil
 }
 
-func getSearchAlbum(ctx context.Context, instances []models.ApiInstance, album string) (searchAlbumData, error) {
+func getSearchAlbum(ctx context.Context, instances []models.Instance, album string) (searchAlbumData, error) {
 	type res struct {
 		data searchAlbumData
 		err  error
@@ -151,7 +151,7 @@ func fetchSearchArtist(ctx context.Context, urlApi string, artist string) (searc
 	return data, nil
 }
 
-func getSearchArtist(ctx context.Context, instances []models.ApiInstance, artist string) (searchArtistData, error) {
+func getSearchArtist(ctx context.Context, instances []models.Instance, artist string) (searchArtistData, error) {
 	type res struct {
 		data searchArtistData
 		err  error
@@ -180,7 +180,7 @@ func getSearchArtist(ctx context.Context, instances []models.ApiInstance, artist
 	return searchArtistData{}, fmt.Errorf("getSearchArtist: %w", lastErr)
 }
 
-func getSearchData(ctx context.Context, instances []models.ApiInstance, song, album, artist string) (searchSongData, searchAlbumData, searchArtistData, error) {
+func getSearchData(ctx context.Context, instances []models.Instance, song, album, artist string) (searchSongData, searchAlbumData, searchArtistData, error) {
 	type res struct {
 		data any
 		err  error

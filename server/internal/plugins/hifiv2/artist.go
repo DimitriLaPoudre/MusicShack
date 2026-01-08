@@ -140,12 +140,13 @@ func (p *HifiV2) Artist(ctx context.Context, userId uint, id string) (models.Art
 	}
 
 	normalizeArtistData := models.ArtistData{
-		Api:     p.Name(),
-		Id:      strconv.FormatUint(uint64(data.Artist.Id), 10),
-		Name:    data.Artist.Name,
-		Albums:  make([]models.ArtistDataAlbum, 0),
-		Ep:      make([]models.ArtistDataAlbum, 0),
-		Singles: make([]models.ArtistDataAlbum, 0),
+		Provider: p.Provider(),
+		Api:      p.Name(),
+		Id:       strconv.FormatUint(uint64(data.Artist.Id), 10),
+		Name:     data.Artist.Name,
+		Albums:   make([]models.ArtistDataAlbum, 0),
+		Ep:       make([]models.ArtistDataAlbum, 0),
+		Singles:  make([]models.ArtistDataAlbum, 0),
 	}
 	{
 		if data.Artist.PictureUrl == "" {

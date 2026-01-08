@@ -36,12 +36,7 @@ func getCover(ctx context.Context, url string) (*[]byte, error) {
 }
 
 func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
-	api, ok := plugins.Get(data.Api)
-	if !ok {
-		return fmt.Errorf("FormatMetadata: plugins.Get: invalid api name")
-	}
-
-	album, err := api.Album(ctx, userId, data.Album.Id)
+	album, err := plugins.GetAlbum(ctx, userId, data.Provider, data.Album.Id)
 	if err != nil {
 		return fmt.Errorf("FormatMetadata: api.Album: %w", err)
 	}

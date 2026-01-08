@@ -93,9 +93,9 @@ func SetupRouters() *graceful.Graceful {
 			follows.DELETE("/:id", handlers.DeleteFollow)
 		}
 
-		api.GET("/song/:api/:id", middlewares.Logged(), handlers.GetSong)
-		api.GET("/album/:api/:id", middlewares.Logged(), handlers.GetAlbum)
-		api.GET("/artist/:api/:id", middlewares.Logged(), handlers.GetArtist)
+		api.GET("/song/:provider/:id", middlewares.Logged(), handlers.GetSong)
+		api.GET("/album/:provider/:id", middlewares.Logged(), handlers.GetAlbum)
+		api.GET("/artist/:provider/:id", middlewares.Logged(), handlers.GetArtist)
 		api.GET("/search", middlewares.Logged(), handlers.Search)
 	}
 

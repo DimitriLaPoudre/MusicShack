@@ -40,7 +40,7 @@ func fetchAlbum(ctx context.Context, url string, id string) (albumData, error) {
 	return data, nil
 }
 
-func getAlbum(ctx context.Context, instances []models.ApiInstance, id string) (albumData, error) {
+func getAlbum(ctx context.Context, instances []models.Instance, id string) (albumData, error) {
 	type res struct {
 		data albumData
 		err  error
@@ -81,6 +81,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 	}
 
 	normalizeAlbumData := models.AlbumData{
+		Provider:      p.Provider(),
 		Api:           p.Name(),
 		Id:            strconv.FormatUint(uint64(data.Data.Id), 10),
 		Title:         data.Data.Title,

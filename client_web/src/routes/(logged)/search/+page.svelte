@@ -12,7 +12,7 @@
 
 	let error = $state<null | string>(null);
 	let searchData = $state<null | string>(null);
-	let api = $state<string>("");
+	let provider = $state<string>("");
 	let type = $state<string>("songs");
 	let result = $state<SearchResponse | null>(null);
 
@@ -35,7 +35,7 @@
 				throw new Error("instances missing");
 			}
 			result = data;
-			api = Object.keys(data)[0];
+			provider = Object.keys(data)[0];
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
@@ -62,8 +62,8 @@
 			{#each Object.entries(result as Record<string, any>) as [key, _]}
 				<button
 					class="hover-full"
-					onclick={() => (api = key)}
-					class:active={api === key}
+					onclick={() => (provider = key)}
+					class:active={provider === key}
 				>
 					{key}</button
 				>
@@ -91,10 +91,10 @@
 	</div>
 	<div class="items">
 		{#if type === "songs"}
-			{#if result[api].songs.length === 0}
+			{#if result[provider].songs.length === 0}
 				<p>No song found</p>
 			{/if}
-			{#each result[api].songs as song}
+			{#each result[provider].songs as song}
 				<div class="wrap-item">
 					<button
 						class="item hover-full"
@@ -104,7 +104,7 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/song/${api}/${song.id}`);
+							goto(`/song/${provider}/${song.id}`);
 						}}
 					>
 						<div class="cover">
@@ -125,7 +125,7 @@
 						</p>
 						<nav class="artists">
 							{#each song.artists as artist}
-								<a href="/artist/{api}/{artist.id}">
+								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
 								</a>
 							{/each}
@@ -136,7 +136,7 @@
 						class="download hover-full"
 						onclick={async () => {
 							error = await download({
-								api: api,
+								provider: provider,
 								type: "song",
 								id: song!.id,
 								quality: "",
@@ -148,10 +148,10 @@
 				</div>
 			{/each}
 		{:else if type === "albums"}
-			{#if result[api].albums.length === 0}
+			{#if result[provider].albums.length === 0}
 				<p>No album found</p>
 			{/if}
-			{#each result[api].albums as album}
+			{#each result[provider].albums as album}
 				<div class="wrap-item">
 					<button
 						class="item hover-full"
@@ -161,7 +161,7 @@
 								e.target.closest("a")
 							)
 								return;
-							goto(`/album/${api}/${album.id}`);
+							goto(`/album/${provider}/${album.id}`);
 						}}
 					>
 						<div class="cover">
@@ -179,7 +179,7 @@
 						</p>
 						<nav class="artists">
 							{#each album.artists as artist}
-								<a href="/artist/{api}/{artist.id}">
+								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
 								</a>
 							{/each}
@@ -190,7 +190,7 @@
 						class="download hover-full"
 						onclick={async () => {
 							error = await download({
-								api: api,
+								provider: provider,
 								type: "album",
 								id: album!.id,
 								quality: "",
@@ -202,13 +202,13 @@
 				</div>
 			{/each}
 		{:else}
-			{#if result[api].artists.length === 0}
+			{#if result[provider].artists.length === 0}
 				<p>No artist found</p>
 			{/if}
-			{#each result[api].artists as artist}
+			{#each result[provider].artists as artist}
 				<button
 					class="artist hover-full"
-					onclick={() => goto(`/artist/${api}/${artist.id}`)}
+					onclick={() => goto(`/artist/${provider}/${artist.id}`)}
 				>
 					<div class="picture">
 						{#if artist.pictureUrl !== ""}

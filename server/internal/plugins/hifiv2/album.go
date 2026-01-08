@@ -80,6 +80,7 @@ func (p *HifiV2) Album(ctx context.Context, userId uint, id string) (models.Albu
 
 		firstSong := data.Data.Items[0].Item
 
+		normalizeAlbumData.Provider = p.Provider()
 		normalizeAlbumData.Api = p.Name()
 		normalizeAlbumData.Id = strconv.FormatUint(uint64(firstSong.Album.Id), 10)
 		normalizeAlbumData.Title = firstSong.Album.Title

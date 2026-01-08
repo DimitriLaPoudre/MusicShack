@@ -42,7 +42,7 @@ func fetchArtistInfo(ctx context.Context, url string, id string) (artistInfo, er
 	return data, nil
 }
 
-func getArtistInfo(ctx context.Context, instances []models.ApiInstance, id string) (artistInfo, error) {
+func getArtistInfo(ctx context.Context, instances []models.Instance, id string) (artistInfo, error) {
 	type res struct {
 		data artistInfo
 		err  error
@@ -97,7 +97,7 @@ func fetchArtistAlbums(ctx context.Context, url string, id string) (artistAlbums
 	return data, nil
 }
 
-func getArtistAlbums(ctx context.Context, instances []models.ApiInstance, id string) (artistAlbums, error) {
+func getArtistAlbums(ctx context.Context, instances []models.Instance, id string) (artistAlbums, error) {
 	type res struct {
 		data artistAlbums
 		err  error
@@ -126,7 +126,7 @@ func getArtistAlbums(ctx context.Context, instances []models.ApiInstance, id str
 	return artistAlbums{}, fmt.Errorf("getArtistInfo: %w", lastErr)
 }
 
-func getArtistData(ctx context.Context, instances []models.ApiInstance, id string) (artistInfo, artistAlbums, error) {
+func getArtistData(ctx context.Context, instances []models.Instance, id string) (artistInfo, artistAlbums, error) {
 	type res struct {
 		data any
 		err  error
@@ -179,12 +179,13 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 	}
 
 	normalizeArtistData := models.ArtistData{
-		Api:     p.Name(),
-		Id:      strconv.FormatUint(uint64(artistInfo.Artist.Id), 10),
-		Name:    artistInfo.Artist.Name,
-		Albums:  make([]models.ArtistDataAlbum, 0),
-		Ep:      make([]models.ArtistDataAlbum, 0),
-		Singles: make([]models.ArtistDataAlbum, 0),
+		Provider: p.Provider(),
+		Api:      p.Name(),
+		Id:       strconv.FormatUint(uint64(artistInfo.Artist.Id), 10),
+		Name:     artistInfo.Artist.Name,
+		Albums:   make([]models.ArtistDataAlbum, 0),
+		Ep:       make([]models.ArtistDataAlbum, 0),
+		Singles:  make([]models.ArtistDataAlbum, 0),
 	}
 
 	if artistInfo.Artist.PictureUrl == "" {

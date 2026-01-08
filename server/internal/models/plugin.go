@@ -7,6 +7,8 @@ import (
 
 type Plugin interface {
 	Name() string
+	Provider() string
+	Priority() int
 	Status(ctx context.Context, url string) error
 	Download(context.Context, uint, string, string) (io.ReadCloser, string, error)
 	Song(context.Context, uint, string) (SongData, error)
@@ -27,6 +29,7 @@ const (
 )
 
 type SongData struct {
+	Provider        string           `json:"provider"`
 	Api             string           `json:"api"`
 	Id              string           `json:"id"`
 	Title           string           `json:"title"`
@@ -58,6 +61,7 @@ type SongDataAlbum struct {
 }
 
 type AlbumData struct {
+	Provider      string            `json:"provider"`
 	Api           string            `json:"api"`
 	Id            string            `json:"id"`
 	Title         string            `json:"title"`
@@ -89,6 +93,7 @@ type AlbumDataSong struct {
 }
 
 type ArtistData struct {
+	Provider   string            `json:"provider"`
 	Api        string            `json:"api"`
 	Id         string            `json:"id"`
 	Name       string            `json:"name"`

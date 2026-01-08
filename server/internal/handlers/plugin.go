@@ -19,21 +19,16 @@ func GetSong(c *gin.Context) {
 		return
 	}
 
-	api := c.Param("api")
+	provider := c.Param("provider")
 	id := c.Param("id")
 
-	p, ok := plugins.Get(api)
-	if !ok {
-		fmt.Println("invalid api name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
-		return
-	}
-	data, err := p.Song(c.Request.Context(), userId, id)
+	data, err := plugins.GetSong(c.Request.Context(), userId, provider, id)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, data)
 }
 
@@ -45,21 +40,16 @@ func GetAlbum(c *gin.Context) {
 		return
 	}
 
-	api := c.Param("api")
+	provider := c.Param("provider")
 	id := c.Param("id")
 
-	p, ok := plugins.Get(api)
-	if !ok {
-		fmt.Println("invalid api name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
-		return
-	}
-	data, err := p.Album(c.Request.Context(), userId, id)
+	data, err := plugins.GetAlbum(c.Request.Context(), userId, provider, id)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, data)
 }
 
@@ -71,22 +61,18 @@ func GetArtist(c *gin.Context) {
 		return
 	}
 
-	api := c.Param("api")
+	provider := c.Param("provider")
 	id := c.Param("id")
 
-	p, ok := plugins.Get(api)
-	if !ok {
-		fmt.Println("invalid api name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
-		return
-	}
-	data, err := p.Artist(c.Request.Context(), userId, id)
+	data, err := plugins.GetArtist(c.Request.Context(), userId, provider, id)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+
 	c.JSON(http.StatusOK, data)
+
 }
 
 func Search(c *gin.Context) {
@@ -100,10 +86,17 @@ func Search(c *gin.Context) {
 	search := c.Query("q")
 	finding := make(map[string]models.SearchData)
 
-	for key, value := range plugins.GetRegistry() {
-		tmp, err := value.Search(c.Request.Context(), userId, search, search, search)
+	for provider, plugins := range plugins.GetAllProvider() {
+		var tmp models.SearchData
+		var err error
+		for _, plugin := range plugins {
+			tmp, err = plugin.Search(c.Request.Context(), userId, search, search, search)
+			if err == nil {
+				break
+			}
+		}
 		if err == nil {
-			finding[key] = tmp
+			finding[provider] = tmp
 		}
 	}
 	c.JSON(http.StatusOK, finding)

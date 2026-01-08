@@ -7,7 +7,7 @@ type User struct {
 	BestQuality bool        `gorm:"default:true" json:"bestQuality"`
 	Sessions    UserSession `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"sessions"`
 	Follows     Follow      `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"follows"`
-	Instances   ApiInstance `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"instances"`
+	Instances   Instance    `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"instances"`
 }
 
 type RequestUserLogin struct {

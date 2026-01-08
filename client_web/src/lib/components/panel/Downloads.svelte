@@ -108,7 +108,7 @@
 								)
 									return;
 								goto(
-									`/song/${download.api}/${download.data.id}`,
+									`/song/${download.provider}/${download.data.id}`,
 								);
 							}}
 						>
@@ -120,7 +120,7 @@
 							</p>
 							<a
 								class="artist"
-								href="/artist/{download.api}/{download.data
+								href="/artist/{download.provider}/{download.data
 									.artists[0].id}"
 								>{download.data.artists[0].name}</a
 							>

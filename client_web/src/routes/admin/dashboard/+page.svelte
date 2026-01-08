@@ -294,7 +294,7 @@
 		}
 		.logout {
 			width: 100%;
-			border-color: var(--err);
+			box-shadow: inset 0 0 0 1px var(--err);
 		}
 		.logout:hover {
 			background-color: var(--err);

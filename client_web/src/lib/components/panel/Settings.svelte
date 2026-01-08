@@ -220,7 +220,9 @@
 					<div class="item">
 						<div class="data hover-soft">
 							<p class="url">{instance.url}</p>
-							<p class="api">{instance.api}</p>
+							<p class="api">
+								{instance.provider}|{instance.api}
+							</p>
 							<p class="ping">
 								{#if instance.ping === 0}
 									failed
@@ -390,8 +392,7 @@
 	.logout {
 		width: 100%;
 		padding: 0.75rem;
-
-		outline-color: var(--err);
+		box-shadow: inset 0 0 0 1px var(--err);
 	}
 	.logout:hover {
 		background-color: var(--err);

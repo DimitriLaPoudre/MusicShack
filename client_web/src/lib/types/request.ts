@@ -23,12 +23,12 @@ export interface RequestInstance {
 }
 
 export interface RequestFollow {
-	api: string;
+	provider: string;
 	id: string;
 }
 
 export interface RequestDownload {
-	api: string;
+	provider: string;
 	type: string;
 	id: string;
 	quality: string;

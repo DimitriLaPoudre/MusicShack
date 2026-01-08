@@ -28,21 +28,27 @@ func AddFollow(c *gin.Context) {
 		return
 	}
 
-	api, ok := plugins.Get(req.Api)
+	plugins, ok := plugins.GetProvider(req.Provider)
 	if !ok {
-		fmt.Println("invalid api name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid api name"})
+		fmt.Println("invalid provider name")
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid provider name"})
 		return
 	}
 
-	artist, err := api.Artist(c.Request.Context(), userId, req.Id)
+	var artist models.ArtistData
+	for _, plugin := range plugins {
+		artist, err = plugin.Artist(c.Request.Context(), userId, req.Id)
+		if err == nil {
+			break
+		}
+	}
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := repository.AddFollow(userId, req.Api, req.Id, artist.Name, artist.PictureUrl); err != nil {
+	if err := repository.AddFollow(userId, req.Provider, req.Id, artist.Name, artist.PictureUrl); err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -74,7 +80,7 @@ func ListFollows(c *gin.Context) {
 		go func(i int, follow models.Follow) {
 			defer wg.Done()
 
-			follows[i] = models.FollowItem{Id: follow.ID, Api: follow.Api, ArtistId: follow.ArtistId, ArtistName: follow.ArtistName, ArtistPictureUrl: follow.ArtistPictureUrl}
+			follows[i] = models.FollowItem{Id: follow.ID, Provider: follow.Provider, ArtistId: follow.ArtistId, ArtistName: follow.ArtistName, ArtistPictureUrl: follow.ArtistPictureUrl}
 		}(index, value)
 	}
 

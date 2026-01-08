@@ -10,6 +10,14 @@ func (p *Hifi) Name() string {
 	return "hifiV2.2"
 }
 
+func (p *Hifi) Provider() string {
+	return "tidal"
+}
+
+func (p *Hifi) Priority() int {
+	return 1
+}
+
 func (p *Hifi) Lyrics(ctx context.Context, userId uint, id string) (string, string, error) {
 	return "", "", nil
 }
