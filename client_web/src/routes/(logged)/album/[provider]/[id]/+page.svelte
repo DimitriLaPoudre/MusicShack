@@ -8,17 +8,21 @@
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
-	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
 	let discs = $state<null | AlbumDataSong[][]>(null);
 
-	onMount(async () => {
+	const provider = $derived(page.params.provider);
+	const id = $derived(page.params.id);
+
+	async function fetchData(
+		provider: string | undefined,
+		id: string | undefined,
+	) {
+		album = null;
 		try {
-			const data = await apiFetch<AlbumData>(
-				`/album/${page.params.provider}/${page.params.id}`,
-			);
+			const data = await apiFetch<AlbumData>(`/album/${provider}/${id}`);
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch album");
 			}
@@ -32,6 +36,12 @@
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load album";
+		}
+	}
+
+	$effect(() => {
+		if (provider && id) {
+			fetchData(provider, id);
 		}
 	});
 </script>

@@ -7,16 +7,20 @@
 	import { Clock4, Download } from "lucide-svelte";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
-	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
 
-	onMount(async () => {
+	const provider = $derived(page.params.provider);
+	const id = $derived(page.params.id);
+
+	async function fetchData(
+		provider: string | undefined,
+		id: string | undefined,
+	) {
+		song = null;
 		try {
-			const data = await apiFetch<SongData>(
-				`/song/${page.params.provider}/${page.params.id}`,
-			);
+			const data = await apiFetch<SongData>(`/song/${provider}/${id}`);
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch song");
 			}
@@ -24,6 +28,12 @@
 			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
+		}
+	}
+
+	$effect(() => {
+		if (provider && id) {
+			fetchData(provider, id);
 		}
 	});
 </script>

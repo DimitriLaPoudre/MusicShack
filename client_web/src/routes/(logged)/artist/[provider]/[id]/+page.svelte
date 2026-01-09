@@ -13,7 +13,6 @@
 	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
-	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -26,10 +25,17 @@
 	);
 	let followed = $state<null | number>(null);
 
-	onMount(async () => {
+	const provider = $derived(page.params.provider);
+	const id = $derived(page.params.id);
+
+	async function fetchData(
+		provider: string | undefined,
+		id: string | undefined,
+	) {
+		artist = null;
 		try {
 			const data = await apiFetch<ArtistData>(
-				`/artist/${page.params.provider}/${page.params.id}`,
+				`/artist/${provider}/${id}`,
 			);
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch artist");
@@ -43,6 +49,12 @@
 			error = e instanceof Error ? e.message : "Failed to load artist";
 		}
 		setFollowButton();
+	}
+
+	$effect(() => {
+		if (provider && id) {
+			fetchData(provider, id);
+		}
 	});
 
 	async function setFollowButton() {

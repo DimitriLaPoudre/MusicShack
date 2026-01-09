@@ -11,14 +11,15 @@
 	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
-	let searchData = $state<null | string>(null);
 	let provider = $state<string>("");
 	let type = $state<string>("songs");
 	let result = $state<SearchResponse | null>(null);
 
-	onMount(async () => {
+	const searchData = $derived(page.url.searchParams.get("q"));
+
+	async function fetchData(searchData: string | null) {
+		result = null;
 		try {
-			searchData = page.url.searchParams.get("q");
 			if (!searchData) {
 				throw new Error("No Search");
 			}
@@ -40,7 +41,15 @@
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
 		}
+	}
+
+	$effect(() => {
+		if (searchData) {
+			fetchData(searchData);
+		}
 	});
+
+	onMount(async () => {});
 </script>
 
 <svelte:head>
