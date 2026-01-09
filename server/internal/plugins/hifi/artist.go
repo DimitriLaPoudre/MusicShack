@@ -1,4 +1,4 @@
-package hifiv2_2
+package hifi
 
 import (
 	"context"
