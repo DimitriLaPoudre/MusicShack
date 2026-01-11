@@ -115,7 +115,7 @@ func GetArtist(ctx context.Context, userId uint, provider string, id string) (mo
 	}
 }
 
-func Download(ctx context.Context, userId uint, provider string, id string, quality string) (io.ReadCloser, string, error) {
+func Download(ctx context.Context, userId uint, provider string, id string) (io.ReadCloser, string, error) {
 	plugins, ok := GetProvider(provider)
 	if !ok {
 		return nil, "", fmt.Errorf("services.Download: %w", errors.New("invalid provider name"))
@@ -125,7 +125,7 @@ func Download(ctx context.Context, userId uint, provider string, id string, qual
 	var extension string
 	var err error
 	for _, plugin := range plugins {
-		reader, extension, err = plugin.Download(ctx, userId, id, quality)
+		reader, extension, err = plugin.Download(ctx, userId, id)
 		if err != nil {
 			continue
 		} else {

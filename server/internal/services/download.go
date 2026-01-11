@@ -30,7 +30,6 @@ type downloadTask struct {
 	userId         uint
 	provider       string
 	songId         string
-	quality        string
 	songData       models.SongData
 	status         models.Status
 	downloadCancel context.CancelFunc
@@ -70,37 +69,29 @@ func (m *downloadManager) generateId(userId uint) uint {
 	return id
 }
 
-func (m *downloadManager) AddArtist(userId uint, provider string, artistId string, quality string) {
+func (m *downloadManager) AddArtist(userId uint, provider string, artistId string) {
 	artist, err := plugins.GetArtist(context.Background(), userId, provider, artistId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddArtist: %v\n", err)
 		return
 	}
 	for _, album := range artist.Albums {
-		m.AddAlbum(userId, provider, album.Id, quality)
+		m.AddAlbum(userId, provider, album.Id)
 	}
 }
 
-func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string, quality string) {
+func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string) {
 	album, err := plugins.GetAlbum(context.Background(), userId, provider, albumId)
 	if err != nil {
 		fmt.Printf("downloadManager.AddAlbum: %v\n", err)
 		return
 	}
 	for _, song := range album.Songs {
-		m.AddSong(userId, provider, song.Id, quality)
+		m.AddSong(userId, provider, song.Id)
 	}
 }
 
-func (m *downloadManager) AddSong(userId uint, provider string, songId string, quality string) {
-	if quality == "" {
-		user, err := repository.GetUserByID(userId)
-		if err != nil {
-			fmt.Printf("downloadManager.AddSong: %v\n", err)
-		} else if !user.BestQuality {
-			quality = "HIGH"
-		}
-	}
+func (m *downloadManager) AddSong(userId uint, provider string, songId string) {
 
 	taskId := m.generateId(userId)
 
@@ -109,7 +100,6 @@ func (m *downloadManager) AddSong(userId uint, provider string, songId string, q
 		userId:         userId,
 		provider:       provider,
 		songId:         songId,
-		quality:        quality,
 		songData:       models.SongData{},
 		status:         models.StatusPending,
 		downloadCancel: nil,
@@ -234,7 +224,7 @@ func (t *downloadTask) run(ctx context.Context) {
 	}
 	defer DownloadManager.releaseLimitGlobal()
 
-	reader, extension, err := plugins.Download(ctx, t.userId, t.provider, t.songId, t.quality)
+	reader, extension, err := plugins.Download(ctx, t.userId, t.provider, t.songId)
 
 	if err == nil {
 		err = saveSong(ctx, t.userId, reader, extension, t.songData)

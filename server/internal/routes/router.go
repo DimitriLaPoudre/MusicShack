@@ -44,7 +44,7 @@ func SetupRouters() *graceful.Graceful {
 			me.PUT("", handlers.MeUpdate)
 		}
 
-		api.POST("/login", middlewares.LoggedOut(), handlers.Login)
+		api.POST("/login", middlewares.RateLimiter("5-M"), middlewares.LoggedOut(), handlers.Login)
 		api.POST("/logout", middlewares.Logged(), handlers.Logout)
 
 		admin := api.Group("/admin")

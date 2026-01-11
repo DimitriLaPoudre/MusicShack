@@ -5,7 +5,6 @@
 	import { download } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
 	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
-	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
 	import { onMount } from "svelte";
@@ -139,7 +138,7 @@
 								</a>
 							{/each}
 						</nav>
-						<Quality quality={quality[song.audioQuality]} />
+						<Quality quality={song.audioQuality} />
 					</button>
 					<button
 						class="download hover-full"
@@ -148,7 +147,6 @@
 								provider: provider,
 								type: "song",
 								id: song!.id,
-								quality: "",
 							});
 						}}
 					>
@@ -193,7 +191,7 @@
 								</a>
 							{/each}
 						</nav>
-						<p>{quality[album.audioQuality]}</p>
+						<Quality quality={album.audioQuality} />
 					</button>
 					<button
 						class="download hover-full"
@@ -202,7 +200,6 @@
 								provider: provider,
 								type: "album",
 								id: album!.id,
-								quality: "",
 							});
 						}}
 					>

@@ -14,7 +14,7 @@
 	let inputUser = $state<RequestUser>({
 		username: "",
 		password: "",
-		bestQuality: true,
+		hiRes: true,
 	});
 	let username = $state<null | string>(null);
 
@@ -34,7 +34,7 @@
 				throw new Error(data.error || "Failed to fetch me");
 			}
 			username = data.username;
-			inputUser.bestQuality = data.bestQuality;
+			inputUser.hiRes = data.hiRes;
 			errorUser = null;
 		} catch (e) {
 			errorUser =
@@ -55,14 +55,14 @@
 				inputUser = {
 					username: "",
 					password: "",
-					bestQuality: data.bestQuality,
+					hiRes: data.hiRes,
 				};
 				await logout();
 			} else {
 				inputUser = {
 					username: "",
 					password: "",
-					bestQuality: data.bestQuality,
+					hiRes: data.hiRes,
 				};
 			}
 		} catch (e) {
@@ -178,21 +178,21 @@
 				<div class="qualities">
 					<button
 						class="item"
-						class:active={inputUser.bestQuality !== true}
+						class:active={inputUser.hiRes !== true}
 						onclick={() => {
-							inputUser.bestQuality = false;
+							inputUser.hiRes = false;
 						}}
 					>
-						AAC 320kbps Quality
+						LOSSLESS (recommended)
 					</button>
 					<button
 						class="item"
-						class:active={inputUser.bestQuality === true}
+						class:active={inputUser.hiRes === true}
 						onclick={() => {
-							inputUser.bestQuality = true;
+							inputUser.hiRes = true;
 						}}
 					>
-						LOSSLESS Quality
+						HIRES (advanced)
 					</button>
 				</div>
 			</div>

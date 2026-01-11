@@ -1,12 +1,32 @@
-package hifiv2
+package hifi
+
+import "github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+
+var (
+	LOW = models.Quality{
+		Name:  "LOW",
+		Color: "#ff0000",
+	}
+	HIGH = models.Quality{
+		Name:  "HIGH",
+		Color: "#ff7f00",
+	}
+	LOSSLESS = models.Quality{
+		Name:  "LOSSLESS",
+		Color: "#409940",
+	}
+	HIRES = models.Quality{
+		Name:  "HIRES",
+		Color: "#00ff00",
+	}
+)
 
 type status struct {
 	Version string `json:"version"`
-	HifiApi string `json:"HIFI-API"`
 	Repo    string `json:"Repo"`
 }
 
-type artistData struct {
+type artistInfo struct {
 	Version string
 	Artist  artistItem
 	Cover   struct {
@@ -19,21 +39,9 @@ type artistData struct {
 type artistAlbums struct {
 	Version string
 	Albums  struct {
-		SelfLink string
-		Id       string
-		Title    string
-		Rows     []struct {
-			Modules []struct {
-				PagedList struct {
-					DataApiPath         string
-					Limit               uint
-					Offset              uint
-					TotalNumbersOfItems uint
-					Items               []albumItem
-				}
-			}
-		}
+		Items []albumItem
 	}
+	Tracks []songItem
 }
 
 type artistItem struct {
@@ -57,10 +65,41 @@ type artistItem struct {
 type albumData struct {
 	Version string
 	Data    struct {
-		Limit              uint
-		Offset             uint
-		TotalNumberOfItems uint
-		Items              []struct {
+		Id                     uint
+		Title                  string
+		Duration               uint
+		StreamReady            bool
+		PayToStream            bool
+		AdSupportedStreamReady bool
+		DjReady                bool
+		StemReady              bool
+		StreamStartDate        string
+		AllowStreaming         bool
+		PremiumStreamingOnly   bool
+		NumberOfTracks         uint
+		NumberOfVideos         uint
+		NumberOfVolumes        uint
+		ReleaseDate            string
+		Copyright              string
+		Type                   string
+		Url                    string
+		CoverUrl               string `json:"cover"`
+		VibrantColor           string
+		Explicit               bool
+		Upc                    string
+		Popularity             uint
+		AudioQuality           string
+		AudioModes             []string
+		MediaMetadata          struct {
+			Tags []string
+		}
+		Upload  bool
+		Artists []struct {
+			Id   uint
+			Name string
+			Type string
+		}
+		Items []struct {
 			Item songItem
 			Type string
 		}
@@ -102,6 +141,12 @@ type albumItem struct {
 		Name string
 		Type string
 	}
+}
+
+type albumItemComparaison struct {
+	Title       string
+	ReleaseDate string
+	TrackNumber uint
 }
 
 type songData struct {

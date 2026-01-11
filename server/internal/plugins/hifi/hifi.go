@@ -1,4 +1,4 @@
-package hifiv2_2
+package hifi
 
 // https://github.com/uimaxbai/hifi-api
 
@@ -7,7 +7,7 @@ import "context"
 type Hifi struct{}
 
 func (p *Hifi) Name() string {
-	return "hifiV2.2"
+	return "hifi"
 }
 
 func (p *Hifi) Provider() string {

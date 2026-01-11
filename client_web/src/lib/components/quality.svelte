@@ -1,15 +1,12 @@
 <script lang="ts">
-	export let quality: string = "LOW";
-	const colors: Record<string, string> = {
-		LOW: "#ff4b4b",
-		HIGH: "#ff993d",
-		LOSSLESS: "#eee400",
-		HIRES: "#47ee37",
+	export let quality: { name: string; color: string } = {
+		name: "UNKNOWN",
+		color: "grey",
 	};
 </script>
 
-<span class="video-badge" style="background-color: {colors[quality] || 'gray'}">
-	{quality}
+<span class="video-badge" style="background-color: {quality.color}">
+	{quality.name}
 </span>
 
 <style>

@@ -5,7 +5,6 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { AlbumData, AlbumDataSong } from "$lib/types/response";
-	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
 
@@ -97,7 +96,7 @@
 						</p>
 					</div>
 					<p>{album.releaseDate}</p>
-					<Quality quality={quality[album.audioQuality]} />
+					<Quality quality={album.audioQuality} />
 				</div>
 			</div>
 		</div>
@@ -108,7 +107,6 @@
 					provider: page.params.provider!,
 					type: "album",
 					id: album!.id,
-					quality: "",
 				});
 			}}
 		>
@@ -174,7 +172,6 @@
 											provider: page.params.provider!,
 											type: "song",
 											id: song!.id,
-											quality: "",
 										});
 									}}
 								>

@@ -1,4 +1,4 @@
-package hifiv2_2
+package hifi
 
 import (
 	"context"
@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func fetchArtistInfo(ctx context.Context, url string, id string) (artistInfo, error) {
@@ -191,7 +191,7 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 	if artistInfo.Artist.PictureUrl == "" {
 		artistInfo.Artist.PictureUrl = artistInfo.Artist.PictureUrlFallback
 	}
-	normalizeArtistData.PictureUrl = utils.GetImageURL(artistInfo.Artist.PictureUrl, 750)
+	normalizeArtistData.PictureUrl = hifi_utils.GetImageURL(artistInfo.Artist.PictureUrl, 750)
 
 	best := make(map[albumItemComparaison]*albumItem)
 	for _, album := range artistAlbums.Albums.Items {
@@ -224,22 +224,31 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 
 	for _, rawAlbum := range list {
 		album := models.ArtistDataAlbum{
-			Id:           strconv.FormatUint(uint64(rawAlbum.Id), 10),
-			Title:        rawAlbum.Title,
-			Duration:     rawAlbum.Duration,
-			ReleaseDate:  rawAlbum.ReleaseDate,
-			CoverUrl:     utils.GetImageURL(rawAlbum.CoverUrl, 1280),
-			AudioQuality: models.QualityHigh,
-			Explicit:     rawAlbum.Explicit,
-			Artists:      make([]models.AlbumDataArtist, 0),
+			Id:          strconv.FormatUint(uint64(rawAlbum.Id), 10),
+			Title:       rawAlbum.Title,
+			Duration:    rawAlbum.Duration,
+			ReleaseDate: rawAlbum.ReleaseDate,
+			CoverUrl:    hifi_utils.GetImageURL(rawAlbum.CoverUrl, 1280),
+			Explicit:    rawAlbum.Explicit,
+			Artists:     make([]models.AlbumDataArtist, 0),
 		}
 
+		switch rawAlbum.AudioQuality {
+		case "LOW":
+			album.AudioQuality = LOW
+		case "HIGH":
+			album.AudioQuality = HIGH
+		case "LOSSLESS":
+			album.AudioQuality = LOSSLESS
+		}
 		for _, quality := range rawAlbum.MediaMetadata.Tags {
 			switch quality {
 			case "HIRES_LOSSLESS":
-				album.AudioQuality = max(album.AudioQuality, models.QualityHiresLossless)
+				album.AudioQuality = HIRES
 			case "LOSSLESS", "DOLBY_ATMOS":
-				album.AudioQuality = max(album.AudioQuality, models.QualityLossless)
+				if album.AudioQuality != HIRES {
+					album.AudioQuality = LOSSLESS
+				}
 			}
 		}
 

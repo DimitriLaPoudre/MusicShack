@@ -10,7 +10,7 @@ type Plugin interface {
 	Provider() string
 	Priority() int
 	Status(ctx context.Context, url string) error
-	Download(context.Context, uint, string, string) (io.ReadCloser, string, error)
+	Download(context.Context, uint, string) (io.ReadCloser, string, error)
 	Song(context.Context, uint, string) (SongData, error)
 	Album(context.Context, uint, string) (AlbumData, error)
 	Artist(context.Context, uint, string) (ArtistData, error)
@@ -18,15 +18,10 @@ type Plugin interface {
 	Lyrics(context.Context, uint, string) (string, string, error)
 }
 
-type Quality uint
-
-const (
-	QualityNone Quality = iota
-	QualityLow
-	QualityHigh
-	QualityLossless
-	QualityHiresLossless
-)
+type Quality struct {
+	Name  string `json:"name"`
+	Color string `json:"color"`
+}
 
 type SongData struct {
 	Provider        string           `json:"provider"`

@@ -1,4 +1,4 @@
-package hifiv2_2
+package hifi
 
 import (
 	"context"
@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func fetchSearchSong(ctx context.Context, urlApi string, song string) (searchSongData, error) {
@@ -241,26 +241,35 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 	if len(songData.Data.Songs) != 0 {
 		for _, rawSong := range songData.Data.Songs {
 			song := models.SearchDataSong{
-				Id:           strconv.FormatUint(uint64(rawSong.Id), 10),
-				Title:        rawSong.Title,
-				Duration:     rawSong.Duration,
-				AudioQuality: models.QualityHigh,
-				Popularity:   rawSong.Popularity,
-				Explicit:     rawSong.Explicit,
-				Artists:      make([]models.SongDataArtist, 0),
+				Id:         strconv.FormatUint(uint64(rawSong.Id), 10),
+				Title:      rawSong.Title,
+				Duration:   rawSong.Duration,
+				Popularity: rawSong.Popularity,
+				Explicit:   rawSong.Explicit,
+				Artists:    make([]models.SongDataArtist, 0),
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(rawSong.Album.Id), 10),
 					Title:    rawSong.Album.Title,
-					CoverUrl: utils.GetImageURL(rawSong.Album.CoverUrl, 1280),
+					CoverUrl: hifi_utils.GetImageURL(rawSong.Album.CoverUrl, 1280),
 				},
 			}
 
+			switch rawSong.AudioQuality {
+			case "LOW":
+				song.AudioQuality = LOW
+			case "HIGH":
+				song.AudioQuality = HIGH
+			case "LOSSLESS":
+				song.AudioQuality = LOSSLESS
+			}
 			for _, quality := range rawSong.MediaMetadata.Tags {
 				switch quality {
 				case "HIRES_LOSSLESS":
-					song.AudioQuality = max(song.AudioQuality, models.QualityHiresLossless)
+					song.AudioQuality = HIRES
 				case "LOSSLESS", "DOLBY_ATMOS":
-					song.AudioQuality = max(song.AudioQuality, models.QualityLossless)
+					if song.AudioQuality != HIRES {
+						song.AudioQuality = LOSSLESS
+					}
 				}
 			}
 
@@ -278,22 +287,31 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 	if len(albumData.Data.Albums.Albums) != 0 {
 		for _, rawAlbum := range albumData.Data.Albums.Albums {
 			album := models.SearchDataAlbum{
-				Id:           strconv.FormatUint(uint64(rawAlbum.Id), 10),
-				Title:        rawAlbum.Title,
-				Duration:     rawAlbum.Duration,
-				CoverUrl:     utils.GetImageURL(rawAlbum.CoverUrl, 1280),
-				AudioQuality: models.QualityHigh,
-				Explicit:     rawAlbum.Explicit,
-				Popularity:   rawAlbum.Popularity,
-				Artists:      make([]models.AlbumDataArtist, 0),
+				Id:         strconv.FormatUint(uint64(rawAlbum.Id), 10),
+				Title:      rawAlbum.Title,
+				Duration:   rawAlbum.Duration,
+				CoverUrl:   hifi_utils.GetImageURL(rawAlbum.CoverUrl, 1280),
+				Explicit:   rawAlbum.Explicit,
+				Popularity: rawAlbum.Popularity,
+				Artists:    make([]models.AlbumDataArtist, 0),
 			}
 
+			switch rawAlbum.AudioQuality {
+			case "LOW":
+				album.AudioQuality = LOW
+			case "HIGH":
+				album.AudioQuality = HIGH
+			case "LOSSLESS":
+				album.AudioQuality = LOSSLESS
+			}
 			for _, quality := range rawAlbum.MediaMetadata.Tags {
 				switch quality {
 				case "HIRES_LOSSLESS":
-					album.AudioQuality = max(album.AudioQuality, models.QualityHiresLossless)
+					album.AudioQuality = HIRES
 				case "LOSSLESS", "DOLBY_ATMOS":
-					album.AudioQuality = max(album.AudioQuality, models.QualityLossless)
+					if album.AudioQuality != HIRES {
+						album.AudioQuality = LOSSLESS
+					}
 				}
 			}
 
@@ -313,7 +331,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 			result.Artists = append(result.Artists, models.SearchDataArtist{
 				Id:         strconv.FormatUint(uint64(rawArtist.Id), 10),
 				Name:       rawArtist.Name,
-				PictureUrl: utils.GetImageURL(rawArtist.PictureUrl, 750),
+				PictureUrl: hifi_utils.GetImageURL(rawArtist.PictureUrl, 750),
 				Popularity: rawArtist.Popularity,
 			})
 		}
