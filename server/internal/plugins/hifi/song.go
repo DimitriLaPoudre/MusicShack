@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func fetchSong(ctx context.Context, url string, id string) (songData, error) {
@@ -101,10 +101,10 @@ func getSongData(ctx context.Context, instances []models.Instance, id string) (s
 	}
 
 	if songErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getArtistData: %w", songErr)
+		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", songErr)
 	}
 	if downloadErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getArtistData: %w", downloadErr)
+		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", downloadErr)
 	}
 
 	return song, downloadInfo, nil
@@ -134,7 +134,6 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		ReleaseDate:     data.Data.ReleaseDate[:10],
 		TrackNumber:     data.Data.TrackNumber,
 		VolumeNumber:    data.Data.VolumeNumber,
-		AudioQuality:    models.QualityHigh,
 		Explicit:        data.Data.Explicit,
 		Popularity:      data.Data.Popularity,
 		Isrc:            data.Data.Isrc,
@@ -142,16 +141,26 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		Album: models.SongDataAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
-			CoverUrl: utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
+			CoverUrl: hifi_utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
 		},
 	}
 
+	switch data.Data.AudioQuality {
+	case "LOW":
+		normalizeSongData.AudioQuality = LOW
+	case "HIGH":
+		normalizeSongData.AudioQuality = HIGH
+	case "LOSSLESS":
+		normalizeSongData.AudioQuality = LOSSLESS
+	}
 	for _, quality := range data.Data.MediaMetadata.Tags {
 		switch quality {
 		case "HIRES_LOSSLESS":
-			normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityHiresLossless)
+			normalizeSongData.AudioQuality = HIRES
 		case "LOSSLESS", "DOLBY_ATMOS":
-			normalizeSongData.AudioQuality = max(normalizeSongData.AudioQuality, models.QualityLossless)
+			if normalizeSongData.AudioQuality != HIRES {
+				normalizeSongData.AudioQuality = LOSSLESS
+			}
 		}
 	}
 

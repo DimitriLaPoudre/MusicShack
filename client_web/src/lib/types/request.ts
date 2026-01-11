@@ -6,7 +6,7 @@ export interface RequestUserLogin {
 export interface RequestUser {
 	username: string;
 	password: string;
-	bestQuality: boolean;
+	hiRes: boolean;
 }
 
 export interface RequestAdmin {
@@ -31,5 +31,4 @@ export interface RequestDownload {
 	provider: string;
 	type: string;
 	id: string;
-	quality: string;
 }

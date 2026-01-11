@@ -16,6 +16,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func fetchDownloadInfo(ctx context.Context, url string, id string, quality string) (downloadData, error) {
@@ -103,38 +104,6 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 	return resp.Body, nil
 }
 
-type concatReadCloser struct {
-	readers []io.ReadCloser
-	current int
-}
-
-func NewConcatReadCloser(readers ...io.ReadCloser) io.ReadCloser {
-	return &concatReadCloser{readers: readers}
-}
-
-func (c *concatReadCloser) Read(p []byte) (int, error) {
-	for c.current < len(c.readers) {
-		n, err := c.readers[c.current].Read(p)
-		if err == io.EOF {
-			c.readers[c.current].Close()
-			c.current++
-			continue
-		}
-		return n, err
-	}
-	return 0, io.EOF
-}
-
-func (c *concatReadCloser) Close() error {
-	var firstErr error
-	for i := c.current; i < len(c.readers); i++ {
-		if err := c.readers[i].Close(); err != nil && firstErr == nil {
-			firstErr = err
-		}
-	}
-	return firstErr
-}
-
 func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	var mpd manifestMPD
 	if err := xml.Unmarshal(manifest, &mpd); err != nil {
@@ -185,7 +154,7 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 		readers = append(readers, resp.Body)
 	}
 
-	fullReader := NewConcatReadCloser(readers...)
+	fullReader := utils.MultiReadCloser(readers...)
 
 	return fullReader, nil
 }
@@ -202,19 +171,23 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 		"pipe:1")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
+		reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
+		reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
+		reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 
 	go func() {
 		defer stdin.Close()
+		defer reader.Close()
 		io.Copy(stdin, reader)
 	}()
 
@@ -232,7 +205,14 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 	return newReader, nil
 }
 
-func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality string) (io.ReadCloser, string, error) {
+func (p *Hifi) Download(ctx context.Context, userId uint, id string) (io.ReadCloser, string, error) {
+	quality := "HI_RES_LOSSLESS"
+	if user, err := repository.GetUserByID(userId); err != nil {
+		return nil, "", fmt.Errorf("Hifi.Download: %w", err)
+	} else if !user.HiRes {
+		quality = "LOSSLESS"
+	}
+
 	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
 	if err != nil {
 		return nil, "", fmt.Errorf("Hifi.Download: %w", err)
@@ -245,7 +225,7 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality str
 
 	manifest, err := base64.StdEncoding.DecodeString(info.Data.Manifest)
 	if err != nil {
-		return nil, "", fmt.Errorf("Hifi.Download: manifest decoding: %w", err)
+		return nil, "", fmt.Errorf("Hifi.Download: base64.StdEncoding.DecodeString: %w", err)
 	}
 
 	var reader io.ReadCloser
@@ -257,7 +237,6 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality str
 	default:
 		err = errors.New("manifest type unknown")
 	}
-
 	if err != nil {
 		return nil, "", fmt.Errorf("Hifi.Download: %w", err)
 	}
@@ -265,6 +244,9 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality str
 	var extension string
 	switch info.Data.AudioQuality {
 	case "HI_RES_LOSSLESS":
+		if quality != "HI_RES_LOSSLESS" {
+			return nil, "", fmt.Errorf("Hifi.Download: %w", errors.New("audio quality received not conform"))
+		}
 		reader, err = remuxM4AtoFLAC(reader)
 		if err != nil {
 			return nil, "", fmt.Errorf("Hifi.Download: %w", err)
@@ -273,8 +255,6 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string, quality str
 	case "LOSSLESS":
 		extension = "flac"
 	case "HIGH":
-		extension = "m4a"
-	case "LOW":
 		extension = "m4a"
 	}
 

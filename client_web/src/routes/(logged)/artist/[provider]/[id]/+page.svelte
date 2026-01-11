@@ -10,7 +10,6 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
-	import { quality } from "$lib/types/quality";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
 
@@ -133,7 +132,6 @@
 							provider: page.params.provider!,
 							type: "artist",
 							id: artist!.id,
-							quality: "",
 						});
 					}}
 				>
@@ -187,9 +185,7 @@
 											</a>
 										{/each}
 									</nav>
-									<Quality
-										quality={quality[album.audioQuality]}
-									/>
+									<Quality quality={album.audioQuality} />
 								</button>
 								<button
 									class="download hover-full"
@@ -198,7 +194,6 @@
 											provider: page.params.provider!,
 											type: "album",
 											id: album!.id,
-											quality: "",
 										}))}
 								>
 									<Download />

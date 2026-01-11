@@ -3,7 +3,6 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { SongData } from "$lib/types/response";
-	import { quality } from "$lib/types/quality";
 	import { Clock4, Download } from "lucide-svelte";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
@@ -90,7 +89,7 @@
 							{`${Math.floor(song.duration / 60)}:${(song.duration % 60).toString().padStart(2, "0")}`}
 						</p>
 					</div>
-					<Quality quality={quality[song.audioQuality]} />
+					<Quality quality={song.audioQuality} />
 				</div>
 			</div>
 		</div>
@@ -101,7 +100,6 @@
 					provider: page.params.provider!,
 					type: "song",
 					id: song!.id,
-					quality: "",
 				});
 			}}
 		>

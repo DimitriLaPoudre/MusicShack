@@ -1,4 +1,4 @@
-package utils
+package hifi_utils
 
 import (
 	"fmt"

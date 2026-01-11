@@ -27,11 +27,11 @@ func AddDownload(c *gin.Context) {
 
 	switch req.Type {
 	case "song":
-		services.DownloadManager.AddSong(userId, req.Provider, req.Id, req.Quality)
+		services.DownloadManager.AddSong(userId, req.Provider, req.Id)
 	case "album":
-		services.DownloadManager.AddAlbum(userId, req.Provider, req.Id, req.Quality)
+		services.DownloadManager.AddAlbum(userId, req.Provider, req.Id)
 	case "artist":
-		services.DownloadManager.AddArtist(userId, req.Provider, req.Id, req.Quality)
+		services.DownloadManager.AddArtist(userId, req.Provider, req.Id)
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid type"})
 		return

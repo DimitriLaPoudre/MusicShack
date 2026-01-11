@@ -18,7 +18,7 @@
 	let inputUser = $state<RequestUser>({
 		username: "",
 		password: "",
-		bestQuality: true,
+		hiRes: true,
 	});
 	let users = $state<null | UsersResponse>(null);
 
@@ -71,7 +71,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to create user");
 			}
-			inputUser = { username: "", password: "", bestQuality: true };
+			inputUser = { username: "", password: "", hiRes: true };
 			errorUser = null;
 			await loadUsers();
 		} catch (e) {

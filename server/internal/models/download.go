@@ -14,7 +14,6 @@ type RequestDownload struct {
 	Provider string `json:"provider"`
 	Type     string `json:"type"`
 	Id       string `json:"id"`
-	Quality  string `json:"quality"`
 }
 
 type DownloadData struct {

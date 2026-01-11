@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func fetchAlbum(ctx context.Context, url string, id string) (albumData, error) {
@@ -89,19 +89,28 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		ReleaseDate:   data.Data.ReleaseDate,
 		NumberTracks:  data.Data.NumberOfTracks,
 		NumberVolumes: data.Data.NumberOfVolumes,
-		AudioQuality:  models.QualityHigh,
-		CoverUrl:      utils.GetImageURL(data.Data.CoverUrl, 1280),
+		CoverUrl:      hifi_utils.GetImageURL(data.Data.CoverUrl, 1280),
 		Explicit:      data.Data.Explicit,
 		Songs:         make([]models.AlbumDataSong, 0),
 		Artists:       make([]models.AlbumDataArtist, 0),
 	}
 
+	switch data.Data.AudioQuality {
+	case "LOW":
+		normalizeAlbumData.AudioQuality = LOW
+	case "HIGH":
+		normalizeAlbumData.AudioQuality = HIGH
+	case "LOSSLESS":
+		normalizeAlbumData.AudioQuality = LOSSLESS
+	}
 	for _, quality := range data.Data.MediaMetadata.Tags {
 		switch quality {
 		case "HIRES_LOSSLESS":
-			normalizeAlbumData.AudioQuality = max(normalizeAlbumData.AudioQuality, models.QualityHiresLossless)
+			normalizeAlbumData.AudioQuality = HIRES
 		case "LOSSLESS", "DOLBY_ATMOS":
-			normalizeAlbumData.AudioQuality = max(normalizeAlbumData.AudioQuality, models.QualityLossless)
+			if normalizeAlbumData.AudioQuality != HIRES {
+				normalizeAlbumData.AudioQuality = LOSSLESS
+			}
 		}
 	}
 
@@ -122,17 +131,26 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 			Duration:     rawSong.Duration,
 			TrackNumber:  rawSong.TrackNumber,
 			VolumeNumber: rawSong.VolumeNumber,
-			AudioQuality: models.QualityHigh,
 			Explicit:     rawSong.Explicit,
 			Artists:      make([]models.SongDataArtist, 0),
 		}
 
+		switch rawSong.AudioQuality {
+		case "LOW":
+			song.AudioQuality = LOW
+		case "HIGH":
+			song.AudioQuality = HIGH
+		case "LOSSLESS":
+			song.AudioQuality = LOSSLESS
+		}
 		for _, quality := range rawSong.MediaMetadata.Tags {
 			switch quality {
 			case "HIRES_LOSSLESS":
-				song.AudioQuality = max(song.AudioQuality, models.QualityHiresLossless)
+				song.AudioQuality = HIRES
 			case "LOSSLESS", "DOLBY_ATMOS":
-				song.AudioQuality = max(song.AudioQuality, models.QualityLossless)
+				if song.AudioQuality != HIRES {
+					song.AudioQuality = LOSSLESS
+				}
 			}
 		}
 

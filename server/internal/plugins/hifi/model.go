@@ -1,5 +1,26 @@
 package hifi
 
+import "github.com/DimitriLaPoudre/MusicShack/server/internal/models"
+
+var (
+	LOW = models.Quality{
+		Name:  "LOW",
+		Color: "#ff0000",
+	}
+	HIGH = models.Quality{
+		Name:  "HIGH",
+		Color: "#ff7f00",
+	}
+	LOSSLESS = models.Quality{
+		Name:  "LOSSLESS",
+		Color: "#409940",
+	}
+	HIRES = models.Quality{
+		Name:  "HIRES",
+		Color: "#00ff00",
+	}
+)
+
 type status struct {
 	Version string `json:"version"`
 	Repo    string `json:"Repo"`

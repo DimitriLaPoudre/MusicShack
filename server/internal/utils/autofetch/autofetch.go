@@ -90,7 +90,7 @@ func fetch(ctx context.Context) error {
 	}
 
 	for _, release := range releases {
-		services.DownloadManager.AddAlbum(release.userId, release.provider, release.albumId, "")
+		services.DownloadManager.AddAlbum(release.userId, release.provider, release.albumId)
 	}
 	return nil
 }
