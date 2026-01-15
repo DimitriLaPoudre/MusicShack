@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,7 +73,7 @@ func (m *downloadManager) generateId(userId uint) uint {
 func (m *downloadManager) AddArtist(userId uint, provider string, artistId string) {
 	artist, err := plugins.GetArtist(context.Background(), userId, provider, artistId)
 	if err != nil {
-		fmt.Printf("downloadManager.AddArtist: %v\n", err)
+		log.Println("downloadManager.AddArtist: ", err)
 		return
 	}
 	for _, album := range artist.Albums {
@@ -83,7 +84,7 @@ func (m *downloadManager) AddArtist(userId uint, provider string, artistId strin
 func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string) {
 	album, err := plugins.GetAlbum(context.Background(), userId, provider, albumId)
 	if err != nil {
-		fmt.Printf("downloadManager.AddAlbum: %v\n", err)
+		log.Println("downloadManager.AddAlbum: ", err)
 		return
 	}
 	for _, song := range album.Songs {
@@ -162,18 +163,19 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 	defer file.Close()
 
 	_, err = io.Copy(file, reader)
-	if err != nil {
-		path := file.Name()
-		file.Close()
-		os.Remove(path)
-		return fmt.Errorf("saveSong: %w", err)
+
+	if err == nil {
+		err = metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data)
 	}
 
-	if err := metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data); err != nil {
+	if err != nil {
 		path := file.Name()
-		file.Close()
-		os.Remove(path)
-		return fmt.Errorf("saveSong: %w", err)
+		_ = file.Close()
+		if removeErr := os.Remove(path); removeErr != nil {
+			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
+		} else {
+			return fmt.Errorf("saveSong: %w", err)
+		}
 	}
 	return nil
 }
@@ -193,24 +195,29 @@ func (t *downloadTask) start() {
 }
 
 func (t *downloadTask) run(ctx context.Context) {
-	go func() {
-		song, err := plugins.GetSong(ctx, t.userId, t.provider, t.songId)
-		t.mu.Lock()
-		if err != nil {
-			if errors.Is(err, context.Canceled) {
-				if t.status != models.StatusFailed {
-					t.status = models.StatusCancel
-				}
-			} else {
-				t.downloadCancel()
-				t.status = models.StatusFailed
-				fmt.Println("downloadTask.run: ", err)
-			}
+	song, err := plugins.GetSong(ctx, t.userId, t.provider, t.songId)
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			t.mu.Lock()
+			t.status = models.StatusCancel
+			t.mu.Unlock()
 		} else {
-			t.songData = song
+			t.mu.Lock()
+			t.status = models.StatusFailed
+			t.mu.Unlock()
+			log.Println("downloadTask.run: ", err)
 		}
+		return
+	} else {
+		t.mu.Lock()
+		t.songData = song
 		t.mu.Unlock()
-	}()
+	}
+
+	// check if the user already own this song
+	// if false {
+	//    return
+	// }
 
 	if err := DownloadManager.acquireLimitGlobal(ctx); err != nil {
 		t.mu.Lock()
@@ -230,21 +237,25 @@ func (t *downloadTask) run(ctx context.Context) {
 		err = saveSong(ctx, t.userId, reader, extension, t.songData)
 	}
 
-	t.mu.Lock()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
+			t.mu.Lock()
 			if t.status != models.StatusFailed {
 				t.status = models.StatusCancel
 			}
+			t.mu.Unlock()
 		} else {
 			t.downloadCancel()
+			t.mu.Lock()
 			t.status = models.StatusFailed
-			fmt.Println("downloadTask.run: ", err)
+			t.mu.Unlock()
+			log.Println("downloadTask.run: ", err)
 		}
 	} else {
+		t.mu.Lock()
 		t.status = models.StatusDone
+		t.mu.Lock()
 	}
-	t.mu.Unlock()
 }
 
 func (t *downloadTask) cancel() {
@@ -299,8 +310,8 @@ func (m *downloadManager) Cancel(userId uint, taskId uint) error {
 }
 
 func (m *downloadManager) Done(userId uint) {
-	m.mTasks.Lock()
 	var doneList []uint
+	m.mTasks.Lock()
 	for id, task := range m.tasks[userId] {
 		task.mu.Lock()
 		if task.status == models.StatusDone {

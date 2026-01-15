@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -171,35 +172,39 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 		"pipe:1")
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		reader.Close()
+		_ = reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		reader.Close()
+		_ = reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
-		reader.Close()
+		_ = reader.Close()
 		return nil, fmt.Errorf("remuxM4AtoFLAC: %w", err)
 	}
 
 	go func() {
 		defer stdin.Close()
 		defer reader.Close()
-		io.Copy(stdin, reader)
+		if _, err := io.Copy(stdin, reader); err != nil {
+			log.Println("io.Copy(stdin, reader): %w", err)
+		}
 	}()
 
 	newReader, writer := io.Pipe()
 
 	go func() {
-		io.Copy(writer, stdout)
+		if _, err := io.Copy(writer, stdout); err != nil {
+			writer.CloseWithError(err)
+		}
 
 		if err := cmd.Wait(); err != nil {
-			writer.CloseWithError(err)
+			_ = writer.CloseWithError(err)
 		} else {
-			writer.Close()
+			_ = writer.Close()
 		}
 	}()
 	return newReader, nil

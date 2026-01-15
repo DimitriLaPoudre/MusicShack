@@ -47,20 +47,17 @@ func SetupRouters() *graceful.Graceful {
 		api.POST("/login", middlewares.RateLimiter("5-M"), middlewares.LoggedOut(), handlers.Login)
 		api.POST("/logout", middlewares.Logged(), handlers.Logout)
 
+		api.GET("/song/:provider/:id", middlewares.Logged(), handlers.GetSong)
+		api.GET("/album/:provider/:id", middlewares.Logged(), handlers.GetAlbum)
+		api.GET("/artist/:provider/:id", middlewares.Logged(), handlers.GetArtist)
+		api.GET("/search", middlewares.Logged(), handlers.Search)
+
 		admin := api.Group("/admin")
 		{
 			admin.GET("", middlewares.Admin(), handlers.Admin)
 			admin.POST("/login", middlewares.RateLimiter("5-M"), middlewares.Admout(), handlers.AdminLogin)
 			admin.PUT("/password", middlewares.Admin(), handlers.AdminPassword)
 			admin.POST("/logout", middlewares.Admin(), handlers.AdminLogout)
-		}
-
-		apiInstance := api.Group("/instances")
-		{
-			apiInstance.Use(middlewares.Logged())
-			apiInstance.POST("", handlers.AddInstance)
-			apiInstance.GET("", handlers.ListInstances)
-			apiInstance.DELETE("/:id", handlers.RemoveInstance)
 		}
 
 		users := api.Group("/users")
@@ -71,6 +68,14 @@ func SetupRouters() *graceful.Graceful {
 			users.GET("/:id", handlers.GetUser)
 			users.PUT("/:id", handlers.UpdateUser)
 			users.DELETE("/:id", handlers.DeleteUser)
+		}
+
+		apiInstance := api.Group("/instances")
+		{
+			apiInstance.Use(middlewares.Logged())
+			apiInstance.POST("", handlers.AddInstance)
+			apiInstance.GET("", handlers.ListInstances)
+			apiInstance.DELETE("/:id", handlers.RemoveInstance)
 		}
 
 		downloads := api.Group("/downloads")
@@ -93,10 +98,13 @@ func SetupRouters() *graceful.Graceful {
 			follows.DELETE("/:id", handlers.DeleteFollow)
 		}
 
-		api.GET("/song/:provider/:id", middlewares.Logged(), handlers.GetSong)
-		api.GET("/album/:provider/:id", middlewares.Logged(), handlers.GetAlbum)
-		api.GET("/artist/:provider/:id", middlewares.Logged(), handlers.GetArtist)
-		api.GET("/search", middlewares.Logged(), handlers.Search)
+		library := api.Group("/library")
+		{
+			library.Use(middlewares.Logged())
+			library.GET("", handlers.ListSong)
+			library.DELETE("/:id", handlers.DeleteSong)
+			library.POST("", handlers.SyncLibrary)
+		}
 	}
 
 	return r

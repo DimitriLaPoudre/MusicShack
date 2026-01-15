@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -16,21 +16,21 @@ import (
 func AddFollow(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var req models.RequestFollow
 	if err := c.ShouldBindJSON(&req); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	plugins, ok := plugins.GetProvider(req.Provider)
 	if !ok {
-		fmt.Println("invalid provider name")
+		log.Println("invalid provider name")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid provider name"})
 		return
 	}
@@ -43,13 +43,13 @@ func AddFollow(c *gin.Context) {
 		}
 	}
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	if err := repository.AddFollow(userId, req.Provider, req.Id, artist.Name, artist.PictureUrl); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -60,14 +60,14 @@ func AddFollow(c *gin.Context) {
 func ListFollows(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	followsRaw, err := repository.ListFollowsByUserID(userId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -92,7 +92,7 @@ func ListFollows(c *gin.Context) {
 func DeleteFollow(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -100,14 +100,14 @@ func DeleteFollow(c *gin.Context) {
 	idStr := c.Param("id")
 	idUint64, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
 	}
 	id := uint(idUint64)
 
 	if err := repository.DeleteFollowByUserID(userId, id); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

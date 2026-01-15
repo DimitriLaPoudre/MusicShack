@@ -8,6 +8,7 @@ type User struct {
 	Sessions  UserSession `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"sessions"`
 	Follows   Follow      `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"follows"`
 	Instances Instance    `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"instances"`
+	Songs     Song        `gorm:"foreignKey:UserId;constraint:OnDelete:CASCADE" json:"songs"`
 }
 
 type RequestUserLogin struct {

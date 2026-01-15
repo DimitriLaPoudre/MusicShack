@@ -15,7 +15,7 @@ func (c *multiReadCloser) Read(p []byte) (int, error) {
 	for c.current < len(c.readers) {
 		n, err := c.readers[c.current].Read(p)
 		if err == io.EOF {
-			c.readers[c.current].Close()
+			_ = c.readers[c.current].Close()
 			c.current++
 			continue
 		}

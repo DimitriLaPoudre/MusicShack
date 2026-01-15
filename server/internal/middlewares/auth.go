@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -12,7 +12,7 @@ func Logged() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("user_session")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
@@ -20,7 +20,7 @@ func Logged() gin.HandlerFunc {
 
 		session, err := repository.FindUserSessionByToken(token)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return

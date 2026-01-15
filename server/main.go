@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os/signal"
 	"syscall"
 
@@ -22,5 +22,5 @@ func main() {
 		panic(err)
 	}
 	<-cron.Stop().Done()
-	fmt.Println("CTRL-C successfully handle")
+	log.Println("CTRL-C successfully handle")
 }

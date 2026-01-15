@@ -57,21 +57,19 @@
 	});
 
 	async function setFollowButton() {
-		{
-			const { list, error } = await loadFollows();
-			if (error) {
-				return;
-			}
-			const follow = list?.find(
-				(item) =>
-					item.provider === page.params.provider &&
-					item.artistId === page.params.id,
-			);
-			if (follow) {
-				followed = follow.id;
-			} else {
-				followed = null;
-			}
+		const { list, error } = await loadFollows();
+		if (error) {
+			return;
+		}
+		const follow = list?.find(
+			(item) =>
+				item.provider === page.params.provider &&
+				item.artistId === page.params.id,
+		);
+		if (follow) {
+			followed = follow.id;
+		} else {
+			followed = null;
 		}
 	}
 </script>

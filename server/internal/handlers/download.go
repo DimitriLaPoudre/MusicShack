@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -20,7 +20,7 @@ func AddDownload(c *gin.Context) {
 
 	var req models.RequestDownload
 	if err := c.ShouldBindJSON(&req); err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

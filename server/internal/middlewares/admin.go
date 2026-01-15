@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -13,7 +13,7 @@ func Admin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("admin_session")
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
@@ -21,7 +21,7 @@ func Admin() gin.HandlerFunc {
 
 		admin, err := repository.GetAdmin()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			c.Abort()
 			return
@@ -47,7 +47,7 @@ func Admout() gin.HandlerFunc {
 
 		admin, err := repository.GetAdmin()
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			c.Abort()
 			return

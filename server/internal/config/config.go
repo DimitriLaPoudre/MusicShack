@@ -19,7 +19,7 @@ func checkDownloadDirectory(dir string) error {
 	if err != nil {
 		return err
 	}
-	f.Close()
+	_ = f.Close()
 	if err := os.Remove(testFile); err != nil {
 		return err
 	}
@@ -27,7 +27,9 @@ func checkDownloadDirectory(dir string) error {
 }
 
 func init() {
-	godotenv.Load("../.env")
+	if err := godotenv.Load("../.env"); err != nil {
+		log.Println(".env not found")
+	}
 
 	https, err := strconv.ParseBool(os.Getenv("HTTPS"))
 	if err != nil {

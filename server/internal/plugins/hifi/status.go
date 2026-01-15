@@ -24,7 +24,7 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Hifi.Status: %w", errors.New("Bad Status code"))
+		return fmt.Errorf("Hifi.Status: %w", errors.New("bad Status code"))
 	}
 
 	var status status
@@ -32,8 +32,8 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 		return fmt.Errorf("Hifi.Status: json.Decode: %w", err)
 	}
 
-	if !(status.Version == "2.2" && status.Repo == "https://github.com/uimaxbai/hifi-api") {
-		return fmt.Errorf("Hifi.Status: %w", errors.New("Status content don't match"))
+	if status.Version != "2.2" || status.Repo != "https://github.com/uimaxbai/hifi-api" {
+		return fmt.Errorf("Hifi.Status: %w", errors.New("status content don't match"))
 	}
 
 	return nil
