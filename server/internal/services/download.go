@@ -254,7 +254,7 @@ func (t *downloadTask) run(ctx context.Context) {
 	} else {
 		t.mu.Lock()
 		t.status = models.StatusDone
-		t.mu.Lock()
+		t.mu.Unlock()
 	}
 }
 

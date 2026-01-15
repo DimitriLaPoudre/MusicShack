@@ -12,6 +12,7 @@
 			({ list, error } = await loadFollows());
 		}
 		firstInterval();
+
 		const interval = setInterval(async () => {
 			({ list, error } = await loadFollows());
 		}, 500);
