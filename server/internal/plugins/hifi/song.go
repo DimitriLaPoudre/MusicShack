@@ -87,7 +87,7 @@ func getSongData(ctx context.Context, instances []models.Instance, id string) (s
 
 	var song songData
 	var downloadInfo downloadData
-	var songErr, downloadErr error
+	var songErr error
 	for range 2 {
 		res := <-ch
 		switch v := res.data.(type) {
@@ -96,15 +96,11 @@ func getSongData(ctx context.Context, instances []models.Instance, id string) (s
 			songErr = res.err
 		case downloadData:
 			downloadInfo = v
-			downloadErr = res.err
 		}
 	}
 
 	if songErr != nil {
 		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", songErr)
-	}
-	if downloadErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", downloadErr)
 	}
 
 	return song, downloadInfo, nil

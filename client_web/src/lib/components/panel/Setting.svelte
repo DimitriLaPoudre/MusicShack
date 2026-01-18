@@ -9,6 +9,7 @@
 		StatusResponse,
 		UserResponse,
 	} from "$lib/types/response";
+	import { instanceList, username } from "$lib/stores/panel/setting";
 
 	let errorUser = $state<null | string>(null);
 	let inputUser = $state<RequestUser>({
@@ -16,11 +17,9 @@
 		password: "",
 		hiRes: true,
 	});
-	let username = $state<null | string>(null);
 
 	let errorInstances = $state<null | string>(null);
 	let inputInstance = $state<RequestInstance>({ url: "" });
-	let instances = $state<null | InstancesResponse>(null);
 
 	onMount(() => {
 		loadInstance();
@@ -33,7 +32,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch me");
 			}
-			username = data.username;
+			$username = data.username;
 			inputUser.hiRes = data.hiRes;
 			errorUser = null;
 		} catch (e) {
@@ -49,7 +48,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to update me");
 			}
-			username = data.username;
+			$username = data.username;
 			errorUser = null;
 			if (inputUser.username !== "" || inputUser.password !== "") {
 				inputUser = {
@@ -77,7 +76,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch instances");
 			}
-			instances = data;
+			$instanceList = data;
 			errorInstances = null;
 		} catch (e) {
 			errorInstances =
@@ -167,7 +166,7 @@
 			<div class="wrap-form">
 				<div class="inputs">
 					<input
-						placeholder={username || "username"}
+						placeholder={$username || "username"}
 						bind:value={inputUser.username}
 					/>
 					<input
@@ -212,11 +211,11 @@
 			<input placeholder="URL" bind:value={inputInstance.url} />
 			<button class="hover-full"><Plus /></button>
 		</form>
-		{#if !instances}
+		{#if !$instanceList}
 			<p class="loading">Loading...</p>
 		{:else}
 			<div class="items">
-				{#each instances as instance}
+				{#each $instanceList as instance}
 					<div class="item">
 						<div class="data hover-soft">
 							<p class="url">{instance.url}</p>

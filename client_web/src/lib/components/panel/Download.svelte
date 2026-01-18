@@ -8,7 +8,6 @@
 		retryAllDownload,
 		retryDownload,
 	} from "$lib/functions/download";
-	import type { DownloadListResponse } from "$lib/types/response";
 	import {
 		CircleAlert,
 		CircleCheck,
@@ -21,21 +20,20 @@
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import Explicit from "../explicit.svelte";
+	import { downloadList } from "$lib/stores/panel/download";
 
-	let list = $state<null | DownloadListResponse>(null);
 	let error = $state<null | string>(null);
 	let buttonHover = $state<null | number>(null);
 
 	onMount(() => {
-		async function firstInterval() {
-			({ list, error } = await loadDownloads());
+		async function intervalFunc() {
+			error = await loadDownloads();
 		}
-		firstInterval();
-
-		const interval = setInterval(async () => {
-			({ list, error } = await loadDownloads());
-		}, 500);
-		return () => clearInterval(interval);
+		intervalFunc();
+		const interval = setInterval(intervalFunc, 500);
+		return () => {
+			clearInterval(interval);
+		};
 	});
 </script>
 
@@ -44,31 +42,31 @@
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}
-	{#if !list}
+	{#if !$downloadList}
 		<p class="loading">Loading...</p>
 	{:else}
-		{#if list.some((task) => task.status === "failed" || task.status === "cancel" || task.status === "done")}
+		{#if $downloadList.some((task) => task.status === "failed" || task.status === "cancel" || task.status === "done")}
 			<div class="all">
-				{#if list.some((task) => task.status === "failed" || task.status === "cancel")}
+				{#if $downloadList.some((task) => task.status === "failed" || task.status === "cancel")}
 					<button
 						class="hover-full"
 						onclick={async () => {
 							error = await retryAllDownload();
 							if (!error) {
-								({ list, error } = await loadDownloads());
+								error = await loadDownloads();
 							}
 						}}
 					>
 						<RotateCcw />
 					</button>
 				{/if}
-				{#if list.some((task) => task.status === "done")}
+				{#if $downloadList.some((task) => task.status === "done")}
 					<button
 						class="hover-full"
 						onclick={async () => {
 							error = await doneDownload();
 							if (!error) {
-								({ list, error } = await loadDownloads());
+								error = await loadDownloads();
 							}
 						}}
 					>
@@ -78,7 +76,7 @@
 			</div>
 		{/if}
 		<div class="items">
-			{#each list as download, index}
+			{#each $downloadList as download, index}
 				<div class="item">
 					{#if download.data.id === ""}
 						<div class="img">
@@ -139,8 +137,7 @@
 								onclick={async () => {
 									error = await cancelDownload(download.id);
 									if (!error) {
-										({ list, error } =
-											await loadDownloads());
+										error = await loadDownloads();
 									}
 								}}
 							>
@@ -160,8 +157,7 @@
 								onclick={async () => {
 									error = await retryDownload(download.id);
 									if (!error) {
-										({ list, error } =
-											await loadDownloads());
+										error = await loadDownloads();
 									}
 								}}
 							>
@@ -177,7 +173,7 @@
 							onclick={async () => {
 								error = await deleteDownload(download.id);
 								if (!error) {
-									({ list, error } = await loadDownloads());
+									error = await loadDownloads();
 								}
 							}}
 						>

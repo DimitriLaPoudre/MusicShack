@@ -17,6 +17,9 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 	if err != nil {
 		return fmt.Errorf("Hifi.Status: http.NewRequestWithContext: %w", err)
 	}
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "+
+		"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
+
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return fmt.Errorf("Hifi.Status: http.DefaultClient.Do: %w", err)
@@ -24,7 +27,7 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Hifi.Status: %w", errors.New("bad Status code"))
+		return fmt.Errorf("Hifi.Status: http: %w", errors.New(resp.Status))
 	}
 
 	var status status

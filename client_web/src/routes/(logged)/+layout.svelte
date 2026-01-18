@@ -8,9 +8,9 @@
 		SettingsIcon,
 	} from "lucide-svelte";
 	import Follow from "$lib/components/panel/Follow.svelte";
-	import Downloads from "$lib/components/panel/Downloads.svelte";
+	import Download from "$lib/components/panel/Download.svelte";
 	import Search from "$lib/components/panel/Search.svelte";
-	import Settings from "$lib/components/panel/Settings.svelte";
+	import Setting from "$lib/components/panel/Setting.svelte";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
@@ -83,11 +83,11 @@
 				</div>
 			{:else if barState === "download"}
 				<div class="panel-default">
-					<Downloads />
+					<Download />
 				</div>
 			{:else if barState === "settings"}
 				<div class="panel-default">
-					<Settings />
+					<Setting />
 				</div>
 			{/if}
 		</div>

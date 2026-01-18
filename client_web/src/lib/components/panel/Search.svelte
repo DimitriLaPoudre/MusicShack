@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { onMount } from "svelte";
+	import { searchInput } from "$lib/stores/panel/search";
 
-	let input = $state<string>("");
 	let inputFocus: HTMLInputElement;
 
 	onMount(() => {
@@ -11,7 +11,8 @@
 
 	async function searchFunction(e: SubmitEvent) {
 		e.preventDefault();
-		const encodedSearchData = encodeURIComponent(input);
+		const encodedSearchData = encodeURIComponent($searchInput);
+		$searchInput = "";
 		await goto(`/search?q=${encodedSearchData}`);
 	}
 </script>
@@ -20,7 +21,7 @@
 	<form onsubmit={searchFunction}>
 		<input
 			type="text"
-			bind:value={input}
+			bind:value={$searchInput}
 			bind:this={inputFocus}
 			placeholder="Search"
 		/>

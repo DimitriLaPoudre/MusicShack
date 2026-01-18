@@ -219,6 +219,12 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 		if a.ReleaseDate < b.ReleaseDate {
 			return 1
 		}
+		if a.Id > b.Id {
+			return -1
+		}
+		if a.Id < b.Id {
+			return 1
+		}
 		return 0
 	})
 

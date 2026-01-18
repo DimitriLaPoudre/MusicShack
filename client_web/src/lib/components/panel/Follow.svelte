@@ -1,22 +1,20 @@
 <script lang="ts">
 	import { loadFollows, removeFollow } from "$lib/functions/follow";
-	import type { FollowsResponse } from "$lib/types/response";
+	import { followList } from "$lib/stores/panel/follow";
 	import { HeartIcon, HeartOff } from "lucide-svelte";
 	import { onMount } from "svelte";
 
-	let list = $state<null | FollowsResponse>(null);
 	let error = $state<null | string>(null);
 
 	onMount(() => {
-		async function firstInterval() {
-			({ list, error } = await loadFollows());
+		async function intervalFunc() {
+			error = await loadFollows();
 		}
-		firstInterval();
-
-		const interval = setInterval(async () => {
-			({ list, error } = await loadFollows());
-		}, 500);
-		return () => clearInterval(interval);
+		intervalFunc();
+		const interval = setInterval(intervalFunc, 500);
+		return () => {
+			clearInterval(interval);
+		};
 	});
 </script>
 
@@ -25,11 +23,11 @@
 	{#if error}
 		<p class="error">{error}</p>
 	{/if}
-	{#if !list}
+	{#if !$followList}
 		<p class="loading">Loading...</p>
 	{:else}
 		<div class="list">
-			{#each list as item}
+			{#each $followList as item}
 				<div class="artist">
 					<a
 						class="data"
@@ -45,7 +43,10 @@
 					<button
 						class="hover-full"
 						onclick={async () => {
-							await removeFollow(item.id);
+							error = await removeFollow(item.id);
+							if (!error) {
+								error = await loadFollows();
+							}
 						}}
 					>
 						<div class="nothover">
