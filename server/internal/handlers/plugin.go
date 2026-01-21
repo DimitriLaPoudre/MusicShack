@@ -6,6 +6,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 
 	"github.com/gin-gonic/gin"
@@ -71,6 +72,11 @@ func GetArtist(c *gin.Context) {
 		return
 	}
 
+	follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.Id)
+	if err == nil {
+		data.Followed = follow.ID
+	}
+
 	c.JSON(http.StatusOK, data)
 
 }
@@ -96,6 +102,12 @@ func Search(c *gin.Context) {
 			}
 		}
 		if err == nil {
+			for i, artist := range tmp.Artists {
+				follow, err := repository.GetFollowByProviderByArtistID(provider, artist.Id)
+				if err == nil {
+					tmp.Artists[i].Followed = follow.ID
+				}
+			}
 			finding[provider] = tmp
 		}
 	}

@@ -2,11 +2,7 @@
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
 	import { Download, HeartIcon, HeartOff } from "lucide-svelte";
-	import {
-		addFollow,
-		loadFollows,
-		removeFollow,
-	} from "$lib/functions/follow";
+	import { addFollow, removeFollow } from "$lib/functions/follow";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
@@ -22,7 +18,7 @@
 			Singles: [],
 		},
 	);
-	let followed = $state<null | number>(null);
+	let followInProgress = false;
 
 	const provider = $derived(page.params.provider);
 	const id = $derived(page.params.id);
@@ -47,7 +43,6 @@
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load artist";
 		}
-		setFollowButton();
 	}
 
 	$effect(() => {
@@ -55,23 +50,6 @@
 			fetchData(provider, id);
 		}
 	});
-
-	async function setFollowButton() {
-		const { list, error } = await loadFollows();
-		if (error) {
-			return;
-		}
-		const follow = list?.find(
-			(item) =>
-				item.provider === page.params.provider &&
-				item.artistId === page.params.id,
-		);
-		if (follow) {
-			followed = follow.id;
-		} else {
-			followed = null;
-		}
-	}
 </script>
 
 <svelte:head>
@@ -104,18 +82,45 @@
 				<button
 					class="hover-full"
 					onclick={async () => {
-						if (followed) {
-							await removeFollow(followed);
+						if (artist!.followed) {
+							if (followInProgress) {
+								artist!.followed = 0;
+								return;
+							}
+
+							const follow = artist!.followed;
+							artist!.followed = 0;
+							followInProgress = true;
+
+							const error = await removeFollow(follow);
+							if (error) {
+								artist!.followed = follow;
+							} else {
+								artist!.followed = 0;
+							}
+							followInProgress = false;
 						} else {
-							await addFollow({
+							if (followInProgress) {
+								artist!.followed = -1;
+								return;
+							}
+
+							artist!.followed = -1;
+							followInProgress = true;
+							const { follow, error } = await addFollow({
 								provider: page.params.provider!,
 								id: artist!.id,
 							});
+							if (error || !follow) {
+								artist!.followed = 0;
+							} else {
+								artist!.followed = follow.id;
+							}
+							followInProgress = false;
 						}
-						await setFollowButton();
 					}}
 				>
-					{#if followed}
+					{#if artist!.followed}
 						<p>Unfollow</p>
 						<HeartOff />
 					{:else}

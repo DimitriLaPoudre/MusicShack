@@ -48,13 +48,22 @@ func AddFollow(c *gin.Context) {
 		return
 	}
 
-	if err := repository.AddFollow(userId, req.Provider, req.Id, artist.Name, artist.PictureUrl); err != nil {
+	follow, err := repository.AddFollow(userId, req.Provider, req.Id, artist.Name, artist.PictureUrl)
+	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	data := models.FollowItem{
+		Id:               follow.ID,
+		Provider:         follow.Provider,
+		ArtistId:         follow.ArtistId,
+		ArtistName:       follow.ArtistName,
+		ArtistPictureUrl: follow.ArtistPictureUrl,
+	}
+
+	c.JSON(http.StatusOK, data)
 }
 
 func ListFollows(c *gin.Context) {

@@ -31,6 +31,8 @@ export interface FollowItem {
 	artistName: string;
 	artistPictureUrl: string;
 }
+export type Follow = FollowItem;
+
 export type FollowsResponse = FollowItem[];
 
 export interface DownloadData {
@@ -43,8 +45,8 @@ export interface DownloadData {
 export type DownloadListResponse = DownloadData[];
 
 export interface Quality {
-	name: string
-	color: string
+	name: string;
+	color: string;
 }
 
 export interface SongData {
@@ -108,6 +110,7 @@ export interface AlbumDataSong {
 export interface ArtistData {
 	provider: string;
 	api: string;
+	followed: number;
 	id: string;
 	name: string;
 	pictureUrl: string;
@@ -152,10 +155,11 @@ export interface SearchDataAlbum {
 	artists: AlbumDataArtist[];
 }
 export interface SearchDataArtist {
+	followed: number;
 	id: string;
 	name: string;
 	pictureUrl: string;
 	popularity: number;
 }
 
-export type SearchResponse = { [key: string]: SearchData }
+export type SearchResponse = { [key: string]: SearchData };

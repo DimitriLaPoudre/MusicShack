@@ -1,6 +1,10 @@
 import { followList } from "$lib/stores/panel/follow";
 import type { RequestFollow } from "$lib/types/request";
-import type { FollowsResponse, StatusResponse } from "$lib/types/response";
+import type {
+	Follow,
+	FollowsResponse,
+	StatusResponse,
+} from "$lib/types/response";
 import { apiFetch } from "./fetch";
 
 export async function loadFollows() {
@@ -18,16 +22,18 @@ export async function loadFollows() {
 }
 
 export async function addFollow(req: RequestFollow) {
+	let follow = null;
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>("/follows", "POST", req);
+		const data = await apiFetch<Follow>("/follows", "POST", req);
 		if ("error" in data) {
 			throw new Error(data.error || "Failed to add follow");
 		}
+		follow = data;
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to add new follow";
 	}
-	return error;
+	return { follow, error };
 }
 
 export async function removeFollow(id: number) {

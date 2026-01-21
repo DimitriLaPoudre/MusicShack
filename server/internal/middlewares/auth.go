@@ -18,7 +18,7 @@ func Logged() gin.HandlerFunc {
 			return
 		}
 
-		session, err := repository.FindUserSessionByToken(token)
+		session, err := repository.GetUserSessionByToken(token)
 		if err != nil {
 			log.Println(err)
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -40,7 +40,7 @@ func LoggedOut() gin.HandlerFunc {
 			return
 		}
 
-		_, err = repository.FindUserSessionByToken(token)
+		_, err = repository.GetUserSessionByToken(token)
 		repository.DeleteExpiredUserSession()
 		if err != nil {
 			c.Next()

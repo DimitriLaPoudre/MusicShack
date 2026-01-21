@@ -15,10 +15,10 @@ func CreateUserSession(userSession *models.UserSession) error {
 	return nil
 }
 
-func FindUserSessionByToken(token string) (*models.UserSession, error) {
+func GetUserSessionByToken(token string) (*models.UserSession, error) {
 	var userSession models.UserSession
 	if err := database.DB.First(&userSession, "token = ? AND expires_at > ?", token, time.Now()).Error; err != nil {
-		return nil, fmt.Errorf("repository.FindUserSession: %w", err)
+		return nil, fmt.Errorf("repository.GetUserSession: %w", err)
 	}
 	return &userSession, nil
 }

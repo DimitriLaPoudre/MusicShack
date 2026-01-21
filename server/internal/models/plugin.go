@@ -26,6 +26,7 @@ type Quality struct {
 type SongData struct {
 	Provider        string           `json:"provider"`
 	Api             string           `json:"api"`
+	Downloaded      bool             `json:"downloaded"`
 	Id              string           `json:"id"`
 	Title           string           `json:"title"`
 	Duration        uint             `json:"duration"`
@@ -58,6 +59,7 @@ type SongDataAlbum struct {
 type AlbumData struct {
 	Provider      string            `json:"provider"`
 	Api           string            `json:"api"`
+	Downloaded    bool              `json:"downloaded"`
 	Id            string            `json:"id"`
 	Title         string            `json:"title"`
 	Duration      uint              `json:"duration"`
@@ -90,6 +92,7 @@ type AlbumDataSong struct {
 type ArtistData struct {
 	Provider   string            `json:"provider"`
 	Api        string            `json:"api"`
+	Followed   uint              `json:"followed"`
 	Id         string            `json:"id"`
 	Name       string            `json:"name"`
 	PictureUrl string            `json:"pictureUrl"`
@@ -116,6 +119,7 @@ type SearchData struct {
 }
 
 type SearchDataSong struct {
+	Downloaded   bool             `json:"downloaded"`
 	Id           string           `json:"id"`
 	Title        string           `json:"title"`
 	Duration     uint             `json:"duration"`
@@ -127,6 +131,7 @@ type SearchDataSong struct {
 }
 
 type SearchDataAlbum struct {
+	Downloaded   bool              `json:"downloaded"`
 	Id           string            `json:"id"`
 	Title        string            `json:"title"`
 	Duration     uint              `json:"duration"`
@@ -138,6 +143,7 @@ type SearchDataAlbum struct {
 }
 
 type SearchDataArtist struct {
+	Followed   uint   `json:"followed"`
 	Id         string `json:"id"`
 	Name       string `json:"name"`
 	PictureUrl string `json:"pictureUrl"`
