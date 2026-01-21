@@ -98,16 +98,6 @@ func fetch(ctx context.Context, lastFetchDate string) error {
 }
 
 func AutoFetch(ctx context.Context) *cron.Cron {
-	lastFetchDate := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
-	for try := range 3 {
-		if err := fetch(ctx, lastFetchDate); err != nil {
-			log.Println("AutoFetch: try ", try, ": ", err)
-		} else {
-			log.Println("AutoFetch: success")
-			break
-		}
-	}
-
 	c := cron.New()
 	if _, err := c.AddFunc("@daily", func() {
 		lastFetchDate := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
