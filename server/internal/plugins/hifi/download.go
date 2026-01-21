@@ -9,7 +9,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
+	"net/url"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -20,27 +20,23 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func fetchDownloadInfo(ctx context.Context, url string, id string, quality string) (downloadData, error) {
+func fetchDownloadInfo(ctx context.Context, url2 string, id string, quality string) (downloadData, error) {
+	url2 += "/track/?id=" + url.QueryEscape(id)
+	if quality != "" {
+		url2 += "&quality=" + url.QueryEscape(quality)
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	url += "/track/?id=" + id
-	if quality != "" {
-		url += "&quality=" + quality
-	}
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	resp, err := utils.Fetch(ctx, url2)
 	if err != nil {
-		return downloadData{}, fmt.Errorf("fetchDownloadInfo: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return downloadData{}, fmt.Errorf("fetchDownloadInfo: http.DefaultClient.Do: %w", err)
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return downloadData{}, fmt.Errorf("fetchDownloadInfo: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return downloadData{}, fmt.Errorf("fetchDownloadInfo: http: %w", errors.New(resp.Status))
 	}
 
 	var data downloadData
@@ -89,17 +85,14 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 	if len(manifest.Urls) <= 0 {
 		return nil, fmt.Errorf("downloadTidal: manifest.Urls[0]: %w", errors.New("not found"))
 	}
-	req, err := http.NewRequestWithContext(ctx, "GET", manifest.Urls[0], nil)
+
+	resp, err := utils.Fetch(ctx, manifest.Urls[0])
 	if err != nil {
-		return nil, fmt.Errorf("downloadTidal: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("downloadTidal: http.DefaultClient.Do: %w", err)
+		return nil, fmt.Errorf("downloadTidal: %w", err)
 	}
 
-	if resp.StatusCode >= 400 {
-		return nil, fmt.Errorf("downloadTidal: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("downloadTidal: http: %w", errors.New(resp.Status))
 	}
 
 	return resp.Body, nil
@@ -137,19 +130,14 @@ func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
 	var readers []io.ReadCloser
 
 	for _, url := range segments {
-		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
+		resp, err := utils.Fetch(ctx, url)
 		if err != nil {
-			return nil, fmt.Errorf("downloadMPD: http.NewRequestWithContext: %w", err)
+			return nil, fmt.Errorf("fetchAlbum: %w", err)
 		}
 
-		resp, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, fmt.Errorf("downloadMPD: http.DefaultClient.Do: %w", err)
-		}
-
-		if resp.StatusCode >= 400 {
+		if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 			defer resp.Body.Close()
-			return nil, fmt.Errorf("downloadMPD: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+			return nil, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
 		}
 
 		readers = append(readers, resp.Body)
@@ -187,11 +175,11 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 	}
 
 	go func() {
-		defer stdin.Close()
-		defer reader.Close()
 		if _, err := io.Copy(stdin, reader); err != nil {
 			log.Println("io.Copy(stdin, reader): %w", err)
 		}
+		_ = stdin.Close()
+		_ = reader.Close()
 	}()
 
 	newReader, writer := io.Pipe()

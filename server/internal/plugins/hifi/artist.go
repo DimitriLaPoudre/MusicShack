@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -14,24 +14,21 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func fetchArtistInfo(ctx context.Context, url string, id string) (artistInfo, error) {
+func fetchArtistInfo(ctx context.Context, url2 string, id string) (artistInfo, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url+"/artist/?id="+id, nil)
+	resp, err := utils.Fetch(ctx, url2+"/artist/?id="+url.QueryEscape(id))
 	if err != nil {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: http.DefaultClient.Do: %w", err)
+		return artistInfo{}, fmt.Errorf("fetchArtistInfo: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: %w", errors.New("http error "+strconv.FormatInt(400, 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return artistInfo{}, fmt.Errorf("fetchArtistInfo: http: %w", errors.New(resp.Status))
 	}
 
 	var data artistInfo
@@ -75,18 +72,14 @@ func fetchArtistAlbums(ctx context.Context, url string, id string) (artistAlbums
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url+"/artist/?f="+id+"&skip_tracks=1", nil)
+	resp, err := utils.Fetch(ctx, url+"/artist/?f="+id+"&skip_tracks=1")
 	if err != nil {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: http.DefaultClient.Do: %w", err)
+		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: %w", errors.New("http error "+strconv.FormatInt(400, 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: http: %w", errors.New(resp.Status))
 	}
 
 	var data artistAlbums

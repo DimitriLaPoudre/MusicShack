@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"net/url"
 	"strconv"
 	"time"
@@ -13,24 +12,21 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func fetchSearchSong(ctx context.Context, urlApi string, song string) (searchSongData, error) {
+func fetchSearchSong(ctx context.Context, url2 string, song string) (searchSongData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?s="+url.QueryEscape(song), nil)
+	resp, err := utils.Fetch(ctx, url2+"/search/?s="+url.QueryEscape(song))
 	if err != nil {
-		return searchSongData{}, fmt.Errorf("fetchSearchSong: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return searchSongData{}, fmt.Errorf("fetchSearchSong: http.DefaultClient.Do: %w", err)
+		return searchSongData{}, fmt.Errorf("fetchAlbum: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return searchSongData{}, fmt.Errorf("fetchSearchSong: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return searchSongData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
 	}
 
 	var data searchSongData
@@ -70,22 +66,18 @@ func getSearchSong(ctx context.Context, instances []models.Instance, song string
 	return searchSongData{}, fmt.Errorf("getSearchSong: %w", lastErr)
 }
 
-func fetchSearchAlbum(ctx context.Context, urlApi string, album string) (searchAlbumData, error) {
+func fetchSearchAlbum(ctx context.Context, url2 string, album string) (searchAlbumData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?al="+url.QueryEscape(album), nil)
+	resp, err := utils.Fetch(ctx, url2+"/search/?al="+url.QueryEscape(album))
 	if err != nil {
-		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: http.DefaultClient.Do: %w", err)
+		return searchAlbumData{}, fmt.Errorf("fetchAlbum: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return searchAlbumData{}, fmt.Errorf("fetchSearchAlbum: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return searchAlbumData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
 	}
 
 	var data searchAlbumData
@@ -125,22 +117,18 @@ func getSearchAlbum(ctx context.Context, instances []models.Instance, album stri
 	return searchAlbumData{}, fmt.Errorf("getSearchAlbum: %w", lastErr)
 }
 
-func fetchSearchArtist(ctx context.Context, urlApi string, artist string) (searchArtistData, error) {
+func fetchSearchArtist(ctx context.Context, url2 string, artist string) (searchArtistData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, urlApi+"/search/?a="+url.QueryEscape(artist), nil)
+	resp, err := utils.Fetch(ctx, url2+"/search/?a="+url.QueryEscape(artist))
 	if err != nil {
-		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: http.DefaultClient.Do: %w", err)
+		return searchArtistData{}, fmt.Errorf("fetchAlbum: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return searchArtistData{}, fmt.Errorf("fetchSearchArtist: %w", errors.New("http error "+strconv.FormatInt(int64(resp.StatusCode), 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return searchArtistData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
 	}
 
 	var data searchArtistData

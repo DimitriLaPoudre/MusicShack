@@ -5,24 +5,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
+
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
 func (p *Hifi) Status(ctx context.Context, url string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	resp, err := utils.Fetch(ctx, url)
 	if err != nil {
-		return fmt.Errorf("Hifi.Status: http.NewRequestWithContext: %w", err)
-	}
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "+
-		"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36")
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("Hifi.Status: http.DefaultClient.Do: %w", err)
+		return fmt.Errorf("Hifi.Status: %w", err)
 	}
 	defer resp.Body.Close()
 

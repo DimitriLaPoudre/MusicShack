@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"go.senan.xyz/taglib"
 )
 
@@ -17,11 +17,7 @@ func getCover(ctx context.Context, url string) (*[]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("getCover: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := utils.Fetch(ctx, url)
 	if err != nil {
 		return nil, fmt.Errorf("getCover: %w", err)
 	}
@@ -29,17 +25,17 @@ func getCover(ctx context.Context, url string) (*[]byte, error) {
 
 	image, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("getCover: %w", err)
+		return nil, fmt.Errorf("getCover: io.ReadAll: %w", err)
 	}
-
 	return &image, nil
 }
 
 func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
 	album, err := plugins.GetAlbum(ctx, userId, data.Provider, data.Album.Id)
 	if err != nil {
-		return fmt.Errorf("FormatMetadata: api.Album: %w", err)
+		return fmt.Errorf("FormatMetadata: %w", err)
 	}
+
 	var albumArtists []string
 	for _, artist := range album.Artists {
 		albumArtists = append(albumArtists, artist.Name)
@@ -81,7 +77,7 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 
 	image, err := getCover(ctx, data.Album.CoverUrl)
 	if err != nil {
-		return fmt.Errorf("FormatMetadata: getCover: %w", err)
+		return fmt.Errorf("FormatMetadata: %w", err)
 	}
 
 	if err := taglib.WriteImage(path, *image); err != nil {

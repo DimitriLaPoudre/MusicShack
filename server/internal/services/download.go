@@ -128,17 +128,17 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 
 	root, err := os.OpenRoot(config.DOWNLOAD_FOLDER)
 	if err != nil {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: os.OpenRoot: 1: %w", err)
 	}
 	defer root.Close()
 
 	if err := root.Mkdir(user.Username, 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: root.Mkdir: 1: %w", err)
 	}
 
 	root, err = os.OpenRoot(filepath.Join(config.DOWNLOAD_FOLDER, user.Username))
 	if err != nil {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: os.OpenRoot: 2: %w", err)
 	}
 	defer root.Close()
 
@@ -149,34 +149,39 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 	filename := filepath.Join(artistName, albumTitle, fmt.Sprintf("%d - %s.%s", data.TrackNumber, songTitle, extension))
 
 	if err := root.Mkdir(data.Artists[0].Name, 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: root.Mkdir: 2: %w", err)
 	}
 
 	if err := root.Mkdir(filepath.Join(data.Artists[0].Name, data.Album.Title), 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: root.Mkdir: 3: %w", err)
 	}
 
 	file, err := root.Create(filename)
 	if err != nil {
-		return fmt.Errorf("saveSong: %w", err)
+		return fmt.Errorf("saveSong: root.Create: %w", err)
 	}
 	defer file.Close()
 
-	_, err = io.Copy(file, reader)
-
-	if err == nil {
-		err = metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data)
+	if _, err := io.Copy(file, reader); err != nil {
+		filepath := file.Name()
+		_ = file.Close()
+		if removeErr := os.Remove(filepath); removeErr != nil {
+			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
+		} else {
+			return fmt.Errorf("saveSong: io.Copy: %w", err)
+		}
 	}
 
-	if err != nil {
-		path := file.Name()
+	if err := metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data); err != nil {
+		filepath := file.Name()
 		_ = file.Close()
-		if removeErr := os.Remove(path); removeErr != nil {
+		if removeErr := os.Remove(filepath); removeErr != nil {
 			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: %w", err)
 		}
 	}
+
 	return nil
 }
 
@@ -205,8 +210,8 @@ func (t *downloadTask) run(ctx context.Context) {
 			t.mu.Lock()
 			t.status = models.StatusFailed
 			t.mu.Unlock()
-			log.Println("downloadTask.run: ", err)
 		}
+		log.Println("downloadTask.run: ", err)
 		return
 	} else {
 		t.mu.Lock()
@@ -249,8 +254,8 @@ func (t *downloadTask) run(ctx context.Context) {
 			t.mu.Lock()
 			t.status = models.StatusFailed
 			t.mu.Unlock()
-			log.Println("downloadTask.run: ", err)
 		}
+		log.Println("downloadTask.run: ", err)
 	} else {
 		t.mu.Lock()
 		t.status = models.StatusDone

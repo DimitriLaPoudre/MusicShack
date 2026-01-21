@@ -5,31 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 )
 
-func fetchSong(ctx context.Context, url string, id string) (songData, error) {
+func fetchSong(ctx context.Context, url2 string, id string) (songData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url+"/info/?id="+id, nil)
+	resp, err := utils.Fetch(ctx, url2+"/info/?id="+url.QueryEscape(id))
 	if err != nil {
-		return songData{}, fmt.Errorf("fetchSong: http.NewRequestWithContext: %w", err)
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return songData{}, fmt.Errorf("fetchSong: http.DefaultClient.Do: %w", err)
+		return songData{}, fmt.Errorf("fetchAlbum: %w", err)
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 400 {
-		return songData{}, fmt.Errorf("fetchSong: %w", errors.New("http error "+strconv.FormatInt(400, 10)))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return songData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
 	}
 
 	var data songData
