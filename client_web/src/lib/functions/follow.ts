@@ -10,7 +10,7 @@ export async function loadFollows() {
 		if ("error" in data) {
 			throw new Error(data.error || "Failed to fetch follows");
 		}
-		followList.set(data);
+		followList.set(data.sort((a, b) => Number(b.id) - Number(a.id)));
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to reload follows list";
 	}
