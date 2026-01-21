@@ -80,8 +80,7 @@ func getNewReleases(ctx context.Context, follows []models.Follow, lastFetchDate 
 	return newReleases, nil
 }
 
-func fetch(ctx context.Context) error {
-	lastFetchDate := time.Now().Add(-7 * 24 * time.Hour).Format("2006-01-02")
+func fetch(ctx context.Context, lastFetchDate string) error {
 	follows, err := repository.ListFollows()
 	if err != nil {
 		return fmt.Errorf("fetch: %w", err)
@@ -99,11 +98,21 @@ func fetch(ctx context.Context) error {
 }
 
 func AutoFetch(ctx context.Context) *cron.Cron {
-	c := cron.New()
+	lastFetchDate := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
+	for try := range 3 {
+		if err := fetch(ctx, lastFetchDate); err != nil {
+			log.Println("AutoFetch: try ", try, ": ", err)
+		} else {
+			log.Println("AutoFetch: success")
+			break
+		}
+	}
 
-	if _, err := c.AddFunc("0 1 * * 5", func() {
+	c := cron.New()
+	if _, err := c.AddFunc("@daily", func() {
+		lastFetchDate := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
 		for try := range 3 {
-			if err := fetch(ctx); err != nil {
+			if err := fetch(ctx, lastFetchDate); err != nil {
 				log.Println("AutoFetch: try ", try, ": ", err)
 			} else {
 				log.Println("AutoFetch: success")
