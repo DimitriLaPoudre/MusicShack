@@ -201,6 +201,26 @@ func (p *Hifi) Artist(ctx context.Context, userId uint, id string) (models.Artis
 		}
 	}
 
+	// extension := make(map[albumItemComparaisonExtension][]*albumItem)
+	// for _, album := range best {
+	// 	newExtension := []*albumItem{}
+	// 	bestExtension, ok := extension[albumItemComparaisonExtension{
+	// 		Title:       strings.ToLower(album.Title),
+	// 		ReleaseDate: album.ReleaseDate,
+	// 	}]
+	// 	if !ok {
+	// 		extension[albumItemComparaisonExtension{
+	// 			Title:       strings.ToLower(album.Title),
+	// 			ReleaseDate: album.ReleaseDate,
+	// 		}] = append(newExtension, album)
+	// 		continue
+	// 	}
+	//
+	// 	for i, tmp := range bestExtension {
+	//
+	// 	}
+	// }
+
 	list := []*albumItem{}
 	for _, album := range best {
 		list = append(list, album)

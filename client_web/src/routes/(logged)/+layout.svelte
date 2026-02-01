@@ -21,15 +21,15 @@
 </script>
 
 <header>
-	<button
+	<a
+		href="/dashboard"
 		class="logo"
 		onclick={() => {
 			barState = null;
-			goto("/dashboard");
 		}}
 	>
 		MusicShack
-	</button>
+	</a>
 	<div class="bar">
 		<button
 			class="hover-full"
@@ -113,6 +113,7 @@
 
 		.logo {
 			text-transform: uppercase;
+			text-decoration: none;
 			font-size: 3rem;
 			padding: 10px;
 		}

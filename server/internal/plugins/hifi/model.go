@@ -149,6 +149,11 @@ type albumItemComparaison struct {
 	TrackNumber uint
 }
 
+// type albumItemComparaisonExtension struct {
+// 	Title       string
+// 	ReleaseDate string
+// }
+
 type songData struct {
 	Version string
 	Data    songItem
