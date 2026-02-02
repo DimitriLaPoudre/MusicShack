@@ -126,7 +126,7 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		return fmt.Errorf("saveSong: %w", err)
 	}
 
-	root, err := os.OpenRoot(config.DOWNLOAD_FOLDER)
+	root, err := os.OpenRoot(config.LIBRARY_PATH)
 	if err != nil {
 		return fmt.Errorf("saveSong: os.OpenRoot: 1: %w", err)
 	}
@@ -136,7 +136,7 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		return fmt.Errorf("saveSong: root.Mkdir: 1: %w", err)
 	}
 
-	root, err = os.OpenRoot(filepath.Join(config.DOWNLOAD_FOLDER, user.Username))
+	root, err = os.OpenRoot(filepath.Join(config.LIBRARY_PATH, user.Username))
 	if err != nil {
 		return fmt.Errorf("saveSong: os.OpenRoot: 2: %w", err)
 	}

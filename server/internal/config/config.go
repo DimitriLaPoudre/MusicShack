@@ -11,7 +11,7 @@ import (
 
 var PORT string
 var HTTPS bool
-var DOWNLOAD_FOLDER string
+var LIBRARY_PATH string
 
 func checkDownloadDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")
@@ -31,12 +31,18 @@ func init() {
 		log.Println(".env not found")
 	}
 
-	https, err := strconv.ParseBool(os.Getenv("HTTPS"))
-	if err != nil {
-		log.Println("HTTPS is invalid: ", err.Error())
-		https = false
+	https := os.Getenv("HTTPS")
+	if https == "" {
+		log.Println("HTTPS is missing - defaulting to false")
+		HTTPS = false
+	} else {
+		if value, err := strconv.ParseBool(https); err != nil {
+			log.Println("HTTPS is invalid: ", err.Error(), " - defaulting to false")
+			HTTPS = false
+		} else {
+			HTTPS = value
+		}
 	}
-	HTTPS = https
 
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -45,20 +51,19 @@ func init() {
 	}
 	PORT = port
 
-	folder := os.Getenv("DOWNLOAD")
+	folder := os.Getenv("LIBRARY_PATH")
 	if folder == "" {
-		log.Fatal("DOWNLOAD is missing")
+		log.Fatal("LIBRARY_PATH is missing")
 	}
 	info, err := os.Stat(folder)
 	if err != nil {
-		log.Fatal("DOWNLOAD: ", err)
+		log.Fatal("LIBRARY_PATH: ", err)
 	}
 	if !info.IsDir() {
-		log.Fatal("DOWNLOAD is not a directory")
+		log.Fatal("LIBRARY_PATH is not a directory")
 	}
 	if err := checkDownloadDirectory(folder); err != nil {
-		log.Fatal("DOWNLOAD can't be written in: ", err)
+		log.Fatal("LIBRARY_PATH can't be written in: ", err)
 	}
-
-	DOWNLOAD_FOLDER = folder
+	LIBRARY_PATH = folder
 }

@@ -11,11 +11,11 @@ services:
     ports:
       - "${PORT}:8080"
     volumes:
-      - ${DOWNLOAD}:/downloads
+      - ${LIBRARY_PATH}:/downloads
     environment:
       HTTPS: ${HTTPS}
       PORT: 8080
-      DOWNLOAD: /downloads
+      LIBRARY_PATH: /downloads
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}

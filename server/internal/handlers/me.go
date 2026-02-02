@@ -90,7 +90,7 @@ func MeUpdate(c *gin.Context) {
 	}
 
 	if updates.Username != "" {
-		err := os.Rename(filepath.Join(config.DOWNLOAD_FOLDER, oldUser.Username), filepath.Join(config.DOWNLOAD_FOLDER, updates.Username))
+		err := os.Rename(filepath.Join(config.LIBRARY_PATH, oldUser.Username), filepath.Join(config.LIBRARY_PATH, updates.Username))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return

@@ -1,41 +1,48 @@
-# MusicShack
+<h1 align="center">
 
-MusicShack is a self-hosted music management platform that lets you browse and download music on your own server. It pairs a modern Svelte frontend with a lightweight Go backend and supports extensible plugins for additional music sources.
+**MusicShack**
+</h1>
+
+<div align="center">
+
+**Self-Host Tool for Music Library Import and Management**
+
+[![Go](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
+[![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)](https://www.typescriptlang.org/)
+[![Svelte](https://img.shields.io/badge/Framework-Svelte-green.svg)](https://svelte.dev/)
+[![Docker](https://img.shields.io/badge/Container-Docker-blue.svg)](https://www.docker.com/)
+
+
+</div>
 
 ---
 
-## Purpose
+## Overview
 
-Provides a private, easy-to-run solution to add new content to your personal music library. MusicShack focuses on privacy, extensibility (plugins) and a simple deployment flow via Docker.
+MusicShack is a self-hosted web app to import, organize, and manage a music library. It centralizes browsing, downloading, and metadata handling through pluggable sources, with automated artist tracking and scheduled updates. The server stores downloads locally, while the web UI provides search, playback, and admin features for multiple users.  
+
+---
+
+> [!IMPORTANT]
+>
+> This is my first **usefull** solo project with completely new techno to me.
+> Feel free to correct me or ask for **any** features you think are relevant.
+>
+> Song tagging are based on the Navidrome standard (I don't know about other music servers).
+>
+> The next big step will be to add a new private source to fetch data from projects like DAB Music Player or other Subsonic servers.
 
 ---
 
 ## Key features
 
-- Browse and search music catalogs through plugins (example: [hifi-api](https://github.com/uimaxbai/hifi-api))
-- Download tracks and albums directly to the server with unified formatting across all plugin sources
-- Follow artists — every Friday at 1AM, MusicShack will download any new songs released by artists you follow
+- Browse and search music catalogs through plugins
+- Download tracks and albums directly from all plugin sources
+- Follow artists — everyday at 1AM, MusicShack will download any new songs released by artists you follow
 - User authentication and simple user management
-- Plugin architecture to add new data sources in the future, like Qobuz-DL or even your friends' servers
 - Deployable with Docker / Docker Compose
-
----
-
-## Plugins
-
-- "hifiV2" based on [hifi-api](https://github.com/uimaxbai/hifi-api) find public instances at [hifi-instances](https://github.com/EduardPrigoana/hifi-instances)
-
----
-
-## Important Info
-
-This project is my first "big" solo project.
-
-Feel free to ask for any features you think are relevant.
-
-Song tags are based on the Navidrome standard (I don't know about other music servers).
-
-The next big step will be to add a new private source to fetch data from projects like DAB Music Player or other Navidrome servers.
+- Add source Url for plugins 
+- Plugin architecture to add new data sources in the future, like [DAB](https://dab.yeet.su/) or even your friends' servers
 
 ---
 
@@ -53,30 +60,32 @@ MusicShack provides two example files for quick deployment:
    cp example.env .env
    ```
 2. Edit the `.env` file to match your environment:
-   - Set the `HTTPS` (e.g. true if you use https with your domain)
-   - Set the `PORT` (e.g. 8080)
-   - Set the `DOWNLOAD` (e.g. ./download)
+   - `HTTPS` = *boolean* (**false** by default) set at true if your domain use https
+   - `PORT` = *number* (**8080** by default)
+   - `LIBRARY_PATH` = *string* (mandatory) path to the library
+   - `ADMIN_PASSWORD` = *string* (mandatory)
    - Adjust Postgres credentials for better security
-3. Create the `downloads` folder at the project root (if it doesn't exist):
+3. Create the `LIBRARY_PATH` folder at the project root (if it doesn't exist):
    ```bash
    mkdir ./download
    ```
-4. Start the stack:
+4. Launch MusicShack:
    ```bash
    docker compose up -d
    ```
 5. Access the admin interface:
    - Go to `http://URL:PORT/admin`
-   - The default admin password is: `changemenow`
-   - Change it immediately after your first login!
+   - Use your password set in `ADMIN_PASSWORD`
 6. Create a user via the admin interface
 7. Access the main interface:
    - Go to `http://URL:PORT/`
    - Log in with the user you created
+   - Add sources in Settings -> Instances
+   - Follow your favorites artists Search -> Artist section -> Artist page -> Follow
 
-> ⚠️ Never commit your `.env` file with plain secrets.
-
-> Downloaded files will be stored in the `DOWNLOAD` folder.
+> [!NOTE]
+>
+> Downloaded files will be stored in the `LIBRARY_PATH` folder.
 
 Enjoy 🎶
 
@@ -85,9 +94,22 @@ Enjoy 🎶
 ## Contributing
 
 - Open an issue to discuss features or bugs
+- Feel free to add a plugin for new provider and open a PR
 
 ---
 
 ## License
 
 MIT — see the `LICENSE` file.
+
+> [!IMPORTANT]
+>
+> **Disclaimer**
+>
+> This project is intended for educational and personal use only. The developers do not encourage or endorse piracy.
+>
+> - Users are solely responsible for complying with copyright laws in their jurisdiction.
+> - All music rights remain with their respective copyright holders.
+> - This tool serves as a interface for personal, non-commercial use.
+>
+> MusicShack assumes no responsibility for any misuse or legal violations.
