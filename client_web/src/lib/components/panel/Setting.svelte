@@ -9,13 +9,13 @@
 		StatusResponse,
 		UserResponse,
 	} from "$lib/types/response";
-	import { instanceList, username } from "$lib/stores/panel/setting";
+	import { instanceList, userData } from "$lib/stores/panel/setting";
 
 	let errorUser = $state<null | string>(null);
 	let inputUser = $state<RequestUser>({
 		username: "",
 		password: "",
-		hiRes: true,
+		hiRes: $userData?.hiRes || false,
 	});
 
 	let errorInstances = $state<null | string>(null);
@@ -32,7 +32,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch me");
 			}
-			$username = data.username;
+			$userData = data;
 			inputUser.hiRes = data.hiRes;
 			errorUser = null;
 		} catch (e) {
@@ -48,7 +48,7 @@
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to update me");
 			}
-			$username = data.username;
+			$userData = data;
 			errorUser = null;
 			if (inputUser.username !== "" || inputUser.password !== "") {
 				inputUser = {
@@ -166,7 +166,7 @@
 			<div class="wrap-form">
 				<div class="inputs">
 					<input
-						placeholder={$username || "username"}
+						placeholder={$userData?.username || "username"}
 						bind:value={inputUser.username}
 					/>
 					<input
