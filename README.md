@@ -25,7 +25,7 @@ MusicShack is a self-hosted web app to import, organize, and manage a music libr
 
 > [!IMPORTANT]
 >
-> This is my first **usefull** solo project with completely new techno to me.
+> This is my first **useful** solo project with completely new techno to me.
 > Feel free to correct me or ask for **any** features you think are relevant.
 >
 > Song tagging are based on the Navidrome standard (I don't know about other music servers).
