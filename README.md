@@ -5,7 +5,7 @@
 
 <div align="center">
 
-**Self-Host Tool for Music Library Import and Management**
+**Self-Host Web App for Music Library Import and Management**
 
 [![Go](https://img.shields.io/badge/Language-Go-blue.svg)](https://golang.org/)
 [![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue.svg)](https://www.typescriptlang.org/)
