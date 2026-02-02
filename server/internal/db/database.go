@@ -15,7 +15,11 @@ import (
 var DB *gorm.DB
 
 func initAdmin() (*models.Admin, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte("changemenow"), bcrypt.DefaultCost)
+	password := os.Getenv("ADMIN_PASSWORD")
+	if password == "" {
+		log.Fatal("ADMIN_PASSWORD is missing")
+	}
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, fmt.Errorf("initAdmin: %w", err)
 	}
