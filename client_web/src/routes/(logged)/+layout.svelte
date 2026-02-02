@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { afterNavigate, goto } from "$app/navigation";
+	import { afterNavigate } from "$app/navigation";
 	import "../../app.css";
 	import {
 		DownloadIcon,
@@ -132,7 +132,7 @@
 		.wrap-panel {
 			position: fixed;
 			z-index: 1000;
-			top: 144px;
+			top: 158px;
 			display: flex;
 			flex-direction: column;
 			align-items: center;
@@ -152,7 +152,7 @@
 				outline: 1px solid var(--fg);
 			}
 		}
-		padding-top: 130px;
+		padding-top: 140px;
 		width: clamp(320px, 70vw + 20px, 1200px);
 		margin: 0 auto;
 	}
