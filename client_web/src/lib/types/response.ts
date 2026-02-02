@@ -162,4 +162,20 @@ export interface SearchDataArtist {
 	popularity: number;
 }
 
-export type SearchResponse = { [key: string]: SearchData };
+export interface SearchResult {
+	[key: string]: SearchData;
+}
+
+export interface UrlItem {
+	provider: string;
+	type: "artist" | "album" | "song";
+	id: string;
+}
+
+export type SearchResponse =
+	| {
+		result: SearchResult;
+	}
+	| {
+		url: UrlItem;
+	};

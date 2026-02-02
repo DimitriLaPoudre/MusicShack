@@ -4,7 +4,11 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
-	import type { ErrorResponse, SearchResponse } from "$lib/types/response";
+	import type {
+		ErrorResponse,
+		SearchResponse,
+		SearchResult,
+	} from "$lib/types/response";
 	import Quality from "$lib/components/quality.svelte";
 	import Explicit from "$lib/components/explicit.svelte";
 	import { onMount } from "svelte";
@@ -12,7 +16,7 @@
 	let error = $state<null | string>(null);
 	let provider = $state<string>("");
 	let type = $state<string>("songs");
-	let result = $state<SearchResponse | null>(null);
+	let result = $state<SearchResult | null>(null);
 
 	const searchData = $derived(page.url.searchParams.get("q"));
 
@@ -30,13 +34,17 @@
 					(data as ErrorResponse).error || "Failed to fetch search",
 				);
 			}
-			console.log(data);
-			if (Object.keys(data).length === 0) {
-				throw new Error("instances missing");
+
+			if ("url" in data) {
+				goto(`/${data.url.type}/${data.url.provider}/${data.url.id}`);
+			} else {
+				if (Object.keys(data.result).length === 0) {
+					throw new Error("instances missing");
+				}
+				result = data.result;
+				provider = Object.keys(data.result)[0];
+				error = null;
 			}
-			result = data;
-			provider = Object.keys(data)[0];
-			error = null;
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load song";
 		}

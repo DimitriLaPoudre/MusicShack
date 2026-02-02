@@ -43,12 +43,11 @@ func (p Hifi) checkSong(arr []string) (models.UrlItem, error) {
 		Type:     models.TypeSong,
 		Id:       arr[1],
 	}, nil
-
 }
 
 func (p *Hifi) Url(ctx context.Context, userId uint, url string) (models.UrlItem, error) {
 	var clean_url string
-	if url, ok := strings.CutPrefix(url, "https://tidal.com/"); ok {
+	if url, ok := strings.CutPrefix(url, "https://tidal.com/"); !ok {
 		return models.UrlItem{}, errors.New("Hifi.Url: url not contain \"https://tidal.com/\"")
 	} else {
 		clean_url = url

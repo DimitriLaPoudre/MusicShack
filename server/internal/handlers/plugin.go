@@ -96,6 +96,10 @@ func Search(c *gin.Context) {
 		var tmp models.SearchData
 		var err error
 		for _, plugin := range plugins {
+			if urlItem, err := plugin.Url(c.Request.Context(), userId, search); err == nil {
+				c.JSON(http.StatusOK, gin.H{"url": urlItem})
+				return
+			}
 			tmp, err = plugin.Search(c.Request.Context(), userId, search, search, search)
 			if err == nil {
 				break
@@ -111,5 +115,5 @@ func Search(c *gin.Context) {
 			finding[provider] = tmp
 		}
 	}
-	c.JSON(http.StatusOK, finding)
+	c.JSON(http.StatusOK, gin.H{"result": finding})
 }

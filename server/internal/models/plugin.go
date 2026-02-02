@@ -114,6 +114,7 @@ type ArtistDataAlbum struct {
 }
 
 type SearchData struct {
+	Url     UrlItem
 	Songs   []SearchDataSong   `json:"songs"`
 	Albums  []SearchDataAlbum  `json:"albums"`
 	Artists []SearchDataArtist `json:"artists"`
