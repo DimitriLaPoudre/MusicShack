@@ -15,6 +15,7 @@ type Plugin interface {
 	Album(context.Context, uint, string) (AlbumData, error)
 	Artist(context.Context, uint, string) (ArtistData, error)
 	Search(context.Context, uint, string, string, string) (SearchData, error)
+	Url(context.Context, uint, string) (UrlItem, error)
 	Lyrics(context.Context, uint, string) (string, string, error)
 }
 
@@ -148,4 +149,18 @@ type SearchDataArtist struct {
 	Name       string `json:"name"`
 	PictureUrl string `json:"pictureUrl"`
 	Popularity uint   `json:"popularity"`
+}
+
+type Type string
+
+const (
+	TypeSong   Type = "song"
+	TypeAlbum  Type = "album"
+	TypeArtist Type = "artist"
+)
+
+type UrlItem struct {
+	Provider string `json:"provider"`
+	Type     Type   `json:"type"`
+	Id       string `json:"id"`
 }
