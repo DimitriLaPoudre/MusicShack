@@ -46,6 +46,16 @@ func init() {
 		log.Fatal(err)
 	}
 
+	if err := db.Migrator().DropIndex(&models.Song{}, "idx_songs_user_id"); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Migrator().DropIndex(&models.Song{}, "idx_songs_isrc"); err != nil {
+		log.Fatal(err)
+	}
+	if err := db.Migrator().CreateIndex(&models.Song{}, "idx_song"); err != nil {
+		log.Fatal(err)
+	}
+
 	admin, err := initAdmin()
 	if err != nil {
 		log.Fatal(err)
