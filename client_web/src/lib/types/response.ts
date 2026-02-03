@@ -179,3 +179,16 @@ export type SearchResponse =
 	| {
 		url: UrlItem;
 	};
+
+export interface ResponseSong {
+	id: number;
+	title: string;
+	duration: number;
+	releaseDate: string;
+	trackNumber: number;
+	volumeNumber: number;
+	explicit: boolean;
+	isrc: string;
+	album: string;
+	artists: string[];
+}

@@ -14,6 +14,7 @@ import (
 func AddDownload(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -43,6 +44,7 @@ func AddDownload(c *gin.Context) {
 func ListDownload(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -55,18 +57,21 @@ func DeleteDownload(c *gin.Context) {
 	taskIdRaw := c.Param("id")
 	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	taskId := uint(taskIdBadType)
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = services.DownloadManager.Remove(userId, taskId)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -78,18 +83,21 @@ func RetryDownload(c *gin.Context) {
 	taskIdRaw := c.Param("id")
 	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	taskId := uint(taskIdBadType)
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = services.DownloadManager.Retry(userId, taskId)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -101,18 +109,21 @@ func CancelDownload(c *gin.Context) {
 	taskIdRaw := c.Param("id")
 	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	taskId := uint(taskIdBadType)
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = services.DownloadManager.Cancel(userId, taskId)
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -123,6 +134,7 @@ func CancelDownload(c *gin.Context) {
 func RetryDownloads(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -135,6 +147,7 @@ func RetryDownloads(c *gin.Context) {
 func DoneDownloads(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}

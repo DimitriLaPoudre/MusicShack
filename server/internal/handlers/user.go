@@ -54,7 +54,7 @@ func ListUsers(c *gin.Context) {
 
 func GetUser(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	id, err := strconv.ParseUint(idStr, 10, 0)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
@@ -75,7 +75,7 @@ func GetUser(c *gin.Context) {
 
 func UpdateUser(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	id, err := strconv.ParseUint(idStr, 10, 0)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return
@@ -120,7 +120,7 @@ func UpdateUser(c *gin.Context) {
 
 func DeleteUser(c *gin.Context) {
 	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	id, err := strconv.ParseUint(idStr, 10, 0)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return

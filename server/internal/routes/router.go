@@ -103,7 +103,7 @@ func SetupRouters() *graceful.Graceful {
 			library.Use(middlewares.Logged())
 			library.GET("", handlers.ListSong)
 			library.DELETE("/:id", handlers.DeleteSong)
-			library.POST("", handlers.SyncLibrary)
+			library.PUT("", handlers.SyncLibrary)
 		}
 	}
 

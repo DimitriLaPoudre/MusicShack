@@ -90,7 +90,7 @@ func RemoveInstance(c *gin.Context) {
 	}
 
 	idStr := c.Param("id")
-	idUint64, err := strconv.ParseUint(idStr, 10, strconv.IntSize)
+	idUint64, err := strconv.ParseUint(idStr, 10, 0)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})

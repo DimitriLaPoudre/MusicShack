@@ -42,7 +42,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if err := db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.Instance{}, &models.Follow{}, &models.Admin{}); err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.Instance{}, &models.Follow{}, &models.Song{}, &models.Admin{}); err != nil {
 		log.Fatal(err)
 	}
 
