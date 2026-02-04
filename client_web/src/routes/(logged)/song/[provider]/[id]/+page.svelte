@@ -46,33 +46,33 @@
 </svelte:head>
 
 {#if error}
-	<div class="error">
+	<div class="mt-4 flex flex-col justify-center items-center gap-2.5">
 		<h2>Error loading Song</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
 {:else if !song}
-	<p class="loading">Loading...</p>
+	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
-	<div class="header">
-		<div class="top">
-			<div class="top-data">
-				<img class="cover" src={song.album.coverUrl} alt={song.title} />
-				<div class="data">
-					<h1 class="title">
+	<div class="mt-1 mx-auto table border-separate border-spacing-y-2.5">
+		<div class="table-row">
+			<div class="flex flex-row flex-wrap justify-center gap-2.5">
+				<img class="w-[280px] h-[280px]" src={song.album.coverUrl} alt={song.title} />
+				<div class="flex flex-col gap-[7px]">
+					<h1 class="flex flex-row items-center gap-2 font-extrabold">
 						{song.title}
 						{#if song.explicit}
 							<Explicit />
 						{/if}
 					</h1>
 					<a
-						class="album"
+						class="font-extrabold italic no-underline"
 						href="/album/{page.params.provider}/{song.album.id}"
 					>
 						{song.album.title}
 					</a>
-					<nav class="artists">
+					<nav class="italic flex flex-wrap gap-x-2 gap-y-1">
 						{#each song.artists as artist}
 							<a
 								href="/artist/{page.params
@@ -83,7 +83,7 @@
 						{/each}
 					</nav>
 					<br />
-					<div class="duration">
+					<div class="flex items-center gap-1">
 						<Clock4 size={16} />
 						<p>
 							{`${Math.floor(song.duration / 60)}:${(song.duration % 60).toString().padStart(2, "0")}`}
@@ -94,7 +94,7 @@
 			</div>
 		</div>
 		<button
-			class="download hover-full"
+			class="hover-full flex flex-row gap-2 w-full items-center justify-center"
 			onclick={async () => {
 				error = await download({
 					provider: page.params.provider!,
@@ -108,79 +108,3 @@
 		</button>
 	</div>
 {/if}
-
-<style>
-	.loading {
-		margin-top: 30px;
-		text-align: center;
-	}
-
-	.error {
-		margin-top: 30px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.header {
-		margin: 15px auto 0;
-		display: table;
-		border-spacing: 0 10px;
-
-		.top {
-			display: table-row;
-
-			.top-data {
-				display: flex;
-				flex-direction: row;
-				flex-wrap: wrap;
-				justify-content: center;
-				gap: 10px;
-
-				.cover {
-					width: 280px;
-					height: 280px;
-				}
-				.data {
-					display: flex;
-					flex-direction: column;
-					gap: 7px;
-
-					.title {
-						display: flex;
-						flex-direction: row;
-						align-items: center;
-						gap: 0.5rem;
-						font-weight: bolder;
-					}
-					.album {
-						font-weight: bolder;
-						font-style: italic;
-						text-decoration: none;
-					}
-					.artists {
-						font-style: italic;
-						display: flex;
-						flex-wrap: wrap;
-						gap: 0.25rem 0.5rem;
-					}
-					.duration {
-						display: flex;
-						align-items: center;
-						gap: 0.25rem;
-					}
-				}
-			}
-		}
-		.download {
-			display: flex;
-			flex-direction: row;
-			gap: 0.5rem;
-			width: 100%;
-			align-items: center;
-			justify-content: center;
-		}
-	}
-</style>

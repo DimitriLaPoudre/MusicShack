@@ -1,287 +1,313 @@
-@font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Thin.woff2') format('woff2');
-	font-weight: 100;
-	font-style: normal;
-	font-display: swap;
+@import "tailwindcss";
+
+/* ===== TAILWIND V4 THEME ===== */
+@theme {
+  /* Colors */
+  --color-bg: #0e0e0e;
+  --color-fg: #e0e0e0;
+  --color-err: #ef1010;
+  --color-border: #1a1a1a;
+  --color-border-light: #2a2a2a;
+  --color-grid-dim: #050505;
+  --color-accent: #ffffff;
+  --color-accent-dim: rgba(255, 255, 255, 0.1);
+
+  /* Font family */
+  --font-mono: "JetBrainsMono", "Courier New", Courier, monospace;
+
+  /* Custom widths */
+  --width-content: clamp(320px, 70vw + 20px, 1200px);
 }
 
+/* ===== FONT FACES ===== */
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ThinItalic.woff2') format('woff2');
-	font-weight: 100;
-	font-style: italic;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLight.woff2') format('woff2');
-	font-weight: 200;
-	font-style: normal;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLightItalic.woff2') format('woff2');
-	font-weight: 200;
-	font-style: italic;
-	font-display: swap;
-}
-
-@font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Light.woff2') format('woff2');
-	font-weight: 300;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Thin.woff2")
+    format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-LightItalic.woff2') format('woff2');
-	font-weight: 300;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-ThinItalic.woff2")
+    format("woff2");
+  font-weight: 100;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Regular.woff2') format('woff2');
-	font-weight: 400;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLight.woff2")
+    format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Italic.woff2') format('woff2');
-	font-weight: 400;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraLightItalic.woff2")
+    format("woff2");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Medium.woff2') format('woff2');
-	font-weight: 500;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Light.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-MediumItalic.woff2') format('woff2');
-	font-weight: 500;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-LightItalic.woff2")
+    format("woff2");
+  font-weight: 300;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBold.woff2') format('woff2');
-	font-weight: 600;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Regular.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBoldItalic.woff2') format('woff2');
-	font-weight: 600;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Italic.woff2")
+    format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-Bold.woff2') format('woff2');
-	font-weight: 700;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-BoldItalic.woff2') format('woff2');
-	font-weight: 700;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-MediumItalic.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBold.woff2') format('woff2');
-	font-weight: 800;
-	font-style: normal;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
-	font-family: 'JetBrainsMono';
-	src: url('/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBoldItalic.woff2') format('woff2');
-	font-weight: 800;
-	font-style: italic;
-	font-display: swap;
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-SemiBoldItalic.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: italic;
+  font-display: swap;
 }
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
 }
 
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-BoldItalic.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBold.woff2")
+    format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrainsMono";
+  src: url("/assets/fonts/JetBrains_Mono/JetBrainsMono-ExtraBoldItalic.woff2")
+    format("woff2");
+  font-weight: 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* ===== CSS VARIABLES FOR COMPONENTS ===== */
 :root {
-	--bg: #0e0e0e;
-	--fg: #e0e0e0;
-	--err: #ef1010;
-	--border: #1a1a1a;
-	--border-light: #2a2a2a;
-	--grid-dim: #050505;
-	--font-mono: 'JetBrainsMono', 'Courier New', Courier, monospace;
-	--accent: #ffffff;
-	--accent-dim: rgba(255, 255, 255, 0.1);
+  --bg: theme(--color-bg);
+  --fg: theme(--color-fg);
+  --err: theme(--color-err);
+  --border: theme(--color-border);
+  --border-light: theme(--color-border-light);
+  --grid-dim: theme(--color-grid-dim);
+  --accent: theme(--color-accent);
+  --accent-dim: theme(--color-accent-dim);
+  --font-mono: theme(--font-mono);
 }
 
-html {
-	scroll-behavior: smooth;
+/* ===== BASE STYLES ===== */
+@layer base {
+  * {
+    @apply m-0 p-0 box-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-bg text-fg font-mono overflow-x-hidden text-base leading-relaxed antialiased min-h-screen;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-normal;
+  }
+
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  h4 {
+    @apply text-lg;
+  }
+
+  p {
+    @apply text-base;
+  }
+
+  ul, ol {
+    @apply text-base;
+  }
+
+  img {
+    @apply max-w-full block;
+  }
+
+  svg {
+    @apply block shrink-0;
+  }
+
+  a {
+    @apply text-base text-inherit underline cursor-pointer;
+  }
+
+  button {
+    @apply text-base font-mono text-inherit bg-inherit p-4 cursor-pointer border-none flex items-center justify-center leading-none;
+  }
+
+  input, textarea, select {
+    @apply font-mono text-base text-inherit bg-bg border border-fg p-2 outline-none focus:ring-0;
+  }
+
+  input::placeholder, textarea::placeholder {
+    @apply text-fg/50;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    @apply border-white outline-none;
+  }
 }
 
-body {
-	background-color: var(--bg);
-	color: var(--fg);
-	font-family: var(--font-mono);
-	overflow-x: hidden;
-	font-size: 16px;
-	line-height: 1.6;
-	-webkit-font-smoothing: antialiased;
-	-moz-osx-font-smoothing: grayscale;
-	min-height: 100vh;
+/* ===== COMPONENT STYLES ===== */
+@layer components {
+  /* Hover-full button style for non-touch devices */
+  @media not all and (pointer: coarse) and (hover: none) {
+    .hover-full {
+      @apply text-inherit bg-inherit;
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+
+    .hover-full:hover,
+    .hover-full.active {
+      @apply text-bg bg-fg;
+    }
+
+    .hover-full:active {
+      @apply text-inherit bg-inherit;
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+
+    .hover-soft {
+      @apply text-inherit bg-inherit;
+    }
+
+    .hover-soft:hover,
+    .hover-soft.active {
+      @apply text-inherit bg-inherit;
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+
+    .hover-soft:active {
+      @apply text-inherit bg-inherit;
+    }
+  }
+
+  /* Touch device styles */
+  @media (pointer: coarse) and (hover: none) {
+    .hover-full {
+      @apply text-inherit bg-inherit;
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+
+    .hover-full:active {
+      @apply text-bg bg-fg;
+    }
+
+    .hover-soft:active {
+      box-shadow: inset 0 0 0 1px var(--fg);
+    }
+  }
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-	font-weight: normal;
-}
-
-p {
-	font-size: 16px;
-}
-
-ul,
-ol {
-	font-size: 16px;
-}
-
-img {
-	max-width: 100%;
-	display: block;
-}
-
-a {
-	font-size: 16px;
-	color: inherit;
-	text-decoration: underline;
-	cursor: pointer;
-}
-
-button {
-	font-size: 16px;
-	font-family: inherit;
-	color: inherit;
-	background-color: inherit;
-	padding: 1rem 1rem;
-	cursor: pointer;
-	border: none;
-}
-
-@media not all and (pointer: coarse) and (hover: none) {
-	.hover-full {
-		color: inherit;
-		background-color: inherit;
-		box-shadow: inset 0 0 0 1px var(--fg);
-	}
-
-	.hover-full:hover,
-	.hover-full.active {
-		color: var(--bg);
-		background-color: var(--fg);
-	}
-
-	.hover-full:active {
-		color: inherit;
-		background-color: inherit;
-		box-shadow: inset 0 0 0 1px var(--fg);
-	}
-
-	.hover-soft {
-		color: inherit;
-		background-color: inherit;
-	}
-
-	.hover-soft:hover,
-	.hover-soft.active {
-		color: inherit;
-		background-color: inherit;
-		box-shadow: inset 0 0 0 1px var(--fg);
-	}
-
-	.hover-soft:active {
-		color: inherit;
-		background-color: inherit;
-	}
-}
-
-@media (pointer: coarse) and (hover: none) {
-	.hover-full {
-		color: inherit;
-		background-color: inherit;
-		box-shadow: inset 0 0 0 1px var(--fg);
-	}
-
-	.hover-full:active {
-		color: var(--bg);
-		background-color: var(--fg);
-	}
-
-	.hover-soft:active {
-		box-shadow: inset 0 0 0 1px var(--fg);
-	}
-}
-
-input,
-textarea,
-select {
-	font-family: inherit;
-	font-size: 16px;
-	color: inherit;
-	background-color: var(--bg);
-	border: 1px solid var(--fg);
-	padding: 0.5rem;
-	outline: none;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-	border-color: #ffffff;
-}
-
-
+/* ===== SCROLLBAR STYLES ===== */
 ::-webkit-scrollbar {
-	width: 8px;
+  @apply w-2;
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: #2e2e2e;
-	border-radius: 4px;
+  @apply bg-border-light rounded;
 }
 
 ::-webkit-scrollbar-track {
-	background: #0e0e0e;
+  @apply bg-bg;
 }

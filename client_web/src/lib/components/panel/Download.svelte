@@ -37,19 +37,19 @@
 	});
 </script>
 
-<div class="body">
-	<h1>Downloads Queue</h1>
+<div class="flex flex-col gap-3">
+	<h1 class="font-extrabold">Downloads Queue</h1>
 	{#if error}
-		<p class="error">{error}</p>
+		<p class="text-center bg-err p-2">{error}</p>
 	{/if}
 	{#if !$downloadList}
-		<p class="loading">Loading...</p>
+		<p class="text-center">Loading...</p>
 	{:else}
 		{#if $downloadList.some((task) => task.status === "failed" || task.status === "cancel" || task.status === "done")}
-			<div class="all">
+			<div class="flex flex-row justify-center items-center gap-2">
 				{#if $downloadList.some((task) => task.status === "failed" || task.status === "cancel")}
 					<button
-						class="hover-full"
+						class="hover-full w-full py-3"
 						onclick={async () => {
 							error = await retryAllDownload();
 							if (!error) {
@@ -62,7 +62,7 @@
 				{/if}
 				{#if $downloadList.some((task) => task.status === "done")}
 					<button
-						class="hover-full"
+						class="hover-full w-full py-3"
 						onclick={async () => {
 							error = await doneDownload();
 							if (!error) {
@@ -75,19 +75,19 @@
 				{/if}
 			</div>
 		{/if}
-		<div class="items">
+		<div class="flex flex-col gap-1">
 			{#each $downloadList as download, index}
-				<div class="item">
+				<div class="grid grid-cols-[auto_1fr_auto] gap-2 items-stretch @container">
 					{#if download.data.id === ""}
-						<div class="img">
+						<div class="w-[58px] h-[58px] self-center">
 							<Disc />
 						</div>
-						<button class="item-data hover-soft">
+						<button class="hover-soft self-center grid grid-cols-2 @max-[520px]:grid-cols-1 items-center justify-items-center border-none gap-2 h-full">
 							<p>Unreleased</p>
 							<p>Unknown</p>
 						</button>
 					{:else}
-						<div class="img">
+						<div class="w-[58px] h-[58px] self-center">
 							{#if download.data.album.coverUrl !== ""}
 								<img
 									src={download.data.album.coverUrl}
@@ -98,7 +98,7 @@
 							{/if}
 						</div>
 						<button
-							class="item-data hover-soft"
+							class="hover-soft self-center grid grid-cols-2 @max-[520px]:grid-cols-1 items-center justify-items-center border-none gap-2 h-full"
 							onclick={(e) => {
 								if (
 									e.target instanceof Element &&
@@ -110,23 +110,23 @@
 								);
 							}}
 						>
-							<p class="title">
+							<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
 								{download.data.title}
 								{#if download.data.explicit}
 									<Explicit />
 								{/if}
 							</p>
 							<a
-								class="artist"
+								class="italic"
 								href="/artist/{download.provider}/{download.data
 									.artists[0].id}"
 								>{download.data.artists[0].name}</a
 							>
 						</button>
 					{/if}
-					<div class="item-btn">
+					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-1">
 						{#if download.status === "done"}
-							<div style="padding: 1rem 1rem;">
+							<div class="p-4 flex items-center justify-center">
 								<CircleCheck />
 							</div>
 						{:else if download.status === "pending" || download.status === "running"}
@@ -185,90 +185,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	h1 {
-		font-weight: bolder;
-	}
-	.loading {
-		text-align: center;
-	}
-	.error {
-		text-align: center;
-		background-color: var(--err);
-		padding: 0.5rem;
-	}
-
-	.body {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-
-		.all {
-			display: flex;
-			flex-direction: row;
-			justify-content: center;
-			align-items: center;
-			gap: 0.5rem;
-
-			button {
-				width: 100%;
-				padding: 0.75rem 0;
-			}
-		}
-		.items {
-			display: flex;
-			flex-direction: column;
-			gap: 0.25rem;
-			.item {
-				display: grid;
-				grid-template-columns: auto 1fr auto;
-				gap: 0.5rem;
-				align-items: stretch;
-				container-type: inline-size;
-
-				.img {
-					width: 58px;
-					height: 58px;
-					align-self: center;
-				}
-				.item-data {
-					align-self: center;
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					align-items: center;
-					justify-items: center;
-					border: none;
-					gap: 0.5rem 0.5rem;
-					height: 100%;
-
-					.title {
-						display: flex;
-						flex-direction: row;
-						align-items: center;
-						justify-content: center;
-						gap: 0.5rem;
-						font-weight: bolder;
-					}
-					.artist {
-						font-style: italic;
-					}
-				}
-				.item-btn {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 0.25rem;
-				}
-
-				@container (max-width: 520px) {
-					.item-data {
-						grid-template-columns: 1fr;
-					}
-					.item-btn {
-						grid-template-columns: 1fr;
-					}
-				}
-			}
-		}
-	}
-</style>

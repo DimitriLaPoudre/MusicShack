@@ -5,19 +5,9 @@
 	};
 </script>
 
-<span class="video-badge" style="background-color: {quality.color}">
+<span
+	class="inline-block w-[10ch] text-center px-1.5 py-0.5 text-xs font-extrabold rounded text-white"
+	style="background-color: {quality.color}"
+>
 	{quality.name}
 </span>
-
-<style>
-	.video-badge {
-		display: inline-block;
-		width: 10ch;
-		text-align: center;
-		padding: 2px 6px;
-		font-size: 0.75rem;
-		font-weight: bolder;
-		border-radius: 4px;
-		color: white;
-	}
-</style>

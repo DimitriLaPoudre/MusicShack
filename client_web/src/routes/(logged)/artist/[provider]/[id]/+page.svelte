@@ -57,30 +57,30 @@
 </svelte:head>
 
 {#if error}
-	<div class="error">
+	<div class="mt-4 flex flex-col justify-center items-center gap-2.5">
 		<h2>Error loading Artist</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
 {:else if !artist}
-	<p class="loading">Loading...</p>
+	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
-	<div class="header">
-		<div class="top">
-			<div class="top-data">
+	<div class="mt-1 mx-auto table border-separate border-spacing-y-2.5">
+		<div class="table-row">
+			<div class="flex flex-row flex-wrap justify-center gap-2.5">
 				<img
-					class="picture"
+					class="w-[280px] h-[280px]"
 					src={artist.pictureUrl}
 					alt={artist.name}
 				/>
-				<h1 class="name">{artist.name}</h1>
+				<h1 class="font-extrabold m-auto">{artist.name}</h1>
 			</div>
 		</div>
-		<div class="bottom">
-			<div class="bottom-data">
+		<div class="table-row">
+			<div class="grid grid-cols-2 gap-2">
 				<button
-					class="hover-full"
+					class="hover-full flex-col"
 					onclick={async () => {
 						if (artist!.followed) {
 							if (followInProgress) {
@@ -129,7 +129,7 @@
 					{/if}
 				</button>
 				<button
-					class="hover-full"
+					class="hover-full flex-col"
 					onclick={async () => {
 						error = await download({
 							provider: page.params.provider!,
@@ -146,16 +146,16 @@
 	</div>
 
 	<!-- page body -->
-	<div>
+	<div class="flex flex-col gap-8 mt-4">
 		{#each Object.entries(albums) as [type, list]}
 			{#if list && list.length > 0}
-				<div class="wrap-container">
-					<h2>{type}</h2>
-					<div class="container">
+				<div class="flex flex-col gap-2">
+					<h2 class="text-center font-bold">{type}</h2>
+					<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 						{#each list as album}
-							<div class="wrap-item">
+							<div class="w-[200px] h-auto">
 								<button
-									class="item hover-full"
+									class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-2 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -168,17 +168,17 @@
 									}}
 								>
 									<img
-										class="cover"
+										class="w-[160px] h-[160px]"
 										src={album.coverUrl}
 										alt={album.title}
 									/>
-									<p class="title">
+									<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
 										{album.title}
 										{#if album.explicit}
 											<Explicit />
 										{/if}
 									</p>
-									<nav class="artists">
+									<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
 										{#each album.artists as artist}
 											<a
 												href="/artist/{page.params
@@ -191,7 +191,7 @@
 									<Quality quality={album.audioQuality} />
 								</button>
 								<button
-									class="download hover-full"
+									class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 									onclick={async () =>
 										(error = await download({
 											provider: page.params.provider!,
@@ -209,116 +209,3 @@
 		{/each}
 	</div>
 {/if}
-
-<style>
-	.loading {
-		margin-top: 30px;
-		text-align: center;
-	}
-
-	.error {
-		margin-top: 30px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.header {
-		display: table;
-		margin: 15px auto 0;
-		border-spacing: 0 10px;
-
-		.top {
-			display: table-row;
-
-			.top-data {
-				display: flex;
-				flex-direction: row;
-				flex-wrap: wrap;
-				justify-content: center;
-				gap: 10px;
-
-				.picture {
-					width: 280px;
-					height: 280px;
-				}
-				.name {
-					font-weight: bolder;
-					margin: auto;
-				}
-			}
-		}
-		.bottom {
-			display: table-row;
-
-			.bottom-data {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				gap: 0.5rem;
-			}
-		}
-	}
-
-	.wrap-container {
-		padding-top: 2rem;
-		h2 {
-			text-align: center;
-			font-weight: bold;
-		}
-
-		.container {
-			display: grid;
-			grid-template-columns: repeat(auto-fit, 200px);
-			justify-content: center;
-			gap: 1rem;
-
-			.wrap-item {
-				width: 200px;
-				height: auto;
-
-				.item {
-					display: flex;
-					flex-direction: column;
-					align-items: center;
-					width: 200px;
-					height: auto;
-					overflow: hidden;
-					box-shadow:
-						inset 0 1px 0 var(--fg),
-						inset 1px 0 0 var(--fg),
-						inset -1px 0 0 var(--fg);
-					gap: 0.5rem;
-
-					.cover {
-						width: 160px;
-						height: 160px;
-					}
-					.title {
-						display: flex;
-						flex-direction: row;
-						align-items: center;
-						justify-content: center;
-						gap: 0.5rem;
-						font-weight: bolder;
-					}
-					.artists {
-						display: flex;
-						flex-direction: column;
-						gap: 0.2rem 1rem;
-						font-style: italic;
-					}
-				}
-				.download {
-					width: 100%;
-					box-shadow:
-						inset 0 -1px 0 var(--fg),
-						inset 1px 0 0 var(--fg),
-						inset -1px 0 0 var(--fg);
-					padding: 0.75rem;
-				}
-			}
-		}
-	}
-</style>

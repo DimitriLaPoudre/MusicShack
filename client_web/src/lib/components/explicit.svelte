@@ -3,22 +3,9 @@
 	export let bg = "#fff";
 </script>
 
-<div style="background-color:{bg};">
-	<p style="color:{color};">E</p>
+<div
+	class="grid place-content-center min-w-[18px] w-[18px] min-h-[18px] h-[18px] rounded-sm"
+	style="background-color:{bg};"
+>
+	<p class="text-[13px]" style="color:{color};">E</p>
 </div>
-
-<style>
-	div {
-		display: grid;
-		place-content: center;
-		min-width: 18px;
-		width: 18px;
-		min-height: 18px;
-		height: 18px;
-		border-radius: 10%;
-
-		p {
-			font-size: 13px;
-		}
-	}
-</style>

@@ -22,33 +22,13 @@
 </svelte:head>
 
 {#if error}
-	<div class="error">
+	<div class="mt-4 flex flex-col justify-center items-center gap-2.5">
 		<h2>Error loading Dashboard</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
 {:else}
-	<div class="body">
-		<h1>Dashboard</h1>
+	<div class="mt-4">
+		<h1 class="text-center font-extrabold">Dashboard</h1>
 	</div>
 {/if}
-
-<style>
-	.error {
-		margin-top: 30px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.body {
-		margin-top: 30px;
-
-		h1 {
-			text-align: center;
-			font-weight: bolder;
-		}
-	}
-</style>

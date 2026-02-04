@@ -49,68 +49,29 @@
 	<title>Login - MusicShack</title>
 </svelte:head>
 
-<div class="body">
-	<h1 class="title">Login</h1>
+<div class="flex flex-col items-center mx-auto mt-[10vh] w-[clamp(320px,70vw+20px,1200px)] h-screen">
+	<h1 class="font-extrabold">Login</h1>
 	<form onsubmit={handleLogin}>
 		{#if error}
-			<p class="error">{error}</p>
+			<p class="p-3 m-4 text-err">{error}</p>
 		{/if}
-		<div class="form">
-			<div class="inputs">
+		<div class="flex flex-col items-center gap-4 px-8 py-4">
+			<div class="flex flex-col gap-2">
 				<input
+					class="p-3"
 					placeholder="Username"
 					bind:value={credentials.username}
 					required
 				/>
 				<input
+					class="p-3"
 					type="password"
 					placeholder="Password"
 					bind:value={credentials.password}
 					required
 				/>
 			</div>
-			<button class="hover-full">Login</button>
+			<button class="hover-full w-[200px] p-3">Login</button>
 		</div>
 	</form>
 </div>
-
-<style>
-	.body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		margin: 10vh auto;
-		width: clamp(320px, 70vw + 20px, 1200px);
-		height: 100vh;
-
-		.title {
-			font-weight: bolder;
-		}
-		.error {
-			padding: 0.75rem;
-			margin: 1rem;
-			color: var(--err);
-		}
-		.form {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 1rem;
-			padding: 1rem 2rem;
-
-			.inputs {
-				display: flex;
-				flex-direction: column;
-				gap: 0.5rem;
-
-				input {
-					padding: 0.75rem;
-				}
-			}
-			button {
-				width: 200px;
-				padding: 0.75rem;
-			}
-		}
-	}
-</style>

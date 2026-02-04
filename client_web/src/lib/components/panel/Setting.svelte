@@ -153,247 +153,99 @@
 	}
 </script>
 
-<div class="body">
-	<h1 class="title">Settings</h1>
-	<h2 class="sub-title">User</h2>
-	<div class="user">
-		{#if errorUser}
-			<p class="error">
-				{errorUser}
-			</p>
-		{/if}
-		<form class="form" onsubmit={changeUser}>
-			<div class="wrap-form">
-				<div class="inputs">
-					<input
-						placeholder={$userData?.username || "username"}
-						bind:value={inputUser.username}
-					/>
-					<input
-						placeholder="password"
-						bind:value={inputUser.password}
-					/>
-				</div>
-				<div class="qualities">
-					<button
-						class="item"
-						class:active={inputUser.hiRes !== true}
-						onclick={() => {
-							inputUser.hiRes = false;
-						}}
-					>
-						LOSSLESS (recommended)
-					</button>
-					<button
-						class="item"
-						class:active={inputUser.hiRes === true}
-						onclick={() => {
-							inputUser.hiRes = true;
-						}}
-					>
-						HIRES (advanced)
-					</button>
-				</div>
-			</div>
-			<button class="edit hover-full">
-				<Pencil />
-			</button>
-		</form>
-	</div>
-	<h2 class="sub-title">Instances</h2>
-	<div class="instances">
-		{#if errorInstances}
-			<p class="error">
-				{errorInstances}
-			</p>
-		{/if}
-		<form class="form" onsubmit={addInstance}>
-			<input placeholder="URL" bind:value={inputInstance.url} />
-			<button class="hover-full"><Plus /></button>
-		</form>
-		{#if !$instanceList}
-			<p class="loading">Loading...</p>
-		{:else}
-			<div class="items">
-				{#each $instanceList as instance}
-					<div class="item">
-						<div class="data hover-soft">
-							<p class="url">{instance.url}</p>
-							<p class="api">
-								{instance.provider}|{instance.api}
-							</p>
-							<p class="ping">
-								{#if instance.ping === 0}
-									failed
-								{:else}
-									{instance.ping}ms
-								{/if}
-							</p>
-						</div>
+<div class="flex flex-col gap-3">
+	<h1 class="font-extrabold">Settings</h1>
+	<div class="flex flex-col gap-2">
+		<h2 class="font-extrabold">User</h2>
+		<div class="flex flex-col p-3 gap-3">
+			{#if errorUser}
+				<p class="text-center bg-err p-2">
+					{errorUser}
+				</p>
+			{/if}
+			<form class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container" onsubmit={changeUser}>
+				<div class="flex flex-col gap-2">
+					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2">
+						<input
+							placeholder={$userData?.username || "username"}
+							bind:value={inputUser.username}
+						/>
+						<input
+							placeholder="password"
+							bind:value={inputUser.password}
+						/>
+					</div>
+					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2">
 						<button
-							class="hover-full"
-							onclick={() => deleteInstance(instance.id)}
+							type="button"
+							class="py-4 hover:shadow-[inset_0_0_0_1px_var(--fg)] focus:outline-none active:bg-fg active:text-bg"
+							class:underline={inputUser.hiRes !== true}
+							onclick={() => {
+								inputUser.hiRes = false;
+							}}
 						>
-							<Trash />
+							LOSSLESS (recommended)
+						</button>
+						<button
+							type="button"
+							class="py-4 hover:shadow-[inset_0_0_0_1px_var(--fg)] focus:outline-none active:bg-fg active:text-bg"
+							class:underline={inputUser.hiRes === true}
+							onclick={() => {
+								inputUser.hiRes = true;
+							}}
+						>
+							HIRES (advanced)
 						</button>
 					</div>
-				{/each}
-			</div>
-		{/if}
+				</div>
+				<button class="hover-full">
+					<Pencil />
+				</button>
+			</form>
+		</div>
 	</div>
-	<button class="logout hover-full" onclick={logout}> Logout </button>
+	<div class="flex flex-col gap-2">
+		<h2 class="font-extrabold">Instances</h2>
+		<div class="flex flex-col p-3 gap-5">
+			{#if errorInstances}
+				<p class="text-center bg-err p-2">
+					{errorInstances}
+				</p>
+			{/if}
+			<form class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container" onsubmit={addInstance}>
+				<input class="w-full" placeholder="URL" bind:value={inputInstance.url} />
+				<button class="hover-full"><Plus /></button>
+			</form>
+			{#if !$instanceList}
+				<p class="text-center">Loading...</p>
+			{:else}
+				<div class="flex flex-col gap-2">
+					{#each $instanceList as instance}
+						<div class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container">
+							<div class="hover-soft grid grid-cols-[1fr_auto_6ch] @max-[520px]:grid-cols-1 gap-3 items-center p-4">
+								<p class="break-words">{instance.url}</p>
+								<p class="break-words">
+									{instance.provider}|{instance.api}
+								</p>
+								<p class="justify-self-end @max-[520px]:justify-self-start">
+									{#if instance.ping === 0}
+										failed
+									{:else}
+										{instance.ping}ms
+									{/if}
+								</p>
+							</div>
+							<button
+								class="hover-full"
+								onclick={() => deleteInstance(instance.id)}
+							>
+								<Trash />
+							</button>
+						</div>
+					{/each}
+				</div>
+			{/if}
+		</div>
+	</div>
+	<button class="w-full py-3 shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err" onclick={logout}> Logout </button>
 </div>
-
-<style>
-	.title {
-		font-weight: bolder;
-	}
-	.sub-title {
-		font-weight: bolder;
-	}
-	.user {
-		display: flex;
-		flex-direction: column;
-		padding: 0.75rem;
-		gap: 0.75rem;
-
-		.error {
-			text-align: center;
-			background-color: var(--err);
-			padding: 0.5rem;
-		}
-		.form {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 0.5rem;
-			align-items: stretch;
-			container-type: inline-size;
-
-			.wrap-form {
-				display: flex;
-				flex-direction: column;
-				gap: 0.5rem;
-
-				.inputs {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 0.5rem;
-				}
-				.qualities {
-					display: grid;
-					grid-template-columns: 1fr 1fr;
-					gap: 0.5rem;
-
-					.item {
-						padding: 1rem 0;
-					}
-
-					@media not all and (pointer: coarse) and (hover: none) {
-						.item:hover {
-							outline: 1px solid var(--fg);
-							outline-offset: -1px;
-							border: none;
-							background-color: inherit;
-							color: inherit;
-						}
-						.item:active {
-							background-color: var(--fg);
-							color: var(--bg);
-						}
-					}
-
-					@media (pointer: coarse) and (hover: none) {
-						.item:active {
-							outline: 1px solid var(--fg);
-							outline-offset: -1px;
-							border: none;
-							background-color: inherit;
-							color: inherit;
-						}
-					}
-					.item.active {
-						text-decoration: underline;
-					}
-				}
-				@container (max-width: 520px) {
-					.inputs {
-						grid-template-columns: 1fr;
-					}
-					.qualities {
-						grid-template-columns: 1fr;
-					}
-				}
-			}
-		}
-	}
-
-	.instances {
-		display: flex;
-		flex-direction: column;
-		padding: 0.75rem;
-		gap: 1.25rem;
-		.error {
-			text-align: center;
-			background-color: var(--err);
-			padding: 0.5rem;
-		}
-		.form {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 0.5rem;
-			align-items: stretch;
-			container-type: inline-size;
-
-			input {
-				width: 100%;
-			}
-		}
-		.loading {
-			text-align: center;
-		}
-		.items {
-			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
-			.item {
-				display: grid;
-				grid-template-columns: 1fr auto;
-				gap: 0.5rem;
-				align-items: stretch;
-				container-type: inline-size;
-
-				.data {
-					display: grid;
-					grid-template-columns: 1fr auto 6ch;
-					gap: 0.75rem;
-					align-items: center;
-					padding: 1rem;
-
-					.url {
-						word-break: break-word;
-					}
-					.api {
-						word-break: break-word;
-					}
-					.ping {
-						align-self: right;
-					}
-				}
-				@container (max-width: 520px) {
-					.data {
-						grid-template-columns: 1fr;
-					}
-				}
-			}
-		}
-	}
-
-	.logout {
-		width: 100%;
-		padding: 0.75rem;
-		box-shadow: inset 0 0 0 1px var(--err);
-	}
-	.logout:hover {
-		background-color: var(--err);
-	}
-</style>

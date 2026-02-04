@@ -20,19 +20,19 @@
 	});
 </script>
 
-<header>
+<header class="flex-wrap fixed top-0 left-0 w-full bg-bg text-fg flex flex-col justify-between items-center z-[1000]">
 	<a
 		href="/dashboard"
-		class="logo"
+		class="uppercase no-underline text-5xl px-2.5 py-4"
 		onclick={() => {
 			barState = null;
 		}}
 	>
 		MusicShack
 	</a>
-	<div class="bar">
+	<div class="flex flex-row gap-x-2.5">
 		<button
-			class="hover-full"
+			class="hover-full w-14 h-15"
 			onclick={() => {
 				barState = barState === "search" ? null : "search";
 			}}
@@ -41,7 +41,7 @@
 			<SearchIcon />
 		</button>
 		<button
-			class="hover-full"
+			class="hover-full w-14 h-15"
 			onclick={() => {
 				barState = barState === "follow" ? null : "follow";
 			}}
@@ -50,7 +50,7 @@
 			<Heart />
 		</button>
 		<button
-			class="hover-full"
+			class="hover-full w-14 h-15"
 			onclick={() => {
 				barState = barState === "download" ? null : "download";
 			}}
@@ -59,7 +59,7 @@
 			<DownloadIcon />
 		</button>
 		<button
-			class="hover-full"
+			class="hover-full w-14 h-15"
 			class:active={barState === "settings"}
 			onclick={() => {
 				barState = barState === "settings" ? null : "settings";
@@ -70,23 +70,23 @@
 	</div>
 </header>
 
-<main>
+<main class="pt-[140px] w-[clamp(320px,70vw+20px,1200px)] mx-auto">
 	{#if barState}
-		<div class="wrap-panel">
+		<div class="fixed z-[1000] top-[140px] flex flex-col items-center bg-bg">
 			{#if barState === "search"}
-				<div class="panel-search">
+				<div class="w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
 					<Search />
 				</div>
 			{:else if barState === "follow"}
-				<div class="panel-default">
+				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
 					<Follow />
 				</div>
 			{:else if barState === "download"}
-				<div class="panel-default">
+				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
 					<Download />
 				</div>
 			{:else if barState === "settings"}
-				<div class="panel-default">
+				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
 					<Setting />
 				</div>
 			{/if}
@@ -95,65 +95,3 @@
 
 	{@render children?.()}
 </main>
-
-<style>
-	header {
-		flex-wrap: wrap;
-		position: fixed;
-		top: 0;
-		left: 0;
-		width: 100%;
-		background-color: var(--bg);
-		color: var(--fg);
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-		align-items: center;
-		z-index: 1000;
-
-		.logo {
-			text-transform: uppercase;
-			text-decoration: none;
-			font-size: 3rem;
-			padding: 10px;
-		}
-
-		.bar {
-			display: flex;
-			flex-direction: row;
-			gap: 0 10px;
-			button {
-				aspect-ratio: 1/1;
-			}
-		}
-	}
-
-	main {
-		.wrap-panel {
-			position: fixed;
-			z-index: 1000;
-			top: 158px;
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			background-color: var(--bg);
-
-			.panel-search {
-				width: clamp(320px, 70vw + 20px, 1200px);
-				max-height: calc(95vh - 135px);
-				overflow-y: auto;
-				outline: 1px solid var(--fg);
-			}
-			.panel-default {
-				padding: 0.75rem;
-				width: clamp(320px, 70vw + 20px, 1200px);
-				max-height: calc(95vh - 135px);
-				overflow-y: auto;
-				outline: 1px solid var(--fg);
-			}
-		}
-		padding-top: 140px;
-		width: clamp(320px, 70vw + 20px, 1200px);
-		margin: 0 auto;
-	}
-</style>

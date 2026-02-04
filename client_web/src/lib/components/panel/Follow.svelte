@@ -18,27 +18,29 @@
 	});
 </script>
 
-<div class="body">
-	<h1>Followed Artist</h1>
+<div class="flex flex-col gap-3">
+	<h1 class="font-extrabold">Followed Artist</h1>
 	{#if error}
-		<p class="error">{error}</p>
+		<p class="text-center bg-err p-2 m-0">{error}</p>
 	{/if}
 	{#if !$followList}
-		<p class="loading">Loading...</p>
+		<p class="text-center">Loading...</p>
 	{:else}
-		<div class="list">
+		<div class="flex flex-col gap-1">
 			{#each $followList as item}
-				<div class="artist">
+				<div class="grid grid-cols-[1fr_auto] gap-2 group">
 					<a
-						class="data"
+						class="grid grid-cols-[auto_1fr] items-stretch gap-2 group/data"
 						href="/artist/{item.provider}/{item.artistId}"
 					>
 						<img
-							class="picture"
+							class="w-[58px] h-[58px] self-center"
 							src={item.artistPictureUrl}
 							alt={item.artistName}
 						/>
-						<p class="artist">{item.artistName}</p>
+						<p class="italic pl-3 flex items-center group-hover/data:outline group-hover/data:outline-1 group-hover/data:outline-fg group-hover/data:-outline-offset-1">
+							{item.artistName}
+						</p>
 					</a>
 					<button
 						class="hover-full"
@@ -49,10 +51,10 @@
 							}
 						}}
 					>
-						<div class="nothover">
+						<div class="block group-hover:hidden">
 							<HeartIcon />
 						</div>
-						<div class="hover">
+						<div class="hidden group-hover:block">
 							<HeartOff />
 						</div>
 					</button>
@@ -61,79 +63,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	h1 {
-		font-weight: bolder;
-	}
-	.error {
-		text-align: center;
-		background-color: var(--err);
-		padding: 0.5rem;
-		margin: 0;
-	}
-	.loading {
-		text-align: center;
-	}
-	.list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-
-		.artist {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 0.75rem;
-
-			.data {
-				display: grid;
-				grid-template-columns: auto 1fr;
-				align-items: stretch;
-				gap: 0.75rem;
-
-				.picture {
-					width: 58px;
-					height: 58px;
-					align-self: center;
-				}
-
-				.artist {
-					font-style: italic;
-					padding-left: 0.75rem;
-					display: flex;
-					align-items: center;
-				}
-			}
-
-			@media not all and (pointer: coarse) and (hover: none) {
-				.data:hover {
-					.artist {
-						color: inherit;
-						background-color: inherit;
-						outline: 1px solid var(--fg);
-						outline-offset: -1px;
-					}
-				}
-			}
-
-			button {
-				/* align-self: center; */
-				/* aspect-ratio: 1/1; */
-				.nothover {
-					display: block;
-				}
-				.hover {
-					display: none;
-				}
-			}
-			button:hover {
-				.nothover {
-					display: none;
-				}
-				.hover {
-					display: block;
-				}
-			}
-		}
-	}
-</style>

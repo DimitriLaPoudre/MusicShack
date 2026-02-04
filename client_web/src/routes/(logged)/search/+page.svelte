@@ -63,21 +63,21 @@
 	<title>Search | {searchData} - MusicShack</title>
 </svelte:head>
 
-<h1 class="research">"{searchData}"</h1>
+<h1 class="mt-4 text-center">"{searchData}"</h1>
 {#if error}
-	<div class="error">
+	<div class="mt-4 flex flex-col justify-center items-center gap-2.5">
 		<h2>Error loading Search result</h2>
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
 {:else if !result}
-	<p class="loading">Searching...</p>
+	<p class="mt-6 text-center">Searching...</p>
 {:else}
-	<div class="top">
-		<div class="section">
+	<div class="flex flex-col gap-2 py-4 items-center">
+		<div class="flex flex-row gap-2">
 			{#each Object.entries(result as Record<string, any>) as [key, _]}
 				<button
-					class="hover-full"
+					class="hover-full p-4"
 					onclick={() => (provider = key)}
 					class:active={provider === key}
 				>
@@ -85,35 +85,35 @@
 				>
 			{/each}
 		</div>
-		<div class="section">
+		<div class="flex flex-row gap-2">
 			<button
-				class="hover-full"
+				class="hover-full p-4"
 				onclick={() => (type = "songs")}
 				class:active={type === "songs"}
 			>
 				Songs</button
 			>
 			<button
-				class="hover-full"
+				class="hover-full p-4"
 				onclick={() => (type = "albums")}
 				class:active={type === "albums"}>Albums</button
 			>
 			<button
-				class="hover-full"
+				class="hover-full p-4"
 				onclick={() => (type = "artists")}
 				class:active={type === "artists"}>Artists</button
 			>
 		</div>
 	</div>
-	<div class="items">
+	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#if type === "songs"}
 			{#if result[provider].songs.length === 0}
 				<p>No song found</p>
 			{/if}
 			{#each result[provider].songs as song}
-				<div class="wrap-item">
+				<div class="w-[200px] h-auto">
 					<button
-						class="item hover-full"
+						class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -123,7 +123,7 @@
 							goto(`/song/${provider}/${song.id}`);
 						}}
 					>
-						<div class="cover">
+						<div class="w-[160px] h-[160px]">
 							{#if song.album.coverUrl !== ""}
 								<img
 									src={song.album.coverUrl}
@@ -133,13 +133,13 @@
 								<Disc size={140} />
 							{/if}
 						</div>
-						<p class="title">
+						<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
 							{song.title}
 							{#if song.explicit}
 								<Explicit />
 							{/if}
 						</p>
-						<nav class="artists">
+						<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
 							{#each song.artists as artist}
 								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
@@ -149,7 +149,7 @@
 						<Quality quality={song.audioQuality} />
 					</button>
 					<button
-						class="download hover-full"
+						class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={async () => {
 							error = await download({
 								provider: provider,
@@ -167,9 +167,9 @@
 				<p>No album found</p>
 			{/if}
 			{#each result[provider].albums as album}
-				<div class="wrap-item">
+				<div class="w-[200px] h-auto">
 					<button
-						class="item hover-full"
+						class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -179,20 +179,20 @@
 							goto(`/album/${provider}/${album.id}`);
 						}}
 					>
-						<div class="cover">
+						<div class="w-[160px] h-[160px]">
 							{#if album.coverUrl !== ""}
 								<img src={album.coverUrl} alt={album.title} />
 							{:else}
 								<DiscAlbum size={140} />
 							{/if}
 						</div>
-						<p class="title">
+						<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
 							{album.title}
 							{#if album.explicit}
 								<Explicit />
 							{/if}
 						</p>
-						<nav class="artists">
+						<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
 							{#each album.artists as artist}
 								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
@@ -202,7 +202,7 @@
 						<Quality quality={album.audioQuality} />
 					</button>
 					<button
-						class="download hover-full"
+						class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={async () => {
 							error = await download({
 								provider: provider,
@@ -221,12 +221,12 @@
 			{/if}
 			{#each result[provider].artists as artist}
 				<button
-					class="artist hover-full"
+					class="hover-full w-[200px] h-auto flex flex-col items-center gap-3"
 					onclick={() => goto(`/artist/${provider}/${artist.id}`)}
 				>
-					<div class="picture">
+					<div class="w-[160px] h-[160px] flex items-center justify-center">
 						{#if artist.pictureUrl !== ""}
-							<img src={artist.pictureUrl} alt={artist.name} />
+							<img class="rounded-full" src={artist.pictureUrl} alt={artist.name} />
 						{:else}
 							<User size={140} />
 						{/if}
@@ -237,107 +237,3 @@
 		{/if}
 	</div>
 {/if}
-
-<style>
-	.research {
-		margin-top: 30px;
-		text-align: center;
-	}
-
-	.loading {
-		margin-top: 30px;
-		text-align: center;
-	}
-	.error {
-		margin-top: 30px;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.top {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		padding: 1rem 0;
-		align-items: center;
-		.section {
-			display: flex;
-			flex-direction: row;
-			gap: 0.5rem;
-			button {
-				padding: 0.75rem;
-			}
-		}
-	}
-
-	.items {
-		display: grid;
-		grid-template-columns: repeat(auto-fit, 200px);
-		justify-content: center;
-		gap: 1rem;
-
-		.wrap-item {
-			width: 200px;
-			height: auto;
-
-			.item {
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				width: 200px;
-				height: auto;
-				overflow: hidden;
-				gap: 0.75rem;
-				box-shadow:
-					inset 0 1px 0 var(--fg),
-					inset 1px 0 0 var(--fg),
-					inset -1px 0 0 var(--fg);
-
-				.cover {
-					width: 160px;
-					height: 160px;
-				}
-				.title {
-					display: flex;
-					flex-direction: row;
-					align-items: center;
-					justify-content: center;
-					gap: 0.5rem;
-					font-weight: bolder;
-				}
-				.artists {
-					display: flex;
-					flex-direction: column;
-					gap: 0.2rem 1rem;
-					font-style: italic;
-				}
-			}
-			.download {
-				width: 100%;
-				padding: 0.75rem;
-				box-shadow:
-					inset 0 -1px 0 var(--fg),
-					inset 1px 0 0 var(--fg),
-					inset -1px 0 0 var(--fg);
-			}
-		}
-		.artist {
-			width: 200px;
-			height: auto;
-			display: flex;
-			flex-direction: column;
-			gap: 0.75rem;
-
-			.picture {
-				width: 160px;
-				height: 160px;
-				img {
-					border-radius: 50%;
-				}
-			}
-		}
-	}
-</style>

@@ -17,9 +17,10 @@
 	}
 </script>
 
-<div class="body">
+<div>
 	<form onsubmit={searchFunction}>
 		<input
+			class="w-full m-0 border-none"
 			type="text"
 			bind:value={$searchInput}
 			bind:this={inputFocus}
@@ -27,13 +28,3 @@
 		/>
 	</form>
 </div>
-
-<style>
-	.body {
-		input {
-			width: 100%;
-			margin: 0;
-			border: none;
-		}
-	}
-</style>

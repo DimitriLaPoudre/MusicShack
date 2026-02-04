@@ -118,23 +118,23 @@
 	<title>Admin | Dashboard - MusicShack</title>
 </svelte:head>
 
-<div class="body">
-	<h1 class="title">Admin Dashboard</h1>
-	<h2 class="sub-title">Password</h2>
-	<div class="change-password">
+<div class="flex flex-col items-center w-[clamp(320px,70vw+20px,1200px)] h-screen mx-auto gap-4">
+	<h1 class="text-center font-extrabold mt-5">Admin Dashboard</h1>
+	<h2 class="font-extrabold">Password</h2>
+	<div class="flex flex-col items-center gap-4 w-full">
 		{#if errorPassword}
-			<p class="error">
+			<p class="text-center bg-err p-2 w-full">
 				{errorPassword}
 			</p>
 		{/if}
 		<form
-			class="form"
+			class="grid grid-cols-[1fr_auto] gap-3 w-full items-stretch @container"
 			onsubmit={(e) => {
 				e.preventDefault();
 				changePassword();
 			}}
 		>
-			<div class="inputs">
+			<div class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3">
 				<input
 					placeholder="New Password"
 					bind:value={inputAdminPassword.newPassword}
@@ -144,40 +144,40 @@
 					bind:value={inputAdminPassword.oldPassword}
 				/>
 			</div>
-			<button class="hover-full"><Plus /></button>
+			<button class="hover-full w-14 h-15"><Plus /></button>
 		</form>
 	</div>
-	<h2 class="sub-title">Users</h2>
-	<div class="users">
+	<h2 class="font-extrabold">Users</h2>
+	<div class="flex flex-col items-center gap-4 w-full">
 		{#if errorUser}
-			<p class="error">
+			<p class="text-center bg-err p-2 w-full">
 				{errorUser}
 			</p>
 		{/if}
 		<form
-			class="form"
+			class="grid grid-cols-[1fr_auto] gap-3 w-full items-stretch @container"
 			onsubmit={async (e) => {
 				e.preventDefault();
 				await createUser();
 			}}
 		>
-			<div class="inputs">
+			<div class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3">
 				<input placeholder="Username" bind:value={inputUser.username} />
 				<input placeholder="Password" bind:value={inputUser.password} />
 			</div>
-			<button class="hover-full"><Plus /></button>
+			<button class="hover-full w-14 h-15"><Plus /></button>
 		</form>
 		{#if !users}
-			<p class="loading">Loading...</p>
+			<p class="text-center">Loading...</p>
 		{:else}
-			<div class="items">
+			<div class="flex flex-col gap-1 w-full">
 				{#each users as user}
-					<div class="item">
-						<div class="data hover-soft">
+					<div class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container">
+						<div class="hover-soft grid grid-cols-1 gap-2 items-center p-4">
 							<p>{user.username}</p>
 						</div>
 						<button
-							class="hover-full"
+							class="hover-full w-14 h-15"
 							onclick={async () => {
 								await deleteUser(user.id);
 							}}
@@ -190,114 +190,9 @@
 		{/if}
 	</div>
 	{#if errorLogout}
-		<p class="error">
+		<p class="text-center bg-err p-2 w-full">
 			{errorLogout}
 		</p>
 	{/if}
-	<button class="logout" onclick={logout}> Logout </button>
+	<button class="w-full shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err" onclick={logout}> Logout </button>
 </div>
-
-<style>
-	.loading {
-		text-align: center;
-	}
-
-	.error {
-		text-align: center;
-		background-color: var(--err);
-		padding: 0.5rem;
-		width: 100%;
-	}
-
-	.sub-title {
-		font-weight: bolder;
-	}
-
-	.body {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: clamp(320px, 70vw + 20px, 1200px);
-		height: 100vh;
-		margin: 0 auto;
-		gap: 16px;
-
-		.title {
-			text-align: center;
-			font-weight: bolder;
-			margin-top: 20px;
-		}
-		.form {
-			display: grid;
-			grid-template-columns: 1fr auto;
-			gap: 0.75rem;
-			width: 100%;
-			align-items: stretch;
-			container-type: inline-size;
-
-			.inputs {
-				display: grid;
-				grid-template-columns: 1fr 1fr;
-				gap: 0.75rem;
-			}
-
-			@container (max-width: 520px) {
-				.inputs {
-					grid-template-columns: 1fr;
-				}
-			}
-		}
-		.change-password {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 16px;
-			width: 100%;
-		}
-		.users {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			gap: 16px;
-			width: 100%;
-
-			.items {
-				display: flex;
-				flex-direction: column;
-				gap: 4px;
-				width: 100%;
-
-				.item {
-					display: grid;
-					grid-template-columns: 1fr auto;
-					gap: 8px;
-					align-items: stretch;
-					container-type: inline-size;
-
-					.data {
-						display: grid;
-						grid-template-columns: 1fr;
-						gap: 8px;
-						align-items: center;
-						padding: 1rem;
-					}
-					button {
-						aspect-ratio: 1/1;
-					}
-					@container (max-width: 520px) {
-						.data {
-							grid-template-columns: 1fr;
-						}
-					}
-				}
-			}
-		}
-		.logout {
-			width: 100%;
-			box-shadow: inset 0 0 0 1px var(--err);
-		}
-		.logout:hover {
-			background-color: var(--err);
-		}
-	}
-</style>
