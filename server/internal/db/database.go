@@ -30,6 +30,30 @@ func initAdmin() (*models.Admin, error) {
 	return &admin, nil
 }
 
+func migrationDB(db *gorm.DB) error {
+	m := db.Migrator()
+
+	if m.HasIndex(&models.Song{}, "idx_songs_user_id") {
+		if err := m.DropIndex(&models.Song{}, "idx_songs_user_id"); err != nil {
+			return fmt.Errorf("drop idx_songs_user_id: %w", err)
+		}
+	}
+
+	if m.HasIndex(&models.Song{}, "idx_songs_isrc") {
+		if err := m.DropIndex(&models.Song{}, "idx_songs_isrc"); err != nil {
+			return fmt.Errorf("drop idx_songs_isrc: %w", err)
+		}
+	}
+
+	if !m.HasIndex(&models.Song{}, "idx_song") {
+		if err := m.CreateIndex(&models.Song{}, "idx_song"); err != nil {
+			return fmt.Errorf("create idx_song: %w", err)
+		}
+	}
+
+	return nil
+}
+
 func init() {
 	postgresHost := os.Getenv("POSTGRES_HOST")
 	postgresUser := os.Getenv("POSTGRES_USER")
@@ -46,13 +70,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	if err := db.Migrator().DropIndex(&models.Song{}, "idx_songs_user_id"); err != nil {
-		log.Fatal(err)
-	}
-	if err := db.Migrator().DropIndex(&models.Song{}, "idx_songs_isrc"); err != nil {
-		log.Fatal(err)
-	}
-	if err := db.Migrator().CreateIndex(&models.Song{}, "idx_song"); err != nil {
+	if err := migrationDB(db); err != nil {
 		log.Fatal(err)
 	}
 
