@@ -12,6 +12,7 @@
 	let page = $state<null | ResponseLibrary>(null);
 
 	onMount(async () => {
+		await syncLibrary();
 		({ page, error } = await loadLibrary());
 	});
 </script>
@@ -30,19 +31,7 @@
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
-	<div class="mt-4 flex flex-row items-center justify-center">
-		<button
-			class="hover-full"
-			onclick={async () => {
-				error = await syncLibrary();
-				if (!error) {
-					({ page, error } = await loadLibrary());
-				}
-			}}
-		>
-			Sync
-		</button>
-	</div>
+	<div class="mt-4 flex flex-row items-center justify-center"></div>
 	<div class="flex flex-col gap-2 items-center">
 		{#each page.items as item}
 			<div class="grid grid-cols-[1fr_auto] gap-2">
