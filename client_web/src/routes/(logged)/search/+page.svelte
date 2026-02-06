@@ -133,13 +133,17 @@
 								<Disc size={140} />
 							{/if}
 						</div>
-						<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
+						<p
+							class="flex flex-row items-center justify-center gap-2 font-extrabold"
+						>
 							{song.title}
 							{#if song.explicit}
 								<Explicit />
 							{/if}
 						</p>
-						<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
+						<nav
+							class="flex flex-col gap-y-[0.2rem] gap-x-4 italic"
+						>
 							{#each song.artists as artist}
 								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
@@ -186,13 +190,17 @@
 								<DiscAlbum size={140} />
 							{/if}
 						</div>
-						<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
+						<p
+							class="flex flex-row items-center justify-center gap-2 font-extrabold"
+						>
 							{album.title}
 							{#if album.explicit}
 								<Explicit />
 							{/if}
 						</p>
-						<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
+						<nav
+							class="flex flex-col gap-y-[0.2rem] gap-x-4 italic"
+						>
 							{#each album.artists as artist}
 								<a href="/artist/{provider}/{artist.id}">
 									{artist.name}
@@ -224,9 +232,15 @@
 					class="hover-full w-[200px] h-auto flex flex-col items-center gap-3"
 					onclick={() => goto(`/artist/${provider}/${artist.id}`)}
 				>
-					<div class="w-[160px] h-[160px] flex items-center justify-center">
+					<div
+						class="w-[160px] h-[160px] flex items-center justify-center"
+					>
 						{#if artist.pictureUrl !== ""}
-							<img class="rounded-full" src={artist.pictureUrl} alt={artist.name} />
+							<img
+								class="rounded-full"
+								src={artist.pictureUrl}
+								alt={artist.name}
+							/>
 						{:else}
 							<User size={140} />
 						{/if}

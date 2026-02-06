@@ -7,25 +7,50 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
-func ListSong(limit uint, offset uint) ([]models.Song, error) {
-	var songs []models.Song
+func GetSong(userId uint, id uint) (models.Song, error) {
+	var song models.Song
+
 	if err := database.DB.
-		Limit(int(limit)).
-		Offset(int(offset)).
+		First(&song).Error; err != nil {
+		return models.Song{}, fmt.Errorf("repository.GetSong: %w", err)
+	}
+
+	return song, nil
+}
+
+func GetSongByUserID(userId uint, id uint) (models.Song, error) {
+	var song models.Song
+
+	if err := database.DB.
+		Where("user_id = ?", userId).
+		First(&song).Error; err != nil {
+		return models.Song{}, fmt.Errorf("repository.GetSongByUserID: %w", err)
+	}
+
+	return song, nil
+}
+
+func ListSong(limit int, offset int) ([]models.Song, error) {
+	var songs []models.Song
+
+	if err := database.DB.
+		Limit(limit).
+		Offset(offset).
 		Order("path ASC").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSong: %w", err)
 	}
+
 	return songs, nil
 }
 
-func ListSongByUserID(userId uint, limit uint, offset uint) ([]models.Song, error) {
+func ListSongByUserID(userId uint, limit int, offset int) ([]models.Song, error) {
 	var songs []models.Song
 
 	if err := database.DB.
 		Where("user_id = ?", userId).
-		Limit(int(limit)).
-		Offset(int(offset)).
+		Limit(limit).
+		Offset(offset).
 		Order("path ASC").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSongByUserID: %w", err)
@@ -34,19 +59,27 @@ func ListSongByUserID(userId uint, limit uint, offset uint) ([]models.Song, erro
 	return songs, nil
 }
 
-func SaveSong(song models.Song) error {
-	if err := database.DB.Save(&song).Error; err != nil {
-		return fmt.Errorf("repository.SaveSong: %w", err)
+func AddSong(song models.Song) error {
+	if err := database.DB.Create(&song).Error; err != nil {
+		return fmt.Errorf("repository.AddSong: %w", err)
 	}
 	return nil
 }
 
-func SaveSongByUserID(userId uint, song models.Song) error {
-	if err := database.DB.
-		Model(&models.Song{}).
+func UpdateSong(song models.Song) error {
+	if err := database.DB.Model(&models.Song{}).
+		Where("id = ?", song.ID).
+		Updates(song).Error; err != nil {
+		return fmt.Errorf("repository.UpdateSong: %w", err)
+	}
+	return nil
+}
+
+func UpdateSongByUserID(userId uint, song models.Song) error {
+	if err := database.DB.Model(&models.Song{}).
 		Where("id = ? AND user_id = ?", song.ID, userId).
 		Updates(song).Error; err != nil {
-		return fmt.Errorf("repository.SaveSongByUserID: %w", err)
+		return fmt.Errorf("repository.UpdateSongByUserID: %w", err)
 	}
 	return nil
 }

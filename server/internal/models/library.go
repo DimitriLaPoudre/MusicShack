@@ -3,8 +3,8 @@ package models
 type Song struct {
 	ID     uint   `gorm:"primaryKey" json:"id"`
 	UserId uint   `gorm:"not null;uniqueIndex:idx_song" json:"userId"`
-	Isrc   string `gorm:"uniqueIndex:idx_song" json:"isrc"`
 	Path   string `gorm:"not null" json:"path"`
+	Isrc   string `gorm:"uniqueIndex:idx_song" json:"isrc"`
 }
 
 type ResponseSong struct {

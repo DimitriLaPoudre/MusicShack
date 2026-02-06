@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"os"
 	"path/filepath"
 	"strconv"
 
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"go.senan.xyz/taglib"
 )
 
@@ -20,14 +21,20 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 		Isrc: info.Isrc,
 	}
 
-	properties, err := taglib.ReadProperties(info.Path)
+	path, err := utils.GetUserPath(info.UserId)
+	if err != nil {
+		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", err)
+	}
+	path = filepath.Join(path, info.Path)
+
+	properties, err := taglib.ReadProperties(path)
 	if err != nil {
 		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", err)
 	}
 
 	song.Duration = uint(properties.Length.Seconds())
 
-	tags, err := taglib.ReadTags(info.Path)
+	tags, err := taglib.ReadTags(path)
 	if err != nil {
 		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", err)
 	}
@@ -89,41 +96,135 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	return song, nil
 }
 
+func DeleteLibrarySong(userId uint, id uint) error {
+	song, err := repository.GetSongByUserID(userId, id)
+	if err != nil {
+		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
+	}
+
+	if err := os.Remove(filepath.Join(userPath, song.Path)); err != nil {
+		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
+	}
+
+	if err := repository.DeleteSongByUserID(userId, id); err != nil {
+		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
+	}
+	return nil
+}
+
 func SyncUserLibrary(userId uint) error {
-	user, err := repository.GetUserByID(userId)
+	tmpDbList, err := repository.ListSongByUserID(userId, -1, 0)
 	if err != nil {
 		return fmt.Errorf("services.SyncUserLibrary: %w", err)
 	}
 
-	if err := filepath.WalkDir(filepath.Join(config.LIBRARY_PATH, user.Username), func(path string, d fs.DirEntry, err error) error {
+	addList := make(map[string]string)
+	type updateItem struct {
+		id   uint
+		path string
+	}
+	updateList := make(map[string]updateItem)
+	type dbItem struct {
+		id   uint
+		path string
+	}
+	deleteList := make(map[string]dbItem)
+
+	diskList := make(map[string]string)
+
+	dbList := make(map[string]dbItem)
+	for _, item := range tmpDbList {
+		dbList[item.Isrc] = dbItem{
+			item.ID,
+			item.Path,
+		}
+		deleteList[item.Isrc] = dbItem{
+			item.ID,
+			item.Path,
+		}
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		return fmt.Errorf("services.SyncUserLibrary: %w", err)
+	}
+
+	if err := filepath.WalkDir(userPath, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if d.IsDir() {
 			return nil
 		}
 
-		tags, err2 := taglib.ReadTags(path)
-		if err2 != nil {
-			log.Println("services.WalkDir:", err2)
+		tags, err := taglib.ReadTags(path)
+		if err != nil {
+			log.Println("services.SyncUserLibrary: filepath.WalkDir", err)
 			return nil
 		}
 
 		isrc, ok := tags["ISRC"]
 		if !ok || len(isrc) == 0 {
-			log.Println("services.WalkDir: tag ISRC not found")
+			log.Println("services.SyncUserLibrary: filepath.WalkDir: tag ISRC not found")
 			return nil
 		}
 
-		if err := repository.SaveSong(models.Song{
-			UserId: userId,
-			Isrc:   isrc[0],
-			Path:   path,
-		}); err != nil {
-			log.Println("services.WalkDir:", err)
+		if _, exists := diskList[isrc[0]]; exists {
+			log.Printf("duplicate ISRC on disk: %s", isrc)
 			return nil
 		}
 
+		path = filepath.Clean(path)
+		relPath, err := filepath.Rel(userPath, path)
+		if err != nil {
+			return err
+		}
+
+		diskList[isrc[0]] = relPath
+		addList[isrc[0]] = relPath
 		return nil
 	}); err != nil {
 		return fmt.Errorf("services.SyncUserLibrary: %w", err)
+	}
+
+	for isrc, item := range dbList {
+		if path, ok := diskList[isrc]; ok {
+			delete(addList, isrc)
+			delete(deleteList, isrc)
+			if path != item.path {
+				updateList[isrc] = updateItem{
+					id:   item.id,
+					path: path,
+				}
+			}
+		}
+	}
+
+	for _, item := range deleteList {
+		fmt.Println(item.path)
+		if err := repository.DeleteSong(item.id); err != nil {
+			log.Println("services.SyncUserLibrary:", err)
+		}
+	}
+
+	for _, item := range updateList {
+		fmt.Println(item.path)
+		if err := repository.UpdateSongByUserID(userId, models.Song{ID: item.id, Path: item.path}); err != nil {
+			log.Println("services.SyncUserLibrary:", err)
+		}
+	}
+
+	for isrc, path := range addList {
+		fmt.Println(path)
+		if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: isrc}); err != nil {
+			log.Println("services.SyncUserLibrary:", err)
+		}
 	}
 
 	return nil

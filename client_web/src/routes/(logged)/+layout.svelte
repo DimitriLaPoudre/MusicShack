@@ -1,9 +1,10 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 	import "../../app.css";
 	import {
 		DownloadIcon,
 		Heart,
+		Library,
 		Search as SearchIcon,
 		SettingsIcon,
 	} from "lucide-svelte";
@@ -11,6 +12,7 @@
 	import Download from "$lib/components/panel/Download.svelte";
 	import Search from "$lib/components/panel/Search.svelte";
 	import Setting from "$lib/components/panel/Setting.svelte";
+	import { page } from "$app/state";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
@@ -20,15 +22,18 @@
 	});
 </script>
 
-<header class="flex-wrap fixed top-0 left-0 w-full bg-bg text-fg flex flex-col justify-between items-center z-[1000]">
+<header
+	class="flex-wrap fixed top-0 left-0 w-full bg-bg text-fg flex flex-col justify-between items-center z-[1000]"
+>
 	<a
 		href="/dashboard"
-		class="uppercase no-underline text-5xl px-2.5 py-4"
+		class="no-underline text-5xl px-2.5 py-4 flex"
 		onclick={() => {
 			barState = null;
 		}}
 	>
-		MusicShack
+		<span class="italic font-extrabold">MUSIC</span>
+		<span class="italic font-thin">SHACK</span>
 	</a>
 	<div class="flex flex-row gap-x-2.5">
 		<button
@@ -52,6 +57,16 @@
 		<button
 			class="hover-full w-14 h-15"
 			onclick={() => {
+				goto("/library");
+			}}
+			class:active={page.url.pathname == "/library"}
+		>
+			<Library />
+		</button>
+
+		<button
+			class="hover-full w-14 h-15"
+			onclick={() => {
 				barState = barState === "download" ? null : "download";
 			}}
 			class:active={barState === "download"}
@@ -72,21 +87,31 @@
 
 <main class="pt-[140px] w-[clamp(320px,70vw+20px,1200px)] mx-auto">
 	{#if barState}
-		<div class="fixed z-[1000] top-[140px] flex flex-col items-center bg-bg">
+		<div
+			class="fixed z-[1000] top-[140px] flex flex-col items-center bg-bg"
+		>
 			{#if barState === "search"}
-				<div class="w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
+				<div
+					class="w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+				>
 					<Search />
 				</div>
 			{:else if barState === "follow"}
-				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
+				<div
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+				>
 					<Follow />
 				</div>
 			{:else if barState === "download"}
-				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
+				<div
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+				>
 					<Download />
 				</div>
 			{:else if barState === "settings"}
-				<div class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg">
+				<div
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+				>
 					<Setting />
 				</div>
 			{/if}

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,25 +20,25 @@ func ListSong(c *gin.Context) {
 		return
 	}
 
-	var limit uint
+	var limit int
 	if result := c.Query("limit"); result == "" {
-		limit = 20
+		limit = 10
 	} else {
-		if result, err := strconv.ParseUint(result, 10, 0); err != nil {
-			limit = 20
+		if result, err := strconv.Atoi(result); err != nil {
+			limit = 10
 		} else {
-			limit = uint(result)
+			limit = result
 		}
 	}
 
-	var offset uint
+	var offset int
 	if result := c.Query("offset"); result == "" {
 		offset = 0
 	} else {
-		if result, err := strconv.ParseUint(result, 10, 0); err != nil {
+		if result, err := strconv.Atoi(result); err != nil {
 			offset = 0
 		} else {
-			offset = uint(result)
+			offset = result
 		}
 	}
 
@@ -50,12 +49,10 @@ func ListSong(c *gin.Context) {
 		return
 	}
 
-	fmt.Println(songs)
-
 	list := make([]models.ResponseSong, 0)
-	for _, song := range songs {
-		if song, err := services.GetLibrarySong(song); err != nil {
-			log.Println("ListSong:", err)
+	for _, dbSong := range songs {
+		if song, err := services.GetLibrarySong(dbSong); err != nil {
+			log.Println("ListSong:", dbSong, ":", err)
 			continue
 		} else {
 			list = append(list, song)
@@ -82,7 +79,7 @@ func DeleteSong(c *gin.Context) {
 		id = uint(result)
 	}
 
-	if err := repository.DeleteSongByUserID(userId, id); err != nil {
+	if err := services.DeleteLibrarySong(userId, id); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
