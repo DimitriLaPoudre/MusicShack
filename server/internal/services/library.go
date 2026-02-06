@@ -40,19 +40,22 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	}
 
 	if title, ok := tags[taglib.Title]; !ok && len(title) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag title not found"))
+		song.Title = "Unknown Title"
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag title not found"))
 	} else {
 		song.Title = title[0]
 	}
 
 	if releaseDate, ok := tags[taglib.ReleaseDate]; !ok && len(releaseDate) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag releaseDate not found"))
+		song.ReleaseDate = "00-00-0000"
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag releaseDate not found"))
 	} else {
 		song.ReleaseDate = releaseDate[0]
 	}
 
 	if trackNumber, ok := tags[taglib.TrackNumber]; !ok && len(trackNumber) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not found"))
+		song.TrackNumber = 0
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not found"))
 	} else {
 		if trackNumber, err := strconv.ParseUint(trackNumber[0], 10, 0); err != nil {
 			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not valid"))
@@ -62,7 +65,8 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	}
 
 	if volumeNumber, ok := tags[taglib.DiscNumber]; !ok && len(volumeNumber) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not found"))
+		song.VolumeNumber = 0
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not found"))
 	} else {
 		if volumeNumber, err := strconv.ParseUint(volumeNumber[0], 10, 0); err != nil {
 			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not valid"))
@@ -72,7 +76,8 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	}
 
 	if explicit, ok := tags["ITUNESADVISORY"]; !ok && len(explicit) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not found"))
+		song.Explicit = false
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not found"))
 	} else {
 		if explicit, err := strconv.ParseBool(explicit[0]); err != nil {
 			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not valid"))
@@ -82,13 +87,15 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	}
 
 	if album, ok := tags[taglib.Album]; !ok && len(album) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag album not found"))
+		song.Album = "Unknown Album"
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag album not found"))
 	} else {
 		song.Album = album[0]
 	}
 
 	if artists, ok := tags[taglib.Artists]; !ok && len(artists) == 0 {
-		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag artists not found"))
+		song.Artists = []string{"Unknown Artist"}
+		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag artists not found"))
 	} else {
 		song.Artists = artists
 	}
