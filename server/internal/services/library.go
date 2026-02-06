@@ -107,8 +107,22 @@ func DeleteLibrarySong(userId uint, id uint) error {
 		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
 	}
 
-	if err := os.Remove(filepath.Join(userPath, song.Path)); err != nil {
+	path := filepath.Join(userPath, song.Path)
+	if err := os.Remove(path); err != nil {
 		return fmt.Errorf("services.DeleteLibrarySong: %w", err)
+	}
+
+	dir := filepath.Dir(path)
+	root, _ := filepath.Abs(userPath)
+	for {
+		dirAbs, _ := filepath.Abs(dir)
+		if dirAbs == root || dirAbs == "/" {
+			break
+		}
+		if err := os.Remove(dirAbs); err != nil {
+			break
+		}
+		dir = filepath.Dir(dir)
 	}
 
 	if err := repository.DeleteSongByUserID(userId, id); err != nil {
