@@ -11,7 +11,7 @@ func GetSong(userId uint, id uint) (models.Song, error) {
 	var song models.Song
 
 	if err := database.DB.
-		First(&song).Error; err != nil {
+		First(&song, "id = ?", id).Error; err != nil {
 		return models.Song{}, fmt.Errorf("repository.GetSong: %w", err)
 	}
 
@@ -22,8 +22,7 @@ func GetSongByUserID(userId uint, id uint) (models.Song, error) {
 	var song models.Song
 
 	if err := database.DB.
-		Where("user_id = ?", userId).
-		First(&song).Error; err != nil {
+		First(&song, "id = ? AND user_id = ?", id, userId).Error; err != nil {
 		return models.Song{}, fmt.Errorf("repository.GetSongByUserID: %w", err)
 	}
 

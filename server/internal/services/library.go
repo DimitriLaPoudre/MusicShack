@@ -207,21 +207,18 @@ func SyncUserLibrary(userId uint) error {
 	}
 
 	for _, item := range deleteList {
-		fmt.Println(item.path)
 		if err := repository.DeleteSong(item.id); err != nil {
 			log.Println("services.SyncUserLibrary:", err)
 		}
 	}
 
 	for _, item := range updateList {
-		fmt.Println(item.path)
 		if err := repository.UpdateSongByUserID(userId, models.Song{ID: item.id, Path: item.path}); err != nil {
 			log.Println("services.SyncUserLibrary:", err)
 		}
 	}
 
 	for isrc, path := range addList {
-		fmt.Println(path)
 		if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: isrc}); err != nil {
 			log.Println("services.SyncUserLibrary:", err)
 		}
