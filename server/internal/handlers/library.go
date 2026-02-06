@@ -42,6 +42,13 @@ func ListSong(c *gin.Context) {
 		}
 	}
 
+	total, err := repository.CountSongByUserID(userId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	songs, err := repository.ListSongByUserID(userId, limit, offset)
 	if err != nil {
 		log.Println(err)
@@ -59,7 +66,7 @@ func ListSong(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, list)
+	c.JSON(http.StatusOK, models.ResponseLibrary{Total: int(total), Count: len(list), Limit: limit, Offset: offset, Items: list})
 }
 
 func DeleteSong(c *gin.Context) {

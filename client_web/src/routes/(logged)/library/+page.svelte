@@ -4,15 +4,15 @@
 		loadLibrary,
 		syncLibrary,
 	} from "$lib/functions/library";
-	import type { ResponseSong } from "$lib/types/response";
+	import type { ResponseLibrary } from "$lib/types/response";
 	import { Trash } from "lucide-svelte";
 	import { onMount } from "svelte";
 
 	let error = $state<null | string>(null);
-	let list = $state<null | ResponseSong[]>(null);
+	let page = $state<null | ResponseLibrary>(null);
 
 	onMount(async () => {
-		({ list, error } = await loadLibrary());
+		({ page, error } = await loadLibrary());
 	});
 </script>
 
@@ -26,7 +26,7 @@
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
-{:else if !list}
+{:else if !page}
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
@@ -36,7 +36,7 @@
 			onclick={async () => {
 				error = await syncLibrary();
 				if (!error) {
-					({ list, error } = await loadLibrary());
+					({ page, error } = await loadLibrary());
 				}
 			}}
 		>
@@ -44,7 +44,7 @@
 		</button>
 	</div>
 	<div class="flex flex-col gap-2 items-center">
-		{#each list as item}
+		{#each page.items as item}
 			<div class="grid grid-cols-[1fr_auto] gap-2">
 				<div class="flex items-center gap-2 w-full">
 					<p class="font-extrabold">{item.title}</p>
@@ -59,7 +59,7 @@
 					onclick={async () => {
 						error = await deleteSong(item.id);
 						if (!error) {
-							({ list, error } = await loadLibrary());
+							({ page, error } = await loadLibrary());
 						}
 					}}
 				>

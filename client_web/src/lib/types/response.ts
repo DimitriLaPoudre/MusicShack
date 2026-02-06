@@ -192,3 +192,11 @@ export interface ResponseSong {
 	album: string;
 	artists: string[];
 }
+
+export interface ResponseLibrary {
+	total: number;
+	count: number;
+	limit: number;
+	offset: number;
+	items: ResponseSong[];
+}

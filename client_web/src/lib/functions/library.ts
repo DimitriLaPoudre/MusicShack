@@ -1,19 +1,19 @@
-import type { ResponseSong, StatusResponse } from "$lib/types/response";
+import type { ResponseLibrary, StatusResponse } from "$lib/types/response";
 import { apiFetch } from "./fetch";
 
 export async function loadLibrary() {
-	let list = null;
+	let page = null;
 	let error = null;
 	try {
-		const data = await apiFetch<ResponseSong[]>(`/library`);
+		const data = await apiFetch<ResponseLibrary>(`/library`);
 		if ("error" in data) {
 			throw new Error(data.error || "Failed to fetch song");
 		}
-		list = data;
+		page = data;
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to load song";
 	}
-	return { list, error };
+	return { page, error };
 }
 
 export async function syncLibrary() {

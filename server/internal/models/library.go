@@ -19,3 +19,11 @@ type ResponseSong struct {
 	Album        string   `json:"album"`
 	Artists      []string `json:"artists"`
 }
+
+type ResponseLibrary struct {
+	Total  int            `json:"total"`
+	Count  int            `json:"count"`
+	Limit  int            `json:"limit"`
+	Offset int            `json:"offset"`
+	Items  []ResponseSong `json:"items"`
+}

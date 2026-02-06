@@ -30,6 +30,24 @@ func GetSongByUserID(userId uint, id uint) (models.Song, error) {
 	return song, nil
 }
 
+func CountSong() (int64, error) {
+	var total int64
+	if err := database.DB.Model(&models.Song{}).Count(&total).Error; err != nil {
+		return 0, fmt.Errorf("repository.CountSong: %w", err)
+	}
+	return total, nil
+}
+
+func CountSongByUserID(userId uint) (int64, error) {
+	var total int64
+	if err := database.DB.Model(&models.Song{}).
+		Where("user_id = ?", userId).
+		Count(&total).Error; err != nil {
+		return 0, fmt.Errorf("repository.CountSong: %w", err)
+	}
+	return total, nil
+}
+
 func ListSong(limit int, offset int) ([]models.Song, error) {
 	var songs []models.Song
 
