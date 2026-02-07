@@ -12,6 +12,33 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func GetSongCover(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var id uint
+	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	} else {
+		id = uint(result)
+	}
+
+	img, err := services.GetLibrarySongCover(userId, id)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.Data(http.StatusOK, "image/jpg", img)
+}
+
 func ListSong(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {

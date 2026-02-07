@@ -103,6 +103,27 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	return song, nil
 }
 
+func GetLibrarySongCover(userId uint, id uint) ([]byte, error) {
+	song, err := repository.GetSongByUserID(userId, id)
+	if err != nil {
+		return nil, fmt.Errorf("services.GetLibrarySongCover: %w", err)
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		return nil, fmt.Errorf("services.GetLibrarySongCover: %w", err)
+	}
+
+	path := filepath.Join(userPath, song.Path)
+
+	img, err := taglib.ReadImage(path)
+	if err != nil {
+		return nil, fmt.Errorf("services.GetLibrarySongCover: taglib.ReadImage: %w", err)
+	}
+
+	return img, nil
+}
+
 func DeleteLibrarySong(userId uint, id uint) error {
 	song, err := repository.GetSongByUserID(userId, id)
 	if err != nil {
