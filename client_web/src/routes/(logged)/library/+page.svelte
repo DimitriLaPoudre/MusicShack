@@ -6,13 +6,12 @@
 		loadLibrary,
 		syncLibrary,
 	} from "$lib/functions/library";
-	import type { ResponseLibrary } from "$lib/types/response";
 	import { ChevronLeft, ChevronRight, Trash } from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { Pagination } from "bits-ui";
+	import { libraryPage } from "$lib/stores/panel/library";
 
 	let error = $state<null | string>(null);
-	let page = $state<null | ResponseLibrary>(null);
 
 	let currentPage = $state(1);
 	const limit = 10;
@@ -20,12 +19,12 @@
 
 	onMount(async () => {
 		await syncLibrary();
-		({ page, error } = await loadLibrary(limit, offset));
+		error = await loadLibrary(limit, offset);
 	});
 
 	afterNavigate(async () => {
 		await syncLibrary();
-		({ page, error } = await loadLibrary(limit, offset));
+		error = await loadLibrary(limit, offset);
 	});
 </script>
 
@@ -39,17 +38,17 @@
 		<p>{error}</p>
 		<a href="/">Go to Home</a>
 	</div>
-{:else if !page}
+{:else if !$libraryPage}
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
 	<div class="flex flex-col items-center justify-center">
 		<Pagination.Root
 			bind:page={currentPage}
-			count={page.total}
+			count={$libraryPage.total}
 			perPage={limit}
 			onPageChange={async () => {
-				({ page, error } = await loadLibrary(limit, offset));
+				error = await loadLibrary(limit, offset);
 			}}
 		>
 			{#snippet children({ pages })}
@@ -87,7 +86,7 @@
 		</Pagination.Root>
 	</div>
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
-		{#each page.items as item}
+		{#each $libraryPage.items as item}
 			<div class="w-[200px] h-auto">
 				<button
 					class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
@@ -119,10 +118,7 @@
 					onclick={async () => {
 						error = await deleteSong(item.id);
 						if (!error) {
-							({ page, error } = await loadLibrary(
-								limit,
-								offset,
-							));
+							error = await loadLibrary(limit, offset);
 						}
 					}}
 				>
