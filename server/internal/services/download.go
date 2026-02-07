@@ -93,7 +93,6 @@ func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string)
 }
 
 func (m *downloadManager) AddSong(userId uint, provider string, songId string) {
-
 	taskId := m.generateId(userId)
 
 	newTask := &downloadTask{

@@ -9,9 +9,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var PORT string
-var HTTPS bool
-var LIBRARY_PATH string
+var (
+	PORT         string
+	HTTPS        bool
+	LIBRARY_PATH string
+)
 
 func checkDownloadDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")

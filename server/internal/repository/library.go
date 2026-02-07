@@ -53,7 +53,7 @@ func ListSong(limit int, offset int) ([]models.Song, error) {
 	if err := database.DB.
 		Limit(limit).
 		Offset(offset).
-		Order("path ASC").
+		Order("updated_at DESC NULLS LAST").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSong: %w", err)
 	}
@@ -68,7 +68,7 @@ func ListSongByUserID(userId uint, limit int, offset int) ([]models.Song, error)
 		Where("user_id = ?", userId).
 		Limit(limit).
 		Offset(offset).
-		Order("path ASC").
+		Order("updated_at DESC NULLS LAST").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSongByUserID: %w", err)
 	}
