@@ -92,25 +92,25 @@
 		>
 			{#if barState === "search"}
 				<div
-					class="w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+					class="w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(100vh-140px-3rem)] overflow-y-auto outline outline-1 outline-fg"
 				>
 					<Search />
 				</div>
 			{:else if barState === "follow"}
 				<div
-					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(100vh-140px-3rem)] overflow-y-auto outline outline-1 outline-fg"
 				>
 					<Follow />
 				</div>
 			{:else if barState === "download"}
 				<div
-					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(100vh-140px-3rem)] overflow-y-auto outline outline-1 outline-fg"
 				>
 					<Download />
 				</div>
 			{:else if barState === "settings"}
 				<div
-					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(95vh-135px)] overflow-y-auto outline outline-1 outline-fg"
+					class="p-3 w-[clamp(320px,70vw+20px,1200px)] max-h-[calc(100vh-140px-3rem)] overflow-y-auto outline outline-1 outline-fg"
 				>
 					<Setting />
 				</div>
@@ -119,4 +119,5 @@
 	{/if}
 
 	{@render children?.()}
+	<div class="h-8"></div>
 </main>
