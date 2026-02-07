@@ -7,20 +7,25 @@
 		syncLibrary,
 	} from "$lib/functions/library";
 	import type { ResponseLibrary } from "$lib/types/response";
-	import { Trash } from "lucide-svelte";
+	import { ChevronLeft, ChevronRight, Trash } from "lucide-svelte";
 	import { onMount } from "svelte";
+	import { Pagination } from "bits-ui";
 
 	let error = $state<null | string>(null);
 	let page = $state<null | ResponseLibrary>(null);
 
+	let currentPage = $state(1);
+	const limit = 10;
+	let offset = $derived((currentPage - 1) * limit);
+
 	onMount(async () => {
 		await syncLibrary();
-		({ page, error } = await loadLibrary());
+		({ page, error } = await loadLibrary(limit, offset));
 	});
 
 	afterNavigate(async () => {
 		await syncLibrary();
-		({ page, error } = await loadLibrary());
+		({ page, error } = await loadLibrary(limit, offset));
 	});
 </script>
 
@@ -38,7 +43,49 @@
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
 	<!-- page top -->
-	<div class="mt-4 flex flex-row items-center justify-center"></div>
+	<div class="flex flex-col items-center justify-center">
+		<Pagination.Root
+			bind:page={currentPage}
+			count={page.total}
+			perPage={limit}
+			onPageChange={async () => {
+				({ page, error } = await loadLibrary(limit, offset));
+			}}
+		>
+			{#snippet children({ pages })}
+				<div class="my-8 flex items-center">
+					<Pagination.PrevButton
+						class="mr-[26px] inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+					>
+						<ChevronLeft />
+					</Pagination.PrevButton>
+					<div class="flex items-center gap-2.5">
+						{#each pages as page (page.key)}
+							{#if page.type === "ellipsis"}
+								<div
+									class="text-foreground-alt select-none text-[15px] font-medium"
+								>
+									...
+								</div>
+							{:else}
+								<Pagination.Page
+									{page}
+									class="data-selected:bg-fg data-selected:text-bg inline-flex size-10 select-none items-center justify-center text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
+								>
+									{page.value}
+								</Pagination.Page>
+							{/if}
+						{/each}
+					</div>
+					<Pagination.NextButton
+						class="mr-[26px] inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+					>
+						<ChevronRight />
+					</Pagination.NextButton>
+				</div>
+			{/snippet}
+		</Pagination.Root>
+	</div>
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#each page.items as item}
 			<div class="w-[200px] h-auto">
@@ -72,7 +119,10 @@
 					onclick={async () => {
 						error = await deleteSong(item.id);
 						if (!error) {
-							({ page, error } = await loadLibrary());
+							({ page, error } = await loadLibrary(
+								limit,
+								offset,
+							));
 						}
 					}}
 				>
