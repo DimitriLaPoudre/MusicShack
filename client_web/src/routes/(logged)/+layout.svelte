@@ -23,7 +23,7 @@
 </script>
 
 <header
-	class="flex-wrap fixed top-0 left-0 w-full bg-bg text-fg flex flex-col justify-between items-center z-[1000]"
+	class="flex-wrap fixed top-0 left-0 w-full bg-bg text-fg flex flex-col justify-between items-center z-50"
 >
 	<a
 		href="/dashboard"

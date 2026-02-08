@@ -13,11 +13,14 @@
 		Trash,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
-	import { Pagination } from "bits-ui";
+	import { Pagination, AlertDialog } from "bits-ui";
 	import { libraryPage } from "$lib/stores/panel/library";
 	import { page } from "$app/state";
+	import type { ResponseSong } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
+	let deletedItem = $state<null | ResponseSong>(null);
+	let deleteDialog = $derived(deletedItem !== null);
 
 	let search = $derived(page.url.searchParams.get("q") || "");
 	let currentPage = $derived(Number(page.url.searchParams.get("page")) || 1);
@@ -140,13 +143,8 @@
 					</nav>
 				</button>
 				<button
-					class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
-					onclick={async () => {
-						error = await deleteSong(item.id);
-						if (!error) {
-							error = await loadLibrary(search, limit, offset);
-						}
-					}}
+					class="hover-full w-full p-4 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+					onclick={() => (deletedItem = item)}
 				>
 					<Trash />
 				</button>
@@ -196,4 +194,52 @@
 			</div>
 		{/snippet}
 	</Pagination.Root>
+{/if}
+{#if deletedItem}
+	<AlertDialog.Root bind:open={deleteDialog}>
+		<AlertDialog.Portal>
+			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+			<AlertDialog.Content
+				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
+			>
+				<div class="flex flex-col gap-4 pb-6">
+					<AlertDialog.Title class="text-lg font-semibold">
+						Delete {deletedItem.title}
+						{deletedItem.album}
+						{deletedItem.artists}
+					</AlertDialog.Title>
+					<AlertDialog.Description
+						class="text-foreground-alt text-sm"
+					>
+						Are you sure you want to delete this song?
+					</AlertDialog.Description>
+				</div>
+				<div class="flex w-full items-center justify-center gap-2">
+					<AlertDialog.Cancel
+						class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+					>
+						Cancel
+					</AlertDialog.Cancel>
+					<AlertDialog.Action
+						class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+						onclick={async () => {
+							if (deletedItem) {
+								error = await deleteSong(deletedItem.id);
+								if (!error) {
+									error = await loadLibrary(
+										search,
+										limit,
+										offset,
+									);
+								}
+							}
+							deletedItem = null;
+						}}
+					>
+						Confirm
+					</AlertDialog.Action>
+				</div>
+			</AlertDialog.Content>
+		</AlertDialog.Portal>
+	</AlertDialog.Root>
 {/if}
