@@ -29,28 +29,31 @@ func GetSongByUserID(userId uint, id uint) (models.Song, error) {
 	return song, nil
 }
 
-func CountSong() (int64, error) {
-	var total int64
-	if err := database.DB.Model(&models.Song{}).Count(&total).Error; err != nil {
-		return 0, fmt.Errorf("repository.CountSong: %w", err)
-	}
-	return total, nil
-}
-
-func CountSongByUserID(userId uint) (int64, error) {
+func CountSong(q string) (int64, error) {
 	var total int64
 	if err := database.DB.Model(&models.Song{}).
-		Where("user_id = ?", userId).
+		Where("path ILIKE ?", "%"+q+"%").
 		Count(&total).Error; err != nil {
 		return 0, fmt.Errorf("repository.CountSong: %w", err)
 	}
 	return total, nil
 }
 
-func ListSong(limit int, offset int) ([]models.Song, error) {
+func CountSongByUserID(userId uint, q string) (int64, error) {
+	var total int64
+	if err := database.DB.Model(&models.Song{}).
+		Where("path ILIKE ? AND user_id = ?", "%"+q+"%", userId).
+		Count(&total).Error; err != nil {
+		return 0, fmt.Errorf("repository.CountSong: %w", err)
+	}
+	return total, nil
+}
+
+func ListSong(q string, limit int, offset int) ([]models.Song, error) {
 	var songs []models.Song
 
 	if err := database.DB.
+		Where("path ILIKE ?", "%"+q+"%").
 		Limit(limit).
 		Offset(offset).
 		Order("updated_at DESC NULLS LAST").
@@ -61,11 +64,11 @@ func ListSong(limit int, offset int) ([]models.Song, error) {
 	return songs, nil
 }
 
-func ListSongByUserID(userId uint, limit int, offset int) ([]models.Song, error) {
+func ListSongByUserID(userId uint, q string, limit int, offset int) ([]models.Song, error) {
 	var songs []models.Song
 
 	if err := database.DB.
-		Where("user_id = ?", userId).
+		Where("path ILIKE ? AND user_id = ?", "%"+q+"%", userId).
 		Limit(limit).
 		Offset(offset).
 		Order("updated_at DESC NULLS LAST").

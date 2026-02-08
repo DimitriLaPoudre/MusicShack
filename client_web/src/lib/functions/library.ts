@@ -2,11 +2,15 @@ import { libraryPage } from "$lib/stores/panel/library";
 import type { ResponseLibrary, StatusResponse } from "$lib/types/response";
 import { apiFetch } from "./fetch";
 
-export async function loadLibrary(limit: number, offset: number) {
+export async function loadLibrary(
+	search: string,
+	limit: number,
+	offset: number,
+) {
 	let error = null;
 	try {
 		const data = await apiFetch<ResponseLibrary>(
-			`/library?limit=${limit}&offset=${offset}`,
+			`/library?q=${search}&limit=${limit}&offset=${offset}`,
 		);
 		if ("error" in data) {
 			throw new Error(data.error || "Failed to fetch song");

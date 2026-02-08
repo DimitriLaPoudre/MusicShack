@@ -160,7 +160,7 @@ func DeleteLibrarySong(userId uint, id uint) error {
 }
 
 func SyncUserLibrary(userId uint) error {
-	tmpDbList, err := repository.ListSongByUserID(userId, -1, 0)
+	tmpDbList, err := repository.ListSongByUserID(userId, "", -1, 0)
 	if err != nil {
 		return fmt.Errorf("services.SyncUserLibrary: %w", err)
 	}

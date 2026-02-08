@@ -1,30 +1,37 @@
 <script lang="ts">
-	import { afterNavigate } from "$app/navigation";
+	import { afterNavigate, goto } from "$app/navigation";
 	import Explicit from "$lib/components/explicit.svelte";
 	import {
 		deleteSong,
 		loadLibrary,
 		syncLibrary,
 	} from "$lib/functions/library";
-	import { ChevronLeft, ChevronRight, Trash } from "lucide-svelte";
+	import {
+		ChevronLeft,
+		ChevronRight,
+		SearchIcon,
+		Trash,
+	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { Pagination } from "bits-ui";
 	import { libraryPage } from "$lib/stores/panel/library";
+	import { page } from "$app/state";
 
 	let error = $state<null | string>(null);
 
-	let currentPage = $state(1);
+	let search = $derived(page.url.searchParams.get("q") || "");
+	let currentPage = $derived(Number(page.url.searchParams.get("page")) || 1);
 	const limit = 10;
 	let offset = $derived((currentPage - 1) * limit);
 
 	onMount(async () => {
 		await syncLibrary();
-		error = await loadLibrary(limit, offset);
+		error = await loadLibrary(search, limit, offset);
 	});
 
 	afterNavigate(async () => {
 		await syncLibrary();
-		error = await loadLibrary(limit, offset);
+		error = await loadLibrary(search, limit, offset);
 	});
 </script>
 
@@ -41,50 +48,69 @@
 {:else if !$libraryPage}
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
-	<!-- page top -->
-	<div class="flex flex-col items-center justify-center">
-		<Pagination.Root
-			bind:page={currentPage}
-			count={$libraryPage.total}
-			perPage={limit}
-			onPageChange={async () => {
-				error = await loadLibrary(limit, offset);
+	<p class="mt-3"></p>
+	<div class="flex items-center justify-center">
+		<button class="">
+			<SearchIcon />
+		</button>
+
+		<input
+			bind:value={search}
+			oninput={() => {
+				let query = new URLSearchParams(
+					page.url.searchParams.toString(),
+				);
+				query.set("q", search);
+				goto(`?${query.toString()}`, {
+					keepFocus: true,
+				});
 			}}
-		>
-			{#snippet children({ pages })}
-				<div class="my-8 flex items-center">
-					<Pagination.PrevButton
-						class="mr-[26px] inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
-					>
-						<ChevronLeft />
-					</Pagination.PrevButton>
-					<div class="flex items-center gap-2.5">
-						{#each pages as page (page.key)}
-							{#if page.type === "ellipsis"}
-								<div
-									class="text-foreground-alt select-none text-[15px] font-medium"
-								>
-									...
-								</div>
-							{:else}
-								<Pagination.Page
-									{page}
-									class="data-selected:bg-fg data-selected:text-bg inline-flex size-10 select-none items-center justify-center text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
-								>
-									{page.value}
-								</Pagination.Page>
-							{/if}
-						{/each}
-					</div>
-					<Pagination.NextButton
-						class="mr-[26px] inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
-					>
-						<ChevronRight />
-					</Pagination.NextButton>
-				</div>
-			{/snippet}
-		</Pagination.Root>
+			placeholder="Search"
+		/>
 	</div>
+	<Pagination.Root
+		bind:page={currentPage}
+		count={$libraryPage.total}
+		perPage={limit}
+		onPageChange={async (pageIndex: number) => {
+			let query = new URLSearchParams(page.url.searchParams.toString());
+			query.set("page", String(pageIndex));
+			goto(`?${query.toString()}`);
+		}}
+	>
+		{#snippet children({ pages })}
+			<div class="flex items-center justify-center mb-4 mt-2">
+				<Pagination.PrevButton
+					class="inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+				>
+					<ChevronLeft size={24} />
+				</Pagination.PrevButton>
+				<div class="flex items-center gap-2.5">
+					{#each pages as page (page.key)}
+						{#if page.type === "ellipsis"}
+							<div
+								class="text-foreground-alt select-none text-[10px] font-medium"
+							>
+								...
+							</div>
+						{:else}
+							<Pagination.Page
+								{page}
+								class="data-selected:bg-fg data-selected:text-bg inline-flex size-10 select-none items-center justify-center text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{page.value}
+							</Pagination.Page>
+						{/if}
+					{/each}
+				</div>
+				<Pagination.NextButton
+					class="inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+				>
+					<ChevronRight size={24} />
+				</Pagination.NextButton>
+			</div>
+		{/snippet}
+	</Pagination.Root>
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#each $libraryPage.items as item}
 			<div class="w-[200px] h-auto">
@@ -118,7 +144,7 @@
 					onclick={async () => {
 						error = await deleteSong(item.id);
 						if (!error) {
-							error = await loadLibrary(limit, offset);
+							error = await loadLibrary(search, limit, offset);
 						}
 					}}
 				>
@@ -127,4 +153,47 @@
 			</div>
 		{/each}
 	</div>
+	<Pagination.Root
+		bind:page={currentPage}
+		count={$libraryPage.total}
+		perPage={limit}
+		onPageChange={async (pageIndex: number) => {
+			let query = new URLSearchParams(page.url.searchParams.toString());
+			query.set("page", String(pageIndex));
+			goto(`?${query.toString()}`);
+		}}
+	>
+		{#snippet children({ pages })}
+			<div class="flex items-center justify-center mb-4 mt-2">
+				<Pagination.PrevButton
+					class="inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+				>
+					<ChevronLeft size={24} />
+				</Pagination.PrevButton>
+				<div class="flex items-center gap-2.5">
+					{#each pages as page (page.key)}
+						{#if page.type === "ellipsis"}
+							<div
+								class="text-foreground-alt select-none text-[10px] font-medium"
+							>
+								...
+							</div>
+						{:else}
+							<Pagination.Page
+								{page}
+								class="data-selected:bg-fg data-selected:text-bg inline-flex size-10 select-none items-center justify-center text-[15px] font-medium disabled:cursor-not-allowed disabled:opacity-50"
+							>
+								{page.value}
+							</Pagination.Page>
+						{/if}
+					{/each}
+				</div>
+				<Pagination.NextButton
+					class="inline-flex size-10 items-center justify-center active:text-bg active:bg-fg disabled:cursor-default disabled:text-bg hover:disabled:bg-transparent"
+				>
+					<ChevronRight size={24} />
+				</Pagination.NextButton>
+			</div>
+		{/snippet}
+	</Pagination.Root>
 {/if}

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
@@ -69,14 +70,18 @@ func ListSong(c *gin.Context) {
 		}
 	}
 
-	total, err := repository.CountSongByUserID(userId)
+	q := c.Query("q")
+	q = strings.ReplaceAll(q, "_", "\\_")
+	q = strings.ReplaceAll(q, "/", "\\_")
+
+	total, err := repository.CountSongByUserID(userId, q)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	songs, err := repository.ListSongByUserID(userId, limit, offset)
+	songs, err := repository.ListSongByUserID(userId, q, limit, offset)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})

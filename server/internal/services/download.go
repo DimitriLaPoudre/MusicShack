@@ -147,11 +147,11 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 
 	filename := filepath.Join(artistName, albumTitle, fmt.Sprintf("%d - %s.%s", data.TrackNumber, songTitle, extension))
 
-	if err := root.Mkdir(data.Artists[0].Name, 0755); err != nil && !os.IsExist(err) {
+	if err := root.Mkdir(artistName, 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("saveSong: root.Mkdir: 2: %w", err)
 	}
 
-	if err := root.Mkdir(filepath.Join(data.Artists[0].Name, data.Album.Title), 0755); err != nil && !os.IsExist(err) {
+	if err := root.Mkdir(filepath.Join(artistName, albumTitle), 0755); err != nil && !os.IsExist(err) {
 		return fmt.Errorf("saveSong: root.Mkdir: 3: %w", err)
 	}
 
