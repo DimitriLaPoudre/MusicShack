@@ -1,19 +1,83 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"log"
 	"os"
 	"path/filepath"
 	"strconv"
 
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/metadata"
 	"go.senan.xyz/taglib"
 )
+
+func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, extension string, info models.MetadataInfo) error {
+	user, err := repository.GetUserByID(userId)
+	if err != nil {
+		return fmt.Errorf("UploadLibrarySong: %w", err)
+	}
+
+	root, err := os.OpenRoot(config.LIBRARY_PATH)
+	if err != nil {
+		return fmt.Errorf("UploadLibrarySong: os.OpenRoot: %w", err)
+	}
+	defer root.Close()
+
+	if err := root.Mkdir(user.Username, 0755); err != nil && !os.IsExist(err) {
+		return fmt.Errorf("UploadLibrarySong: root.Mkdir: %w", err)
+	}
+
+	rootUser, err := root.OpenRoot(user.Username)
+	if err != nil {
+		return fmt.Errorf("UploadLibrarySong: root.OpenRoot: %w", err)
+	}
+	defer rootUser.Close()
+
+	filename := filepath.Join(info.AlbumArtists[0], info.Album, fmt.Sprintf("%s - %s.%s", info.TrackNumber, info.Title, extension))
+	dirFile := filepath.Dir(filename)
+
+	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
+		return fmt.Errorf("UploadLibrarySong: rootUser.MkdirAll: %w", err)
+	}
+
+	file, err := rootUser.Create(filename)
+	if err != nil {
+		return fmt.Errorf("UploadLibrarySong: rootUser.Create: %w", err)
+	}
+	defer file.Close()
+
+	if _, err := io.Copy(file, reader); err != nil {
+		filepath := file.Name()
+		_ = file.Close()
+		if removeErr := os.Remove(filepath); removeErr != nil {
+			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
+		} else {
+			return fmt.Errorf("saveSong: io.Copy: %w", err)
+		}
+	}
+
+	if err := metadata.ApplyMetadata(filepath.Join(root.Name(), rootUser.Name(), filename), info); err != nil {
+		filepath := file.Name()
+		_ = file.Close()
+		if removeErr := os.Remove(filepath); removeErr != nil {
+			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
+		} else {
+			return fmt.Errorf("saveSong: %w", err)
+		}
+	}
+
+	_ = repository.AddSong(models.Song{UserId: userId, Path: filename, Isrc: info.Isrc})
+
+	return nil
+}
 
 func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	song := models.ResponseSong{

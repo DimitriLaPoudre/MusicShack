@@ -30,6 +30,36 @@ func getCover(ctx context.Context, url string) (*[]byte, error) {
 	return &image, nil
 }
 
+func ApplyMetadata(path string, info models.MetadataInfo) error {
+	if err := taglib.WriteTags(path, map[string][]string{
+		taglib.Title:            {info.Title},
+		taglib.Artists:          info.Artists,
+		"ALBUMARTISTS":          info.AlbumArtists,
+		taglib.Album:            {info.Album},
+		taglib.TrackNumber:      {info.TrackNumber},
+		taglib.DiscNumber:       {info.VolumeNumber},
+		taglib.ReleaseDate:      {info.ReleaseDate},
+		"itunesadvisory":        {info.Explicit},
+		"replaygain_album_gain": {info.AlbumGain},
+		"replaygain_album_peak": {info.AlbumPeak},
+		"replaygain_track_gain": {info.TrackGain},
+		"replaygain_track_peak": {info.TrackPeak},
+		taglib.ISRC:             {info.Isrc},
+	}, taglib.Clear); err != nil {
+		return fmt.Errorf("ApplyMetadata: taglib.WriteTags: %w", err)
+	} else {
+		return nil
+	}
+}
+
+func ApplyCover(path string, img *[]byte) error {
+	if err := taglib.WriteImage(path, *img); err != nil {
+		return fmt.Errorf("FormatMetadata: taglib.WriteImage: %w", err)
+	} else {
+		return nil
+	}
+}
+
 func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
 	album, err := plugins.GetAlbum(ctx, userId, data.Provider, data.Album.Id)
 	if err != nil {

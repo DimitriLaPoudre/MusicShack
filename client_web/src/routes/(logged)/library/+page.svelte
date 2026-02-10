@@ -16,9 +16,13 @@
 	import { Pagination, AlertDialog } from "bits-ui";
 	import { libraryPage } from "$lib/stores/panel/library";
 	import { page } from "$app/state";
-	import type { ResponseSong } from "$lib/types/response";
+	import type { ErrorResponse, ResponseSong } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
+
+	let uploadDialog = $state(false);
+	let errorUploadDialog = $state<null | string>(null);
+
 	let deletedItem = $state<null | ResponseSong>(null);
 	let deleteDialog = $derived(deletedItem !== null);
 
@@ -71,6 +75,139 @@
 			placeholder="Search"
 		/>
 	</div>
+	<AlertDialog.Root bind:open={uploadDialog}>
+		<div class="flex justify-center items-center">
+			<AlertDialog.Trigger
+				class="hover-full"
+				onclick={() => (errorUploadDialog = null)}
+			>
+				Upload
+			</AlertDialog.Trigger>
+		</div>
+		<AlertDialog.Portal>
+			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+			<AlertDialog.Content
+				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
+			>
+				<form
+					onsubmit={async (e) => {
+						try {
+							e.preventDefault();
+
+							const form = e.currentTarget;
+							const fd = new FormData(form);
+
+							const res = await fetch("/api/library", {
+								method: "POST",
+								credentials: "include",
+								body: fd,
+							});
+							if (res.status === 401) {
+								await goto("/login");
+							}
+							if (!res.ok) {
+								throw new Error(
+									((await res.json()) as ErrorResponse)
+										.error || "Failed to upload song",
+								);
+							}
+							error = await loadLibrary(search, limit, offset);
+							uploadDialog = false;
+						} catch (e) {
+							errorUploadDialog =
+								e instanceof Error
+									? e.message
+									: "Failed to upload song";
+						}
+					}}
+				>
+					<div class="flex flex-col gap-4">
+						<AlertDialog.Title class="text-lg font-semibold">
+							Upload a song
+						</AlertDialog.Title>
+						<AlertDialog.Description
+							class="flex flex-col text-foreground-alt text-sm gap-4"
+						>
+							{#if errorUploadDialog}
+								<p>{errorUploadDialog}</p>
+							{/if}
+							<input
+								required
+								type="file"
+								name="file"
+								accept="audio/*"
+							/>
+							<input
+								required
+								type="text"
+								name="title"
+								placeholder="Title"
+							/>
+							<input
+								required
+								type="text"
+								name="album"
+								placeholder="Album"
+							/>
+							<input
+								required
+								type="text"
+								name="albumArtists"
+								placeholder="Album Artists"
+							/>
+
+							<input
+								required
+								type="text"
+								name="artists"
+								placeholder="Artists"
+							/>
+							<button>Optionnal</button>
+							<input
+								type="number"
+								name="trackNumber"
+								placeholder="Track Number"
+								min="1"
+								step="1"
+							/>
+							<input
+								type="number"
+								name="volumeNumber"
+								placeholder="Volume Number"
+								min="1"
+								step="1"
+							/>
+							<input
+								type="text"
+								name="isrc"
+								placeholder="ISRC FR5R00909899"
+								minlength="12"
+								maxlength="12"
+								pattern="^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$"
+							/>
+							<input type="date" name="releaseDate" />
+							<label>
+								Explicit
+								<input type="checkbox" name="explicit" />
+							</label>
+						</AlertDialog.Description>
+					</div>
+					<div class="flex w-full items-center justify-center gap-2">
+						<AlertDialog.Cancel
+							class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+						>
+							Cancel
+						</AlertDialog.Cancel>
+						<AlertDialog.Action
+							class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+						>
+							Save
+						</AlertDialog.Action>
+					</div>
+				</form>
+			</AlertDialog.Content>
+		</AlertDialog.Portal>
+	</AlertDialog.Root>
 	<Pagination.Root
 		bind:page={currentPage}
 		count={$libraryPage.total}

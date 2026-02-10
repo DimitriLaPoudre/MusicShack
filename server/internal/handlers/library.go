@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -12,6 +13,94 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
 )
+
+func UploadSong(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	info := models.MetadataInfo{
+		Explicit: "false",
+	}
+	info.Title = strings.ReplaceAll(c.Request.FormValue("title"), "/", "_")
+	if info.Title == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "title field empty"})
+		return
+	}
+	info.Album = strings.ReplaceAll(c.Request.FormValue("album"), "/", "_")
+	if info.Album == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "album field empty"})
+		return
+	}
+	albumArtistsRaw := strings.ReplaceAll(c.Request.FormValue("artists"), "/", "_")
+	if albumArtistsRaw == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
+		return
+	}
+	info.AlbumArtists = strings.Split(albumArtistsRaw, ",")
+	for i, artist := range info.AlbumArtists {
+		info.AlbumArtists[i] = strings.TrimSpace(artist)
+	}
+	artistsRaw := strings.ReplaceAll(c.Request.FormValue("artists"), "/", "_")
+	if artistsRaw == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
+		return
+	}
+	info.Artists = strings.Split(artistsRaw, ",")
+	for i, artist := range info.Artists {
+		info.Artists[i] = strings.TrimSpace(artist)
+	}
+	if value := c.Request.FormValue("trackNumber"); value != "" {
+		info.TrackNumber = value
+	}
+	if value := c.Request.FormValue("volumeNumber"); value != "" {
+		info.VolumeNumber = value
+	}
+	if value := c.Request.FormValue("isrc"); value != "" {
+		info.Isrc = value
+	} else {
+		if random, err := utils.GenerateRandomString(13); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else {
+			info.Isrc = random
+		}
+	}
+	if value := c.Request.FormValue("releaseDate"); value != "" {
+		info.ReleaseDate = value
+	}
+	if c.Request.FormValue("explicit") == "on" {
+		info.Explicit = "true"
+	}
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		c.JSON(500, gin.H{"error": err.Error()})
+		return
+	}
+	defer file.Close()
+
+	filename := header.Filename
+	fmt.Println("filename:", filename)
+	extensionIndex := strings.LastIndex(filename, ".")
+	if extensionIndex == -1 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "file don't have an extension"})
+		return
+	}
+
+	err = services.UploadLibrarySong(c.Request.Context(), userId, file, filename[extensionIndex+1:], info)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}
 
 func GetSongCover(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
