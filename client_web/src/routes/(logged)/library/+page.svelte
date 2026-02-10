@@ -153,14 +153,14 @@
 								required
 								type="text"
 								name="albumArtists"
-								placeholder="Album Artists"
+								placeholder="Album Artists (eg: thaHomey, Skuna)"
 							/>
 
 							<input
 								required
 								type="text"
 								name="artists"
-								placeholder="Artists"
+								placeholder="Artists (eg: thaHomey, LaFève)"
 							/>
 							<button>Optionnal</button>
 							<input
@@ -180,7 +180,7 @@
 							<input
 								type="text"
 								name="isrc"
-								placeholder="ISRC FR5R00909899"
+								placeholder="ISRC (eg: FR5R00909899)"
 								minlength="12"
 								maxlength="12"
 								pattern="^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$"
