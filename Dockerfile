@@ -7,7 +7,7 @@ RUN npm ci
 COPY client_web/ .
 RUN npm run build
 
-FROM golang:1.24-alpine AS go-builder
+FROM golang:1.25-alpine AS go-builder
 WORKDIR /app
 
 COPY server/go.mod server/go.sum ./
