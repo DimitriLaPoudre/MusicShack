@@ -14,7 +14,7 @@ COPY server/go.mod server/go.sum ./
 RUN go mod download
 
 COPY server/ .
-RUN go build -o server main.go
+RUN go build -o server -ldflags="-s -w" main.go
 
 FROM alpine:3.20
 RUN apk add --no-cache ffmpeg
