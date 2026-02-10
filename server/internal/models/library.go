@@ -10,6 +10,34 @@ type Song struct {
 	UpdatedAt time.Time
 }
 
+type MetadataInfo struct {
+	Title        string   `json:"title"`
+	ReleaseDate  string   `json:"releaseDate"`
+	TrackNumber  string   `json:"trackNumber"`
+	VolumeNumber string   `json:"volumeNumber"`
+	Explicit     string   `json:"explicit"`
+	Isrc         string   `json:"isrc"`
+	Album        string   `json:"album"`
+	AlbumArtists []string `json:"albumArtists"`
+	Artists      []string `json:"artists"`
+	AlbumGain    string   `json:"albumGain"`
+	AlbumPeak    string   `json:"albumPeak"`
+	TrackGain    string   `json:"trackGain"`
+	TrackPeak    string   `json:"trackPeak"`
+}
+
+type UploadSong struct {
+	Title        string   `json:"title"`
+	Duration     uint     `json:"duration"`
+	ReleaseDate  string   `json:"releaseDate"`
+	TrackNumber  uint     `json:"trackNumber"`
+	VolumeNumber uint     `json:"volumeNumber"`
+	Explicit     bool     `json:"explicit"`
+	Isrc         string   `json:"isrc"`
+	Album        string   `json:"album"`
+	Artists      []string `json:"artists"`
+}
+
 type ResponseSong struct {
 	ID           uint     `json:"id"`
 	Title        string   `json:"title"`

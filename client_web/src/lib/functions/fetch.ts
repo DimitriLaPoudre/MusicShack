@@ -12,14 +12,14 @@ export async function apiFetch<T>(
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify(body),
 	});
-	let data;
-	if (res.ok) {
-		data = await res.json() as T;
-	} else {
-		data = await res.json() as ErrorResponse;
-	}
 	if (res.status === 401) {
 		await goto("/login");
+	}
+	let data;
+	if (res.ok) {
+		data = (await res.json()) as T;
+	} else {
+		data = (await res.json()) as ErrorResponse;
 	}
 	return data;
 }
@@ -37,9 +37,9 @@ export async function adminFetch<T>(
 	});
 	let data;
 	if (res.ok) {
-		data = await res.json() as T;
+		data = (await res.json()) as T;
 	} else {
-		data = await res.json() as ErrorResponse;
+		data = (await res.json()) as ErrorResponse;
 	}
 	if (res.status === 401) {
 		await goto("/admin/login");

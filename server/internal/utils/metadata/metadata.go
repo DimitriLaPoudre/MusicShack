@@ -1,6 +1,7 @@
 package metadata
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -13,7 +14,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func getCover(ctx context.Context, url string) (*[]byte, error) {
+func getCover(ctx context.Context, url string) (io.Reader, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -23,11 +24,46 @@ func getCover(ctx context.Context, url string) (*[]byte, error) {
 	}
 	defer resp.Body.Close()
 
-	image, err := io.ReadAll(resp.Body)
+	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("getCover: io.ReadAll: %w", err)
 	}
-	return &image, nil
+
+	return bytes.NewReader(buf), nil
+}
+
+func ApplyMetadata(path string, info models.MetadataInfo) error {
+	if err := taglib.WriteTags(path, map[string][]string{
+		taglib.Title:            {info.Title},
+		taglib.Artists:          info.Artists,
+		"ALBUMARTISTS":          info.AlbumArtists,
+		taglib.Album:            {info.Album},
+		taglib.TrackNumber:      {info.TrackNumber},
+		taglib.DiscNumber:       {info.VolumeNumber},
+		taglib.ReleaseDate:      {info.ReleaseDate},
+		"itunesadvisory":        {info.Explicit},
+		"replaygain_album_gain": {info.AlbumGain},
+		"replaygain_album_peak": {info.AlbumPeak},
+		"replaygain_track_gain": {info.TrackGain},
+		"replaygain_track_peak": {info.TrackPeak},
+		taglib.ISRC:             {info.Isrc},
+	}, taglib.Clear); err != nil {
+		return fmt.Errorf("ApplyMetadata: taglib.WriteTags: %w", err)
+	} else {
+		return nil
+	}
+}
+
+func ApplyCover(path string, reader io.Reader) error {
+	img, err := io.ReadAll(reader)
+	if err != nil {
+		return fmt.Errorf("ApplyCover: io.ReadAll: %w", err)
+	}
+	if err := taglib.WriteImage(path, img); err != nil {
+		return fmt.Errorf("ApplyCover: taglib.WriteImage: %w", err)
+	} else {
+		return nil
+	}
 }
 
 func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
@@ -57,30 +93,32 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 	albumGain := strconv.FormatFloat(data.AlbumReplayGain, 'f', -1, 64)
 	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
 
-	if err := taglib.WriteTags(path, map[string][]string{
-		taglib.Title:            {data.Title},
-		taglib.Artists:          artists,
-		"ALBUMARTISTS":          albumArtists,
-		taglib.Album:            {data.Album.Title},
-		taglib.TrackNumber:      {trackNumber},
-		taglib.DiscNumber:       {volumeNumber},
-		taglib.ReleaseDate:      {album.ReleaseDate},
-		"itunesadvisory":        {explicit},
-		"replaygain_album_gain": {albumGain},
-		"replaygain_album_peak": {albumPeak},
-		"replaygain_track_gain": {trackGain},
-		"replaygain_track_peak": {trackPeak},
-		taglib.ISRC:             {data.Isrc},
-	}, taglib.Clear); err != nil {
-		return fmt.Errorf("FormatMetadata: taglib.WriteTags: %w", err)
+	info := models.MetadataInfo{
+		Title:        data.Title,
+		Album:        data.Album.Title,
+		AlbumArtists: albumArtists,
+		Artists:      artists,
+		TrackNumber:  trackNumber,
+		VolumeNumber: volumeNumber,
+		ReleaseDate:  album.ReleaseDate,
+		Explicit:     explicit,
+		AlbumGain:    albumGain,
+		AlbumPeak:    albumPeak,
+		TrackGain:    trackGain,
+		TrackPeak:    trackPeak,
+		Isrc:         data.Isrc,
 	}
 
-	image, err := getCover(ctx, data.Album.CoverUrl)
+	if err := ApplyMetadata(path, info); err != nil {
+		return fmt.Errorf("FormatMetadata: %w", err)
+	}
+
+	img, err := getCover(ctx, data.Album.CoverUrl)
 	if err != nil {
 		return fmt.Errorf("FormatMetadata: %w", err)
 	}
 
-	if err := taglib.WriteImage(path, *image); err != nil {
+	if err := ApplyCover(path, img); err != nil {
 		return fmt.Errorf("FormatMetadata: taglib.WriteImage: %w", err)
 	}
 	return nil

@@ -1,6 +1,6 @@
 module github.com/DimitriLaPoudre/MusicShack/server
 
-go 1.24.6
+go 1.25
 
 require (
 	github.com/gin-contrib/cors v1.7.6
@@ -8,11 +8,12 @@ require (
 	github.com/gin-gonic/gin v1.11.0
 	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.0
+	github.com/ulule/limiter/v3 v3.11.2
 	go.senan.xyz/taglib v0.11.1
 	golang.org/x/crypto v0.42.0
+	golang.org/x/sync v0.17.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
-	github.com/ulule/limiter/v3 v3.11.2
 )
 
 require (
@@ -49,7 +50,6 @@ require (
 	golang.org/x/arch v0.20.0 // indirect
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
-	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/tools v0.37.0 // indirect
