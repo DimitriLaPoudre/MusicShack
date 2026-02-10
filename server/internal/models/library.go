@@ -10,6 +10,8 @@ type Song struct {
 	UpdatedAt time.Time
 }
 
+type RequestEditSong MetadataInfo
+
 type MetadataInfo struct {
 	Title        string   `json:"title"`
 	ReleaseDate  string   `json:"releaseDate"`

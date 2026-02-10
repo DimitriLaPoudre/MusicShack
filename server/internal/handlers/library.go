@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/metadata"
 	"github.com/gin-gonic/gin"
 )
 
@@ -103,6 +105,51 @@ func UploadSong(c *gin.Context) {
 }
 
 func EditSong(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var id uint
+	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	} else {
+		id = uint(result)
+	}
+
+	song, err := repository.GetSongByUserID(userId, id)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var edit models.RequestEditSong
+	if err := c.ShouldBindJSON(&edit); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := metadata.ApplyMetadata(filepath.Join(userPath, song.Path), models.MetadataInfo(edit)); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	//prevoir le rename
+
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
