@@ -58,8 +58,12 @@
 	<div class="mt-1 mx-auto table border-separate border-spacing-y-2.5">
 		<div class="table-row">
 			<div class="flex flex-row flex-wrap justify-center gap-2.5">
-				<img class="w-[280px] h-[280px]" src={song.album.coverUrl} alt={song.title} />
-				<div class="flex flex-col gap-[7px]">
+				<img
+					class="w-70 h-70"
+					src={song.album.coverUrl}
+					alt={song.title}
+				/>
+				<div class="flex flex-col gap-1.75">
 					<h1 class="flex flex-row items-center gap-2 font-extrabold">
 						{song.title}
 						{#if song.explicit}

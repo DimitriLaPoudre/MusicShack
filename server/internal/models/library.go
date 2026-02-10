@@ -40,15 +40,20 @@ type UploadSong struct {
 
 type ResponseSong struct {
 	ID           uint     `json:"id"`
-	Title        string   `json:"title"`
 	Duration     uint     `json:"duration"`
+	Title        string   `json:"title"`
 	ReleaseDate  string   `json:"releaseDate"`
 	TrackNumber  uint     `json:"trackNumber"`
 	VolumeNumber uint     `json:"volumeNumber"`
 	Explicit     bool     `json:"explicit"`
 	Isrc         string   `json:"isrc"`
 	Album        string   `json:"album"`
+	AlbumArtists []string `json:"albumArtists"`
 	Artists      []string `json:"artists"`
+	AlbumGain    float64  `json:"albumGain"`
+	AlbumPeak    float64  `json:"albumPeak"`
+	TrackGain    float64  `json:"trackGain"`
+	TrackPeak    float64  `json:"trackPeak"`
 }
 
 type ResponseLibrary struct {

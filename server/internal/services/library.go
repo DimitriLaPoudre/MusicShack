@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -105,24 +104,21 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if title, ok := tags[taglib.Title]; !ok && len(title) == 0 {
 		song.Title = "Unknown Title"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag title not found"))
 	} else {
 		song.Title = title[0]
 	}
 
 	if releaseDate, ok := tags[taglib.ReleaseDate]; !ok && len(releaseDate) == 0 {
 		song.ReleaseDate = "00-00-0000"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag releaseDate not found"))
 	} else {
 		song.ReleaseDate = releaseDate[0]
 	}
 
 	if trackNumber, ok := tags[taglib.TrackNumber]; !ok && len(trackNumber) == 0 {
 		song.TrackNumber = 0
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not found"))
 	} else {
 		if trackNumber, err := strconv.ParseUint(trackNumber[0], 10, 0); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not valid"))
+			song.TrackNumber = 0
 		} else {
 			song.TrackNumber = uint(trackNumber)
 		}
@@ -130,10 +126,9 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if volumeNumber, ok := tags[taglib.DiscNumber]; !ok && len(volumeNumber) == 0 {
 		song.VolumeNumber = 0
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not found"))
 	} else {
 		if volumeNumber, err := strconv.ParseUint(volumeNumber[0], 10, 0); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not valid"))
+			song.VolumeNumber = 0
 		} else {
 			song.VolumeNumber = uint(volumeNumber)
 		}
@@ -141,10 +136,9 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if explicit, ok := tags["ITUNESADVISORY"]; !ok && len(explicit) == 0 {
 		song.Explicit = false
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not found"))
 	} else {
 		if explicit, err := strconv.ParseBool(explicit[0]); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not valid"))
+			song.Explicit = false
 		} else {
 			song.Explicit = explicit
 		}
@@ -152,16 +146,60 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if album, ok := tags[taglib.Album]; !ok && len(album) == 0 {
 		song.Album = "Unknown Album"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag album not found"))
 	} else {
 		song.Album = album[0]
 	}
 
 	if artists, ok := tags[taglib.Artists]; !ok && len(artists) == 0 {
 		song.Artists = []string{"Unknown Artist"}
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag artists not found"))
 	} else {
 		song.Artists = artists
+	}
+
+	if artists, ok := tags["ALBUMARTISTS"]; !ok && len(artists) == 0 {
+		song.AlbumArtists = []string{"Unknown Artist"}
+	} else {
+		song.AlbumArtists = artists
+	}
+
+	if albumGain, ok := tags["REPLAYGAIN_ALBUM_GAIN"]; !ok && len(albumGain) == 0 {
+		song.AlbumGain = 0
+	} else {
+		if albumGain, err := strconv.ParseFloat(albumGain[0], 64); err != nil {
+			song.AlbumGain = 0
+		} else {
+			song.AlbumGain = albumGain
+		}
+	}
+
+	if albumPeak, ok := tags["REPLAYGAIN_ALBUM_PEAK"]; !ok && len(albumPeak) == 0 {
+		song.AlbumPeak = 0
+	} else {
+		if albumPeak, err := strconv.ParseFloat(albumPeak[0], 64); err != nil {
+			song.AlbumPeak = 0
+		} else {
+			song.AlbumPeak = albumPeak
+		}
+	}
+
+	if trackGain, ok := tags["REPLAYGAIN_TRACK_GAIN"]; !ok && len(trackGain) == 0 {
+		song.TrackGain = 0
+	} else {
+		if trackGain, err := strconv.ParseFloat(trackGain[0], 64); err != nil {
+			song.TrackGain = 0
+		} else {
+			song.TrackGain = trackGain
+		}
+	}
+
+	if trackPeak, ok := tags["REPLAYGAIN_TRACK_PEAK"]; !ok && len(trackPeak) == 0 {
+		song.TrackPeak = 0
+	} else {
+		if trackPeak, err := strconv.ParseFloat(trackPeak[0], 64); err != nil {
+			song.TrackPeak = 0
+		} else {
+			song.TrackPeak = trackPeak
+		}
 	}
 
 	return song, nil

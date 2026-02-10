@@ -183,14 +183,18 @@ export type SearchResponse =
 export interface ResponseSong {
 	id: number;
 	title: string;
-	duration: number;
+	album: string;
+	albumArtists: string[];
+	artists: string[];
 	releaseDate: string;
 	trackNumber: number;
 	volumeNumber: number;
 	explicit: boolean;
 	isrc: string;
-	album: string;
-	artists: string[];
+	albumGain: number;
+	albumPeak: number;
+	trackGain: number;
+	trackPeak: number;
 }
 
 export interface ResponseLibrary {
