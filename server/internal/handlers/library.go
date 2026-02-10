@@ -128,11 +128,27 @@ func EditSong(c *gin.Context) {
 		return
 	}
 
-	var edit models.RequestEditSong
-	if err := c.ShouldBindJSON(&edit); err != nil {
+	var editRaw models.RequestEditSong
+	if err := c.ShouldBindJSON(&editRaw); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	edit := models.MetadataInfo{
+		Title:        editRaw.Title,
+		ReleaseDate:  editRaw.ReleaseDate,
+		TrackNumber:  strconv.FormatUint(uint64(editRaw.TrackNumber), 10),
+		VolumeNumber: strconv.FormatUint(uint64(editRaw.VolumeNumber), 10),
+		Explicit:     strconv.FormatBool(editRaw.Explicit),
+		Isrc:         editRaw.Isrc,
+		Album:        editRaw.Album,
+		AlbumArtists: editRaw.AlbumArtists,
+		Artists:      editRaw.Artists,
+		AlbumGain:    strconv.FormatFloat(editRaw.AlbumGain, 'f', 6, 64),
+		AlbumPeak:    strconv.FormatFloat(editRaw.AlbumPeak, 'f', 6, 64),
+		TrackGain:    strconv.FormatFloat(editRaw.TrackGain, 'f', 6, 64),
+		TrackPeak:    strconv.FormatFloat(editRaw.TrackPeak, 'f', 6, 64),
 	}
 
 	userPath, err := utils.GetUserPath(userId)

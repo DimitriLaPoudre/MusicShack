@@ -10,7 +10,21 @@ type Song struct {
 	UpdatedAt time.Time
 }
 
-type RequestEditSong MetadataInfo
+type RequestEditSong struct {
+	Title        string   `json:"title"`
+	ReleaseDate  string   `json:"releaseDate"`
+	TrackNumber  uint     `json:"trackNumber"`
+	VolumeNumber uint     `json:"volumeNumber"`
+	Explicit     bool     `json:"explicit"`
+	Isrc         string   `json:"isrc"`
+	Album        string   `json:"album"`
+	AlbumArtists []string `json:"albumArtists"`
+	Artists      []string `json:"artists"`
+	AlbumGain    float64  `json:"albumGain"`
+	AlbumPeak    float64  `json:"albumPeak"`
+	TrackGain    float64  `json:"trackGain"`
+	TrackPeak    float64  `json:"trackPeak"`
+}
 
 type MetadataInfo struct {
 	Title        string   `json:"title"`

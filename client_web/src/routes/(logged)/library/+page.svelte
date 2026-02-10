@@ -213,9 +213,6 @@
 									type="text"
 									name="isrc"
 									placeholder="ISRC (eg: FR5R00909899)"
-									minlength="12"
-									maxlength="12"
-									pattern="^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$"
 								/>
 								<input type="date" name="releaseDate" />
 								<label>
@@ -395,6 +392,7 @@
 							const data = await apiFetch<StatusResponse>(
 								`/library/${editItem!.id}`,
 								"PUT",
+								editedItem,
 							);
 							if ("error" in data) {
 								throw new Error(
@@ -509,7 +507,6 @@
 							bind:value={editedItem.isrc}
 							type="text"
 							placeholder="ISRC (eg: FR5R00909899)"
-							pattern="^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$"
 						/>
 						<input
 							bind:value={editedItem.releaseDate}
@@ -525,21 +522,25 @@
 						<input
 							bind:value={editedItem.albumGain}
 							type="number"
+							step="any"
 							placeholder="Album Gain"
 						/>
 						<input
 							bind:value={editedItem.albumPeak}
 							type="number"
+							step="any"
 							placeholder="Album Peak"
 						/>
 						<input
 							bind:value={editedItem.trackGain}
 							type="number"
+							step="any"
 							placeholder="Track Gain"
 						/>
 						<input
 							bind:value={editedItem.trackPeak}
 							type="number"
+							step="any"
 							placeholder="Track Peak"
 						/>
 					</AlertDialog.Description>
