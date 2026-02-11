@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -40,7 +41,8 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, e
 	}
 	defer rootUser.Close()
 
-	filename := filepath.Join(info.AlbumArtists[0], info.Album, fmt.Sprintf("%s - %s.%s", info.TrackNumber, info.Title, extension))
+	filename := filepath.Join(strings.ReplaceAll(info.AlbumArtists[0], "/", "_"), strings.ReplaceAll(info.Album, "/", "_"),
+		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(info.TrackNumber, "/", "_"), strings.ReplaceAll(info.Title, "/", "_"), extension))
 	dirFile := filepath.Dir(filename)
 
 	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {

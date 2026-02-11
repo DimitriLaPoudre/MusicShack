@@ -454,6 +454,7 @@
 								<div class="flex gap-1">
 									<span>{artist}</span><button
 										class="p-0 m-0 border-0 bg-transparent text-inherit"
+										type="button"
 										onclick={() =>
 											editedItem.albumArtists.splice(
 												index,
@@ -484,6 +485,7 @@
 								<div class="flex gap-1">
 									<span>{artist}</span><button
 										class="p-0 m-0 border-0 bg-transparent text-inherit"
+										type="button"
 										onclick={() =>
 											editedItem.artists.splice(index, 1)}
 										>x</button

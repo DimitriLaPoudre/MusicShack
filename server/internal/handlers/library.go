@@ -1,9 +1,11 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -27,33 +29,33 @@ func UploadSong(c *gin.Context) {
 	info := models.MetadataInfo{
 		Explicit: "false",
 	}
-	info.Title = strings.ReplaceAll(c.Request.FormValue("title"), "/", "_")
+	info.Title = c.Request.FormValue("title")
 	if info.Title == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "title field empty"})
 		return
 	}
-	info.Album = strings.ReplaceAll(c.Request.FormValue("album"), "/", "_")
+	info.Album = c.Request.FormValue("album")
 	if info.Album == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "album field empty"})
 		return
 	}
-	albumArtistsRaw := strings.ReplaceAll(c.Request.FormValue("artists"), "/", "_")
-	if albumArtistsRaw == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
-		return
-	}
+	albumArtistsRaw := c.Request.FormValue("artists")
 	info.AlbumArtists = strings.Split(albumArtistsRaw, ",")
 	for i, artist := range info.AlbumArtists {
 		info.AlbumArtists[i] = strings.TrimSpace(artist)
 	}
-	artistsRaw := strings.ReplaceAll(c.Request.FormValue("artists"), "/", "_")
-	if artistsRaw == "" {
+	if len(info.AlbumArtists) == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
 		return
 	}
+	artistsRaw := c.Request.FormValue("artists")
 	info.Artists = strings.Split(artistsRaw, ",")
 	for i, artist := range info.Artists {
 		info.Artists[i] = strings.TrimSpace(artist)
+	}
+	if len(info.Artists) == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
+		return
 	}
 	if value := c.Request.FormValue("trackNumber"); value != "" {
 		info.TrackNumber = value
@@ -69,7 +71,7 @@ func UploadSong(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		} else {
-			info.Isrc = random
+			info.Isrc = strings.ToUpper(random)
 		}
 	}
 	if value := c.Request.FormValue("releaseDate"); value != "" {
@@ -151,8 +153,70 @@ func EditSong(c *gin.Context) {
 		TrackPeak:    strconv.FormatFloat(editRaw.TrackPeak, 'f', 6, 64),
 	}
 
+	if edit.Title == "" {
+		err := errors.New("title field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(edit.AlbumArtists) == 0 {
+		err := errors.New("albumArtists field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if len(edit.Artists) == 0 {
+		err := errors.New("artists field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if edit.Isrc == "" {
+		err := errors.New("isrc field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
 	userPath, err := utils.GetUserPath(userId)
 	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	extensionIndex := strings.LastIndex(song.Path, ".")
+	if extensionIndex == -1 {
+		err := errors.New("file don't have an extension")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
+		return
+	}
+
+	newSongPath := filepath.Join(strings.ReplaceAll(edit.AlbumArtists[0], "/", "_"), strings.ReplaceAll(edit.Album, "/", "_"),
+		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(edit.TrackNumber, "/", "_"), strings.ReplaceAll(edit.Title, "/", "_"), song.Path[extensionIndex+1:]))
+	if song.Path != newSongPath {
+		root, err := os.OpenRoot(userPath)
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			return
+		}
+		defer root.Close()
+
+		if err := root.Rename(song.Path, newSongPath); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			return
+		}
+
+		song.Path = newSongPath
+	}
+
+	song.Isrc = edit.Isrc
+
+	// update the song even without change for updatedAt field
+	if err := repository.UpdateSongByUserID(userId, song); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -163,8 +227,6 @@ func EditSong(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-
-	//prevoir le rename
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
