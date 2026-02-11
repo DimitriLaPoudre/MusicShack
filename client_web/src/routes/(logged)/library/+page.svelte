@@ -9,6 +9,8 @@
 	import {
 		ChevronLeft,
 		ChevronRight,
+		ChevronDown,
+		ChevronUp,
 		Pencil,
 		SearchIcon,
 		Trash,
@@ -28,6 +30,7 @@
 	let error = $state<null | string>(null);
 
 	let uploadDialog = $state(false);
+	let uploadOptionnal = $state(false);
 	let errorUploadDialog = $state<null | string>(null);
 
 	let editItem = $state<null | ResponseSong>(null);
@@ -157,10 +160,12 @@
 								Upload a song
 							</AlertDialog.Title>
 							<AlertDialog.Description
-								class="flex flex-col text-foreground-alt text-sm gap-4"
+								class="flex flex-col text-foreground-alt text-sm gap-2"
 							>
 								{#if errorUploadDialog}
-									<p>{errorUploadDialog}</p>
+									<p class="text-center bg-err p-2">
+										{errorUploadDialog}
+									</p>
 								{/if}
 								<input
 									required
@@ -193,35 +198,63 @@
 									name="artists"
 									placeholder="Artists (eg: thaHomey, LaFève)"
 								/>
-								<button type="button">Optionnal</button>
-								<input
-									type="number"
-									name="trackNumber"
-									placeholder="Track Number"
-									min="1"
-									step="1"
-								/>
-								<input
-									type="number"
-									name="volumeNumber"
-									placeholder="Volume Number"
-									min="1"
-									step="1"
-								/>
-								<input
-									type="text"
-									name="isrc"
-									placeholder="ISRC (eg: FR5R00909899)"
-								/>
-								<input type="date" name="releaseDate" />
-								<label>
-									Explicit
-									<input type="checkbox" name="explicit" />
-								</label>
+								{#if !uploadOptionnal}
+									<button
+										type="button"
+										class="flex gap-4 py-2"
+										onclick={() =>
+											(uploadOptionnal =
+												!uploadOptionnal)}
+									>
+										<p>Optionnal</p>
+										<ChevronUp />
+									</button>
+								{:else}
+									<button
+										type="button"
+										class="flex gap-4 py-2"
+										onclick={() =>
+											(uploadOptionnal =
+												!uploadOptionnal)}
+									>
+										<p>Optionnal</p>
+										<ChevronDown />
+									</button>
+
+									<input
+										type="number"
+										name="trackNumber"
+										placeholder="Track Number"
+										min="1"
+										step="1"
+									/>
+									<input
+										type="number"
+										name="volumeNumber"
+										placeholder="Volume Number"
+										min="1"
+										step="1"
+									/>
+									<input
+										type="text"
+										name="isrc"
+										placeholder="ISRC (eg: FR5R00909899)"
+									/>
+									<input type="date" name="releaseDate" />
+									<label
+										class="flex justify-center items-center gap-2"
+									>
+										Explicit
+										<input
+											type="checkbox"
+											name="explicit"
+										/>
+									</label>
+								{/if}
 							</AlertDialog.Description>
 						</div>
 						<div
-							class="flex w-full items-center justify-center gap-2"
+							class="flex w-full items-center justify-center gap-2 pt-2"
 						>
 							<AlertDialog.Cancel
 								type="button"
@@ -418,7 +451,9 @@
 						class="flex flex-col gap-1 text-foreground-alt text-sm"
 					>
 						{#if errorEditDialog}
-							<p>{errorEditDialog}</p>
+							<p class="text-center bg-err p-2">
+								{errorEditDialog}
+							</p>
 						{/if}
 						<input
 							bind:value={editedItem.title}
@@ -545,7 +580,9 @@
 							placeholder="Track Peak"
 						/>
 					</AlertDialog.Description>
-					<div class="flex w-full items-center justify-center gap-2">
+					<div
+						class="flex w-full items-center justify-center gap-2 pt-2"
+					>
 						<AlertDialog.Cancel
 							type="button"
 							class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"

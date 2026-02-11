@@ -159,6 +159,12 @@ func EditSong(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	if edit.Album == "" {
+		err := errors.New("album field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 	if len(edit.AlbumArtists) == 0 {
 		err := errors.New("albumArtists field empty")
 		log.Println(err)
