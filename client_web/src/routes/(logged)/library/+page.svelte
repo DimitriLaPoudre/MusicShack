@@ -65,7 +65,6 @@
 	});
 
 	afterNavigate(async () => {
-		await syncLibrary();
 		error = await loadLibrary(search, limit, offset);
 	});
 </script>
