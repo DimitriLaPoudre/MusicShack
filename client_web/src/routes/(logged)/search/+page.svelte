@@ -108,12 +108,12 @@
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#if type === "songs"}
 			{#if result[provider].songs.length === 0}
-				<p>No song found</p>
+				<p class="flex justify-center">No song found</p>
 			{/if}
 			{#each result[provider].songs as song}
-				<div class="w-[200px] h-auto">
+				<div class="w-50 h-auto">
 					<button
-						class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -168,7 +168,7 @@
 			{/each}
 		{:else if type === "albums"}
 			{#if result[provider].albums.length === 0}
-				<p>No album found</p>
+				<p class="flex justify-center">No album found</p>
 			{/if}
 			{#each result[provider].albums as album}
 				<div class="w-[200px] h-auto">
@@ -225,7 +225,7 @@
 			{/each}
 		{:else}
 			{#if result[provider].artists.length === 0}
-				<p>No artist found</p>
+				<p class="flex justify-center">No artist found</p>
 			{/if}
 			{#each result[provider].artists as artist}
 				<button
