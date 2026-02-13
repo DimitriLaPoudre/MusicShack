@@ -19,7 +19,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, extension string, info models.MetadataInfo) error {
+func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, extension string, info models.MetadataInfo, cover io.Reader) error {
 	user, err := repository.GetUserByID(userId)
 	if err != nil {
 		return fmt.Errorf("UploadLibrarySong: %w", err)
@@ -65,13 +65,27 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, e
 		}
 	}
 
-	if err := metadata.ApplyMetadata(filepath.Join(root.Name(), rootUser.Name(), filename), info); err != nil {
+	path := filepath.Join(root.Name(), rootUser.Name(), filename)
+
+	if err := metadata.ApplyMetadata(path, info); err != nil {
 		filepath := file.Name()
 		_ = file.Close()
 		if removeErr := os.Remove(filepath); removeErr != nil {
 			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: %w", err)
+		}
+	}
+
+	if cover != nil {
+		if err := metadata.ApplyCover(path, cover); err != nil {
+			filepath := file.Name()
+			_ = file.Close()
+			if removeErr := os.Remove(filepath); removeErr != nil {
+				return fmt.Errorf("saveSong: %w: %w", err, removeErr)
+			} else {
+				return fmt.Errorf("saveSong: %w", err)
+			}
 		}
 	}
 

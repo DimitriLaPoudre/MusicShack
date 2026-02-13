@@ -168,6 +168,11 @@
 									</p>
 								{/if}
 								<input
+									type="file"
+									name="cover"
+									accept="image/*"
+								/>
+								<input
 									required
 									type="file"
 									name="file"
