@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -10,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -19,7 +19,7 @@ import (
 	"go.senan.xyz/taglib"
 )
 
-func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, extension string, info models.MetadataInfo) error {
+func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, extension string, info models.MetadataInfo, cover io.Reader) error {
 	user, err := repository.GetUserByID(userId)
 	if err != nil {
 		return fmt.Errorf("UploadLibrarySong: %w", err)
@@ -41,7 +41,8 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, e
 	}
 	defer rootUser.Close()
 
-	filename := filepath.Join(info.AlbumArtists[0], info.Album, fmt.Sprintf("%s - %s.%s", info.TrackNumber, info.Title, extension))
+	filename := filepath.Join(strings.ReplaceAll(info.AlbumArtists[0], "/", "_"), strings.ReplaceAll(info.Album, "/", "_"),
+		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(info.TrackNumber, "/", "_"), strings.ReplaceAll(info.Title, "/", "_"), extension))
 	dirFile := filepath.Dir(filename)
 
 	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
@@ -52,25 +53,39 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.ReadCloser, e
 	if err != nil {
 		return fmt.Errorf("UploadLibrarySong: rootUser.Create: %w", err)
 	}
-	defer file.Close()
 
 	if _, err := io.Copy(file, reader); err != nil {
-		filepath := file.Name()
 		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: io.Copy: %w", err)
 		}
+	} else {
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("saveSong: file.Close: %w", err)
+		}
 	}
 
-	if err := metadata.ApplyMetadata(filepath.Join(root.Name(), rootUser.Name(), filename), info); err != nil {
-		filepath := file.Name()
-		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+	path := filepath.Join(root.Name(), rootUser.Name(), filename)
+
+	tags := metadata.MetadataInfoToTags(info)
+
+	if err := metadata.WriteTags(path, tags, false); err != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: %w", err)
+		}
+	}
+
+	if cover != nil {
+		if err := metadata.WriteCover(path, cover); err != nil {
+			if removeErr := root.Remove(filename); removeErr != nil {
+				return fmt.Errorf("saveSong: %w: %w", err, removeErr)
+			} else {
+				return fmt.Errorf("saveSong: %w", err)
+			}
 		}
 	}
 
@@ -105,24 +120,21 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if title, ok := tags[taglib.Title]; !ok && len(title) == 0 {
 		song.Title = "Unknown Title"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag title not found"))
 	} else {
 		song.Title = title[0]
 	}
 
 	if releaseDate, ok := tags[taglib.ReleaseDate]; !ok && len(releaseDate) == 0 {
 		song.ReleaseDate = "00-00-0000"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag releaseDate not found"))
 	} else {
 		song.ReleaseDate = releaseDate[0]
 	}
 
 	if trackNumber, ok := tags[taglib.TrackNumber]; !ok && len(trackNumber) == 0 {
 		song.TrackNumber = 0
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not found"))
 	} else {
 		if trackNumber, err := strconv.ParseUint(trackNumber[0], 10, 0); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag trackNumber not valid"))
+			song.TrackNumber = 0
 		} else {
 			song.TrackNumber = uint(trackNumber)
 		}
@@ -130,10 +142,9 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if volumeNumber, ok := tags[taglib.DiscNumber]; !ok && len(volumeNumber) == 0 {
 		song.VolumeNumber = 0
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not found"))
 	} else {
 		if volumeNumber, err := strconv.ParseUint(volumeNumber[0], 10, 0); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag volumeNumber not valid"))
+			song.VolumeNumber = 0
 		} else {
 			song.VolumeNumber = uint(volumeNumber)
 		}
@@ -141,10 +152,9 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if explicit, ok := tags["ITUNESADVISORY"]; !ok && len(explicit) == 0 {
 		song.Explicit = false
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not found"))
 	} else {
 		if explicit, err := strconv.ParseBool(explicit[0]); err != nil {
-			return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag explicit not valid"))
+			song.Explicit = false
 		} else {
 			song.Explicit = explicit
 		}
@@ -152,16 +162,60 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 
 	if album, ok := tags[taglib.Album]; !ok && len(album) == 0 {
 		song.Album = "Unknown Album"
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag album not found"))
 	} else {
 		song.Album = album[0]
 	}
 
 	if artists, ok := tags[taglib.Artists]; !ok && len(artists) == 0 {
 		song.Artists = []string{"Unknown Artist"}
-		// return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", errors.New("tag artists not found"))
 	} else {
 		song.Artists = artists
+	}
+
+	if artists, ok := tags["ALBUMARTISTS"]; !ok && len(artists) == 0 {
+		song.AlbumArtists = []string{"Unknown Artist"}
+	} else {
+		song.AlbumArtists = artists
+	}
+
+	if albumGain, ok := tags["REPLAYGAIN_ALBUM_GAIN"]; !ok && len(albumGain) == 0 {
+		song.AlbumGain = 0
+	} else {
+		if albumGain, err := strconv.ParseFloat(albumGain[0], 64); err != nil {
+			song.AlbumGain = 0
+		} else {
+			song.AlbumGain = albumGain
+		}
+	}
+
+	if albumPeak, ok := tags["REPLAYGAIN_ALBUM_PEAK"]; !ok && len(albumPeak) == 0 {
+		song.AlbumPeak = 0
+	} else {
+		if albumPeak, err := strconv.ParseFloat(albumPeak[0], 64); err != nil {
+			song.AlbumPeak = 0
+		} else {
+			song.AlbumPeak = albumPeak
+		}
+	}
+
+	if trackGain, ok := tags["REPLAYGAIN_TRACK_GAIN"]; !ok && len(trackGain) == 0 {
+		song.TrackGain = 0
+	} else {
+		if trackGain, err := strconv.ParseFloat(trackGain[0], 64); err != nil {
+			song.TrackGain = 0
+		} else {
+			song.TrackGain = trackGain
+		}
+	}
+
+	if trackPeak, ok := tags["REPLAYGAIN_TRACK_PEAK"]; !ok && len(trackPeak) == 0 {
+		song.TrackPeak = 0
+	} else {
+		if trackPeak, err := strconv.ParseFloat(trackPeak[0], 64); err != nil {
+			song.TrackPeak = 0
+		} else {
+			song.TrackPeak = trackPeak
+		}
 	}
 
 	return song, nil

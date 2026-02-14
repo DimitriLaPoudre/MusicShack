@@ -32,3 +32,19 @@ export interface RequestDownload {
 	type: string;
 	id: string;
 }
+
+export interface RequestEditSong {
+	title: string;
+	album: string;
+	albumArtists: string[];
+	artists: string[];
+	releaseDate: string;
+	trackNumber: number;
+	volumeNumber: number;
+	explicit: boolean;
+	isrc: string;
+	albumGain: number;
+	albumPeak: number;
+	trackGain: number;
+	trackPeak: number;
+}

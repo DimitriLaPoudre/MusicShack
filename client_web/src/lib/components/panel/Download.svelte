@@ -77,12 +77,16 @@
 		{/if}
 		<div class="flex flex-col gap-1">
 			{#each $downloadList as download, index}
-				<div class="grid grid-cols-[auto_1fr_auto] gap-2 items-stretch @container">
+				<div
+					class="grid grid-cols-[auto_1fr_auto] gap-2 items-stretch @container"
+				>
 					{#if download.data.id === ""}
 						<div class="w-[58px] h-[58px] self-center">
 							<Disc />
 						</div>
-						<button class="hover-soft self-center grid grid-cols-2 @max-[520px]:grid-cols-1 items-center justify-items-center border-none gap-2 h-full">
+						<button
+							class="hover-soft self-center grid grid-cols-2 @max-[520px]:grid-cols-1 items-center justify-items-center border-none gap-2 h-full"
+						>
 							<p>Unreleased</p>
 							<p>Unknown</p>
 						</button>
@@ -110,7 +114,9 @@
 								);
 							}}
 						>
-							<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
+							<p
+								class="flex flex-row items-center justify-center gap-2 font-extrabold"
+							>
 								{download.data.title}
 								{#if download.data.explicit}
 									<Explicit />
@@ -124,7 +130,9 @@
 							>
 						</button>
 					{/if}
-					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-1">
+					<div
+						class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-1"
+					>
 						{#if download.status === "done"}
 							<div class="p-4 flex items-center justify-center">
 								<CircleCheck />

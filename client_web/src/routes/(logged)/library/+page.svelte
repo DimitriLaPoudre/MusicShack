@@ -9,6 +9,9 @@
 	import {
 		ChevronLeft,
 		ChevronRight,
+		ChevronDown,
+		ChevronUp,
+		Pencil,
 		SearchIcon,
 		Trash,
 	} from "lucide-svelte";
@@ -21,7 +24,16 @@
 	let error = $state<null | string>(null);
 
 	let uploadDialog = $state(false);
+	let uploadOptionnal = $state(false);
 	let errorUploadDialog = $state<null | string>(null);
+
+	let editItem = $state<null | ResponseSong>(null);
+	let editArtists = $state<string>("");
+	let editArtistsList = $state<string[]>([]);
+	let editAlbumArtists = $state<string>("");
+	let editAlbumArtistsList = $state<string[]>([]);
+	let errorEditDialog = $state<null | string>(null);
+	let editDialog = $derived(editItem !== null);
 
 	let deletedItem = $state<null | ResponseSong>(null);
 	let deleteDialog = $derived(deletedItem !== null);
@@ -37,7 +49,6 @@
 	});
 
 	afterNavigate(async () => {
-		await syncLibrary();
 		error = await loadLibrary(search, limit, offset);
 	});
 </script>
@@ -55,159 +66,199 @@
 {:else if !$libraryPage}
 	<p class="mt-6 text-center">Loading...</p>
 {:else}
-	<p class="mt-3"></p>
-	<div class="flex items-center justify-center">
-		<button class="">
-			<SearchIcon />
-		</button>
+	<div class="flex flex-col gap-4 py-4">
+		<div class="flex items-center justify-center gap-4">
+			<div>
+				<SearchIcon />
+			</div>
 
-		<input
-			bind:value={search}
-			oninput={() => {
-				let query = new URLSearchParams(
-					page.url.searchParams.toString(),
-				);
-				query.set("q", search);
-				goto(`?${query.toString()}`, {
-					keepFocus: true,
-				});
-			}}
-			placeholder="Search"
-		/>
-	</div>
-	<AlertDialog.Root bind:open={uploadDialog}>
-		<div class="flex justify-center items-center">
-			<AlertDialog.Trigger
-				class="hover-full"
-				onclick={() => (errorUploadDialog = null)}
-			>
-				Upload
-			</AlertDialog.Trigger>
+			<input
+				bind:value={search}
+				oninput={() => {
+					let query = new URLSearchParams(
+						page.url.searchParams.toString(),
+					);
+					query.set("q", search);
+					goto(`?${query.toString()}`, {
+						keepFocus: true,
+					});
+				}}
+				placeholder="Search"
+			/>
 		</div>
-		<AlertDialog.Portal>
-			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
-			<AlertDialog.Content
-				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
-			>
-				<form
-					onsubmit={async (e) => {
-						try {
-							e.preventDefault();
-
-							const form = e.currentTarget;
-							const fd = new FormData(form);
-
-							const res = await fetch("/api/library", {
-								method: "POST",
-								credentials: "include",
-								body: fd,
-							});
-							if (res.status === 401) {
-								await goto("/login");
-							}
-							if (!res.ok) {
-								throw new Error(
-									((await res.json()) as ErrorResponse)
-										.error || "Failed to upload song",
-								);
-							}
-							error = await loadLibrary(search, limit, offset);
-							uploadDialog = false;
-						} catch (e) {
-							errorUploadDialog =
-								e instanceof Error
-									? e.message
-									: "Failed to upload song";
-						}
-					}}
+		<AlertDialog.Root bind:open={uploadDialog}>
+			<div class="flex justify-center items-center">
+				<AlertDialog.Trigger
+					class="hover-full"
+					onclick={() => (errorUploadDialog = null)}
 				>
-					<div class="flex flex-col gap-4">
-						<AlertDialog.Title class="text-lg font-semibold">
-							Upload a song
-						</AlertDialog.Title>
-						<AlertDialog.Description
-							class="flex flex-col text-foreground-alt text-sm gap-4"
-						>
-							{#if errorUploadDialog}
-								<p>{errorUploadDialog}</p>
-							{/if}
-							<input
-								required
-								type="file"
-								name="file"
-								accept="audio/*"
-							/>
-							<input
-								required
-								type="text"
-								name="title"
-								placeholder="Title"
-							/>
-							<input
-								required
-								type="text"
-								name="album"
-								placeholder="Album"
-							/>
-							<input
-								required
-								type="text"
-								name="albumArtists"
-								placeholder="Album Artists (eg: thaHomey, Skuna)"
-							/>
+					Upload
+				</AlertDialog.Trigger>
+			</div>
+			<AlertDialog.Portal>
+				<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+				<AlertDialog.Content
+					class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
+				>
+					<form
+						onsubmit={async (e) => {
+							try {
+								e.preventDefault();
 
-							<input
-								required
-								type="text"
-								name="artists"
-								placeholder="Artists (eg: thaHomey, LaFève)"
-							/>
-							<button>Optionnal</button>
-							<input
-								type="number"
-								name="trackNumber"
-								placeholder="Track Number"
-								min="1"
-								step="1"
-							/>
-							<input
-								type="number"
-								name="volumeNumber"
-								placeholder="Volume Number"
-								min="1"
-								step="1"
-							/>
-							<input
-								type="text"
-								name="isrc"
-								placeholder="ISRC (eg: FR5R00909899)"
-								minlength="12"
-								maxlength="12"
-								pattern="^[A-Z]{2}[A-Z0-9]{3}\d{2}\d{5}$"
-							/>
-							<input type="date" name="releaseDate" />
-							<label>
-								Explicit
-								<input type="checkbox" name="explicit" />
-							</label>
-						</AlertDialog.Description>
-					</div>
-					<div class="flex w-full items-center justify-center gap-2">
-						<AlertDialog.Cancel
-							class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+								const form = e.currentTarget;
+								const fd = new FormData(form);
+
+								const res = await fetch("/api/library", {
+									method: "POST",
+									credentials: "include",
+									body: fd,
+								});
+								if (res.status === 401) {
+									await goto("/login");
+								}
+								if (!res.ok) {
+									throw new Error(
+										((await res.json()) as ErrorResponse)
+											.error || "Failed to upload song",
+									);
+								}
+								error = await loadLibrary(
+									search,
+									limit,
+									offset,
+								);
+								uploadDialog = false;
+							} catch (e) {
+								errorUploadDialog =
+									e instanceof Error
+										? e.message
+										: "Failed to upload song";
+							}
+						}}
+					>
+						<div class="flex flex-col gap-4">
+							<AlertDialog.Title class="text-lg font-semibold">
+								Upload a song
+							</AlertDialog.Title>
+							<AlertDialog.Description
+								class="flex flex-col text-foreground-alt text-sm gap-2"
+							>
+								{#if errorUploadDialog}
+									<p class="text-center bg-err p-2">
+										{errorUploadDialog}
+									</p>
+								{/if}
+								<input
+									type="file"
+									name="cover"
+									accept="image/"
+								/>
+								<input
+									required
+									type="file"
+									name="file"
+									accept="audio/*"
+								/>
+								<input
+									required
+									type="text"
+									name="title"
+									placeholder="Title"
+								/>
+								<input
+									required
+									type="text"
+									name="album"
+									placeholder="Album"
+								/>
+								<input
+									required
+									type="text"
+									name="albumArtists"
+									placeholder="Album Artists (eg: thaHomey, Skuna)"
+								/>
+
+								<input
+									required
+									type="text"
+									name="artists"
+									placeholder="Artists (eg: thaHomey, LaFève)"
+								/>
+								{#if !uploadOptionnal}
+									<button
+										type="button"
+										class="flex gap-4 py-2"
+										onclick={() =>
+											(uploadOptionnal =
+												!uploadOptionnal)}
+									>
+										<p>Optionnal</p>
+										<ChevronUp />
+									</button>
+								{:else}
+									<button
+										type="button"
+										class="flex gap-4 py-2"
+										onclick={() =>
+											(uploadOptionnal =
+												!uploadOptionnal)}
+									>
+										<p>Optionnal</p>
+										<ChevronDown />
+									</button>
+
+									<input
+										type="number"
+										name="trackNumber"
+										placeholder="Track Number"
+										min="1"
+										step="1"
+									/>
+									<input
+										type="number"
+										name="volumeNumber"
+										placeholder="Volume Number"
+										min="1"
+										step="1"
+									/>
+									<input
+										type="text"
+										name="isrc"
+										placeholder="ISRC (eg: FR5R00909899)"
+									/>
+									<input type="date" name="releaseDate" />
+									<label
+										class="flex justify-center items-center gap-2"
+									>
+										Explicit
+										<input
+											type="checkbox"
+											name="explicit"
+										/>
+									</label>
+								{/if}
+							</AlertDialog.Description>
+						</div>
+						<div
+							class="flex w-full items-center justify-center gap-2 pt-2"
 						>
-							Cancel
-						</AlertDialog.Cancel>
-						<AlertDialog.Action
-							class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
-						>
-							Save
-						</AlertDialog.Action>
-					</div>
-				</form>
-			</AlertDialog.Content>
-		</AlertDialog.Portal>
-	</AlertDialog.Root>
+							<AlertDialog.Cancel
+								type="button"
+								class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+							>
+								Cancel
+							</AlertDialog.Cancel>
+							<AlertDialog.Action
+								class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+							>
+								Save
+							</AlertDialog.Action>
+						</div>
+					</form>
+				</AlertDialog.Content>
+			</AlertDialog.Portal>
+		</AlertDialog.Root>
+	</div>
 	<Pagination.Root
 		bind:page={currentPage}
 		count={$libraryPage.total}
@@ -279,12 +330,24 @@
 						{/each}
 					</nav>
 				</button>
-				<button
-					class="hover-full w-full p-4 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
-					onclick={() => (deletedItem = item)}
-				>
-					<Trash />
-				</button>
+				<div class="flex">
+					<button
+						class="hover-full w-full p-4 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg)]"
+						onclick={() => {
+							editItem = item;
+							editArtistsList = editItem.artists;
+							editAlbumArtistsList = editItem.albumArtists;
+						}}
+					>
+						<Pencil />
+					</button>
+					<button
+						class="hover-full w-full p-4 shadow-[inset_0_-1px_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						onclick={() => (deletedItem = item)}
+					>
+						<Trash />
+					</button>
+				</div>
 			</div>
 		{/each}
 	</div>
@@ -332,6 +395,221 @@
 		{/snippet}
 	</Pagination.Root>
 {/if}
+{#if editItem}
+	<AlertDialog.Root bind:open={editDialog}>
+		<AlertDialog.Portal>
+			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+			<AlertDialog.Content
+				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
+			>
+				<form
+					class="flex flex-col gap-4"
+					onsubmit={async (e) => {
+						try {
+							e.preventDefault();
+
+							const form = e.currentTarget;
+							const fd = new FormData(form);
+
+							editAlbumArtistsList.forEach((t) =>
+								fd.append("albumArtists", t),
+							);
+							editArtistsList.forEach((t) =>
+								fd.append("artists", t),
+							);
+
+							const emptyKeys = [];
+							for (let [key, value] of fd.entries()) {
+								if (value === "") emptyKeys.push(key);
+								if (value instanceof File && value.size === 0) {
+									emptyKeys.push(key);
+								}
+							}
+							for (let key of emptyKeys) {
+								fd.delete(key);
+							}
+
+							const res = await fetch(
+								`/api/library/${editItem!.id}`,
+								{
+									method: "PUT",
+									credentials: "include",
+									body: fd,
+								},
+							);
+							if (res.status === 401) {
+								await goto("/login");
+							}
+							if (!res.ok) {
+								throw new Error(
+									((await res.json()) as ErrorResponse)
+										.error || "Failed to upload song",
+								);
+							}
+
+							editItem = null;
+							errorEditDialog = await loadLibrary(
+								search,
+								limit,
+								offset,
+							);
+						} catch (e) {
+							errorEditDialog =
+								e instanceof Error
+									? e.message
+									: "Failed to load artist";
+						}
+					}}
+				>
+					<AlertDialog.Title class="text-lg font-semibold">
+						Edit
+					</AlertDialog.Title>
+					<AlertDialog.Description
+						class="flex flex-col gap-1 text-foreground-alt text-sm"
+					>
+						{#if errorEditDialog}
+							<p class="text-center bg-err p-2">
+								{errorEditDialog}
+							</p>
+						{/if}
+						<input name="cover" type="file" accept="image/*" />
+						<input name="title" type="text" placeholder="Title" />
+						<input name="album" type="text" placeholder="Album" />
+						<input
+							bind:value={editAlbumArtists}
+							name="albumArtists"
+							onkeydown={(e) => {
+								const albumArtist = editAlbumArtists.trim();
+								if (e.key === "Enter" && albumArtist !== "") {
+									e.preventDefault();
+									editAlbumArtistsList = [
+										...editAlbumArtists,
+										albumArtist,
+									];
+									editAlbumArtists = "";
+								}
+							}}
+							type="text"
+							placeholder="Album Artists"
+						/>
+						<div class="flex gap-2">
+							<span>Album Artists: </span>
+							{#each editAlbumArtistsList as artist, index}
+								<div class="flex gap-1">
+									<span>{artist}</span>
+									<button
+										class="p-0 m-0 border-0 bg-transparent text-inherit"
+										type="button"
+										onclick={() =>
+											editAlbumArtistsList.splice(
+												index,
+												1,
+											)}
+									>
+										x
+									</button>
+								</div>
+							{/each}
+						</div>
+						<input
+							bind:value={editArtists}
+							onkeydown={(e) => {
+								const artist = editArtists.trim();
+								if (e.key === "Enter" && artist !== "") {
+									e.preventDefault();
+									editArtistsList = [
+										...editArtistsList,
+										artist,
+									];
+									editArtists = "";
+								}
+							}}
+							type="text"
+							placeholder="Artists"
+						/>
+						<div class="flex gap-2">
+							<span>Artists: </span>
+							{#each editArtistsList as artist, index}
+								<div class="flex gap-1">
+									<span>{artist}</span>
+									<button
+										class="p-0 m-0 border-0 bg-transparent text-inherit"
+										type="button"
+										onclick={() =>
+											editArtistsList.splice(index, 1)}
+									>
+										x
+									</button>
+								</div>
+							{/each}
+						</div>
+						<input
+							name="trackNumber"
+							type="number"
+							placeholder="Track Number"
+							step="1"
+						/>
+						<input
+							name="volumeNumber"
+							type="number"
+							placeholder="Volume Number"
+							step="1"
+						/>
+						<input
+							name="isrc"
+							type="text"
+							placeholder="ISRC (eg: FR5R00909899)"
+						/>
+						<input name="releaseDate" type="date" />
+						<label>
+							Explicit
+							<input name="explicit" type="checkbox" />
+						</label>
+						<input
+							name="albumGain"
+							type="number"
+							step="any"
+							placeholder="Album Gain"
+						/>
+						<input
+							name="albumPeak"
+							type="number"
+							step="any"
+							placeholder="Album Peak"
+						/>
+						<input
+							name="trackGain"
+							type="number"
+							step="any"
+							placeholder="Track Gain"
+						/>
+						<input
+							name="trackPeak"
+							type="number"
+							step="any"
+							placeholder="Track Peak"
+						/>
+					</AlertDialog.Description>
+					<div
+						class="flex w-full items-center justify-center gap-2 pt-2"
+					>
+						<AlertDialog.Cancel
+							type="button"
+							class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+						>
+							Cancel
+						</AlertDialog.Cancel>
+						<AlertDialog.Action
+							class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+						>
+							Save
+						</AlertDialog.Action>
+					</div>
+				</form>
+			</AlertDialog.Content>
+		</AlertDialog.Portal>
+	</AlertDialog.Root>
+{/if}
 {#if deletedItem}
 	<AlertDialog.Root bind:open={deleteDialog}>
 		<AlertDialog.Portal>
@@ -339,18 +617,21 @@
 			<AlertDialog.Content
 				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
 			>
-				<div class="flex flex-col gap-4 pb-6">
-					<AlertDialog.Title class="text-lg font-semibold">
-						Delete {deletedItem.title}
+				<AlertDialog.Title class="text-lg font-semibold">
+					Delete
+					<span class="font-extrabold">
+						{deletedItem.title}
+					</span>
+					<span class="italic font-extrabold">
 						{deletedItem.album}
+					</span>
+					<span class="italic">
 						{deletedItem.artists}
-					</AlertDialog.Title>
-					<AlertDialog.Description
-						class="text-foreground-alt text-sm"
-					>
-						Are you sure you want to delete this song?
-					</AlertDialog.Description>
-				</div>
+					</span>
+				</AlertDialog.Title>
+				<AlertDialog.Description class="text-foreground-alt text-sm">
+					Are you sure you want to delete this song?
+				</AlertDialog.Description>
 				<div class="flex w-full items-center justify-center gap-2">
 					<AlertDialog.Cancel
 						class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"

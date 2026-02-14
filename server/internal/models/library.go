@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type Song struct {
 	ID        uint   `gorm:"primaryKey" json:"id"`
@@ -8,6 +11,23 @@ type Song struct {
 	Path      string `gorm:"not null" json:"path"`
 	Isrc      string `gorm:"uniqueIndex:idx_song" json:"isrc"`
 	UpdatedAt time.Time
+}
+
+type RequestEditSong struct {
+	Cover        *multipart.FileHeader `form:"cover"`
+	Title        *string               `form:"title"`
+	ReleaseDate  *string               `form:"releaseDate"`
+	TrackNumber  *uint                 `form:"trackNumber"`
+	VolumeNumber *uint                 `form:"volumeNumber"`
+	Explicit     *bool                 `form:"explicit"`
+	Isrc         *string               `form:"isrc"`
+	Album        *string               `form:"album"`
+	AlbumArtists *[]string             `form:"albumArtists"`
+	Artists      *[]string             `form:"artists"`
+	AlbumGain    *float64              `form:"albumGain"`
+	AlbumPeak    *float64              `form:"albumPeak"`
+	TrackGain    *float64              `form:"trackGain"`
+	TrackPeak    *float64              `form:"trackPeak"`
 }
 
 type MetadataInfo struct {
@@ -40,15 +60,20 @@ type UploadSong struct {
 
 type ResponseSong struct {
 	ID           uint     `json:"id"`
-	Title        string   `json:"title"`
 	Duration     uint     `json:"duration"`
+	Title        string   `json:"title"`
 	ReleaseDate  string   `json:"releaseDate"`
 	TrackNumber  uint     `json:"trackNumber"`
 	VolumeNumber uint     `json:"volumeNumber"`
 	Explicit     bool     `json:"explicit"`
 	Isrc         string   `json:"isrc"`
 	Album        string   `json:"album"`
+	AlbumArtists []string `json:"albumArtists"`
 	Artists      []string `json:"artists"`
+	AlbumGain    float64  `json:"albumGain"`
+	AlbumPeak    float64  `json:"albumPeak"`
+	TrackGain    float64  `json:"trackGain"`
+	TrackPeak    float64  `json:"trackPeak"`
 }
 
 type ResponseLibrary struct {
