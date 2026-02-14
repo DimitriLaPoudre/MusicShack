@@ -32,29 +32,21 @@ func getCover(ctx context.Context, url string) (io.Reader, error) {
 	return bytes.NewReader(buf), nil
 }
 
-func ApplyMetadata(path string, info models.MetadataInfo) error {
-	if err := taglib.WriteTags(path, map[string][]string{
-		taglib.Title:            {info.Title},
-		taglib.Artists:          info.Artists,
-		"ALBUMARTISTS":          info.AlbumArtists,
-		taglib.Album:            {info.Album},
-		taglib.TrackNumber:      {info.TrackNumber},
-		taglib.DiscNumber:       {info.VolumeNumber},
-		taglib.ReleaseDate:      {info.ReleaseDate},
-		"itunesadvisory":        {info.Explicit},
-		"replaygain_album_gain": {info.AlbumGain},
-		"replaygain_album_peak": {info.AlbumPeak},
-		"replaygain_track_gain": {info.TrackGain},
-		"replaygain_track_peak": {info.TrackPeak},
-		taglib.ISRC:             {info.Isrc},
-	}, taglib.Clear); err != nil {
+func WriteTags(path string, tags map[string][]string, trunc bool) error {
+	var writeOption taglib.WriteOption
+	if trunc {
+		writeOption = taglib.Clear
+	} else {
+		writeOption = 0
+	}
+	if err := taglib.WriteTags(path, tags, writeOption); err != nil {
 		return fmt.Errorf("ApplyMetadata: taglib.WriteTags: %w", err)
 	} else {
 		return nil
 	}
 }
 
-func ApplyCover(path string, reader io.Reader) error {
+func WriteCover(path string, reader io.Reader) error {
 	img, err := io.ReadAll(reader)
 	if err != nil {
 		return fmt.Errorf("ApplyCover: io.ReadAll: %w", err)
@@ -93,23 +85,23 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 	albumGain := strconv.FormatFloat(data.AlbumReplayGain, 'f', -1, 64)
 	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
 
-	info := models.MetadataInfo{
-		Title:        data.Title,
-		Album:        data.Album.Title,
+	tags := map[string][]string{
+		Title:        {data.Title},
+		Album:        {data.Album.Title},
 		AlbumArtists: albumArtists,
 		Artists:      artists,
-		TrackNumber:  trackNumber,
-		VolumeNumber: volumeNumber,
-		ReleaseDate:  album.ReleaseDate,
-		Explicit:     explicit,
-		AlbumGain:    albumGain,
-		AlbumPeak:    albumPeak,
-		TrackGain:    trackGain,
-		TrackPeak:    trackPeak,
-		Isrc:         data.Isrc,
+		TrackNumber:  {trackNumber},
+		VolumeNumber: {volumeNumber},
+		ReleaseDate:  {album.ReleaseDate},
+		Explicit:     {explicit},
+		AlbumGain:    {albumGain},
+		AlbumPeak:    {albumPeak},
+		TrackGain:    {trackGain},
+		TrackPeak:    {trackPeak},
+		ISRC:         {data.Isrc},
 	}
 
-	if err := ApplyMetadata(path, info); err != nil {
+	if err := WriteTags(path, tags, false); err != nil {
 		return fmt.Errorf("FormatMetadata: %w", err)
 	}
 
@@ -118,8 +110,16 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 		return fmt.Errorf("FormatMetadata: %w", err)
 	}
 
-	if err := ApplyCover(path, img); err != nil {
+	if err := WriteCover(path, img); err != nil {
 		return fmt.Errorf("FormatMetadata: taglib.WriteImage: %w", err)
 	}
 	return nil
+}
+
+func ReadTags(path string) (map[string][]string, error) {
+	if tags, err := taglib.ReadTags(path); err != nil {
+		return tags, fmt.Errorf("ReadTags: %w", err)
+	} else {
+		return tags, nil
+	}
 }

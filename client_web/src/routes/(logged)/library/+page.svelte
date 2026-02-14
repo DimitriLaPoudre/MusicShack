@@ -19,13 +19,7 @@
 	import { Pagination, AlertDialog } from "bits-ui";
 	import { libraryPage } from "$lib/stores/panel/library";
 	import { page } from "$app/state";
-	import type {
-		ErrorResponse,
-		ResponseSong,
-		StatusResponse,
-	} from "$lib/types/response";
-	import { apiFetch } from "$lib/functions/fetch";
-	import type { RequestEditSong } from "$lib/types/request";
+	import type { ErrorResponse, ResponseSong } from "$lib/types/response";
 
 	let error = $state<null | string>(null);
 
@@ -34,23 +28,10 @@
 	let errorUploadDialog = $state<null | string>(null);
 
 	let editItem = $state<null | ResponseSong>(null);
-	let editedItem = $state<RequestEditSong>({
-		title: "",
-		album: "",
-		albumArtists: [],
-		artists: [],
-		explicit: false,
-		isrc: "",
-		releaseDate: "",
-		trackNumber: 0,
-		volumeNumber: 0,
-		albumGain: 0,
-		albumPeak: 0,
-		trackGain: 0,
-		trackPeak: 0,
-	});
 	let editArtists = $state<string>("");
+	let editArtistsList = $state<string[]>([]);
 	let editAlbumArtists = $state<string>("");
+	let editAlbumArtistsList = $state<string[]>([]);
 	let errorEditDialog = $state<null | string>(null);
 	let editDialog = $derived(editItem !== null);
 
@@ -170,7 +151,7 @@
 								<input
 									type="file"
 									name="cover"
-									accept="image/*"
+									accept="image/"
 								/>
 								<input
 									required
@@ -353,10 +334,9 @@
 					<button
 						class="hover-full w-full p-4 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg)]"
 						onclick={() => {
-							editedItem = {
-								...item,
-							};
 							editItem = item;
+							editArtistsList = editItem.artists;
+							editAlbumArtistsList = editItem.albumArtists;
 						}}
 					>
 						<Pencil />
@@ -424,29 +404,61 @@
 			>
 				<form
 					class="flex flex-col gap-4"
-					onsubmit={async () => {
+					onsubmit={async (e) => {
 						try {
-							const data = await apiFetch<StatusResponse>(
-								`/library/${editItem!.id}`,
-								"PUT",
-								editedItem,
+							e.preventDefault();
+
+							const form = e.currentTarget;
+							const fd = new FormData(form);
+
+							editAlbumArtistsList.forEach((t) =>
+								fd.append("albumArtists", t),
 							);
-							if ("error" in data) {
+							editArtistsList.forEach((t) =>
+								fd.append("artists", t),
+							);
+
+							const emptyKeys = [];
+							for (let [key, value] of fd.entries()) {
+								if (value === "") emptyKeys.push(key);
+								if (value instanceof File && value.size === 0) {
+									emptyKeys.push(key);
+								}
+							}
+							for (let key of emptyKeys) {
+								fd.delete(key);
+							}
+
+							const res = await fetch(
+								`/api/library/${editItem!.id}`,
+								{
+									method: "PUT",
+									credentials: "include",
+									body: fd,
+								},
+							);
+							if (res.status === 401) {
+								await goto("/login");
+							}
+							if (!res.ok) {
 								throw new Error(
-									data.error || "Failed to fetch artist",
+									((await res.json()) as ErrorResponse)
+										.error || "Failed to upload song",
 								);
 							}
-							errorEditDialog = null;
+
 							editItem = null;
+							errorEditDialog = await loadLibrary(
+								search,
+								limit,
+								offset,
+							);
 						} catch (e) {
 							errorEditDialog =
 								e instanceof Error
 									? e.message
 									: "Failed to load artist";
 						}
-					}}
-					onkeydown={(e) => {
-						if (e.key === "Enter") e.preventDefault();
 					}}
 				>
 					<AlertDialog.Title class="text-lg font-semibold">
@@ -460,126 +472,119 @@
 								{errorEditDialog}
 							</p>
 						{/if}
-						<input
-							bind:value={editedItem.title}
-							type="text"
-							placeholder="Title"
-						/>
-						<input
-							bind:value={editedItem.album}
-							type="text"
-							placeholder="Album"
-						/>
+						<input name="cover" type="file" accept="image/*" />
+						<input name="title" type="text" placeholder="Title" />
+						<input name="album" type="text" placeholder="Album" />
 						<input
 							bind:value={editAlbumArtists}
+							name="albumArtists"
 							onkeydown={(e) => {
-								if (
-									e.key === "Enter" &&
-									editAlbumArtists.trim()
-								) {
-									editedItem.albumArtists = [
-										...editedItem.albumArtists,
-										editAlbumArtists.trim(),
+								const albumArtist = editAlbumArtists.trim();
+								if (e.key === "Enter" && albumArtist !== "") {
+									e.preventDefault();
+									editAlbumArtistsList = [
+										...editAlbumArtists,
+										albumArtist,
 									];
 									editAlbumArtists = "";
 								}
 							}}
 							type="text"
-							placeholder="Album Artists (eg: thaHomey, Skuna)"
+							placeholder="Album Artists"
 						/>
 						<div class="flex gap-2">
 							<span>Album Artists: </span>
-							{#each editedItem.albumArtists as artist, index}
+							{#each editAlbumArtistsList as artist, index}
 								<div class="flex gap-1">
-									<span>{artist}</span><button
+									<span>{artist}</span>
+									<button
 										class="p-0 m-0 border-0 bg-transparent text-inherit"
 										type="button"
 										onclick={() =>
-											editedItem.albumArtists.splice(
+											editAlbumArtistsList.splice(
 												index,
 												1,
-											)}>x</button
+											)}
 									>
+										x
+									</button>
 								</div>
 							{/each}
 						</div>
-
 						<input
 							bind:value={editArtists}
 							onkeydown={(e) => {
-								if (e.key === "Enter" && editArtists.trim()) {
-									editedItem.artists = [
-										...editedItem.artists,
-										editArtists.trim(),
+								const artist = editArtists.trim();
+								if (e.key === "Enter" && artist !== "") {
+									e.preventDefault();
+									editArtistsList = [
+										...editArtistsList,
+										artist,
 									];
 									editArtists = "";
 								}
 							}}
 							type="text"
-							placeholder="Artists (eg: thaHomey, LaFève)"
+							placeholder="Artists"
 						/>
 						<div class="flex gap-2">
 							<span>Artists: </span>
-							{#each editedItem.artists as artist, index}
+							{#each editArtistsList as artist, index}
 								<div class="flex gap-1">
-									<span>{artist}</span><button
+									<span>{artist}</span>
+									<button
 										class="p-0 m-0 border-0 bg-transparent text-inherit"
 										type="button"
 										onclick={() =>
-											editedItem.artists.splice(index, 1)}
-										>x</button
+											editArtistsList.splice(index, 1)}
 									>
+										x
+									</button>
 								</div>
 							{/each}
 						</div>
 						<input
-							bind:value={editedItem.trackNumber}
+							name="trackNumber"
 							type="number"
 							placeholder="Track Number"
 							step="1"
 						/>
 						<input
-							bind:value={editedItem.volumeNumber}
+							name="volumeNumber"
 							type="number"
 							placeholder="Volume Number"
 							step="1"
 						/>
 						<input
-							bind:value={editedItem.isrc}
+							name="isrc"
 							type="text"
 							placeholder="ISRC (eg: FR5R00909899)"
 						/>
-						<input
-							bind:value={editedItem.releaseDate}
-							type="date"
-						/>
+						<input name="releaseDate" type="date" />
 						<label>
 							Explicit
-							<input
-								bind:checked={editedItem.explicit}
-								type="checkbox"
-							/>
+							<input name="explicit" type="checkbox" />
 						</label>
 						<input
-							bind:value={editedItem.albumGain}
+							name="albumGain"
 							type="number"
 							step="any"
 							placeholder="Album Gain"
 						/>
 						<input
-							bind:value={editedItem.albumPeak}
+							name="albumPeak"
 							type="number"
 							step="any"
 							placeholder="Album Peak"
 						/>
 						<input
-							bind:value={editedItem.trackGain}
+							name="trackGain"
 							type="number"
 							step="any"
 							placeholder="Track Gain"
 						/>
 						<input
-							bind:value={editedItem.trackPeak}
+							name="trackPeak"
 							type="number"
 							step="any"
 							placeholder="Track Peak"

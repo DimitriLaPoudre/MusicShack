@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -136,6 +137,13 @@ func EditSong(c *gin.Context) {
 		id = uint(result)
 	}
 
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	song, err := repository.GetSongByUserID(userId, id)
 	if err != nil {
 		log.Println(err)
@@ -143,65 +151,122 @@ func EditSong(c *gin.Context) {
 		return
 	}
 
-	var editRaw models.RequestEditSong
-	if err := c.ShouldBindJSON(&editRaw); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	edit := models.MetadataInfo{
-		Title:        editRaw.Title,
-		ReleaseDate:  editRaw.ReleaseDate,
-		TrackNumber:  strconv.FormatUint(uint64(editRaw.TrackNumber), 10),
-		VolumeNumber: strconv.FormatUint(uint64(editRaw.VolumeNumber), 10),
-		Explicit:     strconv.FormatBool(editRaw.Explicit),
-		Isrc:         editRaw.Isrc,
-		Album:        editRaw.Album,
-		AlbumArtists: editRaw.AlbumArtists,
-		Artists:      editRaw.Artists,
-		AlbumGain:    strconv.FormatFloat(editRaw.AlbumGain, 'f', 6, 64),
-		AlbumPeak:    strconv.FormatFloat(editRaw.AlbumPeak, 'f', 6, 64),
-		TrackGain:    strconv.FormatFloat(editRaw.TrackGain, 'f', 6, 64),
-		TrackPeak:    strconv.FormatFloat(editRaw.TrackPeak, 'f', 6, 64),
-	}
-
-	if edit.Title == "" {
-		err := errors.New("title field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if edit.Album == "" {
-		err := errors.New("album field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if len(edit.AlbumArtists) == 0 {
-		err := errors.New("albumArtists field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if len(edit.Artists) == 0 {
-		err := errors.New("artists field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-	if edit.Isrc == "" {
-		err := errors.New("isrc field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	userPath, err := utils.GetUserPath(userId)
+	refTags, err := metadata.ReadTags(filepath.Join(userPath, song.Path))
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
+	}
+
+	var edit models.RequestEditSong
+	if err := c.ShouldBind(&edit); err != nil {
+		err := fmt.Errorf("c.ShouldBind: %w", err)
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	var cover multipart.File
+	if edit.Cover != nil {
+		if cover, err = edit.Cover.Open(); err != nil {
+			err := fmt.Errorf("edit.Cover.Open: %w", err)
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+	}
+
+	var title string
+	var album string
+	var artist string
+	var trackNumber string
+	tags := map[string][]string{}
+	if edit.Title != nil {
+		if *edit.Title == "" {
+			err := errors.New("title field empty")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			tags[metadata.Title] = []string{*edit.Title}
+			title = *edit.Title
+		}
+	} else {
+		title = refTags[metadata.Title][0]
+	}
+	if edit.Album != nil {
+		if *edit.Album == "" {
+			err := errors.New("album field empty")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			tags[metadata.Album] = []string{*edit.Album}
+			album = *edit.Album
+		}
+	} else {
+		album = refTags[metadata.Album][0]
+	}
+	if edit.AlbumArtists != nil {
+		if len(*edit.AlbumArtists) == 0 {
+			err := errors.New("albumArtists field empty")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			tags[metadata.AlbumArtists] = *edit.AlbumArtists
+			artist = (*edit.AlbumArtists)[0]
+		}
+	} else {
+		artist = refTags[metadata.AlbumArtists][0]
+	}
+	if edit.Artists != nil {
+		if len(*edit.Artists) == 0 {
+			err := errors.New("artists field empty")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			tags[metadata.Artists] = *edit.Artists
+		}
+	}
+	if edit.ReleaseDate != nil {
+		tags[metadata.ReleaseDate] = []string{*edit.ReleaseDate}
+	}
+	if edit.TrackNumber != nil {
+		tags[metadata.TrackNumber] = []string{strconv.FormatUint(uint64(*edit.TrackNumber), 10)}
+		trackNumber = strconv.FormatUint(uint64(*edit.TrackNumber), 10)
+	} else {
+		trackNumber = refTags[metadata.TrackNumber][0]
+	}
+	if edit.VolumeNumber != nil {
+		tags[metadata.VolumeNumber] = []string{strconv.FormatUint(uint64(*edit.VolumeNumber), 10)}
+	}
+	if edit.Explicit != nil {
+		tags[metadata.Explicit] = []string{strconv.FormatBool(*edit.Explicit)}
+	}
+	if edit.AlbumGain != nil {
+		tags[metadata.AlbumGain] = []string{strconv.FormatFloat(*edit.AlbumGain, 'f', 6, 64)}
+	}
+	if edit.AlbumPeak != nil {
+		tags[metadata.AlbumPeak] = []string{strconv.FormatFloat(*edit.AlbumPeak, 'f', 6, 64)}
+	}
+	if edit.TrackGain != nil {
+		tags[metadata.TrackGain] = []string{strconv.FormatFloat(*edit.TrackGain, 'f', 6, 64)}
+	}
+	if edit.TrackPeak != nil {
+		tags[metadata.TrackPeak] = []string{strconv.FormatFloat(*edit.TrackPeak, 'f', 6, 64)}
+	}
+	if edit.Isrc != nil {
+		if *edit.Isrc == "" {
+			err := errors.New("isrc field empty")
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		} else {
+			tags[metadata.ISRC] = []string{*edit.Isrc}
+			song.Isrc = *edit.Isrc
+		}
 	}
 
 	extensionIndex := strings.LastIndex(song.Path, ".")
@@ -212,8 +277,8 @@ func EditSong(c *gin.Context) {
 		return
 	}
 
-	newSongPath := filepath.Join(strings.ReplaceAll(edit.AlbumArtists[0], "/", "_"), strings.ReplaceAll(edit.Album, "/", "_"),
-		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(edit.TrackNumber, "/", "_"), strings.ReplaceAll(edit.Title, "/", "_"), song.Path[extensionIndex+1:]))
+	newSongPath := filepath.Join(strings.ReplaceAll(artist, "/", "_"), strings.ReplaceAll(album, "/", "_"),
+		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(trackNumber, "/", "_"), strings.ReplaceAll(title, "/", "_"), song.Path[extensionIndex+1:]))
 	if song.Path != newSongPath {
 		root, err := os.OpenRoot(userPath)
 		if err != nil {
@@ -223,28 +288,51 @@ func EditSong(c *gin.Context) {
 		}
 		defer root.Close()
 
-		if err := root.Rename(song.Path, newSongPath); err != nil {
+		oldSongPath := song.Path
+		if err := utils.RootDuplicateFile(root, oldSongPath, newSongPath); err != nil {
 			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 
-		song.Path = newSongPath
-	}
+		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
+			_ = root.Remove(newSongPath)
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		} else {
+			_ = root.Remove(oldSongPath)
+		}
+		if cover != nil {
+			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
+				_ = root.Remove(newSongPath)
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			} else {
+				_ = root.Remove(oldSongPath)
+			}
+		}
 
-	song.Isrc = edit.Isrc
+		song.Path = newSongPath
+	} else {
+		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+		if cover != nil {
+			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
+				log.Println(err)
+				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				return
+			}
+		}
+	}
 
 	// update the song even without change for updatedAt field
 	if err := repository.UpdateSongByUserID(userId, song); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	if err := metadata.ApplyMetadata(filepath.Join(userPath, song.Path), models.MetadataInfo(edit)); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})

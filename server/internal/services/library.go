@@ -53,24 +53,26 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, exten
 	if err != nil {
 		return fmt.Errorf("UploadLibrarySong: rootUser.Create: %w", err)
 	}
-	defer file.Close()
 
 	if _, err := io.Copy(file, reader); err != nil {
-		filepath := file.Name()
 		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: io.Copy: %w", err)
+		}
+	} else {
+		if err := file.Close(); err != nil {
+			return fmt.Errorf("saveSong: file.Close: %w", err)
 		}
 	}
 
 	path := filepath.Join(root.Name(), rootUser.Name(), filename)
 
-	if err := metadata.ApplyMetadata(path, info); err != nil {
-		filepath := file.Name()
-		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+	tags := metadata.MetadataInfoToTags(info)
+
+	if err := metadata.WriteTags(path, tags, false); err != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: %w", err)
@@ -78,10 +80,8 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, exten
 	}
 
 	if cover != nil {
-		if err := metadata.ApplyCover(path, cover); err != nil {
-			filepath := file.Name()
-			_ = file.Close()
-			if removeErr := os.Remove(filepath); removeErr != nil {
+		if err := metadata.WriteCover(path, cover); err != nil {
+			if removeErr := root.Remove(filename); removeErr != nil {
 				return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 			} else {
 				return fmt.Errorf("saveSong: %w", err)
