@@ -144,6 +144,13 @@ The project roadmap is managed via [GitHub Projects](https://github.com/users/Di
 
 ---
 
+## Credits
+
+- **Design** inspired from black theme [monochrome](https://github.com/monochrome-music/monochrome)
+- The **whole idea** come from the existence of the [hifi](https://github.com/binimum/hifi-api) API
+
+---
+
 ## License
 
 MIT — see the `LICENSE` file.
