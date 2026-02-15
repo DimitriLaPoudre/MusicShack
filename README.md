@@ -24,30 +24,30 @@
 
 ## About
 
-MusicShack is a self-hosted web appplication to import, format, and manage a music library.
-It centralizes browsing, downloading, and metadata handling via multiple sources, with automatic downloads of your favorite artists’ new release.
+MusicShack is a self-hosted web application to import, format, and manage a music library.
+It centralizes browsing, downloading, and metadata handling via multiple sources, with automatic downloads of your favorite artists’ new releases.
 The server stores downloads locally, while the web UI provides search, download, follow, library editing, and admin features for multiple users.
 
 ---
 
 > [!IMPORTANT]
 >
-> This is my first **useful** solo project with completely new techno to me.
-> I refactor a lot of things everytime I see past architecture error.  
+> This is my first **useful** solo project using technologies that are completely new to me.
+> I refactor many things every time I notice past architecture error.  
 > Feel free to correct me or ask for **any** features you think are relevant.
 >
-> Song tagging are based on the Navidrome standard (I don't knoew if it's compatible with other music servers; I hope so^^).
+> Song tagging is based on the Navidrome standard (I don't know if it's compatible with other music servers; I hope so^^).
 
 ---
 
 ## Features
 
 - Browse and search music catalogs through different sources
-- Download tracks and albums directly from this sources
-- Follow artists — everyday at 1AM, MusicShack will download any new songs released by artists you follow
+- Download tracks and albums directly from these sources
+- Follow artists — every day at 1AM, MusicShack will download any new songs released by the artists you follow
 - Add new source URL
 - User authentication and simple user management
-- Admin panel for adding new user
+- Admin panel for adding new users
 - Deployable with Docker / Docker Compose
 - Plugin architecture to add new data sources in the future, like [DAB](https://dab.yeet.su/) or even your friends' servers
 
@@ -61,8 +61,8 @@ TO-DO
 
 ## Deployment (Docker)
 
-MusicShack provides `example.env` file for quick deployment  
-For more info about [environnement variable](https://github.com/DimitriLaPoudre/MusicShack/README.md#environnement-variable)
+MusicShack provides an `example.env` file for quick deployment  
+For more info about [environment variable](https://github.com/DimitriLaPoudre/MusicShack/README.md#environment-variable)
 
 ### Deployment steps
 
@@ -78,7 +78,7 @@ For more info about [environnement variable](https://github.com/DimitriLaPoudre/
    - Go to `http://URL:PORT/admin`
    - Use your password set in `ADMIN_PASSWORD`
 4. Create a user via the admin panel:
-   - Enter an Username and a Password
+   - Enter an username and a password
    - Click on the `+` button or `Enter` key
 5. Access the main interface:
    - Go to `http://URL:PORT/`
@@ -91,13 +91,13 @@ For more info about [environnement variable](https://github.com/DimitriLaPoudre/
 ## Usage
    - Add sources:
       -  Click on the `Settings` button
-      -  Enter an Instances URL (find somes [here](https://github.com/EduardPrigoana/hifi-instances))
+      -  Enter an instance URL (find some [here](https://github.com/EduardPrigoana/hifi-instances))
       -  Click on the `+` button or `Enter` key
    - Follow an artist:
       - Click on the `Search` button
       - Select the artist name
       - Go to the `Artist` section
-      - Click on his profile
+      - Click on their profile
       - Click on the `Follow` button
    - Download a song:
       - Click on the `Search` button
@@ -108,23 +108,23 @@ For more info about [environnement variable](https://github.com/DimitriLaPoudre/
       - Click on the `Library` button
       - Click on the `Upload` button
       - Select a file
-      - Choose a cover, title, album name, etc
+      - Choose a cover, title, album name, etc.
       - Click on the `Save` button
    - Edit a song:
       - Click on the `Library` button
-      - Click on the `Edit` button of the song you want edit
-      - Choose a new cover, title, album name, etc
+      - Click on the `Edit` button of the song you want to edit
+      - Choose a new cover, title, album name, etc.
       - Click on the `Save` button
 
 ---
 
-## Environnement Variable
+## Environment Variable
 
 - `HTTPS` = *boolean* (**false** by default) set at true if your domain use https
 - `PORT` = *number* (**8080** by default) port where the app will be accessible
-- `LIBRARY_PATH` = *string* (mandatory) path to the library (download/upload will go into that directory)
+- `LIBRARY_PATH` = *string* (mandatory) path to the library (downloads/uploads will go into that directory)
 - `ADMIN_PASSWORD` = *string* (mandatory) default password for admin panel
-- `POSTGRES_HOST` = *string* (mandatory) localhost or name of the service that contain postgres
+- `POSTGRES_HOST` = *string* (mandatory) localhost or name of the service that contains PostgreSQL
 - `POSTGRES_USER` = *string* (mandatory)
 - `POSTGRES_PASSWORD` = *string* (mandatory)
 - `POSTGRES_DB` = *string* (mandatory)
@@ -140,14 +140,14 @@ The project roadmap is managed via [GitHub Projects](https://github.com/users/Di
 ## Contributing
 
 - Open an issue to discuss features or bugs
-- Feel free to add a plugin for new provider and open a PR
+- Feel free to add a plugin for a new provider and open a PR
 
 ---
 
 ## Credits
 
-- **Design** inspired from black theme [monochrome](https://github.com/monochrome-music/monochrome)
-- The **whole idea** come from the existence of the [hifi](https://github.com/binimum/hifi-api) API
+- **Design** inspired by the black theme of [monochrome](https://github.com/monochrome-music/monochrome)
+- The **whole idea** comes from the existence of the [hifi](https://github.com/binimum/hifi-api) API
 
 ---
 
@@ -163,6 +163,6 @@ MIT — see the `LICENSE` file.
 >
 > - Users are solely responsible for complying with copyright laws in their jurisdiction.
 > - All music rights remain with their respective copyright holders.
-> - This tool serves as a interface for personal, non-commercial use.
+> - This tool serves as an interface for personal, non-commercial use.
 >
 > MusicShack assumes no responsibility for any misuse or legal violations.
