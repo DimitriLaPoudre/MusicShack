@@ -66,8 +66,8 @@
 	<div class="mt-1 mx-auto table border-separate border-spacing-y-2.5">
 		<div class="table-row">
 			<div class="flex flex-row flex-wrap justify-center gap-2.5">
-				<img class="w-[280px] h-[280px]" src={album.coverUrl} alt={album.title} />
-				<div class="flex flex-col gap-[7px]">
+				<img class="w-70 h-70" src={album.coverUrl} alt={album.title} />
+				<div class="flex flex-col gap-1.75">
 					<h1 class="flex flex-row items-center gap-2 font-extrabold">
 						{album.title}
 						{#if album.explicit}
@@ -119,7 +119,7 @@
 	<div class="pt-8 flex flex-col gap-8">
 		{#each discs as disc, i}
 			{#if disc}
-				<div class="grid gap-2.5 pl-[5px]">
+				<div class="grid gap-2.5 pl-1.25">
 					{#if album.numberVolumes > 1}
 						<h2 class="text-center font-bold">Disc {i}</h2>
 					{/if}
@@ -140,14 +140,20 @@
 									}}
 								>
 									<p>{song.trackNumber}</p>
-									<div class="flex flex-row flex-wrap justify-center items-center w-full gap-2">
-										<p class="flex flex-row items-center justify-center gap-2 font-extrabold break-words">
+									<div
+										class="flex flex-row flex-wrap justify-center items-center w-full gap-2"
+									>
+										<p
+											class="flex flex-row items-center justify-center gap-2 font-extrabold wrap-break-words"
+										>
 											{song.title}
 											{#if song.explicit}
 												<Explicit />
 											{/if}
 										</p>
-										<nav class="italic flex flex-wrap justify-center items-center gap-x-2 gap-y-1 break-words">
+										<nav
+											class="italic flex flex-wrap justify-center items-center gap-x-2 gap-y-1 wrap-break-words"
+										>
 											{#each song.artists as artist}
 												<a
 													href="/artist/{page.params

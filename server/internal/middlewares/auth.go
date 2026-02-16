@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"errors"
 	"log"
 	"net/http"
 
@@ -41,13 +42,15 @@ func LoggedOut() gin.HandlerFunc {
 		}
 
 		_, err = repository.GetUserSessionByToken(token)
-		repository.DeleteExpiredUserSession()
 		if err != nil {
 			c.Next()
 			return
 		}
+		repository.DeleteExpiredUserSession()
 
-		c.JSON(http.StatusForbidden, gin.H{"error": "user already logged in"})
+		err = errors.New("user already logged in")
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"error": err})
 		c.Abort()
 	}
 }

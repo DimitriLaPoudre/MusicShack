@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -25,6 +26,7 @@ func AddInstance(c *gin.Context) {
 
 	var req models.RequestInstance
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -65,8 +67,7 @@ func ListInstances(c *gin.Context) {
 	instances := make([]models.InstanceItem, len(instancesRaw))
 	for index, instance := range instancesRaw {
 		var ping int64
-
-		api, ok := plugins.GetName(instance.Api)
+		api, ok := plugins.GetPluginByName(instance.Api)
 		if ok {
 			start := time.Now()
 			if err := api.Status(c.Request.Context(), instance.Url); err == nil {
@@ -89,9 +90,9 @@ func RemoveInstance(c *gin.Context) {
 		return
 	}
 
-	idStr := c.Param("id")
-	idUint64, err := strconv.ParseUint(idStr, 10, 0)
+	idUint64, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return

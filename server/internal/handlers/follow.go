@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -23,15 +25,17 @@ func AddFollow(c *gin.Context) {
 
 	var req models.RequestFollow
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	plugins, ok := plugins.GetProvider(req.Provider)
+	plugins, ok := plugins.GetPluginByProvider(req.Provider)
 	if !ok {
-		log.Println("invalid provider name")
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid provider name"})
+		err := errors.New("invalid provider name")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
 	}
 
@@ -106,9 +110,9 @@ func DeleteFollow(c *gin.Context) {
 		return
 	}
 
-	idStr := c.Param("id")
-	idUint64, err := strconv.ParseUint(idStr, 10, 0)
+	idUint64, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
 		return

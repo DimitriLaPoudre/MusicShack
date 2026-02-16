@@ -21,7 +21,7 @@ func initAdmin() (*models.Admin, error) {
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil, fmt.Errorf("initAdmin: %w", err)
+		return nil, fmt.Errorf("database.initAdmin: %w", err)
 	}
 
 	admin := models.Admin{
@@ -63,25 +63,25 @@ func init() {
 		postgresHost, postgresUser, postgresPassword, postgresDB)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("database.init:", err)
 	}
 
 	if err := db.AutoMigrate(&models.User{}, &models.UserSession{}, &models.Instance{}, &models.Follow{}, &models.Song{}, &models.Admin{}); err != nil {
-		log.Fatal(err)
+		log.Fatal("database.init:", err)
 	}
 
 	if err := migrationDB(db); err != nil {
-		log.Fatal(err)
+		log.Fatal("database.init:", err)
 	}
 
 	admin, err := initAdmin()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("database.init:", err)
 	}
 
 	err = db.Clauses(clause.OnConflict{DoNothing: true}).Create(admin).Error
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("database.init:", err)
 	}
 
 	DB = db

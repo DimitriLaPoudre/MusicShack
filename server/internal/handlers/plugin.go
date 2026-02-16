@@ -92,7 +92,7 @@ func Search(c *gin.Context) {
 	search := c.Query("q")
 	finding := make(map[string]models.SearchData)
 
-	for provider, plugins := range plugins.GetAllProvider() {
+	for provider, plugins := range plugins.GetAllPluginsByProvider() {
 		var tmp models.SearchData
 		var err error
 		for _, plugin := range plugins {

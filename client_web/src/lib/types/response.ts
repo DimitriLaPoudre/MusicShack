@@ -13,7 +13,13 @@ export interface User {
 
 export type UserResponse = User;
 
-export type UsersResponse = User[];
+export interface AdminUser {
+	id: number;
+	username: string;
+	hiRes: boolean;
+}
+
+export type AdminUsersResponse = AdminUser[];
 
 export interface InstanceItem {
 	id: number;

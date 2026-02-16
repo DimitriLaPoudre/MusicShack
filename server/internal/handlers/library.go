@@ -32,16 +32,23 @@ func UploadSong(c *gin.Context) {
 		Artists:      make([]string, 0),
 		Explicit:     "false",
 	}
+
 	info.Title = c.Request.FormValue("title")
 	if info.Title == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "title field empty"})
+		err := errors.New("title field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	info.Album = c.Request.FormValue("album")
 	if info.Album == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "album field empty"})
+		err := errors.New("album field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
 	albumArtists := strings.Split(c.Request.FormValue("albumArtists"), ",")
 	for _, artist := range albumArtists {
 		artist = strings.TrimSpace(artist)
@@ -50,7 +57,9 @@ func UploadSong(c *gin.Context) {
 		}
 	}
 	if len(info.AlbumArtists) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
+		err := errors.New("albumArtists field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -62,7 +71,9 @@ func UploadSong(c *gin.Context) {
 		}
 	}
 	if len(info.Artists) == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "artists field empty"})
+		err := errors.New("artists field empty")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -89,7 +100,9 @@ func UploadSong(c *gin.Context) {
 	cover, _, err := c.Request.FormFile("cover")
 	if err != nil {
 		if err != http.ErrMissingFile {
-			c.JSON(500, gin.H{"error": err.Error()})
+			err := fmt.Errorf("c.Request.FormFile: %w", err)
+			log.Println(err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
 	} else {
@@ -98,7 +111,9 @@ func UploadSong(c *gin.Context) {
 
 	file, fileHeader, err := c.Request.FormFile("file")
 	if err != nil {
-		c.JSON(500, gin.H{"error": err.Error()})
+		err := fmt.Errorf("c.Request.FormFile: %w", err)
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	defer file.Close()
@@ -106,7 +121,9 @@ func UploadSong(c *gin.Context) {
 	filename := fileHeader.Filename
 	extensionIndex := strings.LastIndex(filename, ".")
 	if extensionIndex == -1 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "file don't have an extension"})
+		err := errors.New("file don't have an extension")
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -130,6 +147,7 @@ func EditSong(c *gin.Context) {
 
 	var id uint
 	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -282,6 +300,7 @@ func EditSong(c *gin.Context) {
 	if song.Path != newSongPath {
 		root, err := os.OpenRoot(userPath)
 		if err != nil {
+			err := fmt.Errorf("os.OpenRoot: %w", err)
 			log.Println(err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": err})
 			return
@@ -346,14 +365,14 @@ func GetSongCover(c *gin.Context) {
 		return
 	}
 
-	var id uint
-	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
+	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	} else {
-		id = uint(result)
 	}
+	id := uint(result)
 
 	img, err := services.GetLibrarySongCover(userId, id)
 	if err != nil {
@@ -434,14 +453,13 @@ func DeleteSong(c *gin.Context) {
 		return
 	}
 
-	var id uint
-	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
+	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
-	} else {
-		id = uint(result)
 	}
+	id := uint(result)
 
 	if err := services.DeleteLibrarySong(userId, id); err != nil {
 		log.Println(err)

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -21,6 +22,7 @@ func AddDownload(c *gin.Context) {
 
 	var req models.RequestDownload
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -54,9 +56,9 @@ func ListDownload(c *gin.Context) {
 }
 
 func DeleteDownload(c *gin.Context) {
-	taskIdRaw := c.Param("id")
-	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
+	taskIdBadType, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -80,9 +82,9 @@ func DeleteDownload(c *gin.Context) {
 }
 
 func RetryDownload(c *gin.Context) {
-	taskIdRaw := c.Param("id")
-	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
+	taskIdBadType, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -106,9 +108,9 @@ func RetryDownload(c *gin.Context) {
 }
 
 func CancelDownload(c *gin.Context) {
-	taskIdRaw := c.Param("id")
-	taskIdBadType, err := strconv.ParseUint(taskIdRaw, 10, 0)
+	taskIdBadType, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

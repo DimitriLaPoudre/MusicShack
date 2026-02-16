@@ -123,7 +123,7 @@
 							goto(`/song/${provider}/${song.id}`);
 						}}
 					>
-						<div class="w-[160px] h-[160px]">
+						<div class="w-40 h-40">
 							{#if song.album.coverUrl !== ""}
 								<img
 									src={song.album.coverUrl}
@@ -183,7 +183,7 @@
 							goto(`/album/${provider}/${album.id}`);
 						}}
 					>
-						<div class="w-[160px] h-[160px]">
+						<div class="w-40 h-40">
 							{#if album.coverUrl !== ""}
 								<img src={album.coverUrl} alt={album.title} />
 							{:else}
@@ -229,12 +229,10 @@
 			{/if}
 			{#each result[provider].artists as artist}
 				<button
-					class="hover-full w-[200px] h-auto flex flex-col items-center gap-3"
+					class="hover-full w-50 h-auto flex flex-col items-center gap-3"
 					onclick={() => goto(`/artist/${provider}/${artist.id}`)}
 				>
-					<div
-						class="w-[160px] h-[160px] flex items-center justify-center"
-					>
+					<div class="w-40 h-40 flex items-center justify-center">
 						{#if artist.pictureUrl !== ""}
 							<img
 								class="rounded-full"

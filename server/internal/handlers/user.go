@@ -2,15 +2,16 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -19,11 +20,13 @@ import (
 func CreateUser(c *gin.Context) {
 	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := validateRequestUser(req); err != nil {
+	if err := services.ValidateRequestUser(req); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -31,6 +34,7 @@ func CreateUser(c *gin.Context) {
 
 	hashPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
+		err := fmt.Errorf("bcrypt.GenerateFromPassword: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -46,6 +50,7 @@ func CreateUser(c *gin.Context) {
 func ListUsers(c *gin.Context) {
 	users, err := repository.ListUsers()
 	if err != nil {
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -53,19 +58,23 @@ func ListUsers(c *gin.Context) {
 }
 
 func GetUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 0)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	user, err := repository.GetUserByID(uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			err := errors.New("user not found")
+			log.Println(err)
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -74,15 +83,18 @@ func GetUser(c *gin.Context) {
 }
 
 func UpdateUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 0)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	var req models.RequestUser
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
+		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -90,9 +102,12 @@ func UpdateUser(c *gin.Context) {
 	oldUser, err := repository.GetUserByID(uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			err := errors.New("user not found")
+			log.Println(err)
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -100,16 +115,25 @@ func UpdateUser(c *gin.Context) {
 	err = repository.UpdateUser(uint(id), &req)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			err := errors.New("user not found")
+			log.Println(err)
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	if req.Username != "" {
-		err := os.Rename(filepath.Join(config.LIBRARY_PATH, oldUser.Username), filepath.Join(config.LIBRARY_PATH, req.Username))
+		root, err := os.OpenRoot(config.LIBRARY_PATH)
 		if err != nil {
+			err := fmt.Errorf("os.OpenRoot: %w", err)
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		if err := root.Rename(oldUser.Username, req.Username); err != nil {
+			err := fmt.Errorf("root.Rename")
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
@@ -119,19 +143,23 @@ func UpdateUser(c *gin.Context) {
 }
 
 func DeleteUser(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := strconv.ParseUint(idStr, 10, 0)
+	id, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid id"})
+		err := fmt.Errorf("strconv.ParseUint: %w", err)
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	err = repository.DeleteUser(uint(id))
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": "user not found"})
+			err := errors.New("user not found")
+			log.Println(err)
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 			return
 		}
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}

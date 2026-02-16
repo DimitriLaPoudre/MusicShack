@@ -34,11 +34,13 @@
 						href="/artist/{item.provider}/{item.artistId}"
 					>
 						<img
-							class="w-[58px] h-[58px] self-center"
+							class="w-14.5 h-14.5 self-center"
 							src={item.artistPictureUrl}
 							alt={item.artistName}
 						/>
-						<p class="italic pl-3 flex items-center group-hover/data:outline group-hover/data:outline-1 group-hover/data:outline-fg group-hover/data:-outline-offset-1">
+						<p
+							class="italic pl-3 flex items-center group-hover/data:outline group-hover/data:outline-fg group-hover/data:-outline-offset-1"
+						>
 							{item.artistName}
 						</p>
 					</a>

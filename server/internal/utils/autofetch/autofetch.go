@@ -21,7 +21,7 @@ type release struct {
 
 func getNewReleasesOfArtist(ctx context.Context, userId uint, provider string, id string, lastFetchDate string) ([]release, error) {
 	var newReleases []release
-	plugins, ok := plugins.GetProvider(provider)
+	plugins, ok := plugins.GetPluginByProvider(provider)
 	if !ok {
 		return newReleases, fmt.Errorf("invalid provider name")
 	}

@@ -304,11 +304,11 @@
 	</Pagination.Root>
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#each $libraryPage.items as item}
-			<div class="w-[200px] h-auto">
+			<div class="w-50 h-auto">
 				<button
-					class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+					class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 				>
-					<div class="w-[160px] h-[160px]">
+					<div class="w-40 h-40">
 						<img
 							src="/api/library/{item.id}/img"
 							alt={item.title}

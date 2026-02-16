@@ -52,7 +52,9 @@
 	<title>Admin | Login - MusicShack</title>
 </svelte:head>
 
-<div class="flex flex-col items-center mx-auto mt-[10vh] h-screen w-[clamp(320px,70vw+20px,1200px)]">
+<div
+	class="flex flex-col items-center mx-auto mt-[10vh] h-screen w-[clamp(320px,70vw+20px,1200px)]"
+>
 	<h1 class="font-extrabold">Admin Login</h1>
 	{#if error}
 		<p class="p-3 m-4 text-err">{error}</p>
@@ -66,7 +68,7 @@
 				bind:value={credentials.password}
 				required
 			/>
-			<button class="hover-full w-[200px] p-3">Login</button>
+			<button class="hover-full w-50 p-3">Login</button>
 		</div>
 	</form>
 </div>

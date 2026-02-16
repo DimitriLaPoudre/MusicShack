@@ -10,8 +10,7 @@ import (
 func GetSong(userId uint, id uint) (models.Song, error) {
 	var song models.Song
 
-	if err := database.DB.
-		First(&song, "id = ?", id).Error; err != nil {
+	if err := database.DB.First(&song, "id = ?", id).Error; err != nil {
 		return models.Song{}, fmt.Errorf("repository.GetSong: %w", err)
 	}
 

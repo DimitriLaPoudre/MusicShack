@@ -49,7 +49,9 @@
 	<title>Login - MusicShack</title>
 </svelte:head>
 
-<div class="flex flex-col items-center mx-auto mt-[10vh] w-[clamp(320px,70vw+20px,1200px)] h-screen">
+<div
+	class="flex flex-col items-center mx-auto mt-[10vh] w-[clamp(320px,70vw+20px,1200px)] h-screen"
+>
 	<h1 class="font-extrabold">Login</h1>
 	<form onsubmit={handleLogin}>
 		{#if error}
@@ -71,7 +73,7 @@
 					required
 				/>
 			</div>
-			<button class="hover-full w-[200px] p-3">Login</button>
+			<button class="hover-full w-50 p-3">Login</button>
 		</div>
 	</form>
 </div>

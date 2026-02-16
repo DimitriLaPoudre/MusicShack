@@ -23,14 +23,18 @@ func AddFollow(userId uint, provider string, artistId string, artistName string,
 
 func ListFollows() ([]models.Follow, error) {
 	var follows []models.Follow
-	err := database.DB.Find(&follows).Error
-	return follows, err
+	if err := database.DB.Find(&follows).Error; err != nil {
+		return []models.Follow{}, fmt.Errorf("repository.ListFollows: %w", err)
+	}
+	return follows, nil
 }
 
 func ListFollowsByUserID(userId uint) ([]models.Follow, error) {
 	var follows []models.Follow
-	err := database.DB.Find(&follows, "user_id = ?", userId).Error
-	return follows, err
+	if err := database.DB.Find(&follows, "user_id = ?", userId).Error; err != nil {
+		return []models.Follow{}, fmt.Errorf("repository.ListFollowsByUserID: %w", err)
+	}
+	return follows, nil
 }
 
 func GetFollowByProviderByArtistID(provider string, artistId string) (*models.Follow, error) {
@@ -42,9 +46,15 @@ func GetFollowByProviderByArtistID(provider string, artistId string) (*models.Fo
 }
 
 func DeleteFollow(id uint) error {
-	return database.DB.Delete(&models.Follow{}, id).Error
+	if err := database.DB.Delete(&models.Follow{}, id).Error; err != nil {
+		return fmt.Errorf("repository.DeleteFollow: %w", err)
+	}
+	return nil
 }
 
 func DeleteFollowByUserID(userId uint, id uint) error {
-	return database.DB.Delete(&models.Follow{}, "user_id = ? AND id = ?", userId, id).Error
+	if err := database.DB.Delete(&models.Follow{}, "user_id = ? AND id = ?", userId, id).Error; err != nil {
+		return fmt.Errorf("repository.DeleteFollowByUserID: %w", err)
+	}
+	return nil
 }

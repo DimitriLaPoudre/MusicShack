@@ -163,9 +163,14 @@
 					{errorUser}
 				</p>
 			{/if}
-			<form class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container" onsubmit={changeUser}>
+			<form
+				class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container"
+				onsubmit={changeUser}
+			>
 				<div class="flex flex-col gap-2">
-					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2">
+					<div
+						class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2"
+					>
 						<input
 							placeholder={$userData?.username || "username"}
 							bind:value={inputUser.username}
@@ -175,7 +180,9 @@
 							bind:value={inputUser.password}
 						/>
 					</div>
-					<div class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2">
+					<div
+						class="grid grid-cols-2 @max-[520px]:grid-cols-1 gap-2"
+					>
 						<button
 							type="button"
 							class="py-4 hover:shadow-[inset_0_0_0_1px_var(--fg)] focus:outline-none active:bg-fg active:text-bg"
@@ -212,8 +219,15 @@
 					{errorInstances}
 				</p>
 			{/if}
-			<form class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container" onsubmit={addInstance}>
-				<input class="w-full" placeholder="URL" bind:value={inputInstance.url} />
+			<form
+				class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container"
+				onsubmit={addInstance}
+			>
+				<input
+					class="w-full"
+					placeholder="URL"
+					bind:value={inputInstance.url}
+				/>
 				<button class="hover-full"><Plus /></button>
 			</form>
 			{#if !$instanceList}
@@ -221,13 +235,19 @@
 			{:else}
 				<div class="flex flex-col gap-2">
 					{#each $instanceList as instance}
-						<div class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container">
-							<div class="hover-soft grid grid-cols-[1fr_auto_6ch] @max-[520px]:grid-cols-1 gap-3 items-center p-4">
-								<p class="break-words">{instance.url}</p>
-								<p class="break-words">
+						<div
+							class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container"
+						>
+							<div
+								class="hover-soft grid grid-cols-[1fr_auto_6ch] @max-[520px]:grid-cols-1 gap-3 items-center p-4"
+							>
+								<p class="warp-break-words">{instance.url}</p>
+								<p class="warp-break-words">
 									{instance.provider}|{instance.api}
 								</p>
-								<p class="justify-self-end @max-[520px]:justify-self-start">
+								<p
+									class="justify-self-end @max-[520px]:justify-self-start"
+								>
 									{#if instance.ping === 0}
 										failed
 									{:else}
@@ -247,5 +267,10 @@
 			{/if}
 		</div>
 	</div>
-	<button class="w-full py-3 shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err" onclick={logout}> Logout </button>
+	<button
+		class="w-full py-3 shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err"
+		onclick={logout}
+	>
+		Logout
+	</button>
 </div>

@@ -57,14 +57,13 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, exten
 	if _, err := io.Copy(file, reader); err != nil {
 		_ = file.Close()
 		if removeErr := rootUser.Remove(filename); removeErr != nil {
-			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
+			return fmt.Errorf("UploadLibrarySong: io.Copy: %w: %w", err, removeErr)
 		} else {
-			return fmt.Errorf("saveSong: io.Copy: %w", err)
+			return fmt.Errorf("UploadLibrarySong: io.Copy: %w", err)
 		}
-	} else {
-		if err := file.Close(); err != nil {
-			return fmt.Errorf("saveSong: file.Close: %w", err)
-		}
+	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("UploadLibrarySong: file.Close: %w", err)
 	}
 
 	path := filepath.Join(root.Name(), rootUser.Name(), filename)
@@ -96,8 +95,21 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, exten
 
 func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 	song := models.ResponseSong{
-		ID:   info.ID,
-		Isrc: info.Isrc,
+		ID:           info.ID,
+		Isrc:         info.Isrc,
+		Title:        "Unknown Title",
+		Album:        "Unknown Album",
+		Artists:      []string{"Unknown Artist"},
+		AlbumArtists: []string{"Unknown Artist"},
+		ReleaseDate:  "00-00-0000",
+		TrackNumber:  0,
+		VolumeNumber: 0,
+		Explicit:     false,
+		Duration:     0,
+		AlbumGain:    0,
+		AlbumPeak:    0,
+		TrackGain:    0,
+		TrackPeak:    0,
 	}
 
 	path, err := utils.GetUserPath(info.UserId)
@@ -118,102 +130,64 @@ func GetLibrarySong(info models.Song) (models.ResponseSong, error) {
 		return models.ResponseSong{}, fmt.Errorf("services.GetLibrarySong: %w", err)
 	}
 
-	if title, ok := tags[taglib.Title]; !ok && len(title) == 0 {
-		song.Title = "Unknown Title"
-	} else {
+	if title, ok := tags[metadata.Title]; ok && len(title) > 0 {
 		song.Title = title[0]
 	}
 
-	if releaseDate, ok := tags[taglib.ReleaseDate]; !ok && len(releaseDate) == 0 {
-		song.ReleaseDate = "00-00-0000"
-	} else {
+	if releaseDate, ok := tags[metadata.ReleaseDate]; ok && len(releaseDate) > 0 {
 		song.ReleaseDate = releaseDate[0]
 	}
 
-	if trackNumber, ok := tags[taglib.TrackNumber]; !ok && len(trackNumber) == 0 {
-		song.TrackNumber = 0
-	} else {
-		if trackNumber, err := strconv.ParseUint(trackNumber[0], 10, 0); err != nil {
-			song.TrackNumber = 0
-		} else {
+	if trackNumber, ok := tags[metadata.TrackNumber]; ok && len(trackNumber) > 0 {
+		if trackNumber, err := strconv.ParseUint(trackNumber[0], 10, 0); err == nil {
 			song.TrackNumber = uint(trackNumber)
 		}
 	}
 
-	if volumeNumber, ok := tags[taglib.DiscNumber]; !ok && len(volumeNumber) == 0 {
-		song.VolumeNumber = 0
-	} else {
-		if volumeNumber, err := strconv.ParseUint(volumeNumber[0], 10, 0); err != nil {
-			song.VolumeNumber = 0
-		} else {
+	if volumeNumber, ok := tags[metadata.VolumeNumber]; ok && len(volumeNumber) > 0 {
+		if volumeNumber, err := strconv.ParseUint(volumeNumber[0], 10, 0); err == nil {
 			song.VolumeNumber = uint(volumeNumber)
 		}
 	}
 
-	if explicit, ok := tags["ITUNESADVISORY"]; !ok && len(explicit) == 0 {
-		song.Explicit = false
-	} else {
-		if explicit, err := strconv.ParseBool(explicit[0]); err != nil {
-			song.Explicit = false
-		} else {
+	if explicit, ok := tags[metadata.Explicit]; ok && len(explicit) > 0 {
+		if explicit, err := strconv.ParseBool(explicit[0]); err == nil {
 			song.Explicit = explicit
 		}
 	}
 
-	if album, ok := tags[taglib.Album]; !ok && len(album) == 0 {
-		song.Album = "Unknown Album"
-	} else {
+	if album, ok := tags[metadata.Album]; ok && len(album) > 0 {
 		song.Album = album[0]
 	}
 
-	if artists, ok := tags[taglib.Artists]; !ok && len(artists) == 0 {
-		song.Artists = []string{"Unknown Artist"}
-	} else {
+	if artists, ok := tags[metadata.Artists]; ok && len(artists) > 0 {
 		song.Artists = artists
 	}
 
-	if artists, ok := tags["ALBUMARTISTS"]; !ok && len(artists) == 0 {
-		song.AlbumArtists = []string{"Unknown Artist"}
-	} else {
+	if artists, ok := tags[metadata.AlbumArtists]; ok && len(artists) > 0 {
 		song.AlbumArtists = artists
 	}
 
-	if albumGain, ok := tags["REPLAYGAIN_ALBUM_GAIN"]; !ok && len(albumGain) == 0 {
-		song.AlbumGain = 0
-	} else {
-		if albumGain, err := strconv.ParseFloat(albumGain[0], 64); err != nil {
-			song.AlbumGain = 0
-		} else {
+	if albumGain, ok := tags[metadata.AlbumGain]; ok && len(albumGain) > 0 {
+		if albumGain, err := strconv.ParseFloat(albumGain[0], 64); err == nil {
 			song.AlbumGain = albumGain
 		}
 	}
 
-	if albumPeak, ok := tags["REPLAYGAIN_ALBUM_PEAK"]; !ok && len(albumPeak) == 0 {
-		song.AlbumPeak = 0
-	} else {
-		if albumPeak, err := strconv.ParseFloat(albumPeak[0], 64); err != nil {
-			song.AlbumPeak = 0
-		} else {
+	if albumPeak, ok := tags[metadata.AlbumPeak]; ok && len(albumPeak) > 0 {
+		if albumPeak, err := strconv.ParseFloat(albumPeak[0], 64); err == nil {
 			song.AlbumPeak = albumPeak
 		}
 	}
 
-	if trackGain, ok := tags["REPLAYGAIN_TRACK_GAIN"]; !ok && len(trackGain) == 0 {
-		song.TrackGain = 0
-	} else {
-		if trackGain, err := strconv.ParseFloat(trackGain[0], 64); err != nil {
-			song.TrackGain = 0
-		} else {
+	if trackGain, ok := tags[metadata.TrackGain]; ok && len(trackGain) > 0 {
+		if trackGain, err := strconv.ParseFloat(trackGain[0], 64); err == nil {
 			song.TrackGain = trackGain
 		}
 	}
 
-	if trackPeak, ok := tags["REPLAYGAIN_TRACK_PEAK"]; !ok && len(trackPeak) == 0 {
-		song.TrackPeak = 0
-	} else {
-		if trackPeak, err := strconv.ParseFloat(trackPeak[0], 64); err != nil {
-			song.TrackPeak = 0
-		} else {
+	if trackPeak, ok := tags[metadata.TrackPeak]; ok && len(trackPeak) > 0 {
+		if trackPeak, err := strconv.ParseFloat(trackPeak[0], 64); err == nil {
 			song.TrackPeak = trackPeak
 		}
 	}
@@ -234,9 +208,9 @@ func GetLibrarySongCover(userId uint, id uint) ([]byte, error) {
 
 	path := filepath.Join(userPath, song.Path)
 
-	img, err := taglib.ReadImage(path)
+	img, err := metadata.ReadCover(path)
 	if err != nil {
-		return nil, fmt.Errorf("services.GetLibrarySongCover: taglib.ReadImage: %w", err)
+		return nil, fmt.Errorf("services.GetLibrarySongCover: %w", err)
 	}
 
 	return img, nil
@@ -278,11 +252,6 @@ func DeleteLibrarySong(userId uint, id uint) error {
 }
 
 func SyncUserLibrary(userId uint) error {
-	tmpDbList, err := repository.ListSongByUserID(userId, "", -1, 0)
-	if err != nil {
-		return fmt.Errorf("services.SyncUserLibrary: %w", err)
-	}
-
 	addList := make(map[string]string)
 	type updateItem struct {
 		id   uint
@@ -296,29 +265,14 @@ func SyncUserLibrary(userId uint) error {
 	deleteList := make(map[string]dbItem)
 
 	diskList := make(map[string]string)
-
-	dbList := make(map[string]dbItem)
-	for _, item := range tmpDbList {
-		dbList[item.Isrc] = dbItem{
-			item.ID,
-			item.Path,
-		}
-		deleteList[item.Isrc] = dbItem{
-			item.ID,
-			item.Path,
-		}
-	}
-
 	userPath, err := utils.GetUserPath(userId)
 	if err != nil {
 		return fmt.Errorf("services.SyncUserLibrary: %w", err)
 	}
-
 	if err := filepath.WalkDir(userPath, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
-
 		if d.IsDir() {
 			return nil
 		}
@@ -353,6 +307,22 @@ func SyncUserLibrary(userId uint) error {
 		return fmt.Errorf("services.SyncUserLibrary: %w", err)
 	}
 
+	dbList := make(map[string]dbItem)
+	tmpDbList, err := repository.ListSongByUserID(userId, "", -1, 0)
+	if err != nil {
+		return fmt.Errorf("services.SyncUserLibrary: %w", err)
+	}
+	for _, item := range tmpDbList {
+		dbList[item.Isrc] = dbItem{
+			item.ID,
+			item.Path,
+		}
+		deleteList[item.Isrc] = dbItem{
+			item.ID,
+			item.Path,
+		}
+	}
+
 	for isrc, item := range dbList {
 		if path, ok := diskList[isrc]; ok {
 			delete(addList, isrc)
@@ -371,13 +341,11 @@ func SyncUserLibrary(userId uint) error {
 			log.Println("services.SyncUserLibrary:", err)
 		}
 	}
-
 	for _, item := range updateList {
 		if err := repository.UpdateSongByUserID(userId, models.Song{ID: item.id, Path: item.path}); err != nil {
 			log.Println("services.SyncUserLibrary:", err)
 		}
 	}
-
 	for isrc, path := range addList {
 		if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: isrc}); err != nil {
 			log.Println("services.SyncUserLibrary:", err)

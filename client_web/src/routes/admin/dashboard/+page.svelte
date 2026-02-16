@@ -2,7 +2,10 @@
 	import { goto } from "$app/navigation";
 	import { adminFetch } from "$lib/functions/fetch";
 	import type { RequestAdminPassword, RequestUser } from "$lib/types/request";
-	import type { StatusResponse, UsersResponse } from "$lib/types/response";
+	import type {
+		StatusResponse,
+		AdminUsersResponse,
+	} from "$lib/types/response";
 	import { Plus, Trash } from "lucide-svelte";
 	import { onMount } from "svelte";
 
@@ -20,7 +23,7 @@
 		password: "",
 		hiRes: true,
 	});
-	let users = $state<null | UsersResponse>(null);
+	let users = $state<null | AdminUsersResponse>(null);
 
 	onMount(() => {
 		loadUsers();
@@ -49,7 +52,7 @@
 
 	async function loadUsers() {
 		try {
-			const data = await adminFetch<UsersResponse>("/users");
+			const data = await adminFetch<AdminUsersResponse>("/users");
 			if ("error" in data) {
 				throw new Error(data.error || "Failed to fetch users");
 			}
@@ -118,7 +121,9 @@
 	<title>Admin | Dashboard - MusicShack</title>
 </svelte:head>
 
-<div class="flex flex-col items-center w-[clamp(320px,70vw+20px,1200px)] h-screen mx-auto gap-4">
+<div
+	class="flex flex-col items-center w-[clamp(320px,70vw+20px,1200px)] h-screen mx-auto gap-4"
+>
 	<h1 class="text-center font-extrabold mt-5">Admin Dashboard</h1>
 	<h2 class="font-extrabold">Password</h2>
 	<div class="flex flex-col items-center gap-4 w-full">
@@ -134,7 +139,9 @@
 				changePassword();
 			}}
 		>
-			<div class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3">
+			<div
+				class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3"
+			>
 				<input
 					placeholder="New Password"
 					bind:value={inputAdminPassword.newPassword}
@@ -161,7 +168,9 @@
 				await createUser();
 			}}
 		>
-			<div class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3">
+			<div
+				class="grid grid-cols-2 @[0px]:grid-cols-1 @[520px]:grid-cols-2 gap-3"
+			>
 				<input placeholder="Username" bind:value={inputUser.username} />
 				<input placeholder="Password" bind:value={inputUser.password} />
 			</div>
@@ -172,8 +181,12 @@
 		{:else}
 			<div class="flex flex-col gap-1 w-full">
 				{#each users as user}
-					<div class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container">
-						<div class="hover-soft grid grid-cols-1 gap-2 items-center p-4">
+					<div
+						class="grid grid-cols-[1fr_auto] gap-2 items-stretch @container"
+					>
+						<div
+							class="hover-soft grid grid-cols-1 gap-2 items-center p-4"
+						>
 							<p>{user.username}</p>
 						</div>
 						<button
@@ -194,5 +207,10 @@
 			{errorLogout}
 		</p>
 	{/if}
-	<button class="w-full shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err" onclick={logout}> Logout </button>
+	<button
+		class="w-full shadow-[inset_0_0_0_1px_var(--err)] hover:bg-err"
+		onclick={logout}
+	>
+		Logout
+	</button>
 </div>

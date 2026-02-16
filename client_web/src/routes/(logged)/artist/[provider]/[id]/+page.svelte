@@ -70,7 +70,7 @@
 		<div class="table-row">
 			<div class="flex flex-row flex-wrap justify-center gap-2.5">
 				<img
-					class="w-[280px] h-[280px]"
+					class="w-70 h-70"
 					src={artist.pictureUrl}
 					alt={artist.name}
 				/>
@@ -151,11 +151,13 @@
 			{#if list && list.length > 0}
 				<div class="flex flex-col gap-2">
 					<h2 class="text-center font-bold">{type}</h2>
-					<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
+					<div
+						class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4"
+					>
 						{#each list as album}
-							<div class="w-[200px] h-auto">
+							<div class="w-50 h-auto">
 								<button
-									class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-2 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+									class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-2 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 									onclick={(e) => {
 										if (
 											e.target instanceof Element &&
@@ -168,17 +170,21 @@
 									}}
 								>
 									<img
-										class="w-[160px] h-[160px]"
+										class="w-40 h-40"
 										src={album.coverUrl}
 										alt={album.title}
 									/>
-									<p class="flex flex-row items-center justify-center gap-2 font-extrabold">
+									<p
+										class="flex flex-row items-center justify-center gap-2 font-extrabold"
+									>
 										{album.title}
 										{#if album.explicit}
 											<Explicit />
 										{/if}
 									</p>
-									<nav class="flex flex-col gap-y-[0.2rem] gap-x-4 italic">
+									<nav
+										class="flex flex-col gap-y-[0.2rem] gap-x-4 italic"
+									>
 										{#each album.artists as artist}
 											<a
 												href="/artist/{page.params

@@ -1,6 +1,9 @@
 package middlewares
 
 import (
+	"errors"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	limiter "github.com/ulule/limiter/v3"
 	ginlimiter "github.com/ulule/limiter/v3/drivers/middleware/gin"
@@ -8,12 +11,17 @@ import (
 )
 
 func RateLimiter(formatted string) gin.HandlerFunc {
-	rate, _ := limiter.NewRateFromFormatted(formatted)
+	rate, err := limiter.NewRateFromFormatted(formatted)
+	if err != nil {
+		log.Fatal("limiter.NewRateFromFormatted:", err)
+	}
 	store := memory.NewStore()
 	instance := limiter.New(store, rate)
 	return ginlimiter.NewMiddleware(instance, ginlimiter.WithLimitReachedHandler(
 		func(c *gin.Context) {
-			c.JSON(429, gin.H{"error": "Too many requests, try later"})
+			err := errors.New("too many requests, try later")
+			log.Println(err)
+			c.JSON(429, gin.H{"error": err})
 			c.Abort()
 		}))
 }

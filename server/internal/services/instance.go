@@ -14,7 +14,7 @@ func TestApi(ctx context.Context, url string) models.Plugin {
 
 	ch := make(chan models.Plugin, 1)
 
-	for _, plugin := range plugins.GetAll() {
+	for _, plugin := range plugins.GetAllPluginsByName() {
 		go func(p models.Plugin) {
 			if err := p.Status(ctx, url); err == nil {
 				select {

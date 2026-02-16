@@ -20,13 +20,13 @@ func getCover(ctx context.Context, url string) (io.Reader, error) {
 
 	resp, err := utils.Fetch(ctx, url)
 	if err != nil {
-		return nil, fmt.Errorf("getCover: %w", err)
+		return nil, fmt.Errorf("metadata.getCover: %w", err)
 	}
 	defer resp.Body.Close()
 
 	buf, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("getCover: io.ReadAll: %w", err)
+		return nil, fmt.Errorf("metadata.getCover: io.ReadAll: %w", err)
 	}
 
 	return bytes.NewReader(buf), nil
@@ -40,7 +40,7 @@ func WriteTags(path string, tags map[string][]string, trunc bool) error {
 		writeOption = 0
 	}
 	if err := taglib.WriteTags(path, tags, writeOption); err != nil {
-		return fmt.Errorf("ApplyMetadata: taglib.WriteTags: %w", err)
+		return fmt.Errorf("metadata.WriteTags: taglib.WriteTags: %w", err)
 	} else {
 		return nil
 	}
@@ -49,10 +49,10 @@ func WriteTags(path string, tags map[string][]string, trunc bool) error {
 func WriteCover(path string, reader io.Reader) error {
 	img, err := io.ReadAll(reader)
 	if err != nil {
-		return fmt.Errorf("ApplyCover: io.ReadAll: %w", err)
+		return fmt.Errorf("metadata.WriteCover: io.ReadAll: %w", err)
 	}
 	if err := taglib.WriteImage(path, img); err != nil {
-		return fmt.Errorf("ApplyCover: taglib.WriteImage: %w", err)
+		return fmt.Errorf("metadata.WriteCover: taglib.WriteImage: %w", err)
 	} else {
 		return nil
 	}
@@ -61,7 +61,7 @@ func WriteCover(path string, reader io.Reader) error {
 func FormatMetadata(ctx context.Context, userId uint, path string, data models.SongData) error {
 	album, err := plugins.GetAlbum(ctx, userId, data.Provider, data.Album.Id)
 	if err != nil {
-		return fmt.Errorf("FormatMetadata: %w", err)
+		return fmt.Errorf("metadata.FormatMetadata: %w", err)
 	}
 
 	var albumArtists []string
@@ -102,24 +102,33 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 	}
 
 	if err := WriteTags(path, tags, false); err != nil {
-		return fmt.Errorf("FormatMetadata: %w", err)
+		return fmt.Errorf("metadata.FormatMetadata: %w", err)
 	}
 
 	img, err := getCover(ctx, data.Album.CoverUrl)
 	if err != nil {
-		return fmt.Errorf("FormatMetadata: %w", err)
+		return fmt.Errorf("metadata.FormatMetadata: %w", err)
 	}
 
 	if err := WriteCover(path, img); err != nil {
-		return fmt.Errorf("FormatMetadata: taglib.WriteImage: %w", err)
+		return fmt.Errorf("metadata.FormatMetadata: %w", err)
 	}
 	return nil
 }
 
 func ReadTags(path string) (map[string][]string, error) {
 	if tags, err := taglib.ReadTags(path); err != nil {
-		return tags, fmt.Errorf("ReadTags: %w", err)
+		return tags, fmt.Errorf("metadata.ReadTags: %w", err)
 	} else {
 		return tags, nil
+	}
+}
+
+func ReadCover(path string) ([]byte, error) {
+	img, err := taglib.ReadImage(path)
+	if err != nil {
+		return nil, fmt.Errorf("metadata.ReadCover: %w", err)
+	} else {
+		return img, nil
 	}
 }

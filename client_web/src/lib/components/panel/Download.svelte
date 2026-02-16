@@ -81,7 +81,7 @@
 					class="grid grid-cols-[auto_1fr_auto] gap-2 items-stretch @container"
 				>
 					{#if download.data.id === ""}
-						<div class="w-[58px] h-[58px] self-center">
+						<div class="w-14.5 h-14.5 self-center">
 							<Disc />
 						</div>
 						<button
@@ -91,7 +91,7 @@
 							<p>Unknown</p>
 						</button>
 					{:else}
-						<div class="w-[58px] h-[58px] self-center">
+						<div class="w-14.5 h-14.5 self-center">
 							{#if download.data.album.coverUrl !== ""}
 								<img
 									src={download.data.album.coverUrl}

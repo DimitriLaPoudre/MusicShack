@@ -1,11 +1,9 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
@@ -15,54 +13,12 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
-
-func validateUsername(username string) error {
-	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-.]+$`)
-	if !regexUsername.MatchString(username) {
-		return fmt.Errorf("validatePassword: %s", "username must only contain alphanumeric characters, _, ., -")
-	}
-	if len(username) < 3 || len(username) > 32 {
-		return fmt.Errorf("validateUsername: %s", "username must be between 3 and 32 characters long")
-	}
-	_, err := repository.GetUserByUsername(username)
-	if err == nil {
-		return fmt.Errorf("validateUsername: %s", "username already used")
-	} else {
-		if !errors.Is(err, gorm.ErrRecordNotFound) {
-			return fmt.Errorf("validateUsername: %w", err)
-		}
-	}
-	return nil
-}
-
-func validatePassword(password string) error {
-	if len(password) < 8 || len(password) > 128 {
-		return fmt.Errorf("validatePassword: %s", "password must be between 8 and 128 characters long")
-	}
-	regexPassword := regexp.MustCompile(`^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'",.<>/?\\|]+$`)
-	if !regexPassword.MatchString(password) {
-		return fmt.Errorf("validatePassword: %s", "password contains invalid character")
-	}
-	return nil
-}
-
-func validateRequestUser(req models.RequestUser) error {
-	if err := validateUsername(req.Username); err != nil {
-		return fmt.Errorf("validateRequestUser: %w", err)
-	}
-
-	if err := validatePassword(req.Password); err != nil {
-		return fmt.Errorf("validateRequestUser: %w", err)
-	}
-
-	return nil
-}
 
 func Login(c *gin.Context) {
 	var req models.RequestUserLogin
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -74,17 +30,20 @@ func Login(c *gin.Context) {
 		return
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		err := fmt.Errorf("bcrypt.CompareHashAndPassword: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	session, err := services.CreateUserSession(user.ID)
+	expiresIn := (24 * time.Hour)
+
+	session, err := services.CreateUserSession(user.ID, expiresIn)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 	}
-	c.SetCookie("user_session", session.Token, int((24 * time.Hour).Seconds()), "/", "", config.HTTPS, true)
+	c.SetCookie("user_session", session.Token, int(expiresIn.Seconds()), "/", "", config.HTTPS, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -99,6 +58,7 @@ func Logout(c *gin.Context) {
 
 	token, err := c.Cookie("user_session")
 	if err != nil {
+		err := fmt.Errorf("c.Cookie: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -111,5 +71,6 @@ func Logout(c *gin.Context) {
 	}
 
 	c.SetCookie("user_session", "", -1, "/", "", config.HTTPS, true)
+
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

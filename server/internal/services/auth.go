@@ -1,30 +1,52 @@
 package services
 
 import (
+	"errors"
 	"fmt"
-	"time"
+	"regexp"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"gorm.io/gorm"
 )
 
-func CreateUserSession(userId uint) (*models.UserSession, error) {
-	token, err := utils.GenerateRandomString(32)
-	if err != nil {
-		return nil, fmt.Errorf("CreateUserSession: %w", err)
+func ValidateUsername(username string) error {
+	regexUsername := regexp.MustCompile(`^[a-zA-Z0-9_\-]+$`)
+	if !regexUsername.MatchString(username) {
+		return fmt.Errorf("validatePassword: %w", errors.New("username must only contain alphanumeric characters, _, -"))
 	}
-	expiresAt := time.Now().Add(24 * time.Hour)
+	if len(username) < 3 || len(username) > 32 {
+		return fmt.Errorf("validateUsername: %w", errors.New("username must be between 3 and 32 characters long"))
+	}
+	if _, err := repository.GetUserByUsername(username); err == nil {
+		return fmt.Errorf("validateUsername: %w", errors.New("username already used"))
+	} else {
+		if !errors.Is(err, gorm.ErrRecordNotFound) {
+			return fmt.Errorf("validateUsername: %w", err)
+		}
+	}
+	return nil
+}
 
-	session := models.UserSession{
-		UserId:    userId,
-		Token:     token,
-		ExpiresAt: expiresAt,
+func ValidatePassword(password string) error {
+	if len(password) < 8 || len(password) > 128 {
+		return fmt.Errorf("validatePassword: %w", errors.New("password must be between 8 and 128 characters long"))
+	}
+	regexPassword := regexp.MustCompile(`^[a-zA-Z0-9!@#\$%\^&\*\(\)_\+\-=\[\]\{\};:'",.<>/?\\|]+$`)
+	if !regexPassword.MatchString(password) {
+		return fmt.Errorf("validatePassword: %w", errors.New("password contains invalid character"))
+	}
+	return nil
+}
+
+func ValidateRequestUser(req models.RequestUser) error {
+	if err := ValidateUsername(req.Username); err != nil {
+		return fmt.Errorf("validateRequestUser: %w", err)
 	}
 
-	if err := repository.CreateUserSession(&session); err != nil {
-		return nil, fmt.Errorf("CreateUserSession: %w", err)
+	if err := ValidatePassword(req.Password); err != nil {
+		return fmt.Errorf("validateRequestUser: %w", err)
 	}
 
-	return &session, nil
+	return nil
 }

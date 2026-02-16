@@ -15,7 +15,7 @@ var (
 	LIBRARY_PATH string
 )
 
-func checkDownloadDirectory(dir string) error {
+func checkLibraryDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")
 	f, err := os.Create(testFile)
 	if err != nil {
@@ -64,7 +64,7 @@ func init() {
 	if !info.IsDir() {
 		log.Fatal("LIBRARY_PATH is not a directory")
 	}
-	if err := checkDownloadDirectory(folder); err != nil {
+	if err := checkLibraryDirectory(folder); err != nil {
 		log.Fatal("LIBRARY_PATH can't be written in: ", err)
 	}
 	LIBRARY_PATH = folder

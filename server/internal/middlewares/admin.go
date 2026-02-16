@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"time"
@@ -28,7 +29,9 @@ func Admin() gin.HandlerFunc {
 		}
 
 		if admin.Token != token || admin.ExpiresAt.Before(time.Now()) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid token"})
+			err := errors.New("invalid token")
+			log.Println(err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			c.Abort()
 			return
 		}
@@ -57,6 +60,9 @@ func Admout() gin.HandlerFunc {
 			c.Next()
 			return
 		}
-		c.JSON(http.StatusForbidden, gin.H{"error": "admin can't access this ressources"})
+		err = errors.New("admin can't access this ressources")
+		log.Println(err)
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		c.Abort()
 	}
 }

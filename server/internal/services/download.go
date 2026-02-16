@@ -135,46 +135,44 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		return fmt.Errorf("saveSong: root.Mkdir: 1: %w", err)
 	}
 
-	root, err = os.OpenRoot(filepath.Join(config.LIBRARY_PATH, user.Username))
+	rootUser, err := os.OpenRoot(filepath.Join(config.LIBRARY_PATH, user.Username))
 	if err != nil {
 		return fmt.Errorf("saveSong: os.OpenRoot: 2: %w", err)
 	}
-	defer root.Close()
+	defer rootUser.Close()
 
 	artistName := strings.ReplaceAll(data.Artists[0].Name, "/", "_")
 	albumTitle := strings.ReplaceAll(data.Album.Title, "/", "_")
 	songTitle := strings.ReplaceAll(data.Title, "/", "_")
 
 	filename := filepath.Join(artistName, albumTitle, fmt.Sprintf("%d - %s.%s", data.TrackNumber, songTitle, extension))
+	dirFile := filepath.Dir(filename)
 
-	if err := root.Mkdir(artistName, 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("saveSong: root.Mkdir: 2: %w", err)
+	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
+		return fmt.Errorf("saveSong: rootUser.MkdirAll: %w", err)
 	}
 
-	if err := root.Mkdir(filepath.Join(artistName, albumTitle), 0755); err != nil && !os.IsExist(err) {
-		return fmt.Errorf("saveSong: root.Mkdir: 3: %w", err)
-	}
-
-	file, err := root.Create(filename)
+	file, err := rootUser.Create(filename)
 	if err != nil {
 		return fmt.Errorf("saveSong: root.Create: %w", err)
 	}
-	defer file.Close()
 
 	if _, err := io.Copy(file, reader); err != nil {
-		filepath := file.Name()
 		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: io.Copy: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: io.Copy: %w", err)
 		}
 	}
+	if err := file.Close(); err != nil {
+		return fmt.Errorf("saveSong: file.Close: %w", err)
+	}
 
-	if err := metadata.FormatMetadata(ctx, userId, filepath.Join(root.Name(), filename), data); err != nil {
-		filepath := file.Name()
+	path := filepath.Join(root.Name(), rootUser.Name(), filename)
+	if err := metadata.FormatMetadata(ctx, userId, path, data); err != nil {
 		_ = file.Close()
-		if removeErr := os.Remove(filepath); removeErr != nil {
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
 			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		} else {
 			return fmt.Errorf("saveSong: %w", err)

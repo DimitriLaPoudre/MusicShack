@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -8,7 +9,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,6 +21,7 @@ func Admin(c *gin.Context) {
 func AdminLogin(c *gin.Context) {
 	var req models.RequestAdmin
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -33,26 +35,20 @@ func AdminLogin(c *gin.Context) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password)); err != nil {
+		err := fmt.Errorf("bcrypt.CompareHashAndPassword: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
-	token, err := utils.GenerateRandomString(32)
-	expiresAt := time.Now().Add(1 * time.Hour)
-	if err != nil {
+	expiresIn := (1 * time.Hour)
+	if token, err := services.CreateAdminSession(expiresIn); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	} else {
+		c.SetCookie("admin_session", token, int(expiresIn.Seconds()), "/", "", config.HTTPS, true)
 	}
-
-	if err := repository.CreateAdminSession(token, expiresAt); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.SetCookie("admin_session", token, int((1 * time.Hour).Seconds()), "/", "", config.HTTPS, true)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
@@ -60,13 +56,13 @@ func AdminLogin(c *gin.Context) {
 func AdminPassword(c *gin.Context) {
 	var req models.RequestAdminPassword
 	if err := c.ShouldBindJSON(&req); err != nil {
+		err := fmt.Errorf("c.ShouldBindJSON: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	if req.NewPassword == "" {
-		err := "new Password can't be empty"
+	if err := services.ValidatePassword(req.NewPassword); err != nil {
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err})
 		return
@@ -80,6 +76,7 @@ func AdminPassword(c *gin.Context) {
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.OldPassword)); err != nil {
+		err := fmt.Errorf("bcrypt.CompareHashAndPassword: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -87,6 +84,7 @@ func AdminPassword(c *gin.Context) {
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
+		err := fmt.Errorf("bcrypt.GenerateFromPassword: %w", err)
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -98,17 +96,13 @@ func AdminPassword(c *gin.Context) {
 		return
 	}
 
-	repository.DeleteAdminSession()
-
-	c.SetCookie("admin_session", "", -1, "/", "", config.HTTPS, true)
+	services.AdminLogout(c)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
 func AdminLogout(c *gin.Context) {
-	repository.DeleteAdminSession()
-
-	c.SetCookie("admin_session", "", -1, "/", "", config.HTTPS, true)
+	services.AdminLogout(c)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
