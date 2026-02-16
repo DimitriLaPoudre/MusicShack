@@ -42,7 +42,7 @@ func UploadLibrarySong(ctx context.Context, userId uint, reader io.Reader, exten
 	defer rootUser.Close()
 
 	filename := filepath.Join(strings.ReplaceAll(info.AlbumArtists[0], "/", "_"), strings.ReplaceAll(info.Album, "/", "_"),
-		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(info.TrackNumber, "/", "_"), strings.ReplaceAll(info.Title, "/", "_"), extension))
+		fmt.Sprintf("%s - %s%s", strings.ReplaceAll(info.TrackNumber, "/", "_"), strings.ReplaceAll(info.Title, "/", "_"), extension))
 	dirFile := filepath.Dir(filename)
 
 	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {

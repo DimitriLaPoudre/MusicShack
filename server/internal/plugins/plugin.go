@@ -22,9 +22,8 @@ var store = plugStore{
 
 func Register(p models.Plugin) {
 	store.name[p.Name()] = p
-	provider := store.provider[p.Provider()]
-	provider = append(provider, p)
-	slices.SortFunc(provider, func(a, b models.Plugin) int {
+	store.provider[p.Provider()] = append(store.provider[p.Provider()], p)
+	slices.SortFunc(store.provider[p.Provider()], func(a, b models.Plugin) int {
 		return b.Priority() - a.Priority()
 	})
 }

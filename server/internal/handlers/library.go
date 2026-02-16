@@ -49,8 +49,7 @@ func UploadSong(c *gin.Context) {
 		return
 	}
 
-	albumArtists := strings.Split(c.Request.FormValue("albumArtists"), ",")
-	for _, artist := range albumArtists {
+	for artist := range strings.SplitSeq(c.Request.FormValue("albumArtists"), ",") {
 		artist = strings.TrimSpace(artist)
 		if artist != "" {
 			info.AlbumArtists = append(info.AlbumArtists, artist)
@@ -63,8 +62,7 @@ func UploadSong(c *gin.Context) {
 		return
 	}
 
-	artists := strings.Split(c.Request.FormValue("artists"), ",")
-	for _, artist := range artists {
+	for artist := range strings.SplitSeq(c.Request.FormValue("artists"), ",") {
 		artist = strings.TrimSpace(artist)
 		if artist != "" {
 			info.Artists = append(info.Artists, artist)
@@ -118,16 +116,9 @@ func UploadSong(c *gin.Context) {
 	}
 	defer file.Close()
 
-	filename := fileHeader.Filename
-	extensionIndex := strings.LastIndex(filename, ".")
-	if extensionIndex == -1 {
-		err := errors.New("file don't have an extension")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
+	extension := filepath.Ext(fileHeader.Filename)
 
-	err = services.UploadLibrarySong(c.Request.Context(), userId, file, filename[extensionIndex+1:], info, cover)
+	err = services.UploadLibrarySong(c.Request.Context(), userId, file, extension, info, cover)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -287,16 +278,10 @@ func EditSong(c *gin.Context) {
 		}
 	}
 
-	extensionIndex := strings.LastIndex(song.Path, ".")
-	if extensionIndex == -1 {
-		err := errors.New("file don't have an extension")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err})
-		return
-	}
+	extension := filepath.Ext(song.Path)
 
 	newSongPath := filepath.Join(strings.ReplaceAll(artist, "/", "_"), strings.ReplaceAll(album, "/", "_"),
-		fmt.Sprintf("%s - %s.%s", strings.ReplaceAll(trackNumber, "/", "_"), strings.ReplaceAll(title, "/", "_"), song.Path[extensionIndex+1:]))
+		fmt.Sprintf("%s - %s%s", strings.ReplaceAll(trackNumber, "/", "_"), strings.ReplaceAll(title, "/", "_"), extension))
 	if song.Path != newSongPath {
 		root, err := os.OpenRoot(userPath)
 		if err != nil {
