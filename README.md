@@ -75,59 +75,60 @@ For more info about [environment variable](https://github.com/DimitriLaPoudre/Mu
    docker compose up -d
    ```
 3. Access the admin panel:
-   - Go to `http://URL:PORT/admin`
-   - Use your password set in `ADMIN_PASSWORD`
+   - Go to `http://localhost:8080/admin`
+   - Use your password set at `ADMIN_PASSWORD` in the .env file
 4. Create a user via the admin panel:
    - Enter an username and a password
-   - Click on the `+` button or `Enter` key
+   - Click on the `+` button or press `Enter` key
 5. Access the main interface:
-   - Go to `http://URL:PORT/`
+   - Go to `http://localhost:8080/`
    - Log in as the new user you created
-   
+
    Welcome to **MusicShack**^^
 
 ---
 
 ## Usage
-   - Add sources:
-      -  Click on the `Settings` button
-      -  Enter an instance URL (find some [here](https://github.com/EduardPrigoana/hifi-instances))
-      -  Click on the `+` button or `Enter` key
-   - Follow an artist:
-      - Click on the `Search` button
-      - Select the artist name
-      - Go to the `Artist` section
-      - Click on their profile
-      - Click on the `Follow` button
-   - Download a song:
-      - Click on the `Search` button
-      - Select the song name
-      - Go to the `Song` section
-      - Click on the `Download` button under the song
-   - Upload a song:
-      - Click on the `Library` button
-      - Click on the `Upload` button
-      - Select a file
-      - Choose a cover, title, album name, etc.
-      - Click on the `Save` button
-   - Edit a song:
-      - Click on the `Library` button
-      - Click on the `Edit` button of the song you want to edit
-      - Choose a new cover, title, album name, etc.
-      - Click on the `Save` button
+
+- Add sources:
+  - Click on the `Settings` button
+  - Enter an instance URL (find some [here](https://github.com/EduardPrigoana/hifi-instances))
+  - Click on the `+` button or press `Enter` key
+- Follow an artist:
+  - Click on the `Search` button
+  - Select the artist name
+  - Go to the `Artist` section
+  - Click on their profile
+  - Click on the `Follow` button
+- Download a song:
+  - Click on the `Search` button
+  - Select the song name
+  - Go to the `Song` section
+  - Click on the `Download` button under the song
+- Upload a song:
+  - Click on the `Library` button
+  - Click on the `Upload` button
+  - Select a file
+  - Choose a cover, title, album name, etc.
+  - Click on the `Save` button
+- Edit a song:
+  - Click on the `Library` button
+  - Click on the `Edit` button of the song you want to edit
+  - Choose a new cover, title, album name, etc.
+  - Click on the `Save` button
 
 ---
 
 ## Environment Variable
 
-- `HTTPS` = *boolean* (**false** by default) set at true if your domain use https
-- `PORT` = *number* (**8080** by default) port where the app will be accessible
-- `LIBRARY_PATH` = *string* (mandatory) path to the library (downloads/uploads will go into that directory)
-- `ADMIN_PASSWORD` = *string* (mandatory) default password for admin panel
-- `POSTGRES_HOST` = *string* (mandatory) localhost or name of the service that contains PostgreSQL
-- `POSTGRES_USER` = *string* (mandatory)
-- `POSTGRES_PASSWORD` = *string* (mandatory)
-- `POSTGRES_DB` = *string* (mandatory)
+- `HTTPS` = _boolean_ (**false** by default) set at true if your domain use https
+- `PORT` = _number_ (**8080** by default) port where the app will be accessible
+- `LIBRARY_PATH` = _string_ (mandatory) path to the library (downloads/uploads will go into that directory)
+- `ADMIN_PASSWORD` = _string_ (mandatory) default password for admin panel
+- `POSTGRES_HOST` = _string_ (mandatory) localhost or name of the service that contains PostgreSQL
+- `POSTGRES_USER` = _string_ (mandatory)
+- `POSTGRES_PASSWORD` = _string_ (mandatory)
+- `POSTGRES_DB` = _string_ (mandatory)
 
 ---
 
