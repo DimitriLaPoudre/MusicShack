@@ -569,8 +569,18 @@
 							</p>
 						{/if}
 						<input name="cover" type="file" accept="image/*" />
-						<input name="title" type="text" placeholder="Title" />
-						<input name="album" type="text" placeholder="Album" />
+						<input
+							name="title"
+							type="text"
+							placeholder="Title"
+							value={editItem.title}
+						/>
+						<input
+							name="album"
+							type="text"
+							placeholder="Album"
+							value={editItem.album}
+						/>
 						<input
 							bind:value={editAlbumArtists}
 							onkeydown={(e) => {
@@ -642,47 +652,64 @@
 							name="trackNumber"
 							type="number"
 							placeholder="Track Number"
+							value={editItem.trackNumber}
+							min="1"
 							step="1"
 						/>
 						<input
 							name="volumeNumber"
 							type="number"
 							placeholder="Volume Number"
+							value={editItem.volumeNumber}
+							min="1"
 							step="1"
 						/>
 						<input
 							name="isrc"
 							type="text"
-							placeholder="ISRC (eg: FR5R00909899)"
+							placeholder="ISRC"
+							value={editItem.isrc}
 						/>
-						<input name="releaseDate" type="date" />
+						<input
+							name="releaseDate"
+							type="date"
+							value={editItem.releaseDate}
+						/>
 						<label>
 							Explicit
-							<input name="explicit" type="checkbox" />
+							<input
+								name="explicit"
+								type="checkbox"
+								checked={editItem.explicit}
+							/>
 						</label>
 						<input
 							name="albumGain"
 							type="number"
 							step="any"
 							placeholder="Album Gain"
+							value={editItem.albumGain}
 						/>
 						<input
 							name="albumPeak"
 							type="number"
 							step="any"
 							placeholder="Album Peak"
+							value={editItem.albumPeak}
 						/>
 						<input
 							name="trackGain"
 							type="number"
 							step="any"
 							placeholder="Track Gain"
+							value={editItem.trackGain}
 						/>
 						<input
 							name="trackPeak"
 							type="number"
 							step="any"
 							placeholder="Track Peak"
+							value={editItem.trackPeak}
 						/>
 					</AlertDialog.Description>
 					<div
