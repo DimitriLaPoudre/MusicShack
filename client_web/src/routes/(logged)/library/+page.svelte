@@ -432,6 +432,7 @@
 							editItem = item;
 							editArtistsList = editItem.artists;
 							editAlbumArtistsList = editItem.albumArtists;
+							errorEditDialog = null;
 						}}
 					>
 						<Pencil />

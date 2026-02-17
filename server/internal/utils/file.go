@@ -24,14 +24,14 @@ func RenameForce(src, dst string) error {
 
 func RenameSoft(src, dst string) error {
 	if _, err := os.Stat(dst); err == nil {
-		return fmt.Errorf("destination file %q already exists", dst)
+		return fmt.Errorf("utils.RenameSoft: os.Stat(%q) file exist", dst)
 	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("cannot stat destination %q: %w", dst, err)
+		return fmt.Errorf("os.Stat(%q): %w", dst, err)
 	}
 
 	// rename standard
 	if err := os.Rename(src, dst); err != nil {
-		return fmt.Errorf("rename %q -> %q failed: %w", src, dst, err)
+		return fmt.Errorf("utils.RenameSoft: os.Rename(%q, %q): %w", src, dst, err)
 	}
 	return nil
 }

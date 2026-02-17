@@ -13,12 +13,14 @@ import (
 	"strconv"
 	"strings"
 
+	database "github.com/DimitriLaPoudre/MusicShack/server/internal/db"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/services"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils/metadata"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func UploadSong(c *gin.Context) {
@@ -189,9 +191,9 @@ func EditSong(c *gin.Context) {
 		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
+	copyFile.Close()
 	defer func() {
 		if copyFile != nil {
-			copyFile.Close()
 			os.Remove(copyFile.Name())
 		}
 	}()
@@ -246,221 +248,50 @@ func EditSong(c *gin.Context) {
 		isrc = value[0]
 	}
 
-	if err := repository.UpdateSongByUserID(userId, models.Song{ID: song.ID, Path: path, Isrc: isrc}); err != nil {
+	rootUser, err := os.OpenRoot(userPath)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	defer rootUser.Close()
+
+	if err := rootUser.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	defer func() {
+		if copyFile != nil {
+			rootUser.RemoveAll(filepath.Dir(path))
+		}
+	}()
+
+	if err := database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := database.DB.Model(&models.Song{}).
+			Where("id = ? AND user_id = ?", song.ID, userId).
+			Updates(models.Song{Path: path, Isrc: isrc}).Error; err != nil {
+			return err
+		}
+
+		if song.Path == path {
+			if err := utils.RenameForce(copyFile.Name(), filepath.Join(userPath, path)); err != nil {
+				return err
+			}
+		} else {
+			if err := utils.RenameSoft(copyFile.Name(), filepath.Join(userPath, path)); err != nil {
+				return err
+			}
+			if err := os.Remove(originalFile.Name()); err != nil {
+				fmt.Println(fmt.Errorf("os.Remove: %w", err))
+			}
+		}
+
+		return nil
+	}); err != nil {
 		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	if originalFile.Name() == path {
-		if err := utils.RenameForce(copyFile.Name(), path); err != nil {
-			utils.GinPrettyError(c, http.StatusInternalServerError, err)
-			return
-		}
-	} else {
-		if err := utils.RenameSoft(copyFile.Name(), path); err != nil {
-			utils.GinPrettyError(c, http.StatusInternalServerError, err)
-			return
-		}
-		if err := os.Remove(originalFile.Name()); err != nil {
-			fmt.Println(fmt.Errorf("os.Remove: %w", err))
-		}
-	}
 	copyFile = nil
-}
-
-func OldEditSong(c *gin.Context) {
-	userId, err := utils.GetFromContext[uint](c, "userId")
-	if err != nil {
-		utils.GinPrettyError(c, http.StatusBadRequest, err)
-		return
-	}
-
-	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
-	if err != nil {
-		utils.GinPrettyError(c, http.StatusBadRequest,
-			fmt.Errorf("strconv.ParseUint: %w", err))
-		return
-	}
-	id := uint(result)
-
-	song, err := repository.GetSongByUserID(userId, id)
-	if err != nil {
-		utils.GinPrettyError(c, http.StatusBadRequest, err)
-		return
-	}
-
-	userPath, err := utils.GetUserPath(userId)
-	if err != nil {
-		utils.GinPrettyError(c, http.StatusInternalServerError, err)
-		return
-	}
-
-	refTags, err := metadata.ReadTags(filepath.Join(userPath, song.Path))
-	if err != nil {
-		utils.GinPrettyError(c, http.StatusInternalServerError, err)
-		return
-	}
-
-	var edit models.RequestEditSong
-	if err := c.ShouldBind(&edit); err != nil {
-		utils.GinPrettyError(c, http.StatusBadRequest,
-			fmt.Errorf("c.ShouldBind: %w", err))
-		return
-	}
-
-	var cover multipart.File
-	if edit.Cover != nil {
-		if cover, err = edit.Cover.Open(); err != nil {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				fmt.Errorf("edit.Cover.Open: %w", err))
-			return
-		}
-		defer cover.Close()
-	}
-
-	var title string
-	var album string
-	var artist string
-	var trackNumber string
-	tags := map[string][]string{}
-	if edit.Title != nil {
-		if *edit.Title == "" {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				errors.New("title field empty"))
-			return
-		} else {
-			tags[models.TagTitle] = []string{*edit.Title}
-			title = *edit.Title
-		}
-	} else {
-		title = refTags[models.TagTitle][0]
-	}
-	if edit.Album != nil {
-		if *edit.Album == "" {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				errors.New("album field empty"))
-			return
-		} else {
-			tags[models.TagAlbum] = []string{*edit.Album}
-			album = *edit.Album
-		}
-	} else {
-		album = refTags[models.TagAlbum][0]
-	}
-	if edit.AlbumArtists != nil {
-		if len(*edit.AlbumArtists) == 0 {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				errors.New("albumArtists field empty"))
-			return
-		} else {
-			tags[models.TagAlbumArtists] = *edit.AlbumArtists
-			artist = (*edit.AlbumArtists)[0]
-		}
-	} else {
-		artist = refTags[models.TagAlbumArtists][0]
-	}
-	if edit.Artists != nil {
-		if len(*edit.Artists) == 0 {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				errors.New("artists field empty"))
-			return
-		} else {
-			tags[models.TagArtists] = *edit.Artists
-		}
-	}
-	if edit.ReleaseDate != nil {
-		tags[models.TagReleaseDate] = []string{*edit.ReleaseDate}
-	}
-	if edit.TrackNumber != nil {
-		tags[models.TagTrackNumber] = []string{strconv.FormatUint(uint64(*edit.TrackNumber), 10)}
-		trackNumber = strconv.FormatUint(uint64(*edit.TrackNumber), 10)
-	} else {
-		trackNumber = refTags[models.TagTrackNumber][0]
-	}
-	if edit.VolumeNumber != nil {
-		tags[models.TagVolumeNumber] = []string{strconv.FormatUint(uint64(*edit.VolumeNumber), 10)}
-	}
-	if edit.Explicit != nil {
-		tags[models.TagExplicit] = []string{strconv.FormatBool(*edit.Explicit)}
-	}
-	if edit.AlbumGain != nil {
-		tags[models.TagAlbumGain] = []string{strconv.FormatFloat(*edit.AlbumGain, 'f', 6, 64)}
-	}
-	if edit.AlbumPeak != nil {
-		tags[models.TagAlbumPeak] = []string{strconv.FormatFloat(*edit.AlbumPeak, 'f', 6, 64)}
-	}
-	if edit.TrackGain != nil {
-		tags[models.TagTrackGain] = []string{strconv.FormatFloat(*edit.TrackGain, 'f', 6, 64)}
-	}
-	if edit.TrackPeak != nil {
-		tags[models.TagTrackPeak] = []string{strconv.FormatFloat(*edit.TrackPeak, 'f', 6, 64)}
-	}
-	if edit.Isrc != nil {
-		if *edit.Isrc == "" {
-			utils.GinPrettyError(c, http.StatusBadRequest,
-				errors.New("isrc field empty"))
-			return
-		} else {
-			tags[models.TagISRC] = []string{*edit.Isrc}
-			song.Isrc = *edit.Isrc
-		}
-	}
-
-	extension := filepath.Ext(song.Path)
-
-	newSongPath := filepath.Join(strings.ReplaceAll(artist, "/", "_"), strings.ReplaceAll(album, "/", "_"),
-		fmt.Sprintf("%s - %s%s", strings.ReplaceAll(trackNumber, "/", "_"), strings.ReplaceAll(title, "/", "_"), extension))
-	if song.Path != newSongPath {
-		root, err := os.OpenRoot(userPath)
-		if err != nil {
-			utils.GinPrettyError(c, http.StatusInternalServerError,
-				fmt.Errorf("os.OpenRoot: %w", err))
-			return
-		}
-		defer root.Close()
-
-		oldSongPath := song.Path
-		if err := utils.RootDuplicateFile(root, oldSongPath, newSongPath); err != nil {
-			utils.GinPrettyError(c, http.StatusInternalServerError, err)
-			return
-		}
-
-		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
-			_ = root.Remove(newSongPath)
-			utils.GinPrettyError(c, http.StatusInternalServerError, err)
-			return
-		} else {
-			_ = root.Remove(oldSongPath)
-		}
-		if cover != nil {
-			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
-				_ = root.Remove(newSongPath)
-				utils.GinPrettyError(c, http.StatusInternalServerError, err)
-				return
-			} else {
-				_ = root.Remove(oldSongPath)
-			}
-		}
-
-		song.Path = newSongPath
-	} else {
-		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
-			utils.GinPrettyError(c, http.StatusInternalServerError, err)
-			return
-		}
-		if cover != nil {
-			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
-				utils.GinPrettyError(c, http.StatusInternalServerError, err)
-				return
-			}
-		}
-	}
-
-	// update the song even without change for updatedAt field
-	if err := repository.UpdateSongByUserID(userId, song); err != nil {
-		log.Println(err)
-	}
-
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
