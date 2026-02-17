@@ -46,6 +46,24 @@ type MetadataInfo struct {
 	TrackPeak    string   `json:"trackPeak"`
 }
 
+type RequestUploadSong struct {
+	Cover        *multipart.FileHeader `form:"cover"`
+	File         *multipart.FileHeader `form:"file"`
+	Title        *string               `form:"title"`
+	ReleaseDate  *string               `form:"releaseDate"`
+	TrackNumber  *uint                 `form:"trackNumber"`
+	VolumeNumber *uint                 `form:"volumeNumber"`
+	Explicit     *bool                 `form:"explicit"`
+	Isrc         *string               `form:"isrc"`
+	Album        *string               `form:"album"`
+	AlbumArtists *[]string             `form:"albumArtists"`
+	Artists      *[]string             `form:"artists"`
+	AlbumGain    *float64              `form:"albumGain"`
+	AlbumPeak    *float64              `form:"albumPeak"`
+	TrackGain    *float64              `form:"trackGain"`
+	TrackPeak    *float64              `form:"trackPeak"`
+}
+
 type UploadSong struct {
 	Title        string   `json:"title"`
 	Duration     uint     `json:"duration"`

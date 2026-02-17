@@ -86,19 +86,19 @@ func FormatMetadata(ctx context.Context, userId uint, path string, data models.S
 	albumPeak := strconv.FormatFloat(data.AlbumPeak, 'f', -1, 64)
 
 	tags := map[string][]string{
-		Title:        {data.Title},
-		Album:        {data.Album.Title},
-		AlbumArtists: albumArtists,
-		Artists:      artists,
-		TrackNumber:  {trackNumber},
-		VolumeNumber: {volumeNumber},
-		ReleaseDate:  {album.ReleaseDate},
-		Explicit:     {explicit},
-		AlbumGain:    {albumGain},
-		AlbumPeak:    {albumPeak},
-		TrackGain:    {trackGain},
-		TrackPeak:    {trackPeak},
-		ISRC:         {data.Isrc},
+		models.TagTitle:        {data.Title},
+		models.TagAlbum:        {data.Album.Title},
+		models.TagAlbumArtists: albumArtists,
+		models.TagArtists:      artists,
+		models.TagTrackNumber:  {trackNumber},
+		models.TagVolumeNumber: {volumeNumber},
+		models.TagReleaseDate:  {album.ReleaseDate},
+		models.TagExplicit:     {explicit},
+		models.TagAlbumGain:    {albumGain},
+		models.TagAlbumPeak:    {albumPeak},
+		models.TagTrackGain:    {trackGain},
+		models.TagTrackPeak:    {trackPeak},
+		models.TagISRC:         {data.Isrc},
 	}
 
 	if err := WriteTags(path, tags, false); err != nil {

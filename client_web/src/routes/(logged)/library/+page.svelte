@@ -23,6 +23,10 @@
 
 	let error = $state<null | string>(null);
 
+	let uploadArtists = $state<string>("");
+	let uploadArtistsList = $state<string[]>([]);
+	let uploadAlbumArtists = $state<string>("");
+	let uploadAlbumArtistsList = $state<string[]>([]);
 	let uploadDialog = $state(false);
 	let uploadOptionnal = $state(false);
 	let errorUploadDialog = $state<null | string>(null);
@@ -90,7 +94,10 @@
 			<div class="flex justify-center items-center">
 				<AlertDialog.Trigger
 					class="hover-full"
-					onclick={() => (errorUploadDialog = null)}
+					onclick={() => {
+						errorUploadDialog = null;
+						uploadOptionnal = false;
+					}}
 				>
 					Upload
 				</AlertDialog.Trigger>
@@ -108,6 +115,27 @@
 								const form = e.currentTarget;
 								const fd = new FormData(form);
 
+								uploadAlbumArtistsList.forEach((t) =>
+									fd.append("albumArtists", t),
+								);
+								uploadArtistsList.forEach((t) =>
+									fd.append("artists", t),
+								);
+
+								const emptyKeys = [];
+								for (let [key, value] of fd.entries()) {
+									if (value === "") emptyKeys.push(key);
+									if (
+										value instanceof File &&
+										value.size === 0
+									) {
+										emptyKeys.push(key);
+									}
+								}
+								for (let key of emptyKeys) {
+									fd.delete(key);
+								}
+
 								const res = await fetch("/api/library", {
 									method: "POST",
 									credentials: "include",
@@ -115,6 +143,7 @@
 								});
 								if (res.status === 401) {
 									await goto("/login");
+									return;
 								}
 								if (!res.ok) {
 									throw new Error(
@@ -127,6 +156,9 @@
 									limit,
 									offset,
 								);
+
+								uploadAlbumArtistsList = [];
+								uploadArtistsList = [];
 								uploadDialog = false;
 							} catch (e) {
 								errorUploadDialog =
@@ -151,7 +183,7 @@
 								<input
 									type="file"
 									name="cover"
-									accept="image/"
+									accept="image/*"
 								/>
 								<input
 									required
@@ -160,30 +192,92 @@
 									accept="audio/*"
 								/>
 								<input
-									required
 									type="text"
 									name="title"
 									placeholder="Title"
 								/>
 								<input
-									required
 									type="text"
 									name="album"
 									placeholder="Album"
 								/>
 								<input
-									required
+									bind:value={uploadAlbumArtists}
+									onkeydown={(e) => {
+										const albumArtist =
+											uploadAlbumArtists.trim();
+										if (
+											e.key === "Enter" &&
+											albumArtist !== ""
+										) {
+											e.preventDefault();
+											uploadAlbumArtistsList = [
+												...uploadAlbumArtistsList,
+												albumArtist,
+											];
+											uploadAlbumArtists = "";
+										}
+									}}
 									type="text"
-									name="albumArtists"
-									placeholder="Album Artists (eg: thaHomey, Skuna)"
+									placeholder="Album Artists"
 								/>
-
+								<div class="flex gap-2">
+									<span>Album Artists: </span>
+									{#each uploadAlbumArtistsList as artist, index}
+										<div class="flex gap-1">
+											<span>{artist}</span>
+											<button
+												class="p-0 m-0 border-0 bg-transparent text-inherit"
+												type="button"
+												onclick={() =>
+													uploadAlbumArtistsList.splice(
+														index,
+														1,
+													)}
+											>
+												x
+											</button>
+										</div>
+									{/each}
+								</div>
 								<input
-									required
+									bind:value={uploadArtists}
+									onkeydown={(e) => {
+										const artist = uploadArtists.trim();
+										if (
+											e.key === "Enter" &&
+											artist !== ""
+										) {
+											e.preventDefault();
+											uploadArtistsList = [
+												...uploadArtistsList,
+												artist,
+											];
+											uploadArtists = "";
+										}
+									}}
 									type="text"
-									name="artists"
-									placeholder="Artists (eg: thaHomey, LaFève)"
+									placeholder="Artists"
 								/>
+								<div class="flex gap-2">
+									<span>Artists: </span>
+									{#each uploadArtistsList as artist, index}
+										<div class="flex gap-1">
+											<span>{artist}</span>
+											<button
+												class="p-0 m-0 border-0 bg-transparent text-inherit"
+												type="button"
+												onclick={() =>
+													uploadArtistsList.splice(
+														index,
+														1,
+													)}
+											>
+												x
+											</button>
+										</div>
+									{/each}
+								</div>
 								{#if !uploadOptionnal}
 									<button
 										type="button"
@@ -448,6 +542,8 @@
 							}
 
 							editItem = null;
+							editAlbumArtistsList = [];
+							editArtistsList = [];
 							errorEditDialog = await loadLibrary(
 								search,
 								limit,
@@ -477,13 +573,12 @@
 						<input name="album" type="text" placeholder="Album" />
 						<input
 							bind:value={editAlbumArtists}
-							name="albumArtists"
 							onkeydown={(e) => {
 								const albumArtist = editAlbumArtists.trim();
 								if (e.key === "Enter" && albumArtist !== "") {
 									e.preventDefault();
 									editAlbumArtistsList = [
-										...editAlbumArtists,
+										...editAlbumArtistsList,
 										albumArtist,
 									];
 									editAlbumArtists = "";

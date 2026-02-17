@@ -3,11 +3,13 @@ package handlers
 import (
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -22,107 +24,127 @@ import (
 func UploadSong(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	info := models.MetadataInfo{
-		AlbumArtists: make([]string, 0),
-		Artists:      make([]string, 0),
-		Explicit:     "false",
-	}
-
-	info.Title = c.Request.FormValue("title")
-	if info.Title == "" {
-		err := errors.New("title field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	var upload models.RequestUploadSong
+	if err := c.ShouldBind(&upload); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			fmt.Errorf("c.ShouldBind: %w", err))
 		return
 	}
 
-	info.Album = c.Request.FormValue("album")
-	if info.Album == "" {
-		err := errors.New("album field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	if upload.File == nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			errors.New("RequestUploadSong.file is empty"))
 		return
 	}
 
-	for artist := range strings.SplitSeq(c.Request.FormValue("albumArtists"), ",") {
-		artist = strings.TrimSpace(artist)
-		if artist != "" {
-			info.AlbumArtists = append(info.AlbumArtists, artist)
-		}
-	}
-	if len(info.AlbumArtists) == 0 {
-		err := errors.New("albumArtists field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	for artist := range strings.SplitSeq(c.Request.FormValue("artists"), ",") {
-		artist = strings.TrimSpace(artist)
-		if artist != "" {
-			info.Artists = append(info.Artists, artist)
-		}
-	}
-	if len(info.Artists) == 0 {
-		err := errors.New("artists field empty")
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	info.TrackNumber = c.Request.FormValue("trackNumber")
-	info.VolumeNumber = c.Request.FormValue("volumeNumber")
-	info.ReleaseDate = c.Request.FormValue("releaseDate")
-
-	if value := c.Request.FormValue("isrc"); value != "" {
-		info.Isrc = value
-	} else {
-		if random, err := utils.GenerateRandomString(13); err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-			return
-		} else {
-			info.Isrc = strings.ToUpper(random)
-		}
-	}
-
-	if c.Request.FormValue("explicit") == "on" {
-		info.Explicit = "true"
-	}
-
-	cover, _, err := c.Request.FormFile("cover")
+	file, err := upload.File.Open()
 	if err != nil {
-		if err != http.ErrMissingFile {
-			err := fmt.Errorf("c.Request.FormFile: %w", err)
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-	} else {
-		defer cover.Close()
-	}
-
-	file, fileHeader, err := c.Request.FormFile("file")
-	if err != nil {
-		err := fmt.Errorf("c.Request.FormFile: %w", err)
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			errors.New("RequestUploadSong.file is empty"))
 		return
 	}
 	defer file.Close()
+	extension := filepath.Ext(upload.File.Filename)
 
-	extension := filepath.Ext(fileHeader.Filename)
-
-	err = services.UploadLibrarySong(c.Request.Context(), userId, file, extension, info, cover)
+	tmpFile, err := utils.CopyTemporary(file)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
+	}
+	defer func() {
+		if err := tmpFile.Close(); err != nil {
+			fmt.Println(fmt.Errorf("tmpFile.Close: %w", err))
+		}
+		if err := os.Remove(tmpFile.Name()); err != nil {
+			fmt.Println(fmt.Errorf("tmpFile.Close: %w", err))
+		}
+	}()
+
+	if upload.Cover != nil {
+		cover, err := upload.Cover.Open()
+		if err != nil {
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				fmt.Errorf("upload.Cover.Open: %w", err))
+			return
+		}
+		defer cover.Close()
+
+		if err := metadata.WriteCover(tmpFile.Name(), cover); err != nil {
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	newTags := upload.ToTags()
+	if err := metadata.WriteTags(tmpFile.Name(), newTags, false); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	tags, err := metadata.ReadTags(tmpFile.Name())
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	path, err := services.GetSongPathByTags(tags, extension)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	var isrc string
+	if value, ok := tags[models.TagISRC]; !ok || len(value) <= 0 ||
+		!regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$`).MatchString(value[0]) {
+		utils.GinPrettyError(c, http.StatusBadRequest, errors.New("isrc field empty and file don't provide default"))
+		return
+	} else {
+		isrc = value[0]
+	}
+
+	if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: isrc}); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	rootUser, err := os.OpenRoot(userPath)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	defer rootUser.Close()
+
+	if err := rootUser.MkdirAll(filepath.Dir(path), 0755); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	newFile, err := rootUser.Create(path)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+	defer newFile.Close()
+
+	if _, err := tmpFile.Seek(0, 0); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			fmt.Errorf("tmpFile.Seek: %w", err))
+		return
+	}
+	if _, err := io.Copy(newFile, tmpFile); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			fmt.Errorf("io.Copy: %w", err))
+		return
+	}
+	if err := newFile.Sync(); err != nil {
+		fmt.Println(fmt.Errorf("newFile.Sync: %w", err))
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
@@ -131,58 +153,169 @@ func UploadSong(c *gin.Context) {
 func EditSong(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
 		return
 	}
 
-	var id uint
-	if result, err := strconv.ParseUint(c.Param("id"), 10, 0); err != nil {
-		err := fmt.Errorf("strconv.ParseUint: %w", err)
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("strconv.ParseUint: %w", err))
 		return
-	} else {
-		id = uint(result)
+	}
+	id := uint(result)
+
+	song, err := repository.GetSongByUserID(userId, id)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
+		return
 	}
 
 	userPath, err := utils.GetUserPath(userId)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
-	song, err := repository.GetSongByUserID(userId, id)
+	originalFile, err := os.Open(filepath.Join(userPath, song.Path))
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError,
+			fmt.Errorf("os.Open: %w", err))
 		return
 	}
-
-	refTags, err := metadata.ReadTags(filepath.Join(userPath, song.Path))
+	copyFile, err := utils.CopyTemporary(originalFile)
+	originalFile.Close()
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
+	defer func() {
+		if copyFile != nil {
+			copyFile.Close()
+			os.Remove(copyFile.Name())
+		}
+	}()
 
 	var edit models.RequestEditSong
 	if err := c.ShouldBind(&edit); err != nil {
-		err := fmt.Errorf("c.ShouldBind: %w", err)
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("c.ShouldBind: %w", err))
+		return
+	}
+
+	newTags := edit.ToTags()
+	if err := metadata.WriteTags(copyFile.Name(), newTags, false); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	var cover multipart.File
 	if edit.Cover != nil {
 		if cover, err = edit.Cover.Open(); err != nil {
-			err := fmt.Errorf("edit.Cover.Open: %w", err)
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				fmt.Errorf("edit.Cover.Open: %w", err))
 			return
 		}
+		err := metadata.WriteCover(copyFile.Name(), cover)
+		cover.Close()
+		if err != nil {
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	tags, err := metadata.ReadTags(copyFile.Name())
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	extension := filepath.Ext(originalFile.Name())
+	path, err := services.GetSongPathByTags(tags, extension)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	var isrc string
+	if value, ok := tags[models.TagISRC]; !ok || len(value) <= 0 ||
+		!regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$`).MatchString(value[0]) {
+		utils.GinPrettyError(c, http.StatusBadRequest, errors.New("isrc field empty and file don't provide default"))
+		return
+	} else {
+		isrc = value[0]
+	}
+
+	if err := repository.UpdateSongByUserID(userId, models.Song{ID: song.ID, Path: path, Isrc: isrc}); err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	if originalFile.Name() == path {
+		if err := utils.RenameForce(copyFile.Name(), path); err != nil {
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
+			return
+		}
+	} else {
+		if err := utils.RenameSoft(copyFile.Name(), path); err != nil {
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
+			return
+		}
+		if err := os.Remove(originalFile.Name()); err != nil {
+			fmt.Println(fmt.Errorf("os.Remove: %w", err))
+		}
+	}
+	copyFile = nil
+}
+
+func OldEditSong(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("strconv.ParseUint: %w", err))
+		return
+	}
+	id := uint(result)
+
+	song, err := repository.GetSongByUserID(userId, id)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
+		return
+	}
+
+	userPath, err := utils.GetUserPath(userId)
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	refTags, err := metadata.ReadTags(filepath.Join(userPath, song.Path))
+	if err != nil {
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
+		return
+	}
+
+	var edit models.RequestEditSong
+	if err := c.ShouldBind(&edit); err != nil {
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("c.ShouldBind: %w", err))
+		return
+	}
+
+	var cover multipart.File
+	if edit.Cover != nil {
+		if cover, err = edit.Cover.Open(); err != nil {
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				fmt.Errorf("edit.Cover.Open: %w", err))
+			return
+		}
+		defer cover.Close()
 	}
 
 	var title string
@@ -192,88 +325,83 @@ func EditSong(c *gin.Context) {
 	tags := map[string][]string{}
 	if edit.Title != nil {
 		if *edit.Title == "" {
-			err := errors.New("title field empty")
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				errors.New("title field empty"))
 			return
 		} else {
-			tags[metadata.Title] = []string{*edit.Title}
+			tags[models.TagTitle] = []string{*edit.Title}
 			title = *edit.Title
 		}
 	} else {
-		title = refTags[metadata.Title][0]
+		title = refTags[models.TagTitle][0]
 	}
 	if edit.Album != nil {
 		if *edit.Album == "" {
-			err := errors.New("album field empty")
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				errors.New("album field empty"))
 			return
 		} else {
-			tags[metadata.Album] = []string{*edit.Album}
+			tags[models.TagAlbum] = []string{*edit.Album}
 			album = *edit.Album
 		}
 	} else {
-		album = refTags[metadata.Album][0]
+		album = refTags[models.TagAlbum][0]
 	}
 	if edit.AlbumArtists != nil {
 		if len(*edit.AlbumArtists) == 0 {
-			err := errors.New("albumArtists field empty")
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				errors.New("albumArtists field empty"))
 			return
 		} else {
-			tags[metadata.AlbumArtists] = *edit.AlbumArtists
+			tags[models.TagAlbumArtists] = *edit.AlbumArtists
 			artist = (*edit.AlbumArtists)[0]
 		}
 	} else {
-		artist = refTags[metadata.AlbumArtists][0]
+		artist = refTags[models.TagAlbumArtists][0]
 	}
 	if edit.Artists != nil {
 		if len(*edit.Artists) == 0 {
-			err := errors.New("artists field empty")
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				errors.New("artists field empty"))
 			return
 		} else {
-			tags[metadata.Artists] = *edit.Artists
+			tags[models.TagArtists] = *edit.Artists
 		}
 	}
 	if edit.ReleaseDate != nil {
-		tags[metadata.ReleaseDate] = []string{*edit.ReleaseDate}
+		tags[models.TagReleaseDate] = []string{*edit.ReleaseDate}
 	}
 	if edit.TrackNumber != nil {
-		tags[metadata.TrackNumber] = []string{strconv.FormatUint(uint64(*edit.TrackNumber), 10)}
+		tags[models.TagTrackNumber] = []string{strconv.FormatUint(uint64(*edit.TrackNumber), 10)}
 		trackNumber = strconv.FormatUint(uint64(*edit.TrackNumber), 10)
 	} else {
-		trackNumber = refTags[metadata.TrackNumber][0]
+		trackNumber = refTags[models.TagTrackNumber][0]
 	}
 	if edit.VolumeNumber != nil {
-		tags[metadata.VolumeNumber] = []string{strconv.FormatUint(uint64(*edit.VolumeNumber), 10)}
+		tags[models.TagVolumeNumber] = []string{strconv.FormatUint(uint64(*edit.VolumeNumber), 10)}
 	}
 	if edit.Explicit != nil {
-		tags[metadata.Explicit] = []string{strconv.FormatBool(*edit.Explicit)}
+		tags[models.TagExplicit] = []string{strconv.FormatBool(*edit.Explicit)}
 	}
 	if edit.AlbumGain != nil {
-		tags[metadata.AlbumGain] = []string{strconv.FormatFloat(*edit.AlbumGain, 'f', 6, 64)}
+		tags[models.TagAlbumGain] = []string{strconv.FormatFloat(*edit.AlbumGain, 'f', 6, 64)}
 	}
 	if edit.AlbumPeak != nil {
-		tags[metadata.AlbumPeak] = []string{strconv.FormatFloat(*edit.AlbumPeak, 'f', 6, 64)}
+		tags[models.TagAlbumPeak] = []string{strconv.FormatFloat(*edit.AlbumPeak, 'f', 6, 64)}
 	}
 	if edit.TrackGain != nil {
-		tags[metadata.TrackGain] = []string{strconv.FormatFloat(*edit.TrackGain, 'f', 6, 64)}
+		tags[models.TagTrackGain] = []string{strconv.FormatFloat(*edit.TrackGain, 'f', 6, 64)}
 	}
 	if edit.TrackPeak != nil {
-		tags[metadata.TrackPeak] = []string{strconv.FormatFloat(*edit.TrackPeak, 'f', 6, 64)}
+		tags[models.TagTrackPeak] = []string{strconv.FormatFloat(*edit.TrackPeak, 'f', 6, 64)}
 	}
 	if edit.Isrc != nil {
 		if *edit.Isrc == "" {
-			err := errors.New("isrc field empty")
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusBadRequest,
+				errors.New("isrc field empty"))
 			return
 		} else {
-			tags[metadata.ISRC] = []string{*edit.Isrc}
+			tags[models.TagISRC] = []string{*edit.Isrc}
 			song.Isrc = *edit.Isrc
 		}
 	}
@@ -285,24 +413,21 @@ func EditSong(c *gin.Context) {
 	if song.Path != newSongPath {
 		root, err := os.OpenRoot(userPath)
 		if err != nil {
-			err := fmt.Errorf("os.OpenRoot: %w", err)
-			log.Println(err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": err})
+			utils.GinPrettyError(c, http.StatusInternalServerError,
+				fmt.Errorf("os.OpenRoot: %w", err))
 			return
 		}
 		defer root.Close()
 
 		oldSongPath := song.Path
 		if err := utils.RootDuplicateFile(root, oldSongPath, newSongPath); err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
 			return
 		}
 
 		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
 			_ = root.Remove(newSongPath)
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
 			return
 		} else {
 			_ = root.Remove(oldSongPath)
@@ -310,8 +435,7 @@ func EditSong(c *gin.Context) {
 		if cover != nil {
 			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
 				_ = root.Remove(newSongPath)
-				log.Println(err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				utils.GinPrettyError(c, http.StatusInternalServerError, err)
 				return
 			} else {
 				_ = root.Remove(oldSongPath)
@@ -321,14 +445,12 @@ func EditSong(c *gin.Context) {
 		song.Path = newSongPath
 	} else {
 		if err := metadata.WriteTags(filepath.Join(userPath, newSongPath), tags, false); err != nil {
-			log.Println(err)
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			utils.GinPrettyError(c, http.StatusInternalServerError, err)
 			return
 		}
 		if cover != nil {
 			if err := metadata.WriteCover(filepath.Join(userPath, newSongPath), cover); err != nil {
-				log.Println(err)
-				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+				utils.GinPrettyError(c, http.StatusInternalServerError, err)
 				return
 			}
 		}
@@ -345,24 +467,21 @@ func EditSong(c *gin.Context) {
 func GetSongCover(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
-		err := fmt.Errorf("strconv.ParseUint: %w", err)
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("strconv.ParseUint: %w", err))
 		return
 	}
 	id := uint(result)
 
 	img, err := services.GetLibrarySongCover(userId, id)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -372,31 +491,22 @@ func GetSongCover(c *gin.Context) {
 func ListSong(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	var limit int
-	if result := c.Query("limit"); result == "" {
+	if result, err := strconv.Atoi(c.Query("limit")); err != nil {
 		limit = 10
 	} else {
-		if result, err := strconv.Atoi(result); err != nil {
-			limit = 10
-		} else {
-			limit = result
-		}
+		limit = result
 	}
 
 	var offset int
-	if result := c.Query("offset"); result == "" {
+	if result, err := strconv.Atoi(c.Query("offset")); err != nil {
 		offset = 0
 	} else {
-		if result, err := strconv.Atoi(result); err != nil {
-			offset = 0
-		} else {
-			offset = result
-		}
+		offset = result
 	}
 
 	q := c.Query("q")
@@ -405,15 +515,13 @@ func ListSong(c *gin.Context) {
 
 	total, err := repository.CountSongByUserID(userId, q)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
 	songs, err := repository.ListSongByUserID(userId, q, limit, offset)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -433,22 +541,20 @@ func ListSong(c *gin.Context) {
 func DeleteSong(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	result, err := strconv.ParseUint(c.Param("id"), 10, 0)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest,
+			fmt.Errorf("strconv.ParseUint: %w", err))
 		return
 	}
 	id := uint(result)
 
 	if err := services.DeleteLibrarySong(userId, id); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
 
@@ -458,15 +564,14 @@ func DeleteSong(c *gin.Context) {
 func SyncLibrary(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusBadRequest, err)
 		return
 	}
 
 	if err := services.SyncUserLibrary(userId); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
+
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
