@@ -151,6 +151,7 @@
 											.error || "Failed to upload song",
 									);
 								}
+
 								error = await loadLibrary(
 									search,
 									limit,
