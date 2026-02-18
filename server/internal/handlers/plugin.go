@@ -93,7 +93,6 @@ func GetArtist(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, data)
-
 }
 
 func Search(c *gin.Context) {
