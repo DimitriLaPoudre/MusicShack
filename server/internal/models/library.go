@@ -6,11 +6,11 @@ import (
 )
 
 type Song struct {
-	ID        uint   `gorm:"primaryKey" json:"id"`
-	UserId    uint   `gorm:"not null;uniqueIndex:idx_song" json:"userId"`
-	Path      string `gorm:"not null" json:"path"`
-	Isrc      string `gorm:"uniqueIndex:idx_song" json:"isrc"`
-	UpdatedAt time.Time
+	ID     uint      `gorm:"primaryKey" json:"id"`
+	UserId uint      `gorm:"not null" json:"userId"`
+	Path   string    `gorm:"not null" json:"path"`
+	Isrc   string    `gorm:"index" json:"isrc"`
+	MTime  time.Time `json:"mTime"`
 }
 
 type RequestEditSong struct {

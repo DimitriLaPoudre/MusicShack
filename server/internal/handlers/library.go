@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strconv"
 	"strings"
 
@@ -98,16 +97,7 @@ func UploadSong(c *gin.Context) {
 		return
 	}
 
-	var isrc string
-	if value, ok := tags[models.TagISRC]; !ok || len(value) <= 0 ||
-		!regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$`).MatchString(value[0]) {
-		utils.GinPrettyError(c, http.StatusBadRequest, errors.New("isrc field empty and file don't provide default"))
-		return
-	} else {
-		isrc = value[0]
-	}
-
-	if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: isrc}); err != nil {
+	if err := repository.AddSong(models.Song{UserId: userId, Path: path}); err != nil {
 		utils.GinPrettyError(c, http.StatusInternalServerError, err)
 		return
 	}
@@ -239,15 +229,6 @@ func EditSong(c *gin.Context) {
 		return
 	}
 
-	var isrc string
-	if value, ok := tags[models.TagISRC]; !ok || len(value) <= 0 ||
-		!regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$`).MatchString(value[0]) {
-		utils.GinPrettyError(c, http.StatusBadRequest, errors.New("isrc field empty and file don't provide default"))
-		return
-	} else {
-		isrc = value[0]
-	}
-
 	rootUser, err := os.OpenRoot(userPath)
 	if err != nil {
 		utils.GinPrettyError(c, http.StatusInternalServerError, err)
@@ -268,7 +249,7 @@ func EditSong(c *gin.Context) {
 	if err := database.DB.Transaction(func(tx *gorm.DB) error {
 		if err := database.DB.Model(&models.Song{}).
 			Where("id = ? AND user_id = ?", song.ID, userId).
-			Updates(models.Song{Path: path, Isrc: isrc}).Error; err != nil {
+			Updates(models.Song{Path: path}).Error; err != nil {
 			return err
 		}
 

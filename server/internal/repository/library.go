@@ -55,7 +55,7 @@ func ListSong(q string, limit int, offset int) ([]models.Song, error) {
 		Where("path ILIKE ?", "%"+q+"%").
 		Limit(limit).
 		Offset(offset).
-		Order("updated_at DESC NULLS LAST").
+		Order("m_time DESC NULLS LAST").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSong: %w", err)
 	}
@@ -70,7 +70,7 @@ func ListSongByUserID(userId uint, q string, limit int, offset int) ([]models.So
 		Where("path ILIKE ? AND user_id = ?", "%"+q+"%", userId).
 		Limit(limit).
 		Offset(offset).
-		Order("updated_at DESC NULLS LAST").
+		Order("m_time DESC NULLS LAST").
 		Find(&songs).Error; err != nil {
 		return nil, fmt.Errorf("repository.ListSongByUserID: %w", err)
 	}
