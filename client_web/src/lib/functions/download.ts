@@ -10,10 +10,7 @@ import { downloadList } from "$lib/stores/panel/download";
 export async function download(req: RequestDownload) {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/downloads`, "POST", req);
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to download " + req.type);
-		}
+		await apiFetch<StatusResponse>(`/downloads`, "POST", req);
 	} catch (e) {
 		error =
 			e instanceof Error ? e.message : "Failed to load download " + req.type;
@@ -32,9 +29,6 @@ export async function loadDownloads() {
 	];
 	try {
 		const data = await apiFetch<DownloadListResponse>("/downloads");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to fetch downloads");
-		}
 		downloadList.set(
 			data.sort((a, b) => {
 				const statusDiff =
@@ -53,13 +47,7 @@ export async function loadDownloads() {
 export async function retryDownload(id: number) {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(
-			`/downloads/${id}/retry`,
-			"POST",
-		);
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to retry download");
-		}
+		await apiFetch<StatusResponse>(`/downloads/${id}/retry`, "POST");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to retry download";
 	}
@@ -69,10 +57,7 @@ export async function retryDownload(id: number) {
 export async function retryAllDownload() {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/downloads/retry`, "POST");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to retry download");
-		}
+		await apiFetch<StatusResponse>(`/downloads/retry`, "POST");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to retry download";
 	}
@@ -82,13 +67,7 @@ export async function retryAllDownload() {
 export async function cancelDownload(id: number) {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(
-			`/downloads/${id}/cancel`,
-			"POST",
-		);
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to cancel download");
-		}
+		await apiFetch<StatusResponse>(`/downloads/${id}/cancel`, "POST");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to cancel download";
 	}
@@ -98,10 +77,7 @@ export async function cancelDownload(id: number) {
 export async function doneDownload() {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/downloads/done`, "POST");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to cancel download");
-		}
+		await apiFetch<StatusResponse>(`/downloads/done`, "POST");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to cancel download";
 	}
@@ -111,10 +87,7 @@ export async function doneDownload() {
 export async function deleteDownload(id: number) {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/downloads/${id}`, "DELETE");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to delete download");
-		}
+		await apiFetch<StatusResponse>(`/downloads/${id}`, "DELETE");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to delete download";
 	}

@@ -45,8 +45,8 @@ func migrationDB(db *gorm.DB) error {
 		}
 	}
 
-	if !m.HasIndex(&models.Song{}, "idx_song") {
-		if err := m.CreateIndex(&models.Song{}, "idx_song"); err != nil {
+	if m.HasIndex(&models.Song{}, "idx_song") {
+		if err := m.DropIndex(&models.Song{}, "idx_song"); err != nil {
 			return fmt.Errorf("create idx_song: %w", err)
 		}
 	}

@@ -13,6 +13,7 @@
 	import Search from "$lib/components/panel/Search.svelte";
 	import Setting from "$lib/components/panel/Setting.svelte";
 	import { page } from "$app/state";
+	import { syncLibrary } from "$lib/functions/library";
 
 	let { children } = $props();
 	let barState = $state<null | string>(null);
@@ -57,6 +58,7 @@
 		<button
 			class="hover-full w-14 h-15"
 			onclick={() => {
+				syncLibrary();
 				goto("/library");
 			}}
 			class:active={page.url.pathname == "/library"}

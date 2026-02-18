@@ -3,46 +3,95 @@ import type { ErrorResponse } from "$lib/types/response";
 
 export async function apiFetch<T>(
 	path: string,
-	method: string = "GET",
+	method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
 	body?: any,
-): Promise<T | ErrorResponse> {
-	const res = await fetch("/api" + path, {
+): Promise<T> {
+	const options: RequestInit = {
 		method: method,
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(body),
-	});
+	};
+
+	if (body) {
+		options.body = JSON.stringify(body);
+	}
+
+	const res = await fetch("/api" + path, options);
 	if (res.status === 401) {
 		await goto("/login");
+		throw new Error(res.statusText);
 	}
-	let data;
-	if (res.ok) {
-		data = (await res.json()) as T;
-	} else {
-		data = (await res.json()) as ErrorResponse;
+
+	const data = await res.json().catch(() => {
+		throw new Error(`Invalid JSON response: ${res.status}`);
+	});
+
+	if (!res.ok) {
+		const error = data as ErrorResponse;
+		throw new Error(error.error || `Request failed with status ${res.status}`);
 	}
-	return data;
+	return data as T;
+}
+
+export async function apiFetchFormData<T>(
+	path: string,
+	fd: FormData,
+	method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "POST",
+): Promise<T> {
+	const options: RequestInit = {
+		method: method,
+		credentials: "include",
+	};
+
+	if (fd) {
+		options.body = fd;
+	}
+
+	const res = await fetch("/api" + path, options);
+	if (res.status === 401) {
+		await goto("/login");
+		throw new Error(res.statusText);
+	}
+
+	const data = await res.json().catch(() => {
+		throw new Error(`Invalid JSON response: ${res.status}`);
+	});
+
+	if (!res.ok) {
+		const error = data as ErrorResponse;
+		throw new Error(error.error || `Request failed with status ${res.status}`);
+	}
+	return data as T;
 }
 
 export async function adminFetch<T>(
 	path: string,
-	method: string = "GET",
+	method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
 	body?: any,
-): Promise<T | ErrorResponse> {
-	const res = await fetch("/api" + path, {
+): Promise<T> {
+	const options: RequestInit = {
 		method: method,
 		credentials: "include",
 		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify(body),
-	});
-	let data;
-	if (res.ok) {
-		data = (await res.json()) as T;
-	} else {
-		data = (await res.json()) as ErrorResponse;
+	};
+
+	if (body) {
+		options.body = JSON.stringify(body);
 	}
+
+	const res = await fetch("/api" + path, options);
 	if (res.status === 401) {
 		await goto("/admin/login");
+		throw new Error(res.statusText);
 	}
-	return data;
+
+	const data = await res.json().catch(() => {
+		throw new Error(`Invalid JSON response: ${res.status}`);
+	});
+
+	if (!res.ok) {
+		const error = data as ErrorResponse;
+		throw new Error(error.error || `Request failed with status ${res.status}`);
+	}
+	return data as T;
 }

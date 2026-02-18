@@ -35,7 +35,6 @@ func SetupRouters() *graceful.Graceful {
 
 	api := r.Group("/api")
 	{
-
 		api.GET("", handlers.Info)
 		me := api.Group("/me")
 		{
