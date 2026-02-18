@@ -19,7 +19,8 @@
 	import { Pagination, AlertDialog } from "bits-ui";
 	import { libraryPage } from "$lib/stores/panel/library";
 	import { page } from "$app/state";
-	import type { ErrorResponse, ResponseSong } from "$lib/types/response";
+	import type { ResponseSong, StatusResponse } from "$lib/types/response";
+	import { apiFetchFormData } from "$lib/functions/fetch";
 
 	let error = $state<null | string>(null);
 
@@ -90,6 +91,7 @@
 				placeholder="Search"
 			/>
 		</div>
+
 		<AlertDialog.Root bind:open={uploadDialog}>
 			<div class="flex justify-center items-center">
 				<AlertDialog.Trigger
@@ -97,6 +99,8 @@
 					onclick={() => {
 						errorUploadDialog = null;
 						uploadOptionnal = false;
+						uploadAlbumArtistsList = [];
+						uploadArtistsList = [];
 					}}
 				>
 					Upload
@@ -105,103 +109,135 @@
 			<AlertDialog.Portal>
 				<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
 				<AlertDialog.Content
-					class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
+					class="fixed inset-0 z-50 flex items-center justify-center"
 				>
-					<form
-						onsubmit={async (e) => {
-							try {
-								e.preventDefault();
-
-								const form = e.currentTarget;
-								const fd = new FormData(form);
-
-								uploadAlbumArtistsList.forEach((t) =>
-									fd.append("albumArtists", t),
-								);
-								uploadArtistsList.forEach((t) =>
-									fd.append("artists", t),
-								);
-
-								const emptyKeys = [];
-								for (let [key, value] of fd.entries()) {
-									if (value === "") emptyKeys.push(key);
-									if (
-										value instanceof File &&
-										value.size === 0
-									) {
-										emptyKeys.push(key);
-									}
-								}
-								for (let key of emptyKeys) {
-									fd.delete(key);
-								}
-
-								const res = await fetch("/api/library", {
-									method: "POST",
-									credentials: "include",
-									body: fd,
-								});
-								if (res.status === 401) {
-									await goto("/login");
-									return;
-								}
-								if (!res.ok) {
-									throw new Error(
-										((await res.json()) as ErrorResponse)
-											.error || "Failed to upload song",
-									);
-								}
-
-								error = await loadLibrary(
-									search,
-									limit,
-									offset,
-								);
-
-								uploadAlbumArtistsList = [];
-								uploadArtistsList = [];
-								uploadDialog = false;
-							} catch (e) {
-								errorUploadDialog =
-									e instanceof Error
-										? e.message
-										: "Failed to upload song";
-							}
-						}}
+					<div
+						class="bg-bg border p-7 gap-3 grid grid-rows-[auto_1fr_auto] max-h-[calc(100%-2rem)] w-full max-w-[calc(100%-2rem)] sm:max-w-lg md:w-full"
 					>
-						<div class="flex flex-col gap-4">
-							<AlertDialog.Title class="text-lg font-semibold">
-								Upload a song
-							</AlertDialog.Title>
-							<AlertDialog.Description
-								class="flex flex-col text-foreground-alt text-sm gap-2"
+						<AlertDialog.Title class="text-2xl font-semibold">
+							Upload a song
+						</AlertDialog.Title>
+						<form
+							class="flex flex-col gap-2 overflow-y-auto p-4"
+							id="upload-form"
+							onsubmit={async (e) => {
+								try {
+									e.preventDefault();
+
+									const form = e.currentTarget;
+									const fd = new FormData(form);
+
+									uploadAlbumArtistsList.forEach((t) =>
+										fd.append("albumArtists", t),
+									);
+									uploadArtistsList.forEach((t) =>
+										fd.append("artists", t),
+									);
+
+									const emptyKeys = [];
+									for (let [key, value] of fd.entries()) {
+										if (value === "") emptyKeys.push(key);
+										if (
+											value instanceof File &&
+											value.size === 0
+										) {
+											emptyKeys.push(key);
+										}
+									}
+									for (let key of emptyKeys) {
+										fd.delete(key);
+									}
+
+									await apiFetchFormData<StatusResponse>(
+										"/library",
+										fd,
+									);
+
+									error = await loadLibrary(
+										search,
+										limit,
+										offset,
+									);
+									uploadDialog = false;
+								} catch (e) {
+									errorUploadDialog =
+										e instanceof Error
+											? e.message
+											: "Failed to upload song";
+								}
+							}}
+						>
+							{#if errorUploadDialog}
+								<p class="text-center bg-err p-2">
+									{errorUploadDialog}
+								</p>
+							{/if}
+							<label
+								class="grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)] gap-2 items-center"
 							>
-								{#if errorUploadDialog}
-									<p class="text-center bg-err p-2">
-										{errorUploadDialog}
-									</p>
-								{/if}
+								Cover
 								<input
 									type="file"
 									name="cover"
 									accept="image/*"
 								/>
+							</label>
+							<label
+								class="grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)] gap-2 items-center"
+							>
+								File
 								<input
 									required
 									type="file"
 									name="file"
 									accept="audio/*"
 								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Title
 								<input
 									type="text"
 									name="title"
-									placeholder="Title"
+									placeholder="Shawty"
 								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Album
 								<input
 									type="text"
 									name="album"
-									placeholder="Album"
+									placeholder="Magma Road"
 								/>
+							</label>
+
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								<div class="flex gap-2 flex-wrap">
+									<span>Album Artists: </span>
+									{#each uploadAlbumArtistsList as artist, index}
+										<div class="flex gap-1">
+											<span class="underline">
+												{artist}
+											</span>
+											<button
+												class="p-0 m-0 border-0 bg-transparent text-inherit font-extrabold"
+												type="button"
+												onclick={() =>
+													uploadAlbumArtistsList.splice(
+														index,
+														1,
+													)}
+											>
+												x
+											</button>
+										</div>
+									{/each}
+								</div>
 								<input
 									bind:value={uploadAlbumArtists}
 									onkeydown={(e) => {
@@ -222,16 +258,23 @@
 									type="text"
 									placeholder="Album Artists"
 								/>
-								<div class="flex gap-2">
-									<span>Album Artists: </span>
-									{#each uploadAlbumArtistsList as artist, index}
+							</label>
+
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								<div class="flex gap-2 flex-wrap">
+									<span>Artists: </span>
+									{#each uploadArtistsList as artist, index}
 										<div class="flex gap-1">
-											<span>{artist}</span>
+											<span class="underline">
+												{artist}
+											</span>
 											<button
-												class="p-0 m-0 border-0 bg-transparent text-inherit"
+												class="p-0 m-0 border-0 bg-transparent text-inherit font-extrabold"
 												type="button"
 												onclick={() =>
-													uploadAlbumArtistsList.splice(
+													uploadArtistsList.splice(
 														index,
 														1,
 													)}
@@ -260,96 +303,94 @@
 									type="text"
 									placeholder="Artists"
 								/>
-								<div class="flex gap-2">
-									<span>Artists: </span>
-									{#each uploadArtistsList as artist, index}
-										<div class="flex gap-1">
-											<span>{artist}</span>
-											<button
-												class="p-0 m-0 border-0 bg-transparent text-inherit"
-												type="button"
-												onclick={() =>
-													uploadArtistsList.splice(
-														index,
-														1,
-													)}
-											>
-												x
-											</button>
-										</div>
-									{/each}
-								</div>
-								{#if !uploadOptionnal}
-									<button
-										type="button"
-										class="flex gap-4 py-2"
-										onclick={() =>
-											(uploadOptionnal =
-												!uploadOptionnal)}
-									>
-										<p>Optionnal</p>
-										<ChevronUp />
-									</button>
-								{:else}
-									<button
-										type="button"
-										class="flex gap-4 py-2"
-										onclick={() =>
-											(uploadOptionnal =
-												!uploadOptionnal)}
-									>
-										<p>Optionnal</p>
-										<ChevronDown />
-									</button>
+							</label>
+							{#if !uploadOptionnal}
+								<button
+									type="button"
+									class="flex gap-4 py-2"
+									onclick={() =>
+										(uploadOptionnal = !uploadOptionnal)}
+								>
+									<p>Optionnal</p>
+									<ChevronUp />
+								</button>
+							{:else}
+								<button
+									type="button"
+									class="flex gap-4 py-2"
+									onclick={() =>
+										(uploadOptionnal = !uploadOptionnal)}
+								>
+									<p>Optionnal</p>
+									<ChevronDown />
+								</button>
 
+								<label
+									class="grid grid-cols-[1fr_auto] gap-2 items-center"
+								>
+									Track Number
 									<input
 										type="number"
 										name="trackNumber"
-										placeholder="Track Number"
+										placeholder="5"
 										min="1"
 										step="1"
 									/>
+								</label>
+								<label
+									class="grid grid-cols-[1fr_auto] gap-2 items-center"
+								>
+									Volume Number
 									<input
 										type="number"
 										name="volumeNumber"
-										placeholder="Volume Number"
+										placeholder="1"
 										min="1"
 										step="1"
 									/>
+								</label>
+								<label
+									class="grid grid-cols-[1fr_auto] gap-2 items-center"
+								>
+									ISRC
 									<input
 										type="text"
 										name="isrc"
-										placeholder="ISRC (eg: FR5R00909899)"
+										placeholder="FR5R00909899"
 									/>
+								</label>
+								<label
+									class="grid grid-cols-[1fr_auto] gap-2 items-center"
+								>
+									Release Date
 									<input type="date" name="releaseDate" />
-									<label
-										class="flex justify-center items-center gap-2"
-									>
-										Explicit
-										<input
-											type="checkbox"
-											name="explicit"
-										/>
-									</label>
-								{/if}
-							</AlertDialog.Description>
-						</div>
+								</label>
+								<label
+									class="grid grid-cols-[1fr_auto] items-center"
+								>
+									Explicit
+									<input type="checkbox" name="explicit" />
+								</label>
+							{/if}
+						</form>
 						<div
-							class="flex w-full items-center justify-center gap-2 pt-2"
+							class="grid grid-cols-2 items-center justify-center gap-2 pt-1"
 						>
 							<AlertDialog.Cancel
 								type="button"
-								class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+								class="hover-full"
 							>
 								Cancel
 							</AlertDialog.Cancel>
 							<AlertDialog.Action
-								class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+								type="submit"
+								form="upload-form"
+								class="hover-full"
 							>
-								Save
+								Upload
 							</AlertDialog.Action>
 						</div>
-					</form>
+					</div>
 				</AlertDialog.Content>
 			</AlertDialog.Portal>
 		</AlertDialog.Root>
@@ -490,298 +531,380 @@
 			</div>
 		{/snippet}
 	</Pagination.Root>
-{/if}
-{#if editItem}
-	<AlertDialog.Root bind:open={editDialog}>
-		<AlertDialog.Portal>
-			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
-			<AlertDialog.Content
-				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
-			>
-				<form
-					class="flex flex-col gap-4"
-					onsubmit={async (e) => {
-						try {
-							e.preventDefault();
+	{#if editItem}
+		<AlertDialog.Root bind:open={editDialog}>
+			<AlertDialog.Portal>
+				<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+				<AlertDialog.Content
+					class="fixed inset-0 z-50 flex items-center justify-center"
+				>
+					<div
+						class="bg-bg border p-7 gap-3 grid grid-rows-[auto_1fr_auto] max-h-[calc(100%-2rem)] w-full max-w-[calc(100%-2rem)] sm:max-w-lg md:w-full"
+					>
+						<AlertDialog.Title class="text-2xl font-semibold">
+							Edit
+						</AlertDialog.Title>
+						<form
+							class="flex flex-col gap-2 overflow-y-auto p-4"
+							id="edit-form"
+							onsubmit={async (e) => {
+								try {
+									e.preventDefault();
 
-							const form = e.currentTarget;
-							const fd = new FormData(form);
+									const form = e.currentTarget;
+									const fd = new FormData(form);
 
-							editAlbumArtistsList.forEach((t) =>
-								fd.append("albumArtists", t),
-							);
-							editArtistsList.forEach((t) =>
-								fd.append("artists", t),
-							);
+									editAlbumArtistsList.forEach((t) =>
+										fd.append("albumArtists", t),
+									);
+									editArtistsList.forEach((t) =>
+										fd.append("artists", t),
+									);
 
-							const emptyKeys = [];
-							for (let [key, value] of fd.entries()) {
-								if (value === "") emptyKeys.push(key);
-								if (value instanceof File && value.size === 0) {
-									emptyKeys.push(key);
+									const emptyKeys = [];
+									for (let [key, value] of fd.entries()) {
+										if (value === "") emptyKeys.push(key);
+										if (
+											value instanceof File &&
+											value.size === 0
+										) {
+											emptyKeys.push(key);
+										}
+									}
+									for (let key of emptyKeys) {
+										fd.delete(key);
+									}
+
+									await apiFetchFormData<StatusResponse>(
+										"/library",
+										fd,
+										"PUT",
+									);
+
+									error = await loadLibrary(
+										search,
+										limit,
+										offset,
+									);
+
+									editItem = null;
+								} catch (e) {
+									errorEditDialog =
+										e instanceof Error
+											? e.message
+											: "Failed to upload song";
 								}
-							}
-							for (let key of emptyKeys) {
-								fd.delete(key);
-							}
+							}}
+						>
+							{#if errorEditDialog}
+								<p class="text-center bg-err p-2">
+									{errorEditDialog}
+								</p>
+							{/if}
+							<label
+								class="grid grid-cols-[minmax(0,1fr)_minmax(0,3fr)] gap-2 items-center"
+							>
+								Cover
+								<input
+									type="file"
+									name="cover"
+									accept="image/*"
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Title
+								<input
+									type="text"
+									name="title"
+									placeholder={editItem.title}
+									value={editItem.title}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Album
+								<input
+									type="text"
+									name="album"
+									value={editItem.album}
+									placeholder={editItem.album}
+								/>
+							</label>
 
-							const res = await fetch(
-								`/api/library/${editItem!.id}`,
-								{
-									method: "PUT",
-									credentials: "include",
-									body: fd,
-								},
-							);
-							if (res.status === 401) {
-								await goto("/login");
-							}
-							if (!res.ok) {
-								throw new Error(
-									((await res.json()) as ErrorResponse)
-										.error || "Failed to upload song",
-								);
-							}
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								<div class="flex gap-2 flex-wrap">
+									<span>Album Artists: </span>
+									{#each editAlbumArtistsList as artist, index}
+										<div class="flex gap-1">
+											<span class="underline">
+												{artist}
+											</span>
+											<button
+												class="p-0 m-0 border-0 bg-transparent text-inherit font-extrabold"
+												type="button"
+												onclick={() =>
+													editAlbumArtistsList.splice(
+														index,
+														1,
+													)}
+											>
+												x
+											</button>
+										</div>
+									{/each}
+								</div>
+								<input
+									bind:value={editAlbumArtists}
+									onkeydown={(e) => {
+										const albumArtist =
+											editAlbumArtists.trim();
+										if (
+											e.key === "Enter" &&
+											albumArtist !== ""
+										) {
+											e.preventDefault();
+											editAlbumArtistsList = [
+												...editAlbumArtistsList,
+												albumArtist,
+											];
+											editAlbumArtists = "";
+										}
+									}}
+									type="text"
+									placeholder="Album Artists"
+								/>
+							</label>
 
-							editItem = null;
-							editAlbumArtistsList = [];
-							editArtistsList = [];
-							errorEditDialog = await loadLibrary(
-								search,
-								limit,
-								offset,
-							);
-						} catch (e) {
-							errorEditDialog =
-								e instanceof Error
-									? e.message
-									: "Failed to load artist";
-						}
-					}}
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								<div class="flex gap-2 flex-wrap">
+									<span>Artists: </span>
+									{#each editArtistsList as artist, index}
+										<div class="flex gap-1">
+											<span class="underline">
+												{artist}
+											</span>
+											<button
+												class="p-0 m-0 border-0 bg-transparent text-inherit font-extrabold"
+												type="button"
+												onclick={() =>
+													editArtistsList.splice(
+														index,
+														1,
+													)}
+											>
+												x
+											</button>
+										</div>
+									{/each}
+								</div>
+								<input
+									bind:value={editArtists}
+									onkeydown={(e) => {
+										const artist = editArtists.trim();
+										if (
+											e.key === "Enter" &&
+											artist !== ""
+										) {
+											e.preventDefault();
+											editArtistsList = [
+												...editArtistsList,
+												artist,
+											];
+											editArtists = "";
+										}
+									}}
+									type="text"
+									placeholder="Artists"
+								/>
+							</label>
+
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Track Number
+								<input
+									type="number"
+									name="trackNumber"
+									value={editItem.trackNumber}
+									placeholder={editItem.trackNumber.toString()}
+									min="1"
+									step="1"
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Volume Number
+								<input
+									type="number"
+									name="volumeNumber"
+									value={editItem.volumeNumber}
+									placeholder={editItem.volumeNumber.toString()}
+									min="1"
+									step="1"
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								ISRC
+								<input
+									type="text"
+									name="isrc"
+									value={editItem.isrc}
+									placeholder={editItem.isrc}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Release Date
+								<input
+									type="date"
+									name="releaseDate"
+									value={editItem.releaseDate}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] items-center"
+							>
+								Explicit
+								<input
+									type="checkbox"
+									name="explicit"
+									checked={editItem.explicit}
+								/>
+							</label>
+
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Album Gain
+								<input
+									type="number"
+									name="albumGain"
+									step="any"
+									value={editItem.albumGain}
+									placeholder={editItem.albumGain.toString()}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Album Peak
+								<input
+									type="number"
+									name="albumPeak"
+									step="any"
+									value={editItem.albumPeak}
+									placeholder={editItem.albumPeak.toString()}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Track Gain
+								<input
+									type="number"
+									name="trackGain"
+									step="any"
+									value={editItem.trackGain}
+									placeholder={editItem.trackGain.toString()}
+								/>
+							</label>
+							<label
+								class="grid grid-cols-[1fr_auto] gap-2 items-center"
+							>
+								Track Peak
+								<input
+									type="number"
+									name="trackPeak"
+									step="any"
+									value={editItem.trackPeak}
+									placeholder={editItem.trackPeak.toString()}
+								/>
+							</label>
+						</form>
+						<div
+							class="grid grid-cols-2 items-center justify-center gap-2 pt-1"
+						>
+							<AlertDialog.Cancel
+								type="button"
+								class="hover-full"
+							>
+								Cancel
+							</AlertDialog.Cancel>
+							<AlertDialog.Action
+								type="submit"
+								form="edit-form"
+								class="hover-full"
+							>
+								Edit
+							</AlertDialog.Action>
+						</div>
+					</div>
+				</AlertDialog.Content>
+			</AlertDialog.Portal>
+		</AlertDialog.Root>
+	{/if}
+	{#if deletedItem}
+		<AlertDialog.Root bind:open={deleteDialog}>
+			<AlertDialog.Portal>
+				<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
+				<AlertDialog.Content
+					class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
 				>
 					<AlertDialog.Title class="text-lg font-semibold">
-						Edit
+						Delete
+						<span class="font-extrabold">
+							{deletedItem.title}
+						</span>
+						<span class="italic font-extrabold">
+							{deletedItem.album}
+						</span>
+						<span class="italic">
+							{deletedItem.artists}
+						</span>
 					</AlertDialog.Title>
 					<AlertDialog.Description
-						class="flex flex-col gap-1 text-foreground-alt text-sm"
+						class="text-foreground-alt text-sm"
 					>
-						{#if errorEditDialog}
-							<p class="text-center bg-err p-2">
-								{errorEditDialog}
-							</p>
-						{/if}
-						<input name="cover" type="file" accept="image/*" />
-						<input
-							name="title"
-							type="text"
-							placeholder="Title"
-							value={editItem.title}
-						/>
-						<input
-							name="album"
-							type="text"
-							placeholder="Album"
-							value={editItem.album}
-						/>
-						<input
-							bind:value={editAlbumArtists}
-							onkeydown={(e) => {
-								const albumArtist = editAlbumArtists.trim();
-								if (e.key === "Enter" && albumArtist !== "") {
-									e.preventDefault();
-									editAlbumArtistsList = [
-										...editAlbumArtistsList,
-										albumArtist,
-									];
-									editAlbumArtists = "";
-								}
-							}}
-							type="text"
-							placeholder="Album Artists"
-						/>
-						<div class="flex gap-2">
-							<span>Album Artists: </span>
-							{#each editAlbumArtistsList as artist, index}
-								<div class="flex gap-1">
-									<span>{artist}</span>
-									<button
-										class="p-0 m-0 border-0 bg-transparent text-inherit"
-										type="button"
-										onclick={() =>
-											editAlbumArtistsList.splice(
-												index,
-												1,
-											)}
-									>
-										x
-									</button>
-								</div>
-							{/each}
-						</div>
-						<input
-							bind:value={editArtists}
-							onkeydown={(e) => {
-								const artist = editArtists.trim();
-								if (e.key === "Enter" && artist !== "") {
-									e.preventDefault();
-									editArtistsList = [
-										...editArtistsList,
-										artist,
-									];
-									editArtists = "";
-								}
-							}}
-							type="text"
-							placeholder="Artists"
-						/>
-						<div class="flex gap-2">
-							<span>Artists: </span>
-							{#each editArtistsList as artist, index}
-								<div class="flex gap-1">
-									<span>{artist}</span>
-									<button
-										class="p-0 m-0 border-0 bg-transparent text-inherit"
-										type="button"
-										onclick={() =>
-											editArtistsList.splice(index, 1)}
-									>
-										x
-									</button>
-								</div>
-							{/each}
-						</div>
-						<input
-							name="trackNumber"
-							type="number"
-							placeholder="Track Number"
-							value={editItem.trackNumber}
-							min="1"
-							step="1"
-						/>
-						<input
-							name="volumeNumber"
-							type="number"
-							placeholder="Volume Number"
-							value={editItem.volumeNumber}
-							min="1"
-							step="1"
-						/>
-						<input
-							name="isrc"
-							type="text"
-							placeholder="ISRC"
-							value={editItem.isrc}
-						/>
-						<input
-							name="releaseDate"
-							type="date"
-							value={editItem.releaseDate}
-						/>
-						<label>
-							Explicit
-							<input
-								name="explicit"
-								type="checkbox"
-								checked={editItem.explicit}
-							/>
-						</label>
-						<input
-							name="albumGain"
-							type="number"
-							step="any"
-							placeholder="Album Gain"
-							value={editItem.albumGain}
-						/>
-						<input
-							name="albumPeak"
-							type="number"
-							step="any"
-							placeholder="Album Peak"
-							value={editItem.albumPeak}
-						/>
-						<input
-							name="trackGain"
-							type="number"
-							step="any"
-							placeholder="Track Gain"
-							value={editItem.trackGain}
-						/>
-						<input
-							name="trackPeak"
-							type="number"
-							step="any"
-							placeholder="Track Peak"
-							value={editItem.trackPeak}
-						/>
+						Are you sure you want to delete this song?
 					</AlertDialog.Description>
-					<div
-						class="flex w-full items-center justify-center gap-2 pt-2"
-					>
+					<div class="flex w-full items-center justify-center gap-2">
 						<AlertDialog.Cancel
-							type="button"
 							class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
 						>
 							Cancel
 						</AlertDialog.Cancel>
 						<AlertDialog.Action
 							class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
+							onclick={async () => {
+								if (deletedItem) {
+									error = await deleteSong(deletedItem.id);
+									if (!error) {
+										error = await loadLibrary(
+											search,
+											limit,
+											offset,
+										);
+									}
+								}
+								deletedItem = null;
+							}}
 						>
-							Save
+							Confirm
 						</AlertDialog.Action>
 					</div>
-				</form>
-			</AlertDialog.Content>
-		</AlertDialog.Portal>
-	</AlertDialog.Root>
-{/if}
-{#if deletedItem}
-	<AlertDialog.Root bind:open={deleteDialog}>
-		<AlertDialog.Portal>
-			<AlertDialog.Overlay class="fixed inset-0 z-50 bg-black/80" />
-			<AlertDialog.Content
-				class="rounded-card-lg bg-bg shadow-popover outline-hidden fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 border p-7 sm:max-w-lg md:w-full "
-			>
-				<AlertDialog.Title class="text-lg font-semibold">
-					Delete
-					<span class="font-extrabold">
-						{deletedItem.title}
-					</span>
-					<span class="italic font-extrabold">
-						{deletedItem.album}
-					</span>
-					<span class="italic">
-						{deletedItem.artists}
-					</span>
-				</AlertDialog.Title>
-				<AlertDialog.Description class="text-foreground-alt text-sm">
-					Are you sure you want to delete this song?
-				</AlertDialog.Description>
-				<div class="flex w-full items-center justify-center gap-2">
-					<AlertDialog.Cancel
-						class="h-input rounded-input bg-muted shadow-mini hover:bg-dark-10 focus-visible:ring-foreground focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-medium transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
-					>
-						Cancel
-					</AlertDialog.Cancel>
-					<AlertDialog.Action
-						class="h-input rounded-input bg-dark text-background shadow-mini hover:bg-dark/95 focus-visible:ring-dark focus-visible:ring-offset-background focus-visible:outline-hidden inline-flex w-full items-center justify-center text-[15px] font-semibold transition-all focus-visible:ring-2 focus-visible:ring-offset-2 active:scale-[0.98]"
-						onclick={async () => {
-							if (deletedItem) {
-								error = await deleteSong(deletedItem.id);
-								if (!error) {
-									error = await loadLibrary(
-										search,
-										limit,
-										offset,
-									);
-								}
-							}
-							deletedItem = null;
-						}}
-					>
-						Confirm
-					</AlertDialog.Action>
-				</div>
-			</AlertDialog.Content>
-		</AlertDialog.Portal>
-	</AlertDialog.Root>
+				</AlertDialog.Content>
+			</AlertDialog.Portal>
+		</AlertDialog.Root>
+	{/if}
 {/if}

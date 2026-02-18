@@ -1,6 +1,7 @@
 package models
 
 import (
+	"maps"
 	"strconv"
 )
 
@@ -59,6 +60,8 @@ func (req RequestUploadSong) ToTags() map[string][]string {
 		tags[TagISRC] = []string{*req.Isrc}
 	}
 
+	maps.Copy(tags, req.ExtraTags)
+
 	return tags
 }
 
@@ -116,6 +119,8 @@ func (req RequestEditSong) ToTags() map[string][]string {
 	if req.Isrc != nil {
 		tags[TagISRC] = []string{*req.Isrc}
 	}
+
+	maps.Copy(tags, req.ExtraTags)
 
 	return tags
 }

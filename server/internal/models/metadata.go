@@ -15,21 +15,3 @@ const (
 	TagTrackPeak    string = "REPLAYGAIN_TRACK_PEAK"
 	TagISRC         string = "ISRC"
 )
-
-func MetadataInfoToTags(info MetadataInfo) map[string][]string {
-	return map[string][]string{
-		TagTitle:        {info.Title},
-		TagAlbum:        {info.Title},
-		TagAlbumArtists: info.AlbumArtists,
-		TagArtists:      info.Artists,
-		TagTrackNumber:  {info.TrackNumber},
-		TagVolumeNumber: {info.VolumeNumber},
-		TagReleaseDate:  {info.ReleaseDate},
-		TagExplicit:     {info.Explicit},
-		TagAlbumGain:    {info.AlbumGain},
-		TagAlbumPeak:    {info.AlbumPeak},
-		TagTrackGain:    {info.TrackGain},
-		TagTrackPeak:    {info.TrackPeak},
-		TagISRC:         {info.Isrc},
-	}
-}
