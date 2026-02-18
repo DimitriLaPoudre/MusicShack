@@ -29,9 +29,6 @@
 	async function getUser() {
 		try {
 			const data = await apiFetch<UserResponse>("/me");
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch me");
-			}
 			$userData = data;
 			inputUser.hiRes = data.hiRes;
 			errorUser = null;
@@ -45,9 +42,6 @@
 		event.preventDefault();
 		try {
 			const data = await apiFetch<UserResponse>("/me", "PUT", inputUser);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to update me");
-			}
 			$userData = data;
 			errorUser = null;
 			if (inputUser.username !== "" || inputUser.password !== "") {
@@ -73,9 +67,6 @@
 	async function loadInstance() {
 		try {
 			const data = await apiFetch<InstancesResponse>(`/instances`);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch instances");
-			}
 			$instanceList = data;
 			errorInstances = null;
 		} catch (e) {
@@ -102,17 +93,7 @@
 				return;
 			}
 
-			const data = await apiFetch<StatusResponse>(
-				`/instances`,
-				"POST",
-				inputInstance,
-			);
-			if ("error" in data) {
-				throw new Error(
-					data.error || "error while trying to delete Instance",
-				);
-			}
-
+			await apiFetch<StatusResponse>(`/instances`, "POST", inputInstance);
 			inputInstance = { url: "" };
 			loadInstance();
 		} catch (e) {
@@ -124,15 +105,7 @@
 
 	async function deleteInstance(id: number) {
 		try {
-			const data = await apiFetch<StatusResponse>(
-				`/instances/${id}`,
-				"DELETE",
-			);
-			if ("error" in data) {
-				throw new Error(
-					data.error || "error while trying to delete Instance",
-				);
-			}
+			await apiFetch<StatusResponse>(`/instances/${id}`, "DELETE");
 			loadInstance();
 		} catch (e) {
 			errorInstances =
@@ -142,10 +115,7 @@
 
 	async function logout() {
 		try {
-			const data = await apiFetch<StatusResponse>(`/logout`, "POST");
-			if ("error" in data) {
-				throw new Error(data.error || "error while trying to logout");
-			}
+			await apiFetch<StatusResponse>(`/logout`, "POST");
 			goto("/login");
 		} catch (e) {
 			errorUser = e instanceof Error ? e.message : "Failed to logout";

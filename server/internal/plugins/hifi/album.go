@@ -129,6 +129,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 			TrackNumber:  rawSong.TrackNumber,
 			VolumeNumber: rawSong.VolumeNumber,
 			Explicit:     rawSong.Explicit,
+			Isrc:         rawSong.Isrc,
 			Artists:      make([]models.SongDataArtist, 0),
 		}
 

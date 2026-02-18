@@ -30,6 +30,11 @@ func GetSong(c *gin.Context) {
 		return
 	}
 
+	_, err = repository.GetSongByUserIDByISRC(userId, data.Isrc)
+	if err == nil {
+		data.Downloaded = true
+	}
+
 	c.JSON(http.StatusOK, data)
 }
 
@@ -49,6 +54,16 @@ func GetAlbum(c *gin.Context) {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
+	}
+
+	data.Downloaded = true
+	for i, song := range data.Songs {
+		_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+		if err == nil {
+			data.Songs[i].Downloaded = true
+		} else {
+			data.Downloaded = false
+		}
 	}
 
 	c.JSON(http.StatusOK, data)
@@ -106,6 +121,12 @@ func Search(c *gin.Context) {
 			}
 		}
 		if err == nil {
+			for i, song := range tmp.Songs {
+				_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+				if err == nil {
+					tmp.Songs[i].Downloaded = true
+				}
+			}
 			for i, artist := range tmp.Artists {
 				follow, err := repository.GetFollowByProviderByArtistID(provider, artist.Id)
 				if err == nil {

@@ -6,8 +6,9 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { ArtistData, ArtistDataAlbum } from "$lib/types/response";
-	import Quality from "$lib/components/quality.svelte";
-	import Explicit from "$lib/components/explicit.svelte";
+	import Quality from "$lib/components/Quality.svelte";
+	import Explicit from "$lib/components/Explicit.svelte";
+	import Owned from "$lib/components/Owned.svelte";
 
 	let error = $state<null | string>(null);
 	let artist = $state<null | ArtistData>(null);
@@ -32,9 +33,6 @@
 			const data = await apiFetch<ArtistData>(
 				`/artist/${provider}/${id}`,
 			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch artist");
-			}
 			artist = data;
 			albums["Albums"] = artist.albums;
 			albums["EP"] = artist.ep;
@@ -177,6 +175,9 @@
 									<p
 										class="flex flex-row items-center justify-center gap-2 font-extrabold"
 									>
+										{#if album.downloaded}
+											<Owned />
+										{/if}
 										{album.title}
 										{#if album.explicit}
 											<Explicit />

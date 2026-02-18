@@ -80,6 +80,7 @@ type AlbumDataArtist struct {
 }
 
 type AlbumDataSong struct {
+	Downloaded   bool             `json:"downloaded"`
 	Id           string           `json:"id"`
 	Title        string           `json:"title"`
 	Duration     uint             `json:"duration"`
@@ -87,6 +88,7 @@ type AlbumDataSong struct {
 	VolumeNumber uint             `json:"volumeNumber"`
 	AudioQuality Quality          `json:"audioQuality"`
 	Explicit     bool             `json:"explicit"`
+	Isrc         string           `json:"isrc"`
 	Artists      []SongDataArtist `json:"artists"`
 }
 
@@ -103,6 +105,7 @@ type ArtistData struct {
 }
 
 type ArtistDataAlbum struct {
+	Downloaded   bool              `json:"downloaded"`
 	Id           string            `json:"id"`
 	Title        string            `json:"title"`
 	Duration     uint              `json:"duration"`
@@ -128,6 +131,7 @@ type SearchDataSong struct {
 	AudioQuality Quality          `json:"audioQuality"`
 	Popularity   uint             `json:"popularity"`
 	Explicit     bool             `json:"explicit"`
+	Isrc         string           `json:"isrc"`
 	Artists      []SongDataArtist `json:"artists"`
 	Album        SongDataAlbum    `json:"album"`
 }

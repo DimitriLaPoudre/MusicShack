@@ -19,8 +19,9 @@
 		Trash,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
-	import Explicit from "../explicit.svelte";
+	import Explicit from "../Explicit.svelte";
 	import { downloadList } from "$lib/stores/panel/download";
+	import Owned from "../Owned.svelte";
 
 	let error = $state<null | string>(null);
 	let buttonHover = $state<null | number>(null);
@@ -117,6 +118,9 @@
 							<p
 								class="flex flex-row items-center justify-center gap-2 font-extrabold"
 							>
+								{#if download.data.downloaded}
+									<Owned />
+								{/if}
 								{download.data.title}
 								{#if download.data.explicit}
 									<Explicit />

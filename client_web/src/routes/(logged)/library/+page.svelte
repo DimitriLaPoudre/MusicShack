@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { afterNavigate, goto } from "$app/navigation";
-	import Explicit from "$lib/components/explicit.svelte";
 	import {
 		deleteSong,
 		loadLibrary,
@@ -14,6 +13,7 @@
 		Pencil,
 		SearchIcon,
 		Trash,
+		UploadIcon,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { Pagination, AlertDialog } from "bits-ui";
@@ -21,6 +21,7 @@
 	import { page } from "$app/state";
 	import type { ResponseSong, StatusResponse } from "$lib/types/response";
 	import { apiFetchFormData } from "$lib/functions/fetch";
+	import Explicit from "$lib/components/Explicit.svelte";
 
 	let error = $state<null | string>(null);
 
@@ -103,7 +104,10 @@
 						uploadArtistsList = [];
 					}}
 				>
-					Upload
+					<div class="flex gap-4">
+						<UploadIcon />
+						<p>Upload</p>
+					</div>
 				</AlertDialog.Trigger>
 			</div>
 			<AlertDialog.Portal>

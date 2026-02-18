@@ -12,9 +12,6 @@ export async function loadLibrary(
 		const data = await apiFetch<ResponseLibrary>(
 			`/library?q=${search}&limit=${limit}&offset=${offset}`,
 		);
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to fetch song");
-		}
 		libraryPage.set(data);
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to load song";
@@ -25,10 +22,7 @@ export async function loadLibrary(
 export async function syncLibrary() {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/library`, "PUT");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to sync library");
-		}
+		await apiFetch<StatusResponse>(`/library`, "PUT");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to sync library";
 	}
@@ -38,10 +32,7 @@ export async function syncLibrary() {
 export async function deleteSong(id: number) {
 	let error = null;
 	try {
-		const data = await apiFetch<StatusResponse>(`/library/${id}`, "DELETE");
-		if ("error" in data) {
-			throw new Error(data.error || "Failed to delete song");
-		}
+		await apiFetch<StatusResponse>(`/library/${id}`, "DELETE");
 	} catch (e) {
 		error = e instanceof Error ? e.message : "Failed to delete song";
 	}

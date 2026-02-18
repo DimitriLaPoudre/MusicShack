@@ -31,14 +31,11 @@
 
 	async function changePassword() {
 		try {
-			const data = await adminFetch<StatusResponse>(
+			await adminFetch<StatusResponse>(
 				"/admin/password",
 				"PUT",
 				inputAdminPassword,
 			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to update password");
-			}
 			inputAdminPassword = { oldPassword: "", newPassword: "" };
 			errorPassword = null;
 			await logout();
@@ -53,9 +50,6 @@
 	async function loadUsers() {
 		try {
 			const data = await adminFetch<AdminUsersResponse>("/users");
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch users");
-			}
 			users = data;
 			errorUser = null;
 		} catch (e) {
@@ -66,14 +60,7 @@
 
 	async function createUser() {
 		try {
-			const data = await adminFetch<StatusResponse>(
-				"/users",
-				"POST",
-				inputUser,
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to create user");
-			}
+			await adminFetch<StatusResponse>("/users", "POST", inputUser);
 			inputUser = { username: "", password: "", hiRes: true };
 			errorUser = null;
 			await loadUsers();
@@ -85,13 +72,7 @@
 
 	async function deleteUser(userId: number) {
 		try {
-			const data = await adminFetch<StatusResponse>(
-				`/users/${userId}`,
-				"DELETE",
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to delete user");
-			}
+			await adminFetch<StatusResponse>(`/users/${userId}`, "DELETE");
 			errorUser = null;
 			await loadUsers();
 		} catch (e) {
@@ -102,13 +83,7 @@
 
 	async function logout() {
 		try {
-			const data = await adminFetch<StatusResponse>(
-				`/admin/logout`,
-				"POST",
-			);
-			if ("error" in data) {
-				throw new Error(data.error || "error while trying to logout");
-			}
+			await adminFetch<StatusResponse>(`/admin/logout`, "POST");
 			goto("/admin/login");
 			errorLogout = null;
 		} catch (e) {

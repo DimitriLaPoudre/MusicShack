@@ -4,8 +4,9 @@
 	import { download } from "$lib/functions/download";
 	import type { SongData } from "$lib/types/response";
 	import { Clock4, Download } from "lucide-svelte";
-	import Quality from "$lib/components/quality.svelte";
-	import Explicit from "$lib/components/explicit.svelte";
+	import Quality from "$lib/components/Quality.svelte";
+	import Explicit from "$lib/components/Explicit.svelte";
+	import Owned from "$lib/components/Owned.svelte";
 
 	let error = $state<null | string>(null);
 	let song = $state<null | SongData>(null);
@@ -20,9 +21,6 @@
 		song = null;
 		try {
 			const data = await apiFetch<SongData>(`/song/${provider}/${id}`);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch song");
-			}
 			song = data;
 			error = null;
 		} catch (e) {
@@ -65,6 +63,9 @@
 				/>
 				<div class="flex flex-col gap-1.75">
 					<h1 class="flex flex-row items-center gap-2 font-extrabold">
+						{#if song.downloaded}
+							<Owned />
+						{/if}
 						{song.title}
 						{#if song.explicit}
 							<Explicit />

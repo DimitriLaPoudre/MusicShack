@@ -234,6 +234,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Duration:   rawSong.Duration,
 				Popularity: rawSong.Popularity,
 				Explicit:   rawSong.Explicit,
+				Isrc:       rawSong.Isrc,
 				Artists:    make([]models.SongDataArtist, 0),
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(rawSong.Album.Id), 10),
