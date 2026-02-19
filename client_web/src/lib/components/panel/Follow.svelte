@@ -28,7 +28,7 @@
 	{:else}
 		<div class="flex flex-col gap-1">
 			{#each $followList as item}
-				<div class="grid grid-cols-[1fr_auto] gap-2 group">
+				<div class="grid grid-cols-[1fr_auto] gap-2">
 					<a
 						class="grid grid-cols-[auto_1fr] items-stretch gap-2 group/data"
 						href="/artist/{item.provider}/{item.artistId}"
@@ -39,13 +39,13 @@
 							alt={item.artistName}
 						/>
 						<p
-							class="italic pl-3 flex items-center group-hover/data:outline group-hover/data:outline-fg group-hover/data:-outline-offset-1"
+							class="italic pl-3 flex items-center hover:outline hover:outline-fg hover:-outline-offset-1"
 						>
 							{item.artistName}
 						</p>
 					</a>
 					<button
-						class="hover-full"
+						class="hover-full group relative"
 						onclick={async () => {
 							error = await removeFollow(item.id);
 							if (!error) {
@@ -54,7 +54,7 @@
 						}}
 					>
 						<div class="block group-hover:hidden">
-							<HeartIcon />
+							<HeartIcon color="#0F0" fill="#0F0" />
 						</div>
 						<div class="hidden group-hover:block">
 							<HeartOff />

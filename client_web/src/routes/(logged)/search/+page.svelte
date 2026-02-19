@@ -3,7 +3,14 @@
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
-	import { Disc, DiscAlbum, Download, User } from "lucide-svelte";
+	import {
+		Disc,
+		DiscAlbum,
+		Download,
+		HeartIcon,
+		HeartOff,
+		User,
+	} from "lucide-svelte";
 	import type {
 		ErrorResponse,
 		SearchResponse,
@@ -13,6 +20,7 @@
 	import Explicit from "$lib/components/Explicit.svelte";
 	import { onMount } from "svelte";
 	import Owned from "$lib/components/Owned.svelte";
+	import { addFollow, removeFollow } from "$lib/functions/follow";
 
 	let error = $state<null | string>(null);
 	let provider = $state<string>("");
@@ -235,23 +243,64 @@
 				<p class="flex justify-center">No artist found</p>
 			{/if}
 			{#each result[provider].artists as artist}
-				<button
-					class="hover-full w-50 h-auto flex flex-col items-center gap-3"
-					onclick={() => goto(`/artist/${provider}/${artist.id}`)}
-				>
-					<div class="w-40 h-40 flex items-center justify-center">
-						{#if artist.pictureUrl !== ""}
-							<img
-								class="rounded-full"
-								src={artist.pictureUrl}
-								alt={artist.name}
-							/>
+				<div class="w-50 h-auto">
+					<button
+						class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						onclick={() => goto(`/artist/${provider}/${artist.id}`)}
+					>
+						<div class="w-40 h-40 flex items-center justify-center">
+							{#if artist.pictureUrl !== ""}
+								<img
+									class="rounded-full"
+									src={artist.pictureUrl}
+									alt={artist.name}
+								/>
+							{:else}
+								<User size={140} />
+							{/if}
+						</div>
+						<p>{artist.name}</p>
+					</button>
+					<button
+						class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						onclick={async () => {
+							if (
+								artist!.followed == -1 ||
+								artist!.followed == -2
+							) {
+								return;
+							}
+							if (artist!.followed) {
+								const follow = artist!.followed;
+								artist!.followed = -1;
+
+								const error = await removeFollow(follow);
+								if (error) {
+									artist!.followed = follow;
+								} else {
+									artist!.followed = 0;
+								}
+							} else {
+								artist!.followed = -2;
+								const { follow, error } = await addFollow({
+									provider: provider,
+									id: artist!.id,
+								});
+								if (error || !follow) {
+									artist!.followed = 0;
+								} else {
+									artist!.followed = follow.id;
+								}
+							}
+						}}
+					>
+						{#if artist!.followed != -1 && artist!.followed != 0}
+							<HeartIcon color="#0F0" fill="#0F0" />
 						{:else}
-							<User size={140} />
+							<HeartIcon />
 						{/if}
-					</div>
-					<p>{artist.name}</p>
-				</button>
+					</button>
+				</div>
 			{/each}
 		{/if}
 	</div>

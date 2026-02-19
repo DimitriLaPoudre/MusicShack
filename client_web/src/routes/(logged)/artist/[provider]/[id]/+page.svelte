@@ -119,8 +119,8 @@
 					}}
 				>
 					{#if artist!.followed}
-						<p>Unfollow</p>
-						<HeartOff />
+						<p>Followed</p>
+						<HeartIcon color="#0F0" fill="#0F0" />
 					{:else}
 						<p>Follow</p>
 						<HeartIcon />
