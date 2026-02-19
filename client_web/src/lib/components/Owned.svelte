@@ -1,11 +1,11 @@
 <script>
-	import { DownloadIcon } from "lucide-svelte";
+	import { CircleArrowDown } from "lucide-svelte";
 
 	export let color = "#00FF00";
 </script>
 
 <div class="grid place-content-center">
 	<p style="color:{color};">
-		<DownloadIcon size={20} />
+		<CircleArrowDown size={20} />
 	</p>
 </div>

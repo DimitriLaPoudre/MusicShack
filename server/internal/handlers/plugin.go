@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/plugins"
@@ -92,6 +93,28 @@ func GetArtist(c *gin.Context) {
 		data.Followed = follow.ID
 	}
 
+	var wg sync.WaitGroup
+	for i, album := range data.Albums {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			albumData, err := plugins.GetAlbum(c.Request.Context(), userId, provider, album.Id)
+			if err != nil {
+				return
+			}
+			downloaded := true
+			for _, song := range albumData.Songs {
+				_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+				if err != nil {
+					downloaded = false
+					break
+				}
+			}
+			data.Albums[i].Downloaded = downloaded
+		}(i)
+	}
+	wg.Wait()
+
 	c.JSON(http.StatusOK, data)
 }
 
@@ -106,10 +129,10 @@ func Search(c *gin.Context) {
 	search := c.Query("q")
 	finding := make(map[string]models.SearchData)
 
-	for provider, plugins := range plugins.GetAllPluginsByProvider() {
+	for provider, pluginsList := range plugins.GetAllPluginsByProvider() {
 		var tmp models.SearchData
 		var err error
-		for _, plugin := range plugins {
+		for _, plugin := range pluginsList {
 			if urlItem, err := plugin.Url(c.Request.Context(), userId, search); err == nil {
 				c.JSON(http.StatusOK, gin.H{"url": urlItem})
 				return
@@ -120,11 +143,31 @@ func Search(c *gin.Context) {
 			}
 		}
 		if err == nil {
+			var wg sync.WaitGroup
 			for i, song := range tmp.Songs {
 				_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
 				if err == nil {
 					tmp.Songs[i].Downloaded = true
 				}
+			}
+			for i, album := range tmp.Albums {
+				wg.Add(1)
+				go func(i int) {
+					defer wg.Done()
+					albumData, err := plugins.GetAlbum(c.Request.Context(), userId, provider, album.Id)
+					if err != nil {
+						return
+					}
+					downloaded := true
+					for _, song := range albumData.Songs {
+						_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+						if err != nil {
+							downloaded = false
+							break
+						}
+					}
+					tmp.Albums[i].Downloaded = downloaded
+				}(i)
 			}
 			for i, artist := range tmp.Artists {
 				follow, err := repository.GetFollowByProviderByArtistID(provider, artist.Id)
@@ -132,6 +175,7 @@ func Search(c *gin.Context) {
 					tmp.Artists[i].Followed = follow.ID
 				}
 			}
+			wg.Wait()
 			finding[provider] = tmp
 		}
 	}
