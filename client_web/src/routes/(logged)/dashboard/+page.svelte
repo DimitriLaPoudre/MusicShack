@@ -7,10 +7,7 @@
 
 	onMount(async () => {
 		try {
-			const data = await apiFetch<StatusResponse>("/me");
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch me");
-			}
+			await apiFetch<StatusResponse>("/me");
 		} catch (e) {
 			error = e instanceof Error ? e.message : "Failed to load dashboard";
 		}

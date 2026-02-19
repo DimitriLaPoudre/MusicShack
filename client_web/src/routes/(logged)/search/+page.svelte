@@ -9,9 +9,10 @@
 		SearchResponse,
 		SearchResult,
 	} from "$lib/types/response";
-	import Quality from "$lib/components/quality.svelte";
-	import Explicit from "$lib/components/explicit.svelte";
+	import Quality from "$lib/components/Quality.svelte";
+	import Explicit from "$lib/components/Explicit.svelte";
 	import { onMount } from "svelte";
+	import Owned from "$lib/components/Owned.svelte";
 
 	let error = $state<null | string>(null);
 	let provider = $state<string>("");
@@ -136,6 +137,9 @@
 						<p
 							class="flex flex-row items-center justify-center gap-2 font-extrabold"
 						>
+							{#if song.downloaded}
+								<Owned />
+							{/if}
 							{song.title}
 							{#if song.explicit}
 								<Explicit />
@@ -171,9 +175,9 @@
 				<p class="flex justify-center">No album found</p>
 			{/if}
 			{#each result[provider].albums as album}
-				<div class="w-[200px] h-auto">
+				<div class="w-50 h-auto">
 					<button
-						class="hover-full flex flex-col items-center w-[200px] h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
 						onclick={(e) => {
 							if (
 								e.target instanceof Element &&
@@ -193,6 +197,9 @@
 						<p
 							class="flex flex-row items-center justify-center gap-2 font-extrabold"
 						>
+							{#if album.downloaded}
+								<Owned />
+							{/if}
 							{album.title}
 							{#if album.explicit}
 								<Explicit />

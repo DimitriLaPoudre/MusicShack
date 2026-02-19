@@ -244,9 +244,9 @@ func SyncUserLibrary(userId uint) error {
 		}
 
 		var isrc string
-		isrcs, ok := tags[models.TagISRC]
-		if ok && len(isrc) > 0 {
-			isrc = isrcs[0]
+		tagISRC, ok := tags[models.TagISRC]
+		if ok && len(tagISRC) > 0 {
+			isrc = tagISRC[0]
 		}
 
 		path = filepath.Clean(path)

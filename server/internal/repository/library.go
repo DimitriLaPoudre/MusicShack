@@ -28,6 +28,17 @@ func GetSongByUserID(userId uint, id uint) (models.Song, error) {
 	return song, nil
 }
 
+func GetSongByUserIDByISRC(userId uint, isrc string) (models.Song, error) {
+	var song models.Song
+
+	if err := database.DB.
+		First(&song, "user_id = ? AND isrc = ?", userId, isrc).Error; err != nil {
+		return models.Song{}, fmt.Errorf("repository.GetSongByUserIDByISRC: %w", err)
+	}
+
+	return song, nil
+}
+
 func CountSong(q string) (int64, error) {
 	var total int64
 	if err := database.DB.Model(&models.Song{}).

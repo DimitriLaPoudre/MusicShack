@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/config"
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
@@ -178,6 +179,8 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 			return fmt.Errorf("saveSong: %w", err)
 		}
 	}
+
+	_ = repository.AddSong(models.Song{UserId: userId, Path: filename, Isrc: data.Isrc, MTime: time.Now()})
 
 	return nil
 }

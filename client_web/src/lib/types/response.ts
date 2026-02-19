@@ -58,6 +58,7 @@ export interface Quality {
 export interface SongData {
 	provider: string;
 	api: string;
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;
@@ -86,6 +87,7 @@ export interface SongDataAlbum {
 export interface AlbumData {
 	provider: string;
 	api: string;
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;
@@ -103,6 +105,7 @@ export interface AlbumDataArtist {
 	name: string;
 }
 export interface AlbumDataSong {
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;
@@ -125,6 +128,7 @@ export interface ArtistData {
 	singles: ArtistDataAlbum[];
 }
 export interface ArtistDataAlbum {
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;
@@ -141,6 +145,7 @@ export interface SearchData {
 	artists: SearchDataArtist[];
 }
 export interface SearchDataSong {
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;
@@ -151,6 +156,7 @@ export interface SearchDataSong {
 	album: SongDataAlbum;
 }
 export interface SearchDataAlbum {
+	downloaded: boolean;
 	id: string;
 	title: string;
 	duration: number;

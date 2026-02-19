@@ -5,8 +5,9 @@
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
 	import type { AlbumData, AlbumDataSong } from "$lib/types/response";
-	import Quality from "$lib/components/quality.svelte";
-	import Explicit from "$lib/components/explicit.svelte";
+	import Quality from "$lib/components/Quality.svelte";
+	import Explicit from "$lib/components/Explicit.svelte";
+	import Owned from "$lib/components/Owned.svelte";
 
 	let error = $state<null | string>(null);
 	let album = $state<null | AlbumData>(null);
@@ -22,9 +23,6 @@
 		album = null;
 		try {
 			const data = await apiFetch<AlbumData>(`/album/${provider}/${id}`);
-			if ("error" in data) {
-				throw new Error(data.error || "Failed to fetch album");
-			}
 			album = data;
 			discs = [];
 			for (const song of album.songs) {
@@ -69,6 +67,9 @@
 				<img class="w-70 h-70" src={album.coverUrl} alt={album.title} />
 				<div class="flex flex-col gap-1.75">
 					<h1 class="flex flex-row items-center gap-2 font-extrabold">
+						{#if album.downloaded}
+							<Owned />
+						{/if}
 						{album.title}
 						{#if album.explicit}
 							<Explicit />
@@ -146,6 +147,9 @@
 										<p
 											class="flex flex-row items-center justify-center gap-2 font-extrabold wrap-break-words"
 										>
+											{#if song.downloaded}
+												<Owned />
+											{/if}
 											{song.title}
 											{#if song.explicit}
 												<Explicit />
