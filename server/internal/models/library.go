@@ -20,7 +20,7 @@ type RequestUploadSong struct {
 	ReleaseDate  *string               `form:"releaseDate"`
 	TrackNumber  *uint                 `form:"trackNumber"`
 	VolumeNumber *uint                 `form:"volumeNumber"`
-	Explicit     *bool                 `form:"explicit"`
+	Explicit     *string               `form:"explicit"`
 	Isrc         *string               `form:"isrc"`
 	Album        *string               `form:"album"`
 	AlbumArtists *[]string             `form:"albumArtists"`
@@ -38,7 +38,7 @@ type RequestEditSong struct {
 	ReleaseDate  *string               `form:"releaseDate"`
 	TrackNumber  *uint                 `form:"trackNumber"`
 	VolumeNumber *uint                 `form:"volumeNumber"`
-	Explicit     *bool                 `form:"explicit"`
+	Explicit     *string               `form:"explicit"`
 	Isrc         *string               `form:"isrc"`
 	Album        *string               `form:"album"`
 	AlbumArtists *[]string             `form:"albumArtists"`

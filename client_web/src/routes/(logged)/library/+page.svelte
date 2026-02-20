@@ -580,7 +580,7 @@
 									}
 
 									await apiFetchFormData<StatusResponse>(
-										"/library",
+										`/library/${editItem!.id}`,
 										fd,
 										"PUT",
 									);

@@ -37,7 +37,9 @@ func (req RequestUploadSong) ToTags() map[string][]string {
 	}
 
 	if req.Explicit != nil {
-		tags[TagExplicit] = []string{strconv.FormatBool(*req.Explicit)}
+		if *req.Explicit == "on" {
+			tags[TagExplicit] = []string{"true"}
+		}
 	}
 
 	if req.AlbumGain != nil {
@@ -97,7 +99,9 @@ func (req RequestEditSong) ToTags() map[string][]string {
 	}
 
 	if req.Explicit != nil {
-		tags[TagExplicit] = []string{strconv.FormatBool(*req.Explicit)}
+		if *req.Explicit == "on" {
+			tags[TagExplicit] = []string{"true"}
+		}
 	}
 
 	if req.AlbumGain != nil {
