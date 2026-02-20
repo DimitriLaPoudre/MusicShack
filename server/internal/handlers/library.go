@@ -58,10 +58,10 @@ func UploadSong(c *gin.Context) {
 	}
 	defer func() {
 		if err := tmpFile.Close(); err != nil {
-			fmt.Println(fmt.Errorf("tmpFile.Close: %w", err))
+			log.Println(fmt.Errorf("tmpFile.Close: %w", err))
 		}
 		if err := os.Remove(tmpFile.Name()); err != nil {
-			fmt.Println(fmt.Errorf("tmpFile.Close: %w", err))
+			log.Println(fmt.Errorf("tmpFile.Close: %w", err))
 		}
 	}()
 
@@ -136,7 +136,7 @@ func UploadSong(c *gin.Context) {
 		return
 	}
 	if err := newFile.Sync(); err != nil {
-		fmt.Println(fmt.Errorf("newFile.Sync: %w", err))
+		log.Println(fmt.Errorf("newFile.Sync: %w", err))
 	}
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
@@ -262,7 +262,7 @@ func EditSong(c *gin.Context) {
 				return err
 			}
 			if err := os.Remove(originalFile.Name()); err != nil {
-				fmt.Println(fmt.Errorf("os.Remove: %w", err))
+				log.Println(fmt.Errorf("os.Remove: %w", err))
 			}
 		}
 

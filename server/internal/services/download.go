@@ -128,7 +128,7 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 
 	root, err := os.OpenRoot(config.LIBRARY_PATH)
 	if err != nil {
-		return fmt.Errorf("saveSong: os.OpenRoot: 1: %w", err)
+		return fmt.Errorf("saveSong: os.OpenRoot: %w", err)
 	}
 	defer root.Close()
 
@@ -136,9 +136,9 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		return fmt.Errorf("saveSong: root.Mkdir: 1: %w", err)
 	}
 
-	rootUser, err := os.OpenRoot(filepath.Join(config.LIBRARY_PATH, user.Username))
+	rootUser, err := root.OpenRoot(user.Username)
 	if err != nil {
-		return fmt.Errorf("saveSong: os.OpenRoot: 2: %w", err)
+		return fmt.Errorf("saveSong: root.OpenRoot: %w", err)
 	}
 	defer rootUser.Close()
 
@@ -170,7 +170,7 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		return fmt.Errorf("saveSong: file.Close: %w", err)
 	}
 
-	path := filepath.Join(root.Name(), rootUser.Name(), filename)
+	path := filepath.Join(rootUser.Name(), filename)
 	if err := metadata.FormatMetadata(ctx, userId, path, data); err != nil {
 		_ = file.Close()
 		if removeErr := rootUser.Remove(filename); removeErr != nil {
