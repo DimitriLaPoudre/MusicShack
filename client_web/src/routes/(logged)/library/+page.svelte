@@ -14,6 +14,7 @@
 		SearchIcon,
 		Trash,
 		UploadIcon,
+		RefreshCcwIcon,
 	} from "lucide-svelte";
 	import { onMount } from "svelte";
 	import { Pagination, AlertDialog } from "bits-ui";
@@ -24,6 +25,8 @@
 	import Explicit from "$lib/components/Explicit.svelte";
 
 	let error = $state<null | string>(null);
+
+	let synching = $state<number>(0);
 
 	let uploadArtists = $state<string>("");
 	let uploadArtistsList = $state<string[]>([]);
@@ -50,7 +53,6 @@
 	let offset = $derived((currentPage - 1) * limit);
 
 	onMount(async () => {
-		await syncLibrary();
 		error = await loadLibrary(search, limit, offset);
 	});
 
@@ -94,7 +96,25 @@
 		</div>
 
 		<AlertDialog.Root bind:open={uploadDialog}>
-			<div class="flex justify-center items-center">
+			<div class="flex gap-2 justify-center items-center">
+				<button
+					class="hover-full flex gap-4 justify-center, items-center w-auto m-0"
+					onclick={async () => {
+						synching++;
+						error = await syncLibrary();
+						if (error) {
+							error = await loadLibrary(search, limit, offset);
+						}
+						synching--;
+					}}
+				>
+					<RefreshCcwIcon
+						class={synching !== 0
+							? "animate-spin [animation-direction:reverse]"
+							: ""}
+					/>
+					<p>Sync</p>
+				</button>
 				<AlertDialog.Trigger
 					class="hover-full"
 					onclick={() => {

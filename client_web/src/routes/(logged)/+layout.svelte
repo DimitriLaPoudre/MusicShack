@@ -58,7 +58,6 @@
 		<button
 			class="hover-full w-14 h-15"
 			onclick={() => {
-				syncLibrary();
 				goto("/library");
 			}}
 			class:active={page.url.pathname == "/library"}
