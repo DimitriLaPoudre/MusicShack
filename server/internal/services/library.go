@@ -311,7 +311,7 @@ func SyncUserLibrary(userId uint) error {
 		}
 	}
 	for path, item := range addList {
-		if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: item.isrc}); err != nil {
+		if err := repository.AddSong(models.Song{UserId: userId, Path: path, Isrc: item.isrc, MTime: item.mtime}); err != nil {
 			log.Println("services.SyncUserLibrary:", err)
 		}
 	}

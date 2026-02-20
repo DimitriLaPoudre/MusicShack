@@ -102,7 +102,7 @@
 					onclick={async () => {
 						synching++;
 						error = await syncLibrary();
-						if (error) {
+						if (!error) {
 							error = await loadLibrary(search, limit, offset);
 						}
 						synching--;
