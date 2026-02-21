@@ -143,7 +143,6 @@ type ArtistDataAlbum struct {
 }
 
 type SearchData struct {
-	Url       UrlItem
 	Songs     []SearchDataSong     `json:"songs"`
 	Albums    []SearchDataAlbum    `json:"albums"`
 	Artists   []SearchDataArtist   `json:"artists"`
@@ -194,9 +193,10 @@ type SearchDataPlaylist struct {
 type Type string
 
 const (
-	TypeSong   Type = "song"
-	TypeAlbum  Type = "album"
-	TypeArtist Type = "artist"
+	TypeSong     Type = "song"
+	TypeAlbum    Type = "album"
+	TypeArtist   Type = "artist"
+	TypePlaylist Type = "playlist"
 )
 
 type UrlItem struct {

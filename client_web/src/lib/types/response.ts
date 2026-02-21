@@ -212,7 +212,7 @@ export interface SearchResult {
 
 export interface UrlItem {
 	provider: string;
-	type: "artist" | "album" | "song";
+	type: "artist" | "album" | "song" | "playlist";
 	id: string;
 }
 

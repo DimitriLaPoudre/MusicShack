@@ -9,6 +9,17 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 )
 
+func (p Hifi) checkPlaylist(arr []string) (models.UrlItem, error) {
+	if len(arr) != 1 {
+		return models.UrlItem{}, errors.New(fmt.Sprint("Hifi.checkArtist: url contain playlist sub path but without valid pattern id:", arr))
+	}
+	return models.UrlItem{
+		Provider: p.Provider(),
+		Type:     models.TypePlaylist,
+		Id:       arr[0],
+	}, nil
+}
+
 func (p Hifi) checkArtist(arr []string) (models.UrlItem, error) {
 	if len(arr) != 2 {
 		return models.UrlItem{}, errors.New(fmt.Sprint("Hifi.checkArtist: url contain artist sub path but without valid pattern id:", arr))
@@ -64,6 +75,8 @@ func (p *Hifi) Url(ctx context.Context, userId uint, url string) (models.UrlItem
 		return p.checkAlbum(arr)
 	case "track":
 		return p.checkSong(arr)
+	case "playlist":
+		return p.checkPlaylist(arr[1:])
 	default:
 		return models.UrlItem{}, errors.New(fmt.Sprint("Hifi.Url: url contain unknown sub path:", arr))
 	}
