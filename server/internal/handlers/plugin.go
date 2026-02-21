@@ -39,6 +39,37 @@ func GetSong(c *gin.Context) {
 	c.JSON(http.StatusOK, data)
 }
 
+func GetPlaylist(c *gin.Context) {
+	userId, err := utils.GetFromContext[uint](c, "userId")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	provider := c.Param("provider")
+	id := c.Param("id")
+
+	data, err := plugins.GetPlaylist(c.Request.Context(), userId, provider, id)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	data.Downloaded = true
+	for i, song := range data.Songs {
+		_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+		if err == nil {
+			data.Songs[i].Downloaded = true
+		} else {
+			data.Downloaded = false
+		}
+	}
+
+	c.JSON(http.StatusOK, data)
+}
+
 func GetAlbum(c *gin.Context) {
 	userId, err := utils.GetFromContext[uint](c, "userId")
 	if err != nil {

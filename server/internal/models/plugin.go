@@ -12,6 +12,7 @@ type Plugin interface {
 	Status(ctx context.Context, url string) error
 	Download(context.Context, uint, string) (io.ReadCloser, string, error)
 	Song(context.Context, uint, string) (SongData, error)
+	Playlist(context.Context, uint, string) (PlaylistData, error)
 	Album(context.Context, uint, string) (AlbumData, error)
 	Artist(context.Context, uint, string) (ArtistData, error)
 	Search(context.Context, uint, string, string, string) (SearchData, error)
@@ -55,6 +56,31 @@ type SongDataAlbum struct {
 	Id       string `json:"id"`
 	Title    string `json:"title"`
 	CoverUrl string `json:"coverUrl"`
+}
+
+type PlaylistData struct {
+	Provider       string             `json:"provider"`
+	Api            string             `json:"api"`
+	Downloaded     bool               `json:"downloaded"`
+	Id             string             `json:"id"`
+	Title          string             `json:"title"`
+	Description    string             `json:"description"`
+	Duration       uint               `json:"duration"`
+	LastUpdated    string             `json:"lastUpdated"`
+	NumberOfTracks uint               `json:"numberOfTracks"`
+	CoverURL       string             `json:"coverUrl"`
+	Songs          []PlaylistDataSong `json:"songs"`
+}
+
+type PlaylistDataSong struct {
+	Downloaded   bool             `json:"downloaded"`
+	Id           string           `json:"id"`
+	Title        string           `json:"title"`
+	Duration     uint             `json:"duration"`
+	AudioQuality Quality          `json:"audioQuality"`
+	Explicit     bool             `json:"explicit"`
+	Isrc         string           `json:"isrc"`
+	Artists      []SongDataArtist `json:"artists"`
 }
 
 type AlbumData struct {

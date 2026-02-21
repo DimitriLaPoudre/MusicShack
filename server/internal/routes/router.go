@@ -49,6 +49,7 @@ func SetupRouters() *graceful.Graceful {
 		api.GET("/song/:provider/:id", middlewares.Logged(), handlers.GetSong)
 		api.GET("/album/:provider/:id", middlewares.Logged(), handlers.GetAlbum)
 		api.GET("/artist/:provider/:id", middlewares.Logged(), handlers.GetArtist)
+		api.GET("/playlist/:provider/:id", middlewares.Logged(), handlers.GetPlaylist)
 		api.GET("/search", middlewares.Logged(), handlers.Search)
 
 		admin := api.Group("/admin")

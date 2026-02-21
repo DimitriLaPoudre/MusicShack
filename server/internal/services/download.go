@@ -93,6 +93,17 @@ func (m *downloadManager) AddAlbum(userId uint, provider string, albumId string)
 	}
 }
 
+func (m *downloadManager) AddPlaylist(userId uint, provider string, albumId string) {
+	playlist, err := plugins.GetPlaylist(context.Background(), userId, provider, albumId)
+	if err != nil {
+		log.Println("downloadManager.AddPlaylist: ", err)
+		return
+	}
+	for _, song := range playlist.Songs {
+		m.AddSong(userId, provider, song.Id)
+	}
+}
+
 func (m *downloadManager) AddSong(userId uint, provider string, songId string) {
 	taskId := m.generateId(userId)
 

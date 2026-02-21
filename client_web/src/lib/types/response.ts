@@ -84,6 +84,30 @@ export interface SongDataAlbum {
 	coverUrl: string;
 }
 
+export interface PlaylistData {
+	provider: string;
+	api: string;
+	downloaded: boolean;
+	id: string;
+	title: string;
+	description: string;
+	duration: number;
+	lastUpdated: string;
+	numberOfTracks: number;
+	coverUrl: string;
+	songs: PlaylistDataSong[];
+}
+export interface PlaylistDataSong {
+	downloaded: boolean;
+	id: string;
+	title: string;
+	duration: number;
+	audioQuality: Quality;
+	explicit: boolean;
+	isrc: string;
+	artists: SongDataArtist[];
+}
+
 export interface AlbumData {
 	provider: string;
 	api: string;

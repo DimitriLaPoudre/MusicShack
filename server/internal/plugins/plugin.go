@@ -69,6 +69,29 @@ func GetSong(ctx context.Context, userId uint, provider string, id string) (mode
 	}
 }
 
+func GetPlaylist(ctx context.Context, userId uint, provider string, id string) (models.PlaylistData, error) {
+	plugins, ok := GetPluginByProvider(provider)
+	if !ok {
+		return models.PlaylistData{}, fmt.Errorf("services.GetPlaylist: %w", errors.New("invalid provider name"))
+	}
+
+	var data models.PlaylistData
+	var err error
+	for _, plugin := range plugins {
+		data, err = plugin.Playlist(ctx, userId, id)
+		if err != nil {
+			continue
+		} else {
+			break
+		}
+	}
+	if err != nil {
+		return models.PlaylistData{}, err
+	} else {
+		return data, nil
+	}
+}
+
 func GetAlbum(ctx context.Context, userId uint, provider string, id string) (models.AlbumData, error) {
 	plugins, ok := GetPluginByProvider(provider)
 	if !ok {

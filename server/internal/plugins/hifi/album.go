@@ -86,7 +86,7 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		ReleaseDate:   data.Data.ReleaseDate,
 		NumberTracks:  data.Data.NumberOfTracks,
 		NumberVolumes: data.Data.NumberOfVolumes,
-		CoverUrl:      hifi_utils.GetImageURL(data.Data.CoverUrl, 1280),
+		CoverUrl:      hifi_utils.GetImageURL(data.Data.CoverUrl, 640),
 		Explicit:      data.Data.Explicit,
 		Songs:         make([]models.AlbumDataSong, 0),
 		Artists:       make([]models.AlbumDataArtist, 0),
@@ -99,6 +99,8 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 		normalizeAlbumData.AudioQuality = HIGH
 	case "LOSSLESS":
 		normalizeAlbumData.AudioQuality = LOSSLESS
+	default:
+		normalizeAlbumData.AudioQuality = LOW
 	}
 	for _, quality := range data.Data.MediaMetadata.Tags {
 		switch quality {
@@ -140,6 +142,8 @@ func (p *Hifi) Album(ctx context.Context, userId uint, id string) (models.AlbumD
 			song.AudioQuality = HIGH
 		case "LOSSLESS":
 			song.AudioQuality = LOSSLESS
+		default:
+			song.AudioQuality = LOW
 		}
 		for _, quality := range rawSong.MediaMetadata.Tags {
 			switch quality {
