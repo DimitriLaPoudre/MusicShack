@@ -3,19 +3,8 @@
 	import { page } from "$app/state";
 	import { apiFetch } from "$lib/functions/fetch";
 	import { download } from "$lib/functions/download";
-	import {
-		Disc,
-		DiscAlbum,
-		Download,
-		HeartIcon,
-		HeartOff,
-		User,
-	} from "lucide-svelte";
-	import type {
-		ErrorResponse,
-		SearchResponse,
-		SearchResult,
-	} from "$lib/types/response";
+	import { Disc, DiscAlbum, Download, HeartIcon, User } from "lucide-svelte";
+	import type { SearchResponse, SearchResult } from "$lib/types/response";
 	import Quality from "$lib/components/Quality.svelte";
 	import Explicit from "$lib/components/Explicit.svelte";
 	import { onMount } from "svelte";
@@ -38,11 +27,6 @@
 			const data = await apiFetch<SearchResponse>(
 				`/search?q=${searchData}`,
 			);
-			if ("error" in data) {
-				throw new Error(
-					(data as ErrorResponse).error || "Failed to fetch search",
-				);
-			}
 
 			if ("url" in data) {
 				goto(`/${data.url.type}/${data.url.provider}/${data.url.id}`);
@@ -111,6 +95,11 @@
 				class="hover-full p-4"
 				onclick={() => (type = "artists")}
 				class:active={type === "artists"}>Artists</button
+			>
+			<button
+				class="hover-full p-4"
+				onclick={() => (type = "playlists")}
+				class:active={type === "playlists"}>Playlists</button
 			>
 		</div>
 	</div>
@@ -238,7 +227,7 @@
 					</button>
 				</div>
 			{/each}
-		{:else}
+		{:else if type === "artists"}
 			{#if result[provider].artists.length === 0}
 				<p class="flex justify-center">No artist found</p>
 			{/if}
@@ -299,6 +288,56 @@
 						{:else}
 							<HeartIcon />
 						{/if}
+					</button>
+				</div>
+			{/each}
+		{:else if type === "playlists"}
+			{#if result[provider].playlists.length === 0}
+				<p class="flex justify-center">No playlist found</p>
+			{/if}
+			{#each result[provider].playlists as playlist}
+				<div class="w-50 h-auto">
+					<button
+						class="hover-full flex flex-col items-center w-50 h-auto overflow-hidden gap-3 shadow-[inset_0_1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						onclick={(e) => {
+							if (
+								e.target instanceof Element &&
+								e.target.closest("a")
+							)
+								return;
+							goto(`/playlist/${provider}/${playlist.id}`);
+						}}
+					>
+						<div class="w-40 h-40">
+							{#if playlist.coverUrl !== ""}
+								<img
+									src={playlist.coverUrl}
+									alt={playlist.title}
+								/>
+							{:else}
+								<DiscAlbum size={140} />
+							{/if}
+						</div>
+						<p
+							class="flex flex-row items-center justify-center gap-2 font-extrabold"
+						>
+							{#if playlist.downloaded}
+								<Owned />
+							{/if}
+							{playlist.title}
+						</p>
+					</button>
+					<button
+						class="hover-full w-full p-3 shadow-[inset_0_-1px_0_var(--fg),inset_1px_0_0_var(--fg),inset_-1px_0_0_var(--fg)]"
+						onclick={async () => {
+							error = await download({
+								provider: provider,
+								type: "playlist",
+								id: playlist!.id,
+							});
+						}}
+					>
+						<Download />
 					</button>
 				</div>
 			{/each}

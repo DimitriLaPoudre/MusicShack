@@ -167,6 +167,7 @@ export interface SearchData {
 	songs: SearchDataSong[];
 	albums: SearchDataAlbum[];
 	artists: SearchDataArtist[];
+	playlists: SearchDataPlaylist[];
 }
 export interface SearchDataSong {
 	downloaded: boolean;
@@ -196,6 +197,13 @@ export interface SearchDataArtist {
 	name: string;
 	pictureUrl: string;
 	popularity: number;
+}
+export interface SearchDataPlaylist {
+	downloaded: boolean;
+	id: string;
+	title: string;
+	duration: number;
+	coverUrl: string;
 }
 
 export interface SearchResult {
