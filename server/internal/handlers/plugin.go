@@ -206,6 +206,25 @@ func Search(c *gin.Context) {
 					tmp.Artists[i].Followed = follow.ID
 				}
 			}
+			for i, playlist := range tmp.Playlists {
+				wg.Add(1)
+				go func(i int) {
+					defer wg.Done()
+					playlist, err := plugins.GetPlaylist(c.Request.Context(), userId, provider, playlist.ID)
+					if err != nil {
+						return
+					}
+					downloaded := true
+					for _, song := range playlist.Songs {
+						_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
+						if err != nil {
+							downloaded = false
+							break
+						}
+					}
+					tmp.Playlists[i].Downloaded = downloaded
+				}(i)
+			}
 			wg.Wait()
 			finding[provider] = tmp
 		}

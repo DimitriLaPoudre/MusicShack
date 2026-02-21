@@ -168,13 +168,64 @@ func getSearchArtist(ctx context.Context, instances []models.Instance, artist st
 	return searchArtistData{}, fmt.Errorf("getSearchArtist: %w", lastErr)
 }
 
-func getSearchData(ctx context.Context, instances []models.Instance, song, album, artist string) (searchSongData, searchAlbumData, searchArtistData, error) {
+func fetchSearchPlaylist(ctx context.Context, apiURL string, album string) (searchPlaylistData, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := utils.Fetch(ctx, apiURL+"/search/?p="+url.QueryEscape(album))
+	if err != nil {
+		return searchPlaylistData{}, fmt.Errorf("fetchSearchPlaylist: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return searchPlaylistData{}, fmt.Errorf("fetchSearchPlaylist: http: %w", errors.New(resp.Status))
+	}
+
+	var data searchPlaylistData
+	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+		return searchPlaylistData{}, fmt.Errorf("fetchSearchPlaylist: json.Decode: %w", err)
+	}
+
+	return data, nil
+}
+
+func getSearchPlaylist(ctx context.Context, instances []models.Instance, album string) (searchPlaylistData, error) {
+	type res struct {
+		data searchPlaylistData
+		err  error
+	}
+
+	ch := make(chan res, len(instances))
+	for _, instance := range instances {
+		go func(url string) {
+			data, err := fetchSearchPlaylist(ctx, url, album)
+			ch <- res{data: data, err: err}
+		}(instance.Url)
+	}
+
+	var lastErr error
+	for range instances {
+		select {
+		case res := <-ch:
+			if res.err == nil {
+				return res.data, nil
+			}
+			lastErr = res.err
+		case <-ctx.Done():
+			return searchPlaylistData{}, ctx.Err()
+		}
+	}
+	return searchPlaylistData{}, fmt.Errorf("getSearchAlbum: %w", lastErr)
+}
+
+func getSearchData(ctx context.Context, instances []models.Instance, song, album, artist string) (searchSongData, searchAlbumData, searchArtistData, searchPlaylistData, error) {
 	type res struct {
 		data any
 		err  error
 	}
 
-	ch := make(chan res, 3)
+	ch := make(chan res, 4)
 	go func() {
 		data, err := getSearchSong(ctx, instances, song)
 		ch <- res{data: data, err: err}
@@ -187,11 +238,16 @@ func getSearchData(ctx context.Context, instances []models.Instance, song, album
 		data, err := getSearchArtist(ctx, instances, artist)
 		ch <- res{data: data, err: err}
 	}()
+	go func() {
+		data, err := getSearchPlaylist(ctx, instances, artist)
+		ch <- res{data: data, err: err}
+	}()
 
 	var songData searchSongData
 	var albumData searchAlbumData
 	var artistData searchArtistData
-	for range 3 {
+	var playlistData searchPlaylistData
+	for range 4 {
 		res := <-ch
 		switch v := res.data.(type) {
 		case searchSongData:
@@ -200,10 +256,12 @@ func getSearchData(ctx context.Context, instances []models.Instance, song, album
 			albumData = v
 		case searchArtistData:
 			artistData = v
+		case searchPlaylistData:
+			playlistData = v
 		}
 	}
 
-	return songData, albumData, artistData, nil
+	return songData, albumData, artistData, playlistData, nil
 }
 
 func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist string) (models.SearchData, error) {
@@ -215,15 +273,16 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", errors.New("not found"))
 	}
 
-	songData, albumData, artistData, err := getSearchData(ctx, instances, song, album, artist)
+	songData, albumData, artistData, playlistData, err := getSearchData(ctx, instances, song, album, artist)
 	if err != nil {
 		return models.SearchData{}, fmt.Errorf("Hifi.Search: %w", err)
 	}
 
 	result := models.SearchData{
-		Songs:   make([]models.SearchDataSong, 0),
-		Albums:  make([]models.SearchDataAlbum, 0),
-		Artists: make([]models.SearchDataArtist, 0),
+		Songs:     make([]models.SearchDataSong, 0),
+		Albums:    make([]models.SearchDataAlbum, 0),
+		Artists:   make([]models.SearchDataArtist, 0),
+		Playlists: make([]models.SearchDataPlaylist, 0),
 	}
 
 	if len(songData.Data.Songs) != 0 {
@@ -239,7 +298,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Album: models.SongDataAlbum{
 					Id:       strconv.FormatUint(uint64(rawSong.Album.Id), 10),
 					Title:    rawSong.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(rawSong.Album.CoverUrl, 1280),
+					CoverUrl: hifi_utils.GetImageURL(rawSong.Album.CoverUrl, 640),
 				},
 			}
 
@@ -279,7 +338,7 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 				Id:         strconv.FormatUint(uint64(rawAlbum.Id), 10),
 				Title:      rawAlbum.Title,
 				Duration:   rawAlbum.Duration,
-				CoverUrl:   hifi_utils.GetImageURL(rawAlbum.CoverUrl, 1280),
+				CoverUrl:   hifi_utils.GetImageURL(rawAlbum.CoverUrl, 640),
 				Explicit:   rawAlbum.Explicit,
 				Popularity: rawAlbum.Popularity,
 				Artists:    make([]models.AlbumDataArtist, 0),
@@ -317,12 +376,26 @@ func (p *Hifi) Search(ctx context.Context, userId uint, song, album, artist stri
 
 	if len(artistData.Data.Artists.Artists) != 0 {
 		for _, rawArtist := range artistData.Data.Artists.Artists {
-			result.Artists = append(result.Artists, models.SearchDataArtist{
+			artist := models.SearchDataArtist{
 				Id:         strconv.FormatUint(uint64(rawArtist.Id), 10),
 				Name:       rawArtist.Name,
 				PictureUrl: hifi_utils.GetImageURL(rawArtist.PictureUrl, 750),
 				Popularity: rawArtist.Popularity,
-			})
+			}
+			result.Artists = append(result.Artists, artist)
+		}
+	}
+
+	if len(playlistData.Data.Playlists.Playlists) != 0 {
+		for _, rawPlaylist := range playlistData.Data.Playlists.Playlists {
+			playlist := models.SearchDataPlaylist{
+				ID:       rawPlaylist.UUID,
+				Title:    rawPlaylist.Title,
+				Duration: rawPlaylist.Duration,
+				CoverURL: hifi_utils.GetImageURL(rawPlaylist.SquareImage, 640),
+			}
+
+			result.Playlists = append(result.Playlists, playlist)
 		}
 	}
 

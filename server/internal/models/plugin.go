@@ -143,10 +143,11 @@ type ArtistDataAlbum struct {
 }
 
 type SearchData struct {
-	Url     UrlItem
-	Songs   []SearchDataSong   `json:"songs"`
-	Albums  []SearchDataAlbum  `json:"albums"`
-	Artists []SearchDataArtist `json:"artists"`
+	Url       UrlItem
+	Songs     []SearchDataSong     `json:"songs"`
+	Albums    []SearchDataAlbum    `json:"albums"`
+	Artists   []SearchDataArtist   `json:"artists"`
+	Playlists []SearchDataPlaylist `json:"playlists"`
 }
 
 type SearchDataSong struct {
@@ -180,6 +181,14 @@ type SearchDataArtist struct {
 	Name       string `json:"name"`
 	PictureUrl string `json:"pictureUrl"`
 	Popularity uint   `json:"popularity"`
+}
+
+type SearchDataPlaylist struct {
+	Downloaded bool   `json:"downloaded"`
+	ID         string `json:"id"`
+	Title      string `json:"title"`
+	Duration   uint   `json:"duration"`
+	CoverURL   string `json:"coverUrl"`
 }
 
 type Type string

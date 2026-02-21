@@ -171,30 +171,32 @@ type mixesMinimalData struct {
 	Track_mix string `json:"TRACK_MIX"`
 }
 
+type playlistInfoData struct {
+	UUID           string `json:"uuid"`
+	Title          string `json:"title"`
+	NumberOfTracks uint   `json:"numberOfTracks"`
+	NumberOfVideos uint   `json:"numberOfVideos"`
+	Creator        struct {
+		ID uint `json:"id"`
+	} `json:"creator"`
+	Description     string              `json:"description"`
+	Duration        uint                `json:"duration"`
+	LastUpdated     string              `json:"lastUpdated"`
+	Created         string              `json:"created"`
+	Type            string              `json:"type"`
+	PublicPlaylist  bool                `json:"publicPlaylist"`
+	URL             string              `json:"url"`
+	Image           string              `json:"image"`
+	Popularity      uint                `json:"popularity"`
+	SquareImage     string              `json:"squareImage"`
+	PromotedArtists []artistMinimalData `json:"promotedArtists"`
+	LastItemAddedAt string              `json:"lastItemAddedAt"`
+}
+
 type playlistData struct {
-	Version  string `json:"version"`
-	Playlist struct {
-		UUID           string `json:"uuid"`
-		Title          string `json:"title"`
-		NumberOfTracks uint   `json:"numberOfTracks"`
-		NumberOfVideos uint   `json:"numberOfVideos"`
-		Creator        struct {
-			ID uint `json:"id"`
-		} `json:"creator"`
-		Description     string              `json:"description"`
-		Duration        uint                `json:"duration"`
-		LastUpdated     string              `json:"lastUpdated"`
-		Created         string              `json:"created"`
-		Type            string              `json:"type"`
-		PublicPlaylist  bool                `json:"publicPlaylist"`
-		URL             string              `json:"url"`
-		Image           string              `json:"image"`
-		Popularity      uint                `json:"popularity"`
-		SquareImage     string              `json:"squareImage"`
-		PromotedArtists []artistMinimalData `json:"promotedArtists"`
-		LastItemAddedAt string              `json:"lastItemAddedAt"`
-	} `json:"playlist"`
-	Items []struct {
+	Version  string           `json:"version"`
+	Playlist playlistInfoData `json:"playlist"`
+	Items    []struct {
 		Type string `json:"type"`
 		Item struct {
 			ID                     uint     `json:"id"`
@@ -332,6 +334,18 @@ type searchArtistData struct {
 			Artists            []artistItem `json:"items"`
 		}
 	}
+}
+
+type searchPlaylistData struct {
+	Version string `json:"version"`
+	Data    struct {
+		Playlists struct {
+			Limit              uint               `json:"limit"`
+			Offset             uint               `json:"offset"`
+			TotalNumberOfItems uint               `json:"totalNumberOfItems"`
+			Playlists          []playlistInfoData `json:"items"`
+		} `json:"playlists"`
+	} `json:"data"`
 }
 
 type downloadData struct {
