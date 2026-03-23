@@ -1,6 +1,7 @@
 services:
   musicshack:
-    image: ghcr.io/dimitrilapoudre/musicshack:latest
+    # image: ghcr.io/dimitrilapoudre/musicshack:latest
+    build: .
     container_name: musicshack
     ports:
       - "${PORT}:8080"
