@@ -11,7 +11,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/jobs"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
@@ -43,7 +43,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	defer stop()
 
 	c := cron.New()
-	if err := jobs.AutoFetch(c, ctx, l); err != nil {
+	if err := job.AutoFetch(c, ctx, l); err != nil {
 		l.Fatal().Err(err).Msg("failed to start job: AutoFetch")
 	}
 	c.Start()
