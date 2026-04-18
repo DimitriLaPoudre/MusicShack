@@ -43,8 +43,11 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	defer stop()
 
 	c := cron.New()
-	if err := job.AutoFetch(c, ctx, l); err != nil {
-		l.Fatal().Err(err).Msg("failed to start job: AutoFetch")
+	if err := job.FetchFollows(c, ctx, l); err != nil {
+		l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
+	}
+	if err := job.CleanExpiredSession(c, ctx, l, &repo); err != nil {
+		l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
 	}
 	c.Start()
 
@@ -70,6 +73,7 @@ func Run(cfg *config.Config, l *zerolog.Logger) {
 	}()
 
 	<-ctx.Done()
+	// pas sur de la necessiter du stop
 	stop()
 	l.Info().Msg("CTRL-C successfully handle")
 

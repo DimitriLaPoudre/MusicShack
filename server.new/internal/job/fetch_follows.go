@@ -93,14 +93,14 @@ func fetch(ctx context.Context, lastFetchDate string) error {
 	return nil
 }
 
-func AutoFetch(c *cron.Cron, ctx context.Context, l *zerolog.Logger) error {
+func FetchFollows(c *cron.Cron, ctx context.Context, l *zerolog.Logger) error {
 	if _, err := c.AddFunc("0 1 * * *", func() {
 		lastFetchDate := time.Now().Add(-24 * time.Hour).Format("2006-01-02")
 		for try := range 3 {
 			if err := fetch(ctx, lastFetchDate); err != nil {
-				l.Warn().Msg(fmt.Sprint("AutoFetch: try ", try, ": ", err))
+				l.Warn().Msg(fmt.Sprint("FetchFollows: try ", try, ": ", err))
 			} else {
-				l.Info().Msg("AutoFetch: success")
+				l.Info().Msg("FetchFollows: success")
 				break
 			}
 		}
