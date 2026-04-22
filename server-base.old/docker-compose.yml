@@ -1,14 +1,16 @@
 services:
   server:
     build: .
+    container_name: server
     ports:
       - "8080:8080"
     env_file: .env
 
   postgres:
     build: postgres:18
+    container_name: postgres
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql
     environment:

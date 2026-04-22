@@ -22,7 +22,7 @@ type (
 	}
 
 	AdminConfig struct {
-		TokenDuration   time.Duration `env:"TOKEN_DURATION,unset" envDefault:"30m"`
+		TokenDuration   time.Duration `env:"TOKEN_DURATION,unset" envDefault:"30min"`
 		DefaultPassword string        `env:"DEFAULT_PASSWORD,unset" envDefault:"CHANGE_ME_NOW"`
 	}
 

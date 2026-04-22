@@ -10,6 +10,7 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
@@ -25,23 +26,41 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	}
 
 	adminS := usecase.NewAdminUseCase(l, &cfg.Admin, &repo, &repo)
+	// jwtS := usecase.NewJWTService(cfg.Auth.JWT)
+	// sessionS := usecase.NewSessionService(cfg.Auth.Session, &repo)
+	// userS := usecase.NewUserService(&repo)
+	// authS := usecase.NewAuthService(&jwtS, &sessionS, &repo)
+
+	// authMW := middleware.Auth(&jwtS)
+	// guestMW := middleware.Guest(&jwtS)
+	// adminMW := middleware.Admin()
+	// userMW := middleware.User()
 
 	adminH := handler.NewAdminHandler(l, &adminS)
+	// userH := handler.NewUserHandler(l, &userS)
+	// authH := handler.NewAuthHandler(l, &authS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
 	c := cron.New()
-	// if err := job.FetchFollows(c, ctx, l); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
-	// }
-	// if err := job.CleanExpiredSession(c, ctx, l, &repo); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
-	// }
+	if err := job.FetchFollows(c, ctx, l); err != nil {
+		l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
+	}
+	if err := job.CleanExpiredSession(c, ctx, l, &repo); err != nil {
+		l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
+	}
 	c.Start()
 
 	app := gin.New()
 	router.New(app, l, cfg,
+		// authMW,
+		// guestMW,
+		// adminMW,
+		// userMW,
+
+		// &userH,
+		// &authH,
 		&adminH,
 	)
 	httpServ := &http.Server{
