@@ -28,16 +28,9 @@ func NewAdminUseCase(l *zerolog.Logger, cfg *config.AdminConfig, admin model.Adm
 }
 
 func (u *AdminUseCase) Login(ctx context.Context, password string) (string, error) {
-	admin, err := u.admin.GetAdmin(ctx)
+	admin, err := u.GetAdmin(ctx)
 	if err != nil {
-		hash, err := crypto.HashPassword(u.cfg.DefaultPassword)
-		if err != nil {
-			return "", err
-		}
-		admin, err = u.admin.InitAdmin(ctx, hash)
-		if err != nil {
-			return "", err
-		}
+		return "", err
 	}
 
 	if err := crypto.ComparePassword(admin.Password, password); err != nil {
@@ -58,4 +51,19 @@ func (u *AdminUseCase) Login(ctx context.Context, password string) (string, erro
 
 func (u *AdminUseCase) ChangeAdminPassword(ctx context.Context, newPassword string, oldPassword string) error {
 	return nil
+}
+
+func (u *AdminUseCase) GetAdmin(ctx context.Context) (*model.Admin, error) {
+	admin, err := u.admin.GetAdmin(ctx)
+	if err != nil {
+		hash, err := crypto.HashPassword(u.cfg.DefaultPassword)
+		if err != nil {
+			return nil, err
+		}
+		admin, err = u.admin.InitAdmin(ctx, hash)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return admin, err
 }
