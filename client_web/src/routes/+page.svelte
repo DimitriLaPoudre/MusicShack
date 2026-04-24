@@ -1,14 +1,2 @@
-<script lang="ts">
-	import { goto } from "$app/navigation";
-	import { apiFetch } from "$lib/functions/fetch";
-	import type { StatusResponse } from "$lib/types/response";
-	import { onMount } from "svelte";
-
-	onMount(async () => {
-		const data = await apiFetch<StatusResponse>("/me");
-		if ("error" in data) {
-			return;
-		}
-		goto("/dashboard");
-	});
-</script>
+<h1>Welcome to SvelteKit</h1>
+<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
