@@ -74,28 +74,28 @@ func (h *UserHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// func (h *UserHandler) Update(c *gin.Context) {
-// 	var req request.UpdateUser
-// 	if err := c.ShouldBindJSON(&req); err != nil {
-// 		c.JSON(http.StatusBadRequest, response.NewError(err))
-// 		return
-// 	}
-// 	id := c.Param("id")
-// 	user, err := req.IntoPartialUser(id)
-// 	if err != nil {
-// 		c.JSON(http.StatusBadRequest, response.NewError(err))
-// 		return
-// 	}
-//
-// 	updatedUser, err := h.s.UpdateUser(c.Request.Context(), &user)
-// 	if err != nil {
-// 		utils.Error(c, err, h.l)
-// 		return
-// 	}
-//
-// 	resp := response.UserToResponse(updatedUser)
-// 	c.JSON(http.StatusOK, resp)
-// }
+func (h *UserHandler) Update(c *gin.Context) {
+	var req request.UpdateUser
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+	id := c.Param("id")
+	user, err := req.IntoPartialUser(id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	updatedUser, err := h.user.UpdateUser(c.Request.Context(), &user)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	resp := response.UserToResponse(updatedUser)
+	c.JSON(http.StatusOK, resp)
+}
 
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")

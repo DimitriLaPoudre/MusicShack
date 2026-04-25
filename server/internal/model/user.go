@@ -8,3 +8,10 @@ type User struct {
 	Password string
 	HiRes    bool
 }
+
+type PartialUser struct {
+	ID       uuid.UUID
+	Username *string
+	Password *string
+	HiRes    *bool
+}

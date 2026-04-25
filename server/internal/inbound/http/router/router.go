@@ -46,7 +46,7 @@ func New(
 			usersGroup.POST("/", userH.Create)
 			usersGroup.GET("/", userH.List)
 			usersGroup.GET("/:id", userH.GetByID)
-			// usersGroup.PUT("/:id", userH.Update)
+			usersGroup.PUT("/:id", userH.Update)
 			usersGroup.DELETE("/:id", userH.Delete)
 		}
 

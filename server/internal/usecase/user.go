@@ -31,6 +31,8 @@ func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.Us
 	}
 	user.Password = hash
 
+	//TODO create user space too
+
 	return u.repo.CreateUser(c, user)
 }
 
@@ -42,9 +44,9 @@ func (u *UserUseCase) ListAllUsers(c context.Context) ([]*model.User, error) {
 	return u.repo.ListAllUsers(c)
 }
 
-// func (u *UserUseCase) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-// 	return u.repo.UpdateUser(c, user)
-// }
+func (u *UserUseCase) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
+	return u.repo.UpdateUser(c, user)
+}
 
 func (u *UserUseCase) DeleteUser(c context.Context, id uuid.UUID) error {
 	return u.repo.DeleteUser(c, id)
