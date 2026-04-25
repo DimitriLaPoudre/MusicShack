@@ -46,5 +46,17 @@ func (h *AdminHandler) Login(c *gin.Context) {
 }
 
 func (h *AdminHandler) ChangeAdminPassword(c *gin.Context) {
+	var req request.ChangePasswordAdmin
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
+	err := h.admin.ChangeAdminPassword(c.Request.Context(), req.NewPassword, req.OldPassword)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }

@@ -54,12 +54,31 @@ func (u *AdminUseCase) Authenticate(ctx context.Context, tkn string) error {
 	}
 
 	if tkn != admin.Token || admin.ExpiresAt.Before(time.Now()) {
-		return err
+		return model.ErrBadToken
 	}
+
 	return nil
 }
 
 func (u *AdminUseCase) ChangeAdminPassword(ctx context.Context, newPassword string, oldPassword string) error {
+	admin, err := u.admin.GetAdmin(ctx)
+	if err != nil {
+		return err
+	}
+
+	if err := crypto.ComparePassword(admin.Password, oldPassword); err != nil {
+		return err
+	}
+
+	hash, err := crypto.HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+
+	if err := u.admin.UpdateAdminPassword(ctx, hash); err != nil {
+		return err
+	}
+
 	return nil
 }
 

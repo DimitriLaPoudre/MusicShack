@@ -37,11 +37,12 @@ func New(
 		adminGroup := api.Group("/admin")
 		{
 			adminGroup.POST("/login", middleware.RateLimiter(time.Minute, 3), adminH.Login)
+			adminGroup.PUT("/change-password", middleware.RateLimiter(time.Minute, 25), adminH.ChangeAdminPassword)
 		}
 
 		usersGroup := api.Group("/users")
 		{
-			usersGroup.Use(middleware.RateLimiter(time.Minute, 25))
+			usersGroup.Use(middleware.RateLimiter(time.Minute, 50))
 			usersGroup.Use(adminMW)
 			usersGroup.POST("/", userH.Create)
 			usersGroup.GET("/", userH.List)
