@@ -18,12 +18,12 @@ func New(
 
 	// authMW gin.HandlerFunc,
 	// guestMW gin.HandlerFunc,
-	// adminMW gin.HandlerFunc,
+	adminMW gin.HandlerFunc,
 	// userMW gin.HandlerFunc,
-	//
-	// userH *handler.UserHandler,
+
 	// authH *handler.AuthHandler,
 	adminH *handler.AdminHandler,
+	userH *handler.UserHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -39,6 +39,17 @@ func New(
 			adminGroup.POST("/login", middleware.RateLimiter(time.Minute, 3), adminH.Login)
 		}
 
+		usersGroup := api.Group("/users")
+		{
+			usersGroup.Use(middleware.RateLimiter(time.Minute, 25))
+			usersGroup.Use(adminMW)
+			usersGroup.POST("/", userH.Create)
+			usersGroup.GET("/", userH.List)
+			usersGroup.GET("/:id", userH.GetByID)
+			// usersGroup.PUT("/:id", userH.Update)
+			usersGroup.DELETE("/:id", userH.Delete)
+		}
+
 		// authGroup := v1.Group("/auth")
 		// {
 		// 	authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.SignupLogin)
@@ -47,15 +58,6 @@ func New(
 		// 	authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
 		// }
 
-		// usersGroup := v1.Group("/users")
-		// {
-		// 	usersGroup.Use(authMW, adminMW)
-		// 	usersGroup.POST("/", middleware.RateLimiter(time.Minute, 25), userH.Create)
-		// 	usersGroup.GET("/", middleware.RateLimiter(time.Minute, 100), userH.List)
-		// 	usersGroup.GET("/:id", middleware.RateLimiter(time.Minute, 100), userH.GetByID)
-		// 	usersGroup.PUT("/:id", middleware.RateLimiter(time.Minute, 25), userH.Update)
-		// 	usersGroup.DELETE("/:id", middleware.RateLimiter(time.Minute, 25), userH.Delete)
-		// }
 	}
 }
 

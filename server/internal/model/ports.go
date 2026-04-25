@@ -3,6 +3,8 @@ package model
 import (
 	"context"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type AdminRepository interface {
@@ -12,4 +14,9 @@ type AdminRepository interface {
 }
 
 type UserRepository interface {
+	CreateUser(ctx context.Context, user *User) (*User, error)
+	GetUserByID(ctx context.Context, userID uuid.UUID) (*User, error)
+	GetUserByUsername(ctx context.Context, username string) (*User, error)
+	ListAllUsers(ctx context.Context) ([]*User, error)
+	DeleteUser(ctx context.Context, userID uuid.UUID) error
 }

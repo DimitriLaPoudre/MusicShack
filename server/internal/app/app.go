@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
@@ -24,9 +25,13 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		l.Fatal().Msg(err.Error())
 	}
 
-	adminS := usecase.NewAdminUseCase(l, &cfg.Admin, &repo, &repo)
+	adminU := usecase.NewAdminUseCase(l, cfg.Admin, &repo)
+	userU := usecase.NewUserUseCase(l, cfg.Library, &repo)
 
-	adminH := handler.NewAdminHandler(l, &adminS)
+	adminH := handler.NewAdminHandler(l, cfg.HTTP, cfg.Admin, &adminU)
+	userH := handler.NewUserHandler(l, &userU)
+
+	adminMW := middleware.AdminMiddleware(l, &adminU)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -42,7 +47,9 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 
 	app := gin.New()
 	router.New(app, l, cfg,
+		adminMW,
 		&adminH,
+		&userH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

@@ -1,6 +1,6 @@
 CREATE TABLE admin (
-	id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1),
+	id INTEGER PRIMARY KEY CHECK (id = 1),
 	password TEXT NOT NULL,
-	token TEXT DEFAULT '',
-	expires_at TIMESTAMPTZ DEFAULT NOW()
+	token TEXT,
+	expires_at TIMESTAMPTZ
 );

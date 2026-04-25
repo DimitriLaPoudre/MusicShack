@@ -13,8 +13,8 @@ import (
 )
 
 type PostgresRepository struct {
-	Pool *pgxpool.Pool
 	l    *zerolog.Logger
+	Pool *pgxpool.Pool
 }
 
 func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository, error) {
@@ -43,7 +43,7 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository
 		l.Info().Msg("migration completed successfully")
 	}
 
-	return PostgresRepository{Pool: pool}, nil
+	return PostgresRepository{l: l, Pool: pool}, nil
 }
 
 func migrateDB(dsn string, migrationDir string) error {

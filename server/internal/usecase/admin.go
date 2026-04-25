@@ -13,17 +13,15 @@ import (
 
 type AdminUseCase struct {
 	l     *zerolog.Logger
-	cfg   *config.AdminConfig
+	cfg   config.AdminConfig
 	admin model.AdminRepository
-	user  model.UserRepository
 }
 
-func NewAdminUseCase(l *zerolog.Logger, cfg *config.AdminConfig, admin model.AdminRepository, user model.UserRepository) AdminUseCase {
+func NewAdminUseCase(l *zerolog.Logger, cfg config.AdminConfig, admin model.AdminRepository) AdminUseCase {
 	return AdminUseCase{
 		l:     l,
 		cfg:   cfg,
 		admin: admin,
-		user:  user,
 	}
 }
 
@@ -49,6 +47,18 @@ func (u *AdminUseCase) Login(ctx context.Context, password string) (string, erro
 	return tkn, nil
 }
 
+func (u *AdminUseCase) Authenticate(ctx context.Context, tkn string) error {
+	admin, err := u.admin.GetAdmin(ctx)
+	if err != nil {
+		return err
+	}
+
+	if tkn != admin.Token || admin.ExpiresAt.Before(time.Now()) {
+		return err
+	}
+	return nil
+}
+
 func (u *AdminUseCase) ChangeAdminPassword(ctx context.Context, newPassword string, oldPassword string) error {
 	return nil
 }
@@ -56,7 +66,8 @@ func (u *AdminUseCase) ChangeAdminPassword(ctx context.Context, newPassword stri
 func (u *AdminUseCase) GetAdmin(ctx context.Context) (*model.Admin, error) {
 	admin, err := u.admin.GetAdmin(ctx)
 	if err != nil {
-		hash, err := crypto.HashPassword(u.cfg.DefaultPassword)
+		var hash string
+		hash, err = crypto.HashPassword(u.cfg.DefaultPassword)
 		if err != nil {
 			return nil, err
 		}

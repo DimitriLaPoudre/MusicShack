@@ -14,16 +14,16 @@ import (
 
 type AdminHandler struct {
 	l        *zerolog.Logger
-	cfgHTTP  *config.HTTPConfig
-	cfgAdmin *config.AdminConfig
+	cfgHTTP  config.HTTPConfig
+	cfgAdmin config.AdminConfig
 	admin    *usecase.AdminUseCase
 }
 
-func NewAdminHandler(l *zerolog.Logger, cfg *config.Config, admin *usecase.AdminUseCase) AdminHandler {
+func NewAdminHandler(l *zerolog.Logger, cfgHTTP config.HTTPConfig, cfgAdmin config.AdminConfig, admin *usecase.AdminUseCase) AdminHandler {
 	return AdminHandler{
 		l:        l,
-		cfgHTTP:  &cfg.HTTP,
-		cfgAdmin: &cfg.Admin,
+		cfgHTTP:  cfgHTTP,
+		cfgAdmin: cfgAdmin,
 		admin:    admin,
 	}
 }
@@ -41,7 +41,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 		return
 	}
 
-	c.SetCookie("admin_token", tkn, int(h.cfgAdmin.TokenDuration.Seconds()), "/api/admin", "", h.cfgHTTP.HTTPS, true)
+	c.SetCookie("admin_token", tkn, int(h.cfgAdmin.TokenDuration.Seconds()), "/api", "", h.cfgHTTP.HTTPS, true)
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 

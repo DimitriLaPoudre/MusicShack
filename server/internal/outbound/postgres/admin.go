@@ -12,7 +12,7 @@ import (
 func (r *PostgresRepository) InitAdmin(ctx context.Context, hashed_password string) (*model.Admin, error) {
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx, "INSERT INTO admin (id, password) VALUES (1, $1) RETURNING *", hashed_password)
+	rows, err := tx.Query(ctx, "INSERT INTO admin (id, password, token, expires_at) VALUES ($1, $2, $3, $4) RETURNING *", 1, hashed_password, "", time.Now())
 	if err != nil {
 		return nil, err
 	}
