@@ -1,20 +1,29 @@
 <script lang="ts">
 	import { LoginAdmin } from "$lib/usecases/admin";
+	import { toast } from "svelte-sonner";
 
-	let password = $state("");
+	let password = $state<string>("");
 </script>
 
 <form
 	class=""
-	onsubmit={(e) => {
+	onsubmit={async (e) => {
 		e.preventDefault();
-		LoginAdmin(password);
+
+		try {
+			await LoginAdmin(password);
+		} catch (e) {
+			return toast.error(
+				e instanceof Error ? e.message : "Unknown error",
+			);
+		}
+
+		password = "";
 	}}
 >
 	<div class="">
 		<input
 			class=""
-			id="password"
 			type="password"
 			bind:value={password}
 			placeholder="password"

@@ -130,7 +130,7 @@ func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) e
 	tx := r.getTx(ctx)
 
 	_, err := tx.Exec(ctx,
-		"DELETE FROM users WHERE id = $1 LIMIT 1",
+		"DELETE FROM users WHERE id = $1",
 		userID)
 	if err != nil {
 		return err

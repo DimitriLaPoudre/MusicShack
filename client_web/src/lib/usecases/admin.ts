@@ -1,13 +1,13 @@
 import type { StatusResponse } from "$lib/types/response/basic";
-import { toast } from "svelte-sonner";
+import type { LoginAdminRequest } from "$lib/types/request/admin";
 import { apiFetch } from "./fetch";
+import { goto } from "$app/navigation";
 
 export async function LoginAdmin(password: string): Promise<void> {
-	try {
-		await apiFetch<StatusResponse>("/admin/login", "POST", {
-			password: password,
-		});
-	} catch (e) {
-		toast.error(e instanceof Error ? e.message : "Login unknown error");
-	}
+	await apiFetch<StatusResponse>("/admin/login", {
+		method: "POST",
+		body: { password: password } as LoginAdminRequest,
+		redirect: "/admin/login",
+	});
+	goto("/admin/dashboard");
 }

@@ -25,6 +25,12 @@ func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, repo model.User
 }
 
 func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.User, error) {
+	id, err := uuid.NewV7()
+	if err != nil {
+		return nil, err
+	}
+	user.ID = id
+
 	hash, err := crypto.HashPassword(user.Password)
 	if err != nil {
 		return nil, err

@@ -1,11 +1,15 @@
 import { goto } from "$app/navigation";
 import type { ErrorResponse } from "$lib/types/response/basic";
 
+type ApiFetchOptions = {
+	method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
+	body?: any;
+	redirect?: string;
+};
+
 export async function apiFetch<T>(
 	path: string,
-	method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
-	body?: any,
-	redirect: string = "/login",
+	{ method = "GET", body, redirect = "/login" }: ApiFetchOptions = {},
 ): Promise<T> {
 	const options: RequestInit = {
 		method: method,

@@ -6,7 +6,7 @@ import (
 )
 
 type CreateUser struct {
-	Username string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
+	Username string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
 	Password string `json:"password" binding:"required"`
 	HiRes    bool   `json:"hi_res"`
 }
@@ -28,7 +28,7 @@ func ParseUserID(str string) (uuid.UUID, error) {
 }
 
 type UpdateUser struct {
-	Username *string `json:"name" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
+	Username *string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
 	Password *string `json:"password" binding:"required"`
 	HiRes    *bool   `json:"hi_res"`
 }
