@@ -5,6 +5,7 @@
 	export let name: string = "";
 	export let checked: boolean = false;
 	export let disabled = false;
+	export let children;
 </script>
 
 <div class="flex items-center gap-3">
@@ -29,6 +30,6 @@
 	</Checkbox.Root>
 
 	<Label.Root id={`${id}-label`} for={id} class="">
-		<slot />
+		{@render children?.()}
 	</Label.Root>
 </div>

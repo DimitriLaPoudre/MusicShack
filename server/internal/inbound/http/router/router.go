@@ -42,10 +42,10 @@ func New(
 
 		usersGroup := api.Group("/users")
 		{
-			usersGroup.Use(middleware.RateLimiter(time.Minute, 50))
+			usersGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			usersGroup.Use(adminMW)
-			usersGroup.POST("/", userH.Create)
-			usersGroup.GET("/", userH.List)
+			usersGroup.POST("", userH.Create)
+			usersGroup.GET("", userH.List)
 			usersGroup.GET("/:id", userH.GetByID)
 			usersGroup.PUT("/:id", userH.Update)
 			usersGroup.DELETE("/:id", userH.Delete)

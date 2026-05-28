@@ -1,5 +1,6 @@
 import { goto } from "$app/navigation";
 import type { ErrorResponse } from "$lib/types/response/basic";
+import { toast } from "svelte-sonner";
 
 type ApiFetchOptions = {
 	method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
@@ -23,6 +24,7 @@ export async function apiFetch<T>(
 
 	const res = await fetch("/api" + path, options);
 	if (res.status === 401) {
+		toast.info("session expired");
 		await goto(redirect);
 		throw new Error(res.statusText);
 	}

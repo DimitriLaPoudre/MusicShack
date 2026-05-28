@@ -1,13 +1,29 @@
 <script lang="ts">
 	import { Dialog } from "bits-ui";
+	import type { Snippet } from "svelte";
 
-	export let open = false;
-	export let title = "";
+	type Props = {
+		open?: boolean;
+		title?: string;
+		children?: Snippet;
+		trigger?: Snippet;
+		close?: Snippet;
+		validate?: Snippet;
+	};
+
+	let {
+		open = $bindable(false),
+		title = "",
+		children,
+		trigger,
+		close,
+		validate,
+	}: Props = $props();
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Trigger>
-		<slot name="trigger" />
+		{@render trigger?.()}
 	</Dialog.Trigger>
 
 	<Dialog.Portal>
@@ -16,13 +32,14 @@
 		<Dialog.Content class="content">
 			<Dialog.Title>{title}</Dialog.Title>
 
-			<slot />
+			{@render children?.()}
 
 			<Dialog.Close>
-				<slot name="close">Close</slot>
+				{@render close?.()}
 			</Dialog.Close>
+
 			<Dialog.Close>
-				<slot name="validate">Validate</slot>
+				{@render validate?.()}
 			</Dialog.Close>
 		</Dialog.Content>
 	</Dialog.Portal>

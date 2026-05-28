@@ -1,5 +1,5 @@
 <script lang="ts">
-	import UserPanel from "./UserPanel.svelte";
+	import UserPanel from "../user/UserPanel.svelte";
 </script>
 
 <div class="flex flex-row">
