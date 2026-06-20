@@ -29,7 +29,7 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 		return fmt.Errorf("Hifi.Status: json.Decode: %w", err)
 	}
 
-	if status.Repo != "https://github.com/binimum/hifi-api" {
+	if status.Repo != "https://github.com/binimum/hifi-api" && status.Repo != "https://github.com/uimaxbai/hifi-api" {
 		return fmt.Errorf("Hifi.Status: %w", errors.New("status content don't match"))
 	}
 
