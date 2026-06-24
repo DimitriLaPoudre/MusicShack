@@ -188,7 +188,7 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 		// if removeErr := rootUser.Remove(filename); removeErr != nil {
 		// 	return fmt.Errorf("saveSong: %w: %w", err, removeErr)
 		// } else {
-		return fmt.Errorf("saveSong: %w", err)
+		// return fmt.Errorf("saveSong: %w", err)
 		// }
 	}
 
