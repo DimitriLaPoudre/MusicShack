@@ -185,11 +185,11 @@ func saveSong(ctx context.Context, userId uint, reader io.ReadCloser, extension 
 
 	path := filepath.Join(rootUser.Name(), filename)
 	if err := metadata.FormatMetadata(ctx, userId, path, data); err != nil {
-		// if removeErr := rootUser.Remove(filename); removeErr != nil {
-		// 	return fmt.Errorf("saveSong: %w: %w", err, removeErr)
-		// } else {
-		// return fmt.Errorf("saveSong: %w", err)
-		// }
+		if removeErr := rootUser.Remove(filename); removeErr != nil {
+			return fmt.Errorf("saveSong: %w: %w", err, removeErr)
+		} else {
+			return fmt.Errorf("saveSong: %w", err)
+		}
 	}
 
 	_ = repository.AddSong(models.Song{UserId: userId, Path: filename, Isrc: data.Isrc, MTime: time.Now()})

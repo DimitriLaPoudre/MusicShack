@@ -246,6 +246,13 @@ func (p *Hifi) Download(ctx context.Context, userId uint, id string) (io.ReadClo
 		}
 		extension = "flac"
 	case "LOSSLESS":
+		if quality != "LOSSLESS" {
+			return nil, "", fmt.Errorf("Hifi.Download: %w", errors.New("audio quality received not conform"))
+		}
+		reader, err = remuxM4AtoFLAC(reader)
+		if err != nil {
+			return nil, "", fmt.Errorf("Hifi.Download: %w", err)
+		}
 		extension = "flac"
 	case "HIGH":
 		extension = "m4a"
