@@ -1,6 +1,6 @@
 module github.com/DimitriLaPoudre/MusicShack/server
 
-go 1.25
+go 1.25.0
 
 require (
 	github.com/gin-contrib/cors v1.7.6
@@ -9,7 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/robfig/cron/v3 v3.0.0
 	github.com/ulule/limiter/v3 v3.11.2
-	go.senan.xyz/taglib v0.11.1
+	go.senan.xyz/taglib v0.12.0
 	golang.org/x/crypto v0.42.0
 	golang.org/x/sync v0.17.0
 	gorm.io/driver/postgres v1.6.0
@@ -43,14 +43,14 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/quic-go/qpack v0.5.1 // indirect
 	github.com/quic-go/quic-go v0.54.0 // indirect
-	github.com/tetratelabs/wazero v1.10.1 // indirect
+	github.com/tetratelabs/wazero v1.11.1-0.20260428013916-2bbd517b7633 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	go.uber.org/mock v0.5.0 // indirect
 	golang.org/x/arch v0.20.0 // indirect
 	golang.org/x/mod v0.28.0 // indirect
 	golang.org/x/net v0.44.0 // indirect
-	golang.org/x/sys v0.36.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
 	golang.org/x/text v0.30.0 // indirect
 	golang.org/x/tools v0.37.0 // indirect
 	google.golang.org/protobuf v1.36.9 // indirect
