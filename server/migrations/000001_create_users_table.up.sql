@@ -2,5 +2,6 @@ CREATE TABLE users (
 	id UUID PRIMARY KEY,
 	username TEXT UNIQUE NOT NULL,
 	password TEXT NOT NULL,
-	hi_res BOOLEAN
+	hi_res BOOLEAN NOT NULL,
+	role TEXT NOT NULL,
 );

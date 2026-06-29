@@ -10,6 +10,7 @@ type User struct {
 	Username string    `db:"username"`
 	Password string    `db:"password"`
 	HiRes    bool      `db:"hi_res"`
+	Role     string    `db:"role"`
 }
 
 func (u *User) ToUser() *model.User {
@@ -18,17 +19,19 @@ func (u *User) ToUser() *model.User {
 		Username: u.Username,
 		Password: u.Password,
 		HiRes:    u.HiRes,
+		Role:     model.UserRole(u.Role),
 	}
 }
 
 func UsersToUsers(dto []*User) []*model.User {
 	users := []*model.User{}
-	for _, user := range dto {
+	for _, u := range dto {
 		users = append(users, &model.User{
-			ID:       user.ID,
-			Username: user.Username,
-			Password: user.Password,
-			HiRes:    user.HiRes,
+			ID:       u.ID,
+			Username: u.Username,
+			Password: u.Password,
+			HiRes:    u.HiRes,
+			Role:     model.UserRole(u.Role),
 		})
 	}
 	return users

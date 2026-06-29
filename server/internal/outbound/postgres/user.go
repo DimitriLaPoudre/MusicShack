@@ -18,8 +18,8 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) (
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
-		"INSERT INTO users (id, username, password, hi_res) VALUES ($1, $2, $3, $4) RETURNING *",
-		user.ID, user.Username, user.Password, user.HiRes)
+		"INSERT INTO users (id, username, password, hi_res, role) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+		user.ID, user.Username, user.Password, user.HiRes, user.Role)
 	if err != nil {
 		return nil, err
 	}
@@ -104,8 +104,13 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 		argID++
 	}
 	if partialUser.HiRes != nil {
-		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
+		setParts = append(setParts, fmt.Sprintf("hi_res=$%d", argID))
 		args = append(args, *partialUser.HiRes)
+		argID++
+	}
+	if partialUser.Role != nil {
+		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
+		args = append(args, *partialUser.Role)
 		argID++
 	}
 	args = append(args, partialUser.ID)
@@ -129,10 +134,7 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) error {
 	tx := r.getTx(ctx)
 
-	_, err := tx.Exec(ctx,
-		"DELETE FROM users WHERE id = $1",
-		userID)
-	if err != nil {
+	if _, err := tx.Exec(ctx, "DELETE FROM users WHERE id = $1", userID); err != nil {
 		return err
 	}
 	return nil

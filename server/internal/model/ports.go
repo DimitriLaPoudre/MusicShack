@@ -2,17 +2,8 @@ package model
 
 import (
 	"context"
-	"time"
-
 	"github.com/google/uuid"
 )
-
-type AdminRepository interface {
-	InitAdmin(ctx context.Context, hashed_password string) (*Admin, error)
-	GetAdmin(ctx context.Context) (*Admin, error)
-	UpdateAdminSession(ctx context.Context, token string, expiresAt time.Time) error
-	UpdateAdminPassword(ctx context.Context, password string) error
-}
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *User) (*User, error)
@@ -21,4 +12,12 @@ type UserRepository interface {
 	ListAllUsers(ctx context.Context) ([]*User, error)
 	UpdateUser(ctx context.Context, partialUser *PartialUser) (*User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
+}
+
+type SessionRepository interface {
+	CreateSession(ctx context.Context, s *Session) (*Session, error)
+	GetSessionByID(ctx context.Context, sessionID uuid.UUID) (*Session, error)
+	GetSessionByToken(ctx context.Context, token string) (*Session, error)
+	GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]*Session, error)
+	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
 }
