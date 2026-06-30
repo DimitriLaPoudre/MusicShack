@@ -16,14 +16,14 @@ type (
 		Admin   AdminConfig   `envPrefix:"ADMIN_"`
 		Library LibraryConfig `envPrefix:"LIBRARY_"`
 		DB      DBConfig      `envPrefix:"DB_"`
-		Auth    AuthConfig    `envPrefix:"AUTH_"`
+		Session SessionConfig `envPrefix:"SESSION_"`
 		HTTP    HTTPConfig
 		Log     LogConfig `envPrefix:"LOG_"`
 	}
 
 	AdminConfig struct {
-		TokenDuration   time.Duration `env:"TOKEN_DURATION,unset" envDefault:"30m"`
-		DefaultPassword string        `env:"DEFAULT_PASSWORD,unset" envDefault:"changemenow"`
+		DefaultUsername string `env:"DEFAULT_USERNAME,unset" envDefault:"admin"`
+		DefaultPassword string `env:"DEFAULT_PASSWORD,unset" envDefault:"changemenow"`
 	}
 
 	LibraryConfig struct {
@@ -40,17 +40,8 @@ type (
 		Migration string `env:"MIGRATION"`
 	}
 
-	AuthConfig struct {
-		JWT     JWTConfig     `envPrefix:"JWT_"`
-		Session SessionConfig `envPrefix:"SESSION_"`
-	}
-
-	JWTConfig struct {
-		Exp    time.Duration `env:"EXP" envDefault:"15m"`
-		Secret string        `env:"SECRET" envDefault:"user_session"`
-	}
-
 	SessionConfig struct {
+		CookieName  string        `env:"COOKIE_NAME" envDefault:"user_token"`
 		Exp         time.Duration `env:"EXP" envDefault:"168h"`
 		RememberExp time.Duration `env:"REMEMBER_EXP" envDefault:"720h"`
 	}

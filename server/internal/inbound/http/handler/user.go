@@ -6,17 +6,17 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
 
 type UserHandler struct {
 	l    *zerolog.Logger
-	user *usecase.UserUseCase
+	user *service.UserService
 }
 
-func NewUserHandler(l *zerolog.Logger, user *usecase.UserUseCase) UserHandler {
+func NewUserHandler(l *zerolog.Logger, user *service.UserService) UserHandler {
 	return UserHandler{
 		l:    l,
 		user: user,

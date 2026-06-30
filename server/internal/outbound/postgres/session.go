@@ -94,3 +94,12 @@ func (r *PostgresRepository) DeleteSession(ctx context.Context, sessionID uuid.U
 	}
 	return nil
 }
+
+func (r *PostgresRepository) DeleteSessionByToken(ctx context.Context, token string) error {
+	tx := r.getTx(ctx)
+
+	if _, err := tx.Exec(ctx, "DELETE FROM sessions WHERE token = $1", token); err != nil {
+		return err
+	}
+	return nil
+}

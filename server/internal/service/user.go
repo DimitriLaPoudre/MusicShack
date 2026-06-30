@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -10,21 +10,21 @@ import (
 	"github.com/rs/zerolog"
 )
 
-type UserUseCase struct {
+type UserService struct {
 	l    *zerolog.Logger
 	cfg  config.LibraryConfig
 	repo model.UserRepository
 }
 
-func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, repo model.UserRepository) UserUseCase {
-	return UserUseCase{
+func NewUserService(l *zerolog.Logger, cfg config.LibraryConfig, repo model.UserRepository) UserService {
+	return UserService{
 		l:    l,
 		cfg:  cfg,
 		repo: repo,
 	}
 }
 
-func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.User, error) {
+func (u *UserService) CreateUser(c context.Context, user *model.User) (*model.User, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return nil, err
@@ -42,18 +42,18 @@ func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.Us
 	return u.repo.CreateUser(c, user)
 }
 
-func (u *UserUseCase) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
+func (u *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
 	return u.repo.GetUserByID(c, id)
 }
 
-func (u *UserUseCase) ListAllUsers(c context.Context) ([]*model.User, error) {
+func (u *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
 	return u.repo.ListAllUsers(c)
 }
 
-func (u *UserUseCase) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
+func (u *UserService) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
 	return u.repo.UpdateUser(c, user)
 }
 
-func (u *UserUseCase) DeleteUser(c context.Context, id uuid.UUID) error {
+func (u *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
 	return u.repo.DeleteUser(c, id)
 }

@@ -16,13 +16,13 @@ func New(
 	l *zerolog.Logger,
 	cfg *config.Config,
 
-	// authMW gin.HandlerFunc,
+	authMW gin.HandlerFunc,
 	// guestMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
-	// userMW gin.HandlerFunc,
+	userMW gin.HandlerFunc,
 
-	// authH *handler.AuthHandler,
-	adminH *handler.AdminHandler,
+	authH *handler.AuthHandler,
+	// adminH *handler.AdminHandler,
 	userH *handler.UserHandler,
 ) {
 	app.Use(middleware.RequestID())

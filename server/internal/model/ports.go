@@ -20,4 +20,5 @@ type SessionRepository interface {
 	GetSessionByToken(ctx context.Context, token string) (*Session, error)
 	GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]*Session, error)
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
+	DeleteSessionByToken(ctx context.Context, token string) error
 }

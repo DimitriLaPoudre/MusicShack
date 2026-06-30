@@ -6,8 +6,8 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog"
 )
@@ -16,10 +16,10 @@ type AdminHandler struct {
 	l        *zerolog.Logger
 	cfgHTTP  config.HTTPConfig
 	cfgAdmin config.AdminConfig
-	admin    *usecase.AdminUseCase
+	admin    *service.AdminService
 }
 
-func NewAdminHandler(l *zerolog.Logger, cfgHTTP config.HTTPConfig, cfgAdmin config.AdminConfig, admin *usecase.AdminUseCase) AdminHandler {
+func NewAdminHandler(l *zerolog.Logger, cfgHTTP config.HTTPConfig, cfgAdmin config.AdminConfig, admin *service.AdminService) AdminHandler {
 	return AdminHandler{
 		l:        l,
 		cfgHTTP:  cfgHTTP,

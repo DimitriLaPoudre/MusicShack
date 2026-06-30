@@ -12,8 +12,8 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog"
@@ -25,16 +25,20 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		l.Fatal().Msg(err.Error())
 	}
 
-	adminU := usecase.NewAdminUseCase(l, cfg.Admin, &repo)
-	userU := usecase.NewUserUseCase(l, cfg.Library, &repo)
+	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
+	userS := service.NewUserService(l, cfg.Library, &repo)
 
-	adminH := handler.NewAdminHandler(l, cfg.HTTP, cfg.Admin, &adminU)
-	userH := handler.NewUserHandler(l, &userU)
+	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Admin, &authS)
+	userH := handler.NewUserHandler(l, &userS)
 
-	adminMW := middleware.AdminMiddleware(l, &adminU)
+	authMW := middleware.AuthMiddleware(l, cfg.Session, &authS)
+	adminMW := middleware.AdminMiddleware(l, &authS)
+	userMW := middleware.UserMiddleware(l, &authS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
+
+	service.InitAdmin()
 
 	c := cron.New()
 	// if err := job.FetchFollows(c, ctx, l); err != nil {
@@ -47,8 +51,10 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 
 	app := gin.New()
 	router.New(app, l, cfg,
+		authMW,
 		adminMW,
-		&adminH,
+		userMW,
+		&authH,
 		&userH,
 	)
 	httpServ := &http.Server{

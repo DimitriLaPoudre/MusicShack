@@ -10,7 +10,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
+func UserMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		me, err := utils.GetFromContext[*model.User](c, "me")
 		if err != nil {
@@ -18,7 +18,7 @@ func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFu
 			return
 		}
 
-		if !auth.IsAdmin(c, me) {
+		if !auth.IsUser(c, me) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
