@@ -24,3 +24,11 @@ type PartialUser struct {
 	HiRes    *bool
 	Role     *UserRole
 }
+
+type FilterUser struct {
+	ID       *uuid.UUID
+	Username *string
+	Password *string
+	HiRes    *bool
+	Role     *UserRole
+}

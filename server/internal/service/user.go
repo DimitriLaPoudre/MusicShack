@@ -46,6 +46,14 @@ func (u *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User,
 	return u.repo.GetUserByID(c, id)
 }
 
+func (u *UserService) GetUserWithFilter(c context.Context, filter *model.FilterUser) (*model.User, error) {
+	return u.repo.GetUserWithFilter(c, filter)
+}
+
+func (u *UserService) ListUsersWithFilter(c context.Context, filter *model.FilterUser) ([]*model.User, error) {
+	return u.repo.ListUsersWithFilter(c, filter)
+}
+
 func (u *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
 	return u.repo.ListAllUsers(c)
 }
