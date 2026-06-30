@@ -28,12 +28,14 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
 	userS := service.NewUserService(l, cfg.Library, &repo)
 
-	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Admin, &authS)
+	meH := handler.NewMeHandler(l, &userS)
 	userH := handler.NewUserHandler(l, &userS)
+	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Session, &authS)
 
 	authMW := middleware.AuthMiddleware(l, cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(l, &authS)
 	userMW := middleware.UserMiddleware(l, &authS)
+	guestMW := middleware.GuestMiddleware(l, &authS)
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -54,8 +56,10 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		authMW,
 		adminMW,
 		userMW,
-		&authH,
+		guestMW,
+		&meH,
 		&userH,
+		&authH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

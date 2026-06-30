@@ -110,5 +110,5 @@ func (h *UserHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, response.Ok)
 }

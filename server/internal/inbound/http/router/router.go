@@ -17,13 +17,13 @@ func New(
 	cfg *config.Config,
 
 	authMW gin.HandlerFunc,
-	// guestMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
 	userMW gin.HandlerFunc,
+	guestMW gin.HandlerFunc,
 
-	authH *handler.AuthHandler,
-	// adminH *handler.AdminHandler,
+	meH *handler.MeHandler,
 	userH *handler.UserHandler,
+	authH *handler.AuthHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -34,15 +34,24 @@ func New(
 
 	api := app.Group("/api")
 	{
-		adminGroup := api.Group("/admin")
+		// adminGroup := api.Group("/admin")
+		// {
+		// 	adminGroup.POST("/login", middleware.RateLimiter(time.Minute, 5), adminH.Login)
+		// 	adminGroup.PUT("/change-password", middleware.RateLimiter(time.Minute, 25), adminH.ChangeAdminPassword)
+		// }
+
+		meGroup := api.Group("/me")
 		{
-			adminGroup.POST("/login", middleware.RateLimiter(time.Minute, 5), adminH.Login)
-			adminGroup.PUT("/change-password", middleware.RateLimiter(time.Minute, 25), adminH.ChangeAdminPassword)
+			meGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			meGroup.Use(authMW)
+			meGroup.GET("", meH.Get)
+			meGroup.PUT("", meH.Update)
 		}
 
 		usersGroup := api.Group("/users")
 		{
 			usersGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			usersGroup.Use(authMW)
 			usersGroup.Use(adminMW)
 			usersGroup.POST("", userH.Create)
 			usersGroup.GET("", userH.List)
@@ -51,13 +60,11 @@ func New(
 			usersGroup.DELETE("/:id", userH.Delete)
 		}
 
-		// authGroup := v1.Group("/auth")
-		// {
-		// 	authGroup.POST("/signup", middleware.RateLimiter(time.Minute, 5), guestMW, authH.SignupLogin)
-		// 	authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
-		// 	authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authH.Logout)
-		// 	authGroup.PUT("/refresh", middleware.RateLimiter(time.Minute, 10), authH.RefreshToken)
-		// }
+		authGroup := api.Group("/auth")
+		{
+			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
+			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW, authH.Logout)
+		}
 
 	}
 }

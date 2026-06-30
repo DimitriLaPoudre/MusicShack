@@ -28,8 +28,8 @@ func ParseUserID(str string) (uuid.UUID, error) {
 }
 
 type UpdateUser struct {
-	Username *string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Password *string `json:"password" binding:"required"`
+	Username *string `json:"username" binding:"min=3,max=20,alphanumunicode|contains=_"`
+	Password *string `json:"password"`
 	HiRes    *bool   `json:"hi_res"`
 }
 
