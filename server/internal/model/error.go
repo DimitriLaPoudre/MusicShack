@@ -7,5 +7,11 @@ var (
 	ErrUserNotFound   = errors.New("user not found")
 	ErrBadPassword    = errors.New("incorrect password")
 	ErrBadToken       = errors.New("invalid token")
-	ErrUnknown        = errors.New("unknown error")
+
+	ErrInvalidInput = errors.New("invalid input")
+	ErrConflict     = errors.New("conflict")
+	ErrNotFound     = errors.New("not found")
+	ErrInternal     = errors.New("internal_error")
+
+	ErrUnknown = errors.New("unknown error")
 )

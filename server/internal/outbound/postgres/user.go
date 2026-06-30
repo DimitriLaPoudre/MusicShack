@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
@@ -119,6 +121,22 @@ func (r *PostgresRepository) GetUserWithFilter(ctx context.Context, filter *mode
 
 	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
 	if err != nil {
+		var pgErr *pgconn.PgError
+		if errors.As(err, &pgErr) {
+			switch pgErr.Code {
+			case "23505": // unique_violation
+				return nil, model.ErrConflict
+
+			case "23503": // foreign_key_violation
+				return nil, model.ErrInvalidInput
+
+			case "23502": // not_null_violation
+				return nil, model.ErrInvalidInput
+
+			default:
+				return nil, model.ErrInternal
+			}
+		}
 		return nil, err
 	}
 

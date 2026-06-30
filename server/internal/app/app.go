@@ -40,7 +40,7 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	service.InitAdmin()
+	service.InitAdmin(ctx, cfg.Admin, &userS)
 
 	c := cron.New()
 	// if err := job.FetchFollows(c, ctx, l); err != nil {
