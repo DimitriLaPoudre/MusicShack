@@ -8,6 +8,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -47,7 +48,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 func (h *UserHandler) GetByID(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.ParseUserID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
@@ -99,7 +100,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 func (h *UserHandler) Delete(c *gin.Context) {
 	id := c.Param("id")
-	userID, err := request.ParseUserID(id)
+	userID, err := uuid.Parse(id)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return

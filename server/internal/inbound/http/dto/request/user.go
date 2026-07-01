@@ -19,14 +19,6 @@ func (req *CreateUser) IntoUser() (model.User, error) {
 	}, nil
 }
 
-func ParseUserID(str string) (uuid.UUID, error) {
-	id, err := uuid.Parse(str)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	return id, nil
-}
-
 type UpdateUser struct {
 	Username *string `json:"username" binding:"min=3,max=20,alphanumunicode|contains=_"`
 	Password *string `json:"password"`
@@ -34,7 +26,7 @@ type UpdateUser struct {
 }
 
 func (req *UpdateUser) IntoPartialUser(str string) (model.PartialUser, error) {
-	id, err := ParseUserID(str)
+	id, err := uuid.Parse(str)
 	if err != nil {
 		return model.PartialUser{}, err
 	}
