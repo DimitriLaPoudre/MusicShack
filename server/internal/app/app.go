@@ -30,11 +30,13 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	userS := service.NewUserService(l, cfg.Library, &repo)
 
 	authU := usecase.NewAuthUseCase(l, cfg.Session, &repo, &repo)
-	userU := usecase.NewUserUseCase(l, cfg.Library, &userS)
+	userU := usecase.NewUserUseCase(l, cfg.Library, &userS, &repo)
+	instanceU := usecase.NewInstanceUseCase(l, &repo)
 
 	meH := handler.NewMeHandler(l, &userU)
 	userH := handler.NewUserHandler(l, &userU)
 	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Session, &authU)
+	instanceH := handler.NewInstanceHandler(l, &instanceU)
 
 	authMW := middleware.AuthMiddleware(l, cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(l, &authS)
@@ -44,7 +46,7 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	service.InitAdmin(ctx, cfg.Admin, &userS)
+	service.InitAdmin(ctx, cfg.Admin, &userS, &repo)
 
 	c := cron.New()
 	// if err := job.FetchFollows(c, ctx, l); err != nil {
@@ -64,6 +66,7 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		&meH,
 		&userH,
 		&authH,
+		&instanceH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

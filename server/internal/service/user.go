@@ -41,27 +41,3 @@ func (u *UserService) CreateUser(c context.Context, user *model.User) (*model.Us
 
 	return u.repo.CreateUser(c, user)
 }
-
-func (u *UserService) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return u.repo.GetUserByID(c, id)
-}
-
-func (u *UserService) GetUserWithFilter(c context.Context, filter *model.FilterUser) (*model.User, error) {
-	return u.repo.GetUserWithFilter(c, filter)
-}
-
-func (u *UserService) ListUsersWithFilter(c context.Context, filter *model.FilterUser) ([]*model.User, error) {
-	return u.repo.ListUsersWithFilter(c, filter)
-}
-
-func (u *UserService) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return u.repo.ListAllUsers(c)
-}
-
-func (u *UserService) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-	return u.repo.UpdateUser(c, user)
-}
-
-func (u *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
-	return u.repo.DeleteUser(c, id)
-}

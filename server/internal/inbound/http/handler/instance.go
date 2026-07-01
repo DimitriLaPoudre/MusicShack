@@ -37,13 +37,13 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	instance, err := req.IntoInstance()
+	instance, err := req.IntoInstance(me.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	createdInstance, err := h.instance.CreateInstance(c.Request.Context(), &instance, me.ID)
+	createdInstance, err := h.instance.CreateInstance(c.Request.Context(), &instance)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -51,24 +51,6 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 
 	resp := response.InstanceToResponse(createdInstance)
 	c.JSON(http.StatusCreated, resp)
-}
-
-func (h *InstanceHandler) GetByID(c *gin.Context) {
-	idStr := c.Param("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
-
-	instance, err := h.instance.GetInstanceByID(c.Request.Context(), id)
-	if err != nil {
-		utils.Error(c, err, h.l)
-		return
-	}
-
-	resp := response.InstanceToResponse(instance)
-	c.JSON(http.StatusOK, resp)
 }
 
 func (h *InstanceHandler) ListForMe(c *gin.Context) {
@@ -88,7 +70,13 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *InstanceHandler) Delete(c *gin.Context) {
+func (h *InstanceHandler) DeleteForMe(c *gin.Context) {
+	me, err := utils.GetFromContext[*model.User](c, "me")
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
@@ -96,11 +84,10 @@ func (h *InstanceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.instance.DeleteInstance(c.Request.Context(), id); err != nil {
+	if err := h.instance.DeleteInstanceByUserID(c.Request.Context(), id, me.ID); err != nil {
 		utils.Error(c, err, h.l)
 		return
 	}
 
 	c.JSON(http.StatusOK, response.Ok)
 }
-

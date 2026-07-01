@@ -27,7 +27,8 @@ type SessionRepository interface {
 
 type InstanceRepository interface {
 	CreateInstance(ctx context.Context, i *Instance) (*Instance, error)
-	GetInstanceByID(ctx context.Context, id uuid.UUID) (*Instance, error)
+	GetInstance(ctx context.Context, id uuid.UUID) (*Instance, error)
 	ListInstancesByUserID(ctx context.Context, userID uuid.UUID) ([]*Instance, error)
 	DeleteInstance(ctx context.Context, id uuid.UUID) error
+	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }

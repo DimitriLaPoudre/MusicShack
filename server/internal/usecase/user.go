@@ -14,13 +14,15 @@ type UserUseCase struct {
 	l    *zerolog.Logger
 	cfg  config.LibraryConfig
 	user *service.UserService
+	repo model.UserRepository
 }
 
-func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, user *service.UserService) UserUseCase {
+func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, user *service.UserService, repo model.UserRepository) UserUseCase {
 	return UserUseCase{
 		l:    l,
 		cfg:  cfg,
 		user: user,
+		repo: repo,
 	}
 }
 
@@ -29,25 +31,25 @@ func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.Us
 }
 
 func (u *UserUseCase) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return u.user.GetUserByID(c, id)
+	return u.repo.GetUserByID(c, id)
 }
 
 func (u *UserUseCase) GetUserWithFilter(c context.Context, filter *model.FilterUser) (*model.User, error) {
-	return u.user.GetUserWithFilter(c, filter)
+	return u.repo.GetUserWithFilter(c, filter)
 }
 
 func (u *UserUseCase) ListUsersWithFilter(c context.Context, filter *model.FilterUser) ([]*model.User, error) {
-	return u.user.ListUsersWithFilter(c, filter)
+	return u.repo.ListUsersWithFilter(c, filter)
 }
 
 func (u *UserUseCase) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return u.user.ListAllUsers(c)
+	return u.repo.ListAllUsers(c)
 }
 
 func (u *UserUseCase) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
-	return u.user.UpdateUser(c, user)
+	return u.repo.UpdateUser(c, user)
 }
 
 func (u *UserUseCase) DeleteUser(c context.Context, id uuid.UUID) error {
-	return u.user.DeleteUser(c, id)
+	return u.repo.DeleteUser(c, id)
 }

@@ -24,6 +24,7 @@ func New(
 	meH *handler.MeHandler,
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
+	instanceH *handler.InstanceHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -47,10 +48,12 @@ func New(
 			meGroup.GET("", meH.Get)
 			meGroup.PUT("", meH.Update)
 
-			// instanceGroup := api.Group("/instances")
-			// {
-			// 	instanceGroup.GET("")
-			// }
+			instanceGroup := api.Group("/instances")
+			{
+				instanceGroup.GET("", instanceH.ListForMe)
+				instanceGroup.POST("", instanceH.CreateForMe)
+				instanceGroup.DELETE(":id", instanceH.DeleteForMe)
+			}
 		}
 
 		usersGroup := api.Group("/users")

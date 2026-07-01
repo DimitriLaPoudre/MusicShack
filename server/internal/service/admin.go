@@ -8,9 +8,9 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 )
 
-func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService) error {
+func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, repo model.UserRepository) error {
 	role := model.UserRoleAdmin
-	if _, err := user.GetUserWithFilter(c, &model.FilterUser{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
+	if _, err := repo.GetUserWithFilter(c, &model.FilterUser{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
 		return err
 	}
 

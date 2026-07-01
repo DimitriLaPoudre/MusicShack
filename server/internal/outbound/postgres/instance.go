@@ -32,7 +32,7 @@ func (r *PostgresRepository) CreateInstance(ctx context.Context, i *model.Instan
 
 }
 
-func (r *PostgresRepository) GetInstanceByID(ctx context.Context, id uuid.UUID) (*model.Instance, error) {
+func (r *PostgresRepository) GetInstance(ctx context.Context, id uuid.UUID) (*model.Instance, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
@@ -72,6 +72,15 @@ func (r *PostgresRepository) DeleteInstance(ctx context.Context, id uuid.UUID) e
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM instances WHERE id = $1", id); err != nil {
+		return dto.Error(err)
+	}
+	return nil
+}
+
+func (r *PostgresRepository) DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	tx := r.getTx(ctx)
+
+	if _, err := tx.Exec(ctx, "DELETE FROM instances WHERE id = $1 AND user_id = $2", id, userID); err != nil {
 		return dto.Error(err)
 	}
 	return nil
