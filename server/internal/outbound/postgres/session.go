@@ -24,7 +24,7 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, s *model.Session
 	}
 
 	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -43,7 +43,7 @@ func (r *PostgresRepository) GetSessionByID(ctx context.Context, sessionID uuid.
 	}
 
 	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +61,7 @@ func (r *PostgresRepository) GetSessionByToken(ctx context.Context, token string
 	}
 
 	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func (r *PostgresRepository) GetSessionByUserID(ctx context.Context, userID uuid
 	}
 
 	dbSessions, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.Session])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -90,7 +90,7 @@ func (r *PostgresRepository) DeleteSession(ctx context.Context, sessionID uuid.U
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM sessions WHERE id = $1", sessionID); err != nil {
-		return err
+		return dto.Error(err)
 	}
 	return nil
 }
@@ -99,7 +99,7 @@ func (r *PostgresRepository) DeleteSessionByToken(ctx context.Context, token str
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM sessions WHERE token = $1", token); err != nil {
-		return err
+		return dto.Error(err)
 	}
 	return nil
 }

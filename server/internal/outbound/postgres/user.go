@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -10,7 +9,6 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
@@ -27,7 +25,7 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) (
 	}
 
 	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -45,7 +43,7 @@ func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) 
 	}
 
 	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -63,7 +61,7 @@ func (r *PostgresRepository) GetUserByUsername(ctx context.Context, username str
 	}
 
 	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -120,23 +118,7 @@ func (r *PostgresRepository) GetUserWithFilter(ctx context.Context, filter *mode
 	}
 
 	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
-		var pgErr *pgconn.PgError
-		if errors.As(err, &pgErr) {
-			switch pgErr.Code {
-			case "23505": // unique_violation
-				return nil, model.ErrConflict
-
-			case "23503": // foreign_key_violation
-				return nil, model.ErrInvalidInput
-
-			case "23502": // not_null_violation
-				return nil, model.ErrInvalidInput
-
-			default:
-				return nil, model.ErrInternal
-			}
-		}
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -193,7 +175,7 @@ func (r *PostgresRepository) ListUsersWithFilter(ctx context.Context, filter *mo
 	}
 
 	dbUsers, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -210,7 +192,7 @@ func (r *PostgresRepository) ListAllUsers(ctx context.Context) ([]*model.User, e
 	}
 
 	dbUsers, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 	return dto.UsersToUsers(dbUsers), nil
@@ -256,7 +238,7 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 	}
 
 	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err != nil {
+	if err := dto.Error(err); err != nil {
 		return nil, err
 	}
 
@@ -267,7 +249,7 @@ func (r *PostgresRepository) DeleteUser(ctx context.Context, userID uuid.UUID) e
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM users WHERE id = $1", userID); err != nil {
-		return err
+		return dto.Error(err)
 	}
 	return nil
 }
