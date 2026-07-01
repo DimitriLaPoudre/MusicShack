@@ -24,3 +24,10 @@ type SessionRepository interface {
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
 	DeleteSessionByToken(ctx context.Context, token string) error
 }
+
+type InstanceRepository interface {
+	CreateInstance(ctx context.Context, i *Instance) (*Instance, error)
+	GetInstanceByID(ctx context.Context, id uuid.UUID) (*Instance, error)
+	ListInstancesByUserID(ctx context.Context, userID uuid.UUID) ([]*Instance, error)
+	DeleteInstance(ctx context.Context, id uuid.UUID) error
+}

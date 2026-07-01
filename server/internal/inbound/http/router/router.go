@@ -46,6 +46,11 @@ func New(
 			meGroup.Use(authMW)
 			meGroup.GET("", meH.Get)
 			meGroup.PUT("", meH.Update)
+
+			// instanceGroup := api.Group("/instances")
+			// {
+			// 	instanceGroup.GET("")
+			// }
 		}
 
 		usersGroup := api.Group("/users")

@@ -14,6 +14,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 	"github.com/rs/zerolog"
@@ -28,9 +29,12 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
 	userS := service.NewUserService(l, cfg.Library, &repo)
 
-	meH := handler.NewMeHandler(l, &userS)
-	userH := handler.NewUserHandler(l, &userS)
-	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Session, &authS)
+	authU := usecase.NewAuthUseCase(l, cfg.Session, &repo, &repo)
+	userU := usecase.NewUserUseCase(l, cfg.Library, &userS)
+
+	meH := handler.NewMeHandler(l, &userU)
+	userH := handler.NewUserHandler(l, &userU)
+	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Session, &authU)
 
 	authMW := middleware.AuthMiddleware(l, cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(l, &authS)
