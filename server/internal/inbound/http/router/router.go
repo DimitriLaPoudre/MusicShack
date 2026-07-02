@@ -25,6 +25,7 @@ func New(
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
 	instanceH *handler.InstanceHandler,
+	pluginH *handler.PluginHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger(l))
@@ -48,11 +49,11 @@ func New(
 			meGroup.GET("", meH.Get)
 			meGroup.PUT("", meH.Update)
 
-			instanceGroup := api.Group("/instances")
+			instancesGroup := api.Group("/instances")
 			{
-				instanceGroup.GET("", instanceH.ListForMe)
-				instanceGroup.POST("", instanceH.CreateForMe)
-				instanceGroup.DELETE(":id", instanceH.DeleteForMe)
+				instancesGroup.GET("", instanceH.ListForMe)
+				instancesGroup.POST("", instanceH.CreateForMe)
+				instancesGroup.DELETE(":id", instanceH.DeleteForMe)
 			}
 		}
 
@@ -72,6 +73,11 @@ func New(
 		{
 			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
 			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW, authH.Logout)
+		}
+
+		pluginGroup := api.Group("/plugin")
+		{
+			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
 		}
 
 	}

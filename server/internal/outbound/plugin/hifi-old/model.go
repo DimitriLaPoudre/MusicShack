@@ -1,21 +1,21 @@
 package hifi
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import "github.com/DimitriLaPoudre/MusicShack/server/internal/models"
 
 var (
-	LOW = model.Quality{
+	LOW = models.Quality{
 		Name:  "LOW",
 		Color: "#ff0000",
 	}
-	HIGH = model.Quality{
+	HIGH = models.Quality{
 		Name:  "HIGH",
 		Color: "#ff7f00",
 	}
-	LOSSLESS = model.Quality{
+	LOSSLESS = models.Quality{
 		Name:  "LOSSLESS",
 		Color: "#409940",
 	}
-	HIRES = model.Quality{
+	HIRES = models.Quality{
 		Name:  "HIRES",
 		Color: "#00ff00",
 	}

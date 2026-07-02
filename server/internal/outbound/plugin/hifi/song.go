@@ -5,28 +5,28 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net/url"
+	lib_url "net/url"
 	"strconv"
+	"sync"
 	"time"
 
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/models"
-	hifi_utils "github.com/DimitriLaPoudre/MusicShack/server/internal/plugins/hifi/utils"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/repository"
-	"github.com/DimitriLaPoudre/MusicShack/server/internal/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/network"
 )
 
-func fetchSong(ctx context.Context, url2 string, id string) (songData, error) {
+func fetchSong(ctx context.Context, url string, id string) (songData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := utils.Fetch(ctx, url2+"/info/?id="+url.QueryEscape(id))
+	resp, err := network.Fetch(ctx, url+"/info/?id="+lib_url.QueryEscape(id), nil)
 	if err != nil {
-		return songData{}, fmt.Errorf("fetchAlbum: %w", err)
+		return songData{}, fmt.Errorf("fetchSong: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return songData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
+		return songData{}, fmt.Errorf("fetchSong: http: %w", errors.New(resp.Status))
 	}
 
 	var data songData
@@ -37,84 +37,42 @@ func fetchSong(ctx context.Context, url2 string, id string) (songData, error) {
 	return data, nil
 }
 
-func getSong(ctx context.Context, instances []models.Instance, id string) (songData, error) {
-	type res struct {
-		data songData
-		err  error
-	}
-
-	ch := make(chan res, len(instances))
-	for _, instance := range instances {
-		go func(url string) {
-			data, err := fetchSong(ctx, url, id)
-			ch <- res{data: data, err: err}
-		}(instance.Url)
-	}
-
-	var lastErr error
-	for range instances {
-		select {
-		case res := <-ch:
-			if res.err == nil {
-				return res.data, nil
-			}
-			lastErr = res.err
-		case <-ctx.Done():
-			return songData{}, ctx.Err()
-		}
-	}
-	return songData{}, fmt.Errorf("getSong: %w", lastErr)
-}
-
-func getSongData(ctx context.Context, instances []models.Instance, id string) (songData, downloadData, error) {
-	type res struct {
-		data any
-		err  error
-	}
-
-	ch := make(chan res, 2)
-	go func() {
-		info, err := getSong(ctx, instances, id)
-		ch <- res{data: info, err: err}
-	}()
-	go func() {
-		albums, err := getDownloadInfo(ctx, instances, id, "")
-		ch <- res{data: albums, err: err}
-	}()
-
-	var song songData
+func getSongData(ctx context.Context, url string, id string) (songData, downloadData, error) {
+	var songInfo songData
+	var songInfoErr error
 	var downloadInfo downloadData
-	var songErr error
-	for range 2 {
-		res := <-ch
-		switch v := res.data.(type) {
-		case songData:
-			song = v
-			songErr = res.err
-		case downloadData:
-			downloadInfo = v
-		}
+	var downloadInfoErr error
+	var wg sync.WaitGroup
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		songInfo, songInfoErr = fetchSong(ctx, url, id)
+	}()
+	go func() {
+		defer wg.Done()
+		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, url, id, "")
+	}()
+	wg.Wait()
+	err := songInfoErr
+	if err == nil {
+		err = downloadInfoErr
 	}
 
-	if songErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", songErr)
+	if err != nil {
+		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", err)
 	}
 
-	return song, downloadInfo, nil
+	return songInfo, downloadInfo, nil
 }
 
-func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongData, error) {
-	instances, err := repository.ListInstancesByUserIDByAPI(userId, p.Name())
+func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, error) {
+	data, downloadInfo, err := getSongData(ctx, url, id)
 	if err != nil {
-		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
+		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	data, downloadInfo, err := getSongData(ctx, instances, id)
-	if err != nil {
-		return models.SongData{}, fmt.Errorf("Hifi.Song: %w", err)
-	}
-
-	normalizeSongData := models.SongData{
+	normalizeSongData := model.Song{
 		Provider:        p.Provider(),
 		Api:             p.Name(),
 		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
@@ -130,8 +88,8 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 		Explicit:        data.Data.Explicit,
 		Popularity:      data.Data.Popularity,
 		Isrc:            data.Data.Isrc,
-		Artists:         make([]models.SongDataArtist, 0),
-		Album: models.SongDataAlbum{
+		Artists:         make([]model.SongArtist, 0),
+		Album: model.SongAlbum{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
 			CoverUrl: hifi_utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
@@ -158,7 +116,7 @@ func (p *Hifi) Song(ctx context.Context, userId uint, id string) (models.SongDat
 	}
 
 	for _, artist := range data.Data.Artists {
-		normalizeSongData.Artists = append(normalizeSongData.Artists, models.SongDataArtist{
+		normalizeSongData.Artists = append(normalizeSongData.Artists, model.SongArtist{
 			Id:   strconv.FormatUint(uint64(artist.Id), 10),
 			Name: artist.Name,
 		})

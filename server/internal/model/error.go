@@ -8,6 +8,8 @@ var (
 	ErrBadPassword    = errors.New("incorrect password")
 	ErrBadToken       = errors.New("invalid token")
 
+	ErrPluginNotFound = errors.New("plugin not found")
+
 	ErrInvalidInput = errors.New("invalid input")
 	ErrConflict     = errors.New("conflict")
 	ErrNotFound     = errors.New("not found")

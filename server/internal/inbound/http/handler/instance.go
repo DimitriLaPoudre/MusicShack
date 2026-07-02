@@ -60,7 +60,7 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 		return
 	}
 
-	instances, err := h.instance.ListInstancesByUserID(c.Request.Context(), me.ID)
+	instances, err := h.instance.ListInstancesByFilter(c.Request.Context(), &model.InstanceFilter{UserID: &me.ID})
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

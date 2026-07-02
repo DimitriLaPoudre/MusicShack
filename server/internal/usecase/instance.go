@@ -24,8 +24,8 @@ func (s *InstanceUseCase) CreateInstance(c context.Context, i *model.Instance) (
 	return s.repo.CreateInstance(c, i)
 }
 
-func (s *InstanceUseCase) ListInstancesByUserID(c context.Context, userID uuid.UUID) ([]*model.Instance, error) {
-	return s.repo.ListInstancesByUserID(c, userID)
+func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter *model.InstanceFilter) ([]*model.Instance, error) {
+	return s.repo.ListInstancesByFilter(c, filter)
 }
 
 func (s *InstanceUseCase) DeleteInstanceByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {

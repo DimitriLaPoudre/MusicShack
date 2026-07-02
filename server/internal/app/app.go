@@ -11,6 +11,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
@@ -26,17 +27,22 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		l.Fatal().Msg(err.Error())
 	}
 
+	pluginStore := service.NewPluginStoreService(l)
+	pluginStore.Register(&hifi.Hifi{})
+
 	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
 	userS := service.NewUserService(l, cfg.Library, &repo)
 
 	authU := usecase.NewAuthUseCase(l, cfg.Session, &repo, &repo)
 	userU := usecase.NewUserUseCase(l, cfg.Library, &userS, &repo)
 	instanceU := usecase.NewInstanceUseCase(l, &repo)
+	pluginU := usecase.NewPluginUseCase(l, &pluginStore, &repo)
 
 	meH := handler.NewMeHandler(l, &userU)
 	userH := handler.NewUserHandler(l, &userU)
 	authH := handler.NewAuthHandler(l, cfg.HTTP, cfg.Session, &authU)
 	instanceH := handler.NewInstanceHandler(l, &instanceU)
+	pluginH := handler.NewPluginHandler(l, &pluginU)
 
 	authMW := middleware.AuthMiddleware(l, cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(l, &authS)
@@ -67,6 +73,7 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 		&userH,
 		&authH,
 		&instanceH,
+		&pluginH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

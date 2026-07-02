@@ -127,7 +127,7 @@ func (r *PostgresRepository) GetUserWithFilter(ctx context.Context, filter *mode
 
 func (r *PostgresRepository) ListUsersWithFilter(ctx context.Context, filter *model.FilterUser) ([]*model.User, error) {
 	if filter == nil {
-		return nil, model.ErrUnknown
+		return []*model.User{}, model.ErrUnknown
 	}
 
 	setParts := []string{}

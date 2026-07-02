@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
@@ -50,12 +52,51 @@ func (r *PostgresRepository) GetInstance(ctx context.Context, id uuid.UUID) (*mo
 	return dbInstance.ToInstance(), nil
 }
 
-func (r *PostgresRepository) ListInstancesByUserID(ctx context.Context, userID uuid.UUID) ([]*model.Instance, error) {
+func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter *model.InstanceFilter) ([]*model.Instance, error) {
+	if filter == nil {
+		return []*model.Instance{}, model.ErrUnknown
+	}
+
+	setParts := []string{}
+	args := []any{}
+	argID := 1
+
+	if filter.ID != nil {
+		setParts = append(setParts, fmt.Sprintf("id=$%d", argID))
+		args = append(args, *filter.ID)
+		argID++
+	}
+	if filter.UserID != nil {
+		setParts = append(setParts, fmt.Sprintf("user_id=$%d", argID))
+		args = append(args, *filter.UserID)
+		argID++
+	}
+	if filter.Provider != nil {
+		setParts = append(setParts, fmt.Sprintf("provider=$%d", argID))
+		args = append(args, *filter.Provider)
+		argID++
+	}
+	if filter.Plugin != nil {
+		setParts = append(setParts, fmt.Sprintf("plugin=$%d", argID))
+		args = append(args, *filter.Plugin)
+		argID++
+	}
+	if filter.Url != nil {
+		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
+		args = append(args, *filter.Url)
+		argID++
+	}
+
+	var query string
+	if argID == 1 {
+		query = "SELECT * FROM instances"
+	} else {
+		query = fmt.Sprintf("SELECT * FROM instances WHERE %s ORDER_BY ping asc", strings.Join(setParts, ", "))
+	}
+
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM instances WHERE user_id = $1 ORDER_BY ping asc",
-		userID)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
