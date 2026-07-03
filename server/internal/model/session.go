@@ -12,3 +12,9 @@ type Session struct {
 	Token     string
 	ExpiresAt time.Time
 }
+
+type SessionFilter struct {
+	ID     *uuid.UUID
+	UserID *uuid.UUID
+	Token  *string
+}

@@ -17,16 +17,14 @@ type UserRepository interface {
 
 type SessionRepository interface {
 	CreateSession(ctx context.Context, s Session) (Session, error)
-	GetSessionByID(ctx context.Context, sessionID uuid.UUID) (Session, error)
-	GetSessionByToken(ctx context.Context, token string) (Session, error)
-	GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]Session, error)
+	GetSessionByFilter(ctx context.Context, filter SessionFilter) (Session, error)
+	ListSessionsByFilter(ctx context.Context, filter SessionFilter) ([]Session, error)
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
 	DeleteSessionByToken(ctx context.Context, token string) error
 }
 
 type InstanceRepository interface {
 	CreateInstance(ctx context.Context, i Instance) (Instance, error)
-	GetInstance(ctx context.Context, id uuid.UUID) (Instance, error)
 	ListInstancesByFilter(ctx context.Context, filter InstanceFilter) ([]Instance, error)
 	DeleteInstance(ctx context.Context, id uuid.UUID) error
 	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error

@@ -62,7 +62,7 @@ func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.U
 
 	var query string
 	if argID == 1 {
-		query = "SELECT * FROM users"
+		query = "SELECT * FROM users LIMIT 1"
 	} else {
 		query = fmt.Sprintf("SELECT * FROM users WHERE %s LIMIT 1", strings.Join(setParts, ", "))
 	}

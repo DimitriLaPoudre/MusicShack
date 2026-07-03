@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
@@ -29,12 +31,37 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, s model.Session)
 
 }
 
-func (r *PostgresRepository) GetSessionByID(ctx context.Context, sessionID uuid.UUID) (model.Session, error) {
+func (r *PostgresRepository) GetSessionByFilter(ctx context.Context, filter model.SessionFilter) (model.Session, error) {
+	setParts := []string{}
+	args := []any{}
+	argID := 1
+
+	if filter.ID != nil {
+		setParts = append(setParts, fmt.Sprintf("id=$%d", argID))
+		args = append(args, *filter.ID)
+		argID++
+	}
+	if filter.UserID != nil {
+		setParts = append(setParts, fmt.Sprintf("user_id=$%d", argID))
+		args = append(args, *filter.UserID)
+		argID++
+	}
+	if filter.Token != nil {
+		setParts = append(setParts, fmt.Sprintf("token=$%d", argID))
+		args = append(args, *filter.Token)
+		argID++
+	}
+
+	var query string
+	if argID == 1 {
+		query = "SELECT * FROM sessions LIMIT 1"
+	} else {
+		query = fmt.Sprintf("SELECT * FROM sessions WHERE %s LIMIT 1", strings.Join(setParts, ", "))
+	}
+
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM sessions WHERE id = $1 LIMIT 1",
-		sessionID)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
 		return model.Session{}, err
 	}
@@ -47,37 +74,44 @@ func (r *PostgresRepository) GetSessionByID(ctx context.Context, sessionID uuid.
 	return dbSession.ToSession(), nil
 }
 
-func (r *PostgresRepository) GetSessionByToken(ctx context.Context, token string) (model.Session, error) {
-	tx := r.getTx(ctx)
+func (r *PostgresRepository) ListSessionsByFilter(ctx context.Context, filter model.SessionFilter) ([]model.Session, error) {
+	setParts := []string{}
+	args := []any{}
+	argID := 1
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM sessions WHERE token = $1",
-		token)
-	if err != nil {
-		return model.Session{}, err
+	if filter.ID != nil {
+		setParts = append(setParts, fmt.Sprintf("id=$%d", argID))
+		args = append(args, *filter.ID)
+		argID++
+	}
+	if filter.UserID != nil {
+		setParts = append(setParts, fmt.Sprintf("user_id=$%d", argID))
+		args = append(args, *filter.UserID)
+		argID++
+	}
+	if filter.Token != nil {
+		setParts = append(setParts, fmt.Sprintf("token=$%d", argID))
+		args = append(args, *filter.Token)
+		argID++
 	}
 
-	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Session])
-	if err := dto.Error(err); err != nil {
-		return model.Session{}, err
+	var query string
+	if argID == 1 {
+		query = "SELECT * FROM sessions"
+	} else {
+		query = fmt.Sprintf("SELECT * FROM sessions WHERE %s", strings.Join(setParts, ", "))
 	}
 
-	return dbSession.ToSession(), nil
-}
-
-func (r *PostgresRepository) GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]model.Session, error) {
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM sessions WHERE user_id = $1",
-		userID)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return []model.Session{}, err
 	}
 
 	dbSessions, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.Session])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return []model.Session{}, err
 	}
 
 	return dto.SessionsToSessions(dbSessions), nil

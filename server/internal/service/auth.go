@@ -26,7 +26,7 @@ func NewAuthService(l *zerolog.Logger, cfg config.SessionConfig, user model.User
 }
 
 func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, error) {
-	session, err := s.session.GetSessionByToken(c, tkn)
+	session, err := s.session.GetSessionByFilter(c, model.SessionFilter{Token: &tkn})
 	if err != nil {
 		return model.User{}, err
 	}

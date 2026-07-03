@@ -31,24 +31,6 @@ func (r *PostgresRepository) CreateInstance(ctx context.Context, i model.Instanc
 
 }
 
-func (r *PostgresRepository) GetInstance(ctx context.Context, id uuid.UUID) (model.Instance, error) {
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM instances WHERE id = $1 LIMIT 1",
-		id)
-	if err != nil {
-		return model.Instance{}, err
-	}
-
-	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Instance])
-	if err := dto.Error(err); err != nil {
-		return model.Instance{}, err
-	}
-
-	return dbInstance.ToInstance(), nil
-}
-
 func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
 	setParts := []string{}
 	args := []any{}
