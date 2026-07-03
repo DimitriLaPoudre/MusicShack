@@ -11,6 +11,7 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/router"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/job"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
@@ -59,9 +60,9 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	// if err := job.FetchFollows(c, ctx, l); err != nil {
 	// 	l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
 	// }
-	// if err := job.CleanExpiredSession(c, ctx, l, &repo); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
-	// }
+	if err := job.CleanExpiredSession(c, ctx, l, &repo); err != nil {
+		l.Fatal().Err(err).Msg("failed to start job: CleanExpiredSession")
+	}
 	c.Start()
 
 	app := gin.New()

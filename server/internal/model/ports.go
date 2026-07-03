@@ -21,6 +21,7 @@ type SessionRepository interface {
 	ListSessionsByFilter(ctx context.Context, filter SessionFilter) ([]Session, error)
 	DeleteSession(ctx context.Context, sessionID uuid.UUID) error
 	DeleteSessionByToken(ctx context.Context, token string) error
+	DeleteSessionExpired(ctx context.Context) error
 }
 
 type InstanceRepository interface {

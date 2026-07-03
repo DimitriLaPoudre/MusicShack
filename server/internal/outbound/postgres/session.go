@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/postgres/dto"
@@ -130,6 +131,15 @@ func (r *PostgresRepository) DeleteSessionByToken(ctx context.Context, token str
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM sessions WHERE token = $1", token); err != nil {
+		return dto.Error(err)
+	}
+	return nil
+}
+
+func (r *PostgresRepository) DeleteSessionExpired(ctx context.Context) error {
+	tx := r.getTx(ctx)
+
+	if _, err := tx.Exec(ctx, "DELETE FROM sessions WHERE expires_at <= $1", time.Now()); err != nil {
 		return dto.Error(err)
 	}
 	return nil
