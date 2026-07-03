@@ -11,7 +11,7 @@ type UpdateMe struct {
 	HiRes    *bool   `json:"hi_res"`
 }
 
-func (req *UpdateMe) IntoPartialUser(id uuid.UUID) (model.PartialUser, error) {
+func (req UpdateMe) IntoPartialUser(id uuid.UUID) (model.PartialUser, error) {
 	return model.PartialUser{
 		ID:       id,
 		Username: req.Username,

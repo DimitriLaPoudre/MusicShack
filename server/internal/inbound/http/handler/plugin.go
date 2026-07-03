@@ -24,7 +24,7 @@ func NewPluginHandler(l *zerolog.Logger, plugin *usecase.PluginUseCase) PluginHa
 }
 
 func (h *PluginHandler) GetSong(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

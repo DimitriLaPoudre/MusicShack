@@ -15,8 +15,8 @@ type Instance struct {
 	Ping     time.Duration `json:"ping"`
 }
 
-func InstanceToResponse(instance *model.Instance) *Instance {
-	return &Instance{
+func InstanceToResponse(instance model.Instance) Instance {
+	return Instance{
 		ID:       instance.ID.String(),
 		UserID:   instance.UserID.String(),
 		Provider: instance.Provider,
@@ -26,8 +26,8 @@ func InstanceToResponse(instance *model.Instance) *Instance {
 	}
 }
 
-func InstancesToResponse(instances []*model.Instance) []*Instance {
-	r := []*Instance{}
+func InstancesToResponse(instances []model.Instance) []Instance {
+	r := []Instance{}
 	for _, instance := range instances {
 		r = append(r, InstanceToResponse(instance))
 	}

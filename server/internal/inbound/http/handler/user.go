@@ -36,7 +36,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 		return
 	}
 
-	createdUser, err := h.user.CreateUser(c.Request.Context(), &user)
+	createdUser, err := h.user.CreateUser(c.Request.Context(), user)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -88,7 +88,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 		return
 	}
 
-	updatedUser, err := h.user.UpdateUser(c.Request.Context(), &user)
+	updatedUser, err := h.user.UpdateUser(c.Request.Context(), user)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

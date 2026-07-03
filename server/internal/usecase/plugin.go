@@ -22,8 +22,8 @@ func NewPluginUseCase(l *zerolog.Logger, store *service.PluginStoreService, inst
 	}
 }
 
-func (u *PluginUseCase) GetSong(c context.Context, user *model.User, provider string, id string) (model.Song, error) {
-	instances, err := u.instance.ListInstancesByFilter(c, &model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+func (u *PluginUseCase) GetSong(c context.Context, user model.User, provider string, id string) (model.Song, error) {
+	instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
 		return model.Song{}, err
 	}

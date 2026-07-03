@@ -20,11 +20,11 @@ func NewInstanceUseCase(l *zerolog.Logger, repo model.InstanceRepository) Instan
 	}
 }
 
-func (s *InstanceUseCase) CreateInstance(c context.Context, i *model.Instance) (*model.Instance, error) {
+func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (model.Instance, error) {
 	return s.repo.CreateInstance(c, i)
 }
 
-func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter *model.InstanceFilter) ([]*model.Instance, error) {
+func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
 	return s.repo.ListInstancesByFilter(c, filter)
 }
 

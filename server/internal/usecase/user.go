@@ -26,27 +26,27 @@ func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, user *service.U
 	}
 }
 
-func (u *UserUseCase) CreateUser(c context.Context, user *model.User) (*model.User, error) {
+func (u *UserUseCase) CreateUser(c context.Context, user model.User) (model.User, error) {
 	return u.user.CreateUser(c, user)
 }
 
-func (u *UserUseCase) GetUserByID(c context.Context, id uuid.UUID) (*model.User, error) {
-	return u.repo.GetUserByID(c, id)
+func (u *UserUseCase) GetUserByID(c context.Context, id uuid.UUID) (model.User, error) {
+	return u.repo.GetUserByFilter(c, model.FilterUser{ID: &id})
 }
 
-func (u *UserUseCase) GetUserWithFilter(c context.Context, filter *model.FilterUser) (*model.User, error) {
-	return u.repo.GetUserWithFilter(c, filter)
+func (u *UserUseCase) GetUserByFilter(c context.Context, filter model.FilterUser) (model.User, error) {
+	return u.repo.GetUserByFilter(c, filter)
 }
 
-func (u *UserUseCase) ListUsersWithFilter(c context.Context, filter *model.FilterUser) ([]*model.User, error) {
-	return u.repo.ListUsersWithFilter(c, filter)
+func (u *UserUseCase) ListAllUsers(c context.Context) ([]model.User, error) {
+	return u.repo.ListUsersByFilter(c, model.FilterUser{})
 }
 
-func (u *UserUseCase) ListAllUsers(c context.Context) ([]*model.User, error) {
-	return u.repo.ListAllUsers(c)
+func (u *UserUseCase) ListUsersWithFilter(c context.Context, filter model.FilterUser) ([]model.User, error) {
+	return u.repo.ListUsersByFilter(c, filter)
 }
 
-func (u *UserUseCase) UpdateUser(c context.Context, user *model.PartialUser) (*model.User, error) {
+func (u *UserUseCase) UpdateUser(c context.Context, user model.PartialUser) (model.User, error) {
 	return u.repo.UpdateUser(c, user)
 }
 

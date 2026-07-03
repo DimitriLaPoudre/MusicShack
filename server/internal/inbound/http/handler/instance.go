@@ -43,7 +43,7 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 		return
 	}
 
-	createdInstance, err := h.instance.CreateInstance(c.Request.Context(), &instance)
+	createdInstance, err := h.instance.CreateInstance(c.Request.Context(), instance)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -60,7 +60,7 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 		return
 	}
 
-	instances, err := h.instance.ListInstancesByFilter(c.Request.Context(), &model.InstanceFilter{UserID: &me.ID})
+	instances, err := h.instance.ListInstancesByFilter(c.Request.Context(), model.InstanceFilter{UserID: &me.ID})
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

@@ -9,10 +9,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepository) CreateSession(ctx context.Context, s *model.Session) (*model.Session, error) {
-	if s == nil {
-		return nil, model.ErrUnknown
-	}
+func (r *PostgresRepository) CreateSession(ctx context.Context, s model.Session) (model.Session, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
@@ -20,55 +17,55 @@ func (r *PostgresRepository) CreateSession(ctx context.Context, s *model.Session
 		s.ID, s.UserID, s.ExpiresAt,
 	)
 	if err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
-	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
+	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Session])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
 	return dbSession.ToSession(), nil
 
 }
 
-func (r *PostgresRepository) GetSessionByID(ctx context.Context, sessionID uuid.UUID) (*model.Session, error) {
+func (r *PostgresRepository) GetSessionByID(ctx context.Context, sessionID uuid.UUID) (model.Session, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
 		"SELECT * FROM sessions WHERE id = $1 LIMIT 1",
 		sessionID)
 	if err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
-	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
+	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Session])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
 	return dbSession.ToSession(), nil
 }
 
-func (r *PostgresRepository) GetSessionByToken(ctx context.Context, token string) (*model.Session, error) {
+func (r *PostgresRepository) GetSessionByToken(ctx context.Context, token string) (model.Session, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
 		"SELECT * FROM sessions WHERE token = $1",
 		token)
 	if err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
-	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Session])
+	dbSession, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Session])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.Session{}, err
 	}
 
 	return dbSession.ToSession(), nil
 }
 
-func (r *PostgresRepository) GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]*model.Session, error) {
+func (r *PostgresRepository) GetSessionByUserID(ctx context.Context, userID uuid.UUID) ([]model.Session, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
@@ -78,7 +75,7 @@ func (r *PostgresRepository) GetSessionByUserID(ctx context.Context, userID uuid
 		return nil, err
 	}
 
-	dbSessions, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.Session])
+	dbSessions, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.Session])
 	if err := dto.Error(err); err != nil {
 		return nil, err
 	}

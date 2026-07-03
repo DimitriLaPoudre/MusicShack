@@ -14,8 +14,8 @@ type Session struct {
 	ExpiresAt time.Time `db:"expires_at"`
 }
 
-func (s *Session) ToSession() *model.Session {
-	return &model.Session{
+func (s Session) ToSession() model.Session {
+	return model.Session{
 		ID:        s.ID,
 		UserID:    s.UserID,
 		Token:     s.Token,
@@ -23,10 +23,10 @@ func (s *Session) ToSession() *model.Session {
 	}
 }
 
-func SessionsToSessions(dto []*Session) []*model.Session {
-	sessions := []*model.Session{}
+func SessionsToSessions(dto []Session) []model.Session {
+	sessions := []model.Session{}
 	for _, s := range dto {
-		sessions = append(sessions, &model.Session{
+		sessions = append(sessions, model.Session{
 			ID:        s.ID,
 			UserID:    s.UserID,
 			Token:     s.Token,

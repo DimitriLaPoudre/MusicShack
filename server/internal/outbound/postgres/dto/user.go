@@ -13,8 +13,8 @@ type User struct {
 	Role     string    `db:"role"`
 }
 
-func (u *User) ToUser() *model.User {
-	return &model.User{
+func (u User) ToUser() model.User {
+	return model.User{
 		ID:       u.ID,
 		Username: u.Username,
 		Password: u.Password,
@@ -23,10 +23,10 @@ func (u *User) ToUser() *model.User {
 	}
 }
 
-func UsersToUsers(dto []*User) []*model.User {
-	users := []*model.User{}
+func UsersToUsers(dto []User) []model.User {
+	users := []model.User{}
 	for _, u := range dto {
-		users = append(users, &model.User{
+		users = append(users, model.User{
 			ID:       u.ID,
 			Username: u.Username,
 			Password: u.Password,

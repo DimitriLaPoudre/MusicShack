@@ -28,8 +28,8 @@ func NewAuthUseCase(l *zerolog.Logger, cfg config.SessionConfig, user model.User
 	}
 }
 
-func (s *AuthUseCase) Login(c context.Context, form *model.LoginForm) (string, error) {
-	user, err := s.user.GetUserByUsername(c, form.Username)
+func (s *AuthUseCase) Login(c context.Context, form model.LoginForm) (string, error) {
+	user, err := s.user.GetUserByFilter(c, model.FilterUser{Username: &form.Username})
 	if err != nil {
 		return "", err
 	}
@@ -62,7 +62,7 @@ func (s *AuthUseCase) Login(c context.Context, form *model.LoginForm) (string, e
 		ExpiresAt: expiresAt,
 	}
 
-	session, err := s.session.CreateSession(c, &newSession)
+	session, err := s.session.CreateSession(c, newSession)
 	if err != nil {
 		return "", err
 	}

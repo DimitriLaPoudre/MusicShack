@@ -33,7 +33,7 @@ func AuthMiddleware(l *zerolog.Logger, cfg config.SessionConfig, auth *service.A
 
 func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		me, err := utils.GetFromContext[*model.User](c, "me")
+		me, err := utils.GetFromContext[model.User](c, "me")
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
@@ -50,7 +50,7 @@ func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFu
 
 func UserMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		me, err := utils.GetFromContext[*model.User](c, "me")
+		me, err := utils.GetFromContext[model.User](c, "me")
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
@@ -67,7 +67,7 @@ func UserMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFun
 
 func GuestMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if _, err := utils.GetFromContext[*model.User](c, "me"); err != nil {
+		if _, err := utils.GetFromContext[model.User](c, "me"); err != nil {
 			c.Next()
 			return
 		}

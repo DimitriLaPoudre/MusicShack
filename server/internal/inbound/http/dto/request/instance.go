@@ -9,7 +9,7 @@ type CreateInstance struct {
 	Url string `json:"url" binding:"required,url"`
 }
 
-func (req *CreateInstance) IntoInstance(userID uuid.UUID) (model.Instance, error) {
+func (req CreateInstance) IntoInstance(userID uuid.UUID) (model.Instance, error) {
 	return model.Instance{
 		UserID: userID,
 		Url:    req.Url,

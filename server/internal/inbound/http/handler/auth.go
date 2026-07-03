@@ -7,7 +7,6 @@ import (
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
 	"github.com/gin-gonic/gin"
@@ -36,14 +35,9 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
+	loginForm := req.IntoLoginForm()
 
-	loginForm := model.LoginForm{
-		Username: req.Username,
-		Password: req.Password,
-		Remember: req.Remember,
-	}
-
-	tkn, err := h.auth.Login(c.Request.Context(), &loginForm)
+	tkn, err := h.auth.Login(c.Request.Context(), loginForm)
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return

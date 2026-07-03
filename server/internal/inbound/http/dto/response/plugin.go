@@ -40,7 +40,7 @@ type SongAlbum struct {
 	CoverUrl string `json:"coverUrl"`
 }
 
-func SongToResponse(song model.Song) *Song {
+func SongToResponse(song model.Song) Song {
 	artists := []SongArtist{}
 	for _, a := range song.Artists {
 		artists = append(artists, SongArtist{
@@ -49,7 +49,7 @@ func SongToResponse(song model.Song) *Song {
 		})
 	}
 
-	return &Song{
+	return Song{
 		Provider:        song.Provider,
 		Api:             song.Api,
 		Downloaded:      song.Downloaded,

@@ -16,8 +16,8 @@ type Instance struct {
 	Ping     time.Duration `db:"ping"`
 }
 
-func (i *Instance) ToInstance() *model.Instance {
-	return &model.Instance{
+func (i Instance) ToInstance() model.Instance {
+	return model.Instance{
 		ID:       i.ID,
 		UserID:   i.UserID,
 		Provider: i.Provider,
@@ -27,10 +27,10 @@ func (i *Instance) ToInstance() *model.Instance {
 	}
 }
 
-func InstancesToInstances(dto []*Instance) []*model.Instance {
-	instances := []*model.Instance{}
+func InstancesToInstances(dto []Instance) []model.Instance {
+	instances := []model.Instance{}
 	for _, i := range dto {
-		instances = append(instances, &model.Instance{
+		instances = append(instances, model.Instance{
 			ID:       i.ID,
 			UserID:   i.UserID,
 			Provider: i.Provider,

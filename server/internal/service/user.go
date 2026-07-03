@@ -24,16 +24,16 @@ func NewUserService(l *zerolog.Logger, cfg config.LibraryConfig, repo model.User
 	}
 }
 
-func (u *UserService) CreateUser(c context.Context, user *model.User) (*model.User, error) {
+func (u *UserService) CreateUser(c context.Context, user model.User) (model.User, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 	user.ID = id
 
 	hash, err := crypto.HashPassword(user.Password)
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 	user.Password = hash
 

@@ -11,10 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepository) CreateInstance(ctx context.Context, i *model.Instance) (*model.Instance, error) {
-	if i == nil {
-		return nil, model.ErrInvalidInput
-	}
+func (r *PostgresRepository) CreateInstance(ctx context.Context, i model.Instance) (model.Instance, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
@@ -22,41 +19,37 @@ func (r *PostgresRepository) CreateInstance(ctx context.Context, i *model.Instan
 		i.ID, i.UserID, i.Provider, i.Plugin, i.Url, i.Ping,
 	)
 	if err != nil {
-		return nil, err
+		return model.Instance{}, err
 	}
 
-	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Instance])
+	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Instance])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.Instance{}, err
 	}
 
 	return dbInstance.ToInstance(), nil
 
 }
 
-func (r *PostgresRepository) GetInstance(ctx context.Context, id uuid.UUID) (*model.Instance, error) {
+func (r *PostgresRepository) GetInstance(ctx context.Context, id uuid.UUID) (model.Instance, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
 		"SELECT * FROM instances WHERE id = $1 LIMIT 1",
 		id)
 	if err != nil {
-		return nil, err
+		return model.Instance{}, err
 	}
 
-	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.Instance])
+	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Instance])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.Instance{}, err
 	}
 
 	return dbInstance.ToInstance(), nil
 }
 
-func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter *model.InstanceFilter) ([]*model.Instance, error) {
-	if filter == nil {
-		return []*model.Instance{}, model.ErrUnknown
-	}
-
+func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
 	setParts := []string{}
 	args := []any{}
 	argID := 1
@@ -101,9 +94,9 @@ func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter *
 		return nil, err
 	}
 
-	dbInstances, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.Instance])
+	dbInstances, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.Instance])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return []model.Instance{}, err
 	}
 
 	return dto.InstancesToInstances(dbInstances), nil

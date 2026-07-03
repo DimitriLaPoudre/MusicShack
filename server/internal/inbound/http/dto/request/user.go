@@ -11,7 +11,7 @@ type CreateUser struct {
 	HiRes    bool   `json:"hi_res"`
 }
 
-func (req *CreateUser) IntoUser() (model.User, error) {
+func (req CreateUser) IntoUser() (model.User, error) {
 	return model.User{
 		Username: req.Username,
 		Password: req.Password,
@@ -25,7 +25,7 @@ type UpdateUser struct {
 	HiRes    *bool   `json:"hi_res"`
 }
 
-func (req *UpdateUser) IntoPartialUser(str string) (model.PartialUser, error) {
+func (req UpdateUser) IntoPartialUser(str string) (model.PartialUser, error) {
 	id, err := uuid.Parse(str)
 	if err != nil {
 		return model.PartialUser{}, err

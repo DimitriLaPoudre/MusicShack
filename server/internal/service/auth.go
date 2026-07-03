@@ -25,28 +25,28 @@ func NewAuthService(l *zerolog.Logger, cfg config.SessionConfig, user model.User
 	}
 }
 
-func (s *AuthService) Authenticate(c context.Context, tkn string) (*model.User, error) {
+func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, error) {
 	session, err := s.session.GetSessionByToken(c, tkn)
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	if session.ExpiresAt.Before(time.Now()) {
-		return nil, model.ErrBadToken
+		return model.User{}, model.ErrBadToken
 	}
 
-	user, err := s.user.GetUserByID(c, session.UserID)
+	user, err := s.user.GetUserByFilter(c, model.FilterUser{ID: &session.UserID})
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	return user, nil
 }
 
-func (s *AuthService) IsAdmin(c context.Context, user *model.User) bool {
+func (s *AuthService) IsAdmin(c context.Context, user model.User) bool {
 	return user.Role == model.UserRoleAdmin
 }
 
-func (s *AuthService) IsUser(c context.Context, user *model.User) bool {
+func (s *AuthService) IsUser(c context.Context, user model.User) bool {
 	return user.Role == model.UserRoleUser
 }

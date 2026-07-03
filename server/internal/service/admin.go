@@ -10,11 +10,11 @@ import (
 
 func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, repo model.UserRepository) error {
 	role := model.UserRoleAdmin
-	if _, err := repo.GetUserWithFilter(c, &model.FilterUser{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
+	if _, err := repo.GetUserByFilter(c, model.FilterUser{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
 		return err
 	}
 
-	if _, err := user.CreateUser(c, &model.User{
+	if _, err := user.CreateUser(c, model.User{
 		Username: cfg.DefaultUsername,
 		Password: cfg.DefaultPassword,
 		Role:     model.UserRoleAdmin,

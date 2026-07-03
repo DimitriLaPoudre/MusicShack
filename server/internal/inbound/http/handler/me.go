@@ -25,7 +25,7 @@ func NewMeHandler(l *zerolog.Logger, user *usecase.UserUseCase) MeHandler {
 }
 
 func (h *MeHandler) Get(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -36,7 +36,7 @@ func (h *MeHandler) Get(c *gin.Context) {
 }
 
 func (h *MeHandler) Update(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -53,7 +53,7 @@ func (h *MeHandler) Update(c *gin.Context) {
 		return
 	}
 
-	if _, err := h.user.UpdateUser(c, &partialUser); err != nil {
+	if _, err := h.user.UpdateUser(c, partialUser); err != nil {
 		utils.Error(c, err, h.l)
 		return
 	}

@@ -11,68 +11,78 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-func (r *PostgresRepository) CreateUser(ctx context.Context, user *model.User) (*model.User, error) {
-	if user == nil {
-		return nil, model.ErrUnknown
-	}
+func (r *PostgresRepository) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx,
 		"INSERT INTO users (id, username, password, hi_res, role) VALUES ($1, $2, $3, $4, $5) RETURNING *",
 		user.ID, user.Username, user.Password, user.HiRes, user.Role)
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
-	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.User])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) GetUserByID(ctx context.Context, userID uuid.UUID) (*model.User, error) {
+func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.FilterUser) (model.User, error) {
+	setParts := []string{}
+	args := []any{}
+	argID := 1
+
+	if filter.ID != nil {
+		setParts = append(setParts, fmt.Sprintf("id=$%d", argID))
+		args = append(args, *filter.ID)
+		argID++
+	}
+	if filter.Username != nil {
+		setParts = append(setParts, fmt.Sprintf("username=$%d", argID))
+		args = append(args, *filter.Username)
+		argID++
+	}
+	if filter.Password != nil {
+		setParts = append(setParts, fmt.Sprintf("password=$%d", argID))
+		args = append(args, *filter.Password)
+		argID++
+	}
+	if filter.HiRes != nil {
+		setParts = append(setParts, fmt.Sprintf("hi_res=$%d", argID))
+		args = append(args, *filter.HiRes)
+		argID++
+	}
+	if filter.Role != nil {
+		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
+		args = append(args, *filter.Role)
+		argID++
+	}
+
+	var query string
+	if argID == 1 {
+		query = "SELECT * FROM users"
+	} else {
+		query = fmt.Sprintf("SELECT * FROM users WHERE %s LIMIT 1", strings.Join(setParts, ", "))
+	}
+
 	tx := r.getTx(ctx)
 
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE id = $1 LIMIT 1",
-		userID)
+	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
-	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.User])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) GetUserByUsername(ctx context.Context, username string) (*model.User, error) {
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM users WHERE username = $1 LIMIT 1",
-		username)
-	if err != nil {
-		return nil, err
-	}
-
-	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err := dto.Error(err); err != nil {
-		return nil, err
-	}
-
-	return dbUser.ToUser(), nil
-}
-
-func (r *PostgresRepository) GetUserWithFilter(ctx context.Context, filter *model.FilterUser) (*model.User, error) {
-	if filter == nil {
-		return nil, model.ErrUnknown
-	}
-
+func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model.FilterUser) ([]model.User, error) {
 	setParts := []string{}
 	args := []any{}
 	argID := 1
@@ -114,95 +124,18 @@ func (r *PostgresRepository) GetUserWithFilter(ctx context.Context, filter *mode
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return []model.User{}, err
 	}
 
-	dbUser, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	dbUsers, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.User])
 	if err := dto.Error(err); err != nil {
-		return nil, err
-	}
-
-	return dbUser.ToUser(), nil
-}
-
-func (r *PostgresRepository) ListUsersWithFilter(ctx context.Context, filter *model.FilterUser) ([]*model.User, error) {
-	if filter == nil {
-		return []*model.User{}, model.ErrUnknown
-	}
-
-	setParts := []string{}
-	args := []any{}
-	argID := 1
-
-	if filter.ID != nil {
-		setParts = append(setParts, fmt.Sprintf("id=$%d", argID))
-		args = append(args, *filter.ID)
-		argID++
-	}
-	if filter.Username != nil {
-		setParts = append(setParts, fmt.Sprintf("username=$%d", argID))
-		args = append(args, *filter.Username)
-		argID++
-	}
-	if filter.Password != nil {
-		setParts = append(setParts, fmt.Sprintf("password=$%d", argID))
-		args = append(args, *filter.Password)
-		argID++
-	}
-	if filter.HiRes != nil {
-		setParts = append(setParts, fmt.Sprintf("hi_res=$%d", argID))
-		args = append(args, *filter.HiRes)
-		argID++
-	}
-	if filter.Role != nil {
-		setParts = append(setParts, fmt.Sprintf("role=$%d", argID))
-		args = append(args, *filter.Role)
-		argID++
-	}
-
-	var query string
-	if argID == 1 {
-		query = "SELECT * FROM users"
-	} else {
-		query = fmt.Sprintf("SELECT * FROM users WHERE %s", strings.Join(setParts, ", "))
-	}
-
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx, query, args...)
-	if err != nil {
-		return nil, err
-	}
-
-	dbUsers, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err := dto.Error(err); err != nil {
-		return nil, err
+		return []model.User{}, err
 	}
 
 	return dto.UsersToUsers(dbUsers), nil
 }
 
-func (r *PostgresRepository) ListAllUsers(ctx context.Context) ([]*model.User, error) {
-	tx := r.getTx(ctx)
-
-	rows, err := tx.Query(ctx,
-		"SELECT * FROM users ORDER BY username ASC")
-	if err != nil {
-		return nil, err
-	}
-
-	dbUsers, err := pgx.CollectRows(rows, pgx.RowToAddrOfStructByName[dto.User])
-	if err := dto.Error(err); err != nil {
-		return nil, err
-	}
-	return dto.UsersToUsers(dbUsers), nil
-}
-
-func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.PartialUser) (*model.User, error) {
-	if partialUser == nil {
-		return nil, model.ErrUnknown
-	}
-
+func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser model.PartialUser) (model.User, error) {
 	setParts := []string{}
 	args := []any{}
 	argID := 1
@@ -234,12 +167,12 @@ func (r *PostgresRepository) UpdateUser(ctx context.Context, partialUser *model.
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
-	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToAddrOfStructByName[dto.User])
+	user, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.User])
 	if err := dto.Error(err); err != nil {
-		return nil, err
+		return model.User{}, err
 	}
 
 	return user.ToUser(), nil

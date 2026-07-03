@@ -8,16 +8,16 @@ type User struct {
 	HiRes    bool   `json:"hi_res"`
 }
 
-func UserToResponse(user *model.User) *User {
-	return &User{
+func UserToResponse(user model.User) User {
+	return User{
 		ID:       user.ID.String(),
 		Username: user.Username,
 		HiRes:    user.HiRes,
 	}
 }
 
-func UsersToResponse(users []*model.User) []*User {
-	r := []*User{}
+func UsersToResponse(users []model.User) []User {
+	r := []User{}
 	for _, user := range users {
 		r = append(r, UserToResponse(user))
 	}
