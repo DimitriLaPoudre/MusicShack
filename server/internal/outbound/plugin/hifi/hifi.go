@@ -5,11 +5,21 @@ package hifi
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"golang.org/x/time/rate"
 )
 
-type Hifi struct{}
+type Hifi struct {
+	limiter *rate.Limiter
+}
+
+func NewHifi() Hifi {
+	return Hifi{
+		limiter: rate.NewLimiter(rate.Every(6*time.Second), 150),
+	}
+}
 
 func (p *Hifi) Name() string {
 	return "hifi"

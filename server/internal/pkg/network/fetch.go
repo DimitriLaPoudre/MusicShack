@@ -4,18 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-
-	"golang.org/x/sync/semaphore"
 )
 
-func Fetch(ctx context.Context, url string, limit *semaphore.Weighted) (*http.Response, error) {
-	if limit != nil {
-		if err := limit.Acquire(ctx, 1); err != nil {
-			return nil, fmt.Errorf("network.Fetch: limit.Acquire: %w", err)
-		}
-		defer limit.Release(1)
-	}
-
+func Fetch(ctx context.Context, url string) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("network.Fetch: http.NewRequestWithContext: %w", err)

@@ -12,14 +12,14 @@ import (
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/network"
+	"golang.org/x/time/rate"
 )
 
-func fetchSong(ctx context.Context, url string, id string) (songData, error) {
+func fetchSong(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := network.Fetch(ctx, url+"/info/?id="+lib_url.QueryEscape(id), nil)
+	resp, err := hifi_utils.Fetch(ctx, url+"/info/?id="+lib_url.QueryEscape(id), limiter)
 	if err != nil {
 		return songData{}, fmt.Errorf("fetchSong: %w", err)
 	}
@@ -37,7 +37,7 @@ func fetchSong(ctx context.Context, url string, id string) (songData, error) {
 	return data, nil
 }
 
-func getSongData(ctx context.Context, url string, id string) (songData, downloadData, error) {
+func getSongData(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, downloadData, error) {
 	var songInfo songData
 	var songInfoErr error
 	var downloadInfo downloadData
@@ -47,7 +47,7 @@ func getSongData(ctx context.Context, url string, id string) (songData, download
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		songInfo, songInfoErr = fetchSong(ctx, url, id)
+		songInfo, songInfoErr = fetchSong(ctx, limiter, url, id)
 	}()
 	go func() {
 		defer wg.Done()
@@ -67,7 +67,7 @@ func getSongData(ctx context.Context, url string, id string) (songData, download
 }
 
 func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, error) {
-	data, downloadInfo, err := getSongData(ctx, url, id)
+	data, downloadInfo, err := getSongData(ctx, p.limiter, url, id)
 	if err != nil {
 		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}

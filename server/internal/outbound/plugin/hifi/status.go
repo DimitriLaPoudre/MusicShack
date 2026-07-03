@@ -7,14 +7,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/network"
+	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
 )
 
 func (p *Hifi) Status(ctx context.Context, url string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := network.Fetch(ctx, url, nil)
+	resp, err := hifi_utils.Fetch(ctx, url, p.limiter)
 	if err != nil {
 		return fmt.Errorf("Hifi.Status: %w", err)
 	}
