@@ -10,7 +10,7 @@ import (
 
 func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, repo model.UserRepository) error {
 	role := model.UserRoleAdmin
-	if _, err := repo.GetUserByFilter(c, model.FilterUser{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
+	if _, err := repo.GetUserByFilter(c, model.UserFilter{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
 		return err
 	}
 

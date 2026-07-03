@@ -29,7 +29,7 @@ func (r *PostgresRepository) CreateUser(ctx context.Context, user model.User) (m
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.FilterUser) (model.User, error) {
+func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
 	setParts := []string{}
 	args := []any{}
 	argID := 1
@@ -82,7 +82,7 @@ func (r *PostgresRepository) GetUserByFilter(ctx context.Context, filter model.F
 	return dbUser.ToUser(), nil
 }
 
-func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model.FilterUser) ([]model.User, error) {
+func (r *PostgresRepository) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
 	setParts := []string{}
 	args := []any{}
 	argID := 1

@@ -35,7 +35,7 @@ func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, e
 		return model.User{}, model.ErrBadToken
 	}
 
-	user, err := s.user.GetUserByFilter(c, model.FilterUser{ID: &session.UserID})
+	user, err := s.user.GetUserByFilter(c, model.UserFilter{ID: &session.UserID})
 	if err != nil {
 		return model.User{}, err
 	}

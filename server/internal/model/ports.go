@@ -9,8 +9,8 @@ import (
 
 type UserRepository interface {
 	CreateUser(ctx context.Context, user User) (User, error)
-	GetUserByFilter(ctx context.Context, filter FilterUser) (User, error)
-	ListUsersByFilter(ctx context.Context, filter FilterUser) ([]User, error)
+	GetUserByFilter(ctx context.Context, filter UserFilter) (User, error)
+	ListUsersByFilter(ctx context.Context, filter UserFilter) ([]User, error)
 	UpdateUser(ctx context.Context, partialUser PartialUser) (User, error)
 	DeleteUser(ctx context.Context, userID uuid.UUID) error
 }

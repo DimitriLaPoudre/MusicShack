@@ -25,7 +25,7 @@ type PartialUser struct {
 	Role     *UserRole
 }
 
-type FilterUser struct {
+type UserFilter struct {
 	ID       *uuid.UUID
 	Username *string
 	Password *string

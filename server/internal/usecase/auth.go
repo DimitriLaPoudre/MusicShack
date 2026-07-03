@@ -29,7 +29,7 @@ func NewAuthUseCase(l *zerolog.Logger, cfg config.SessionConfig, user model.User
 }
 
 func (s *AuthUseCase) Login(c context.Context, form model.LoginForm) (string, error) {
-	user, err := s.user.GetUserByFilter(c, model.FilterUser{Username: &form.Username})
+	user, err := s.user.GetUserByFilter(c, model.UserFilter{Username: &form.Username})
 	if err != nil {
 		return "", err
 	}

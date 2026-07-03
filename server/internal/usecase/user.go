@@ -31,18 +31,18 @@ func (u *UserUseCase) CreateUser(c context.Context, user model.User) (model.User
 }
 
 func (u *UserUseCase) GetUserByID(c context.Context, id uuid.UUID) (model.User, error) {
-	return u.repo.GetUserByFilter(c, model.FilterUser{ID: &id})
+	return u.repo.GetUserByFilter(c, model.UserFilter{ID: &id})
 }
 
-func (u *UserUseCase) GetUserByFilter(c context.Context, filter model.FilterUser) (model.User, error) {
+func (u *UserUseCase) GetUserByFilter(c context.Context, filter model.UserFilter) (model.User, error) {
 	return u.repo.GetUserByFilter(c, filter)
 }
 
 func (u *UserUseCase) ListAllUsers(c context.Context) ([]model.User, error) {
-	return u.repo.ListUsersByFilter(c, model.FilterUser{})
+	return u.repo.ListUsersByFilter(c, model.UserFilter{})
 }
 
-func (u *UserUseCase) ListUsersWithFilter(c context.Context, filter model.FilterUser) ([]model.User, error) {
+func (u *UserUseCase) ListUsersWithFilter(c context.Context, filter model.UserFilter) ([]model.User, error) {
 	return u.repo.ListUsersByFilter(c, filter)
 }
 
