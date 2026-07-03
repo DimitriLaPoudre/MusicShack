@@ -32,10 +32,11 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 
 	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
 	userS := service.NewUserService(l, cfg.Library, &repo)
+	pluginS := service.NewPluginService(l, &pluginStore)
 
 	authU := usecase.NewAuthUseCase(l, cfg.Session, &repo, &repo)
 	userU := usecase.NewUserUseCase(l, cfg.Library, &userS, &repo)
-	instanceU := usecase.NewInstanceUseCase(l, &repo)
+	instanceU := usecase.NewInstanceUseCase(l, &pluginS, &repo)
 	pluginU := usecase.NewPluginUseCase(l, &pluginStore, &repo)
 
 	meH := handler.NewMeHandler(l, &userU)

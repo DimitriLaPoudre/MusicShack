@@ -4,23 +4,34 @@ import (
 	"context"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
 type InstanceUseCase struct {
-	l    *zerolog.Logger
-	repo model.InstanceRepository
+	l      *zerolog.Logger
+	plugin *service.PluginService
+	repo   model.InstanceRepository
 }
 
-func NewInstanceUseCase(l *zerolog.Logger, repo model.InstanceRepository) InstanceUseCase {
+func NewInstanceUseCase(l *zerolog.Logger, plugin *service.PluginService, repo model.InstanceRepository) InstanceUseCase {
 	return InstanceUseCase{
-		l:    l,
-		repo: repo,
+		l:      l,
+		plugin: plugin,
+		repo:   repo,
 	}
 }
 
 func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (model.Instance, error) {
+	plugin, err := s.plugin.GetOriginalPlugin(c, i.Url)
+	if err != nil {
+		return model.Instance{}, err
+	}
+
+	i.Plugin = plugin.Name()
+	i.Provider = plugin.Provider()
+
 	return s.repo.CreateInstance(c, i)
 }
 
