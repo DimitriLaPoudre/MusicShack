@@ -42,3 +42,63 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 	resp := response.SongToResponse(song)
 	c.JSON(http.StatusOK, resp)
 }
+
+func (h *PluginHandler) GetAlbum(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, "me")
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	provider := c.Param("provider")
+	id := c.Param("id")
+
+	album, err := h.plugin.GetAlbum(c.Request.Context(), me, provider, id)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	resp := response.AlbumToResponse(album)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetArtist(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, "me")
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	provider := c.Param("provider")
+	id := c.Param("id")
+
+	artist, err := h.plugin.GetArtist(c.Request.Context(), me, provider, id)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	resp := response.ArtistToResponse(artist)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetPlaylist(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, "me")
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	provider := c.Param("provider")
+	id := c.Param("id")
+
+	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me, provider, id)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	resp := response.PlaylistToResponse(playlist)
+	c.JSON(http.StatusOK, resp)
+}

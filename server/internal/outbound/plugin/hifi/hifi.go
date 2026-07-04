@@ -33,16 +33,16 @@ func (p *Hifi) Download(ctx context.Context, user *model.User, id string) (io.Re
 	return nil, "", nil
 }
 
-func (p *Hifi) Playlist(ctx context.Context, url string, id string) (model.Playlist, error) {
-	return model.Playlist{}, nil
-}
-
 func (p *Hifi) Album(ctx context.Context, url string, id string) (model.Album, error) {
 	return model.Album{}, nil
 }
 
 func (p *Hifi) Artist(ctx context.Context, url string, id string) (model.Artist, error) {
 	return model.Artist{}, nil
+}
+
+func (p *Hifi) Playlist(ctx context.Context, url string, id string) (model.Playlist, error) {
+	return model.Playlist{}, nil
 }
 
 func (p *Hifi) Search(ctx context.Context, url string, song string, album string, artist string) (model.Search, error) {

@@ -26,7 +26,7 @@ func (s *PluginService) GetOriginalPlugin(ctx context.Context, url string) (mode
 
 	ch := make(chan model.Plugin, 1)
 
-	for _, plugin := range s.store.GetAllPluginsByName() {
+	for _, plugin := range s.store.ListPluginsByName() {
 		go func(p model.Plugin) {
 			if err := p.Status(ctx, url); err == nil {
 				select {
