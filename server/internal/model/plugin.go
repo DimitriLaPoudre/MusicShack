@@ -168,6 +168,7 @@ type SearchPlaylist struct {
 	Title      string `json:"title"`
 	Duration   uint   `json:"duration"`
 	CoverURL   string `json:"coverUrl"`
+	Popularity uint   `json:"popularity"`
 }
 
 type Type string

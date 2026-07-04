@@ -102,3 +102,22 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 	resp := response.PlaylistToResponse(playlist)
 	c.JSON(http.StatusOK, resp)
 }
+
+func (h *PluginHandler) GetSearch(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, "me")
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	q := c.Query("q")
+
+	results, err := h.plugin.GetSearch(c.Request.Context(), me, q)
+	if err != nil {
+		utils.Error(c, err, h.l)
+		return
+	}
+
+	resp := response.SearchResultToResponse(results)
+	c.JSON(http.StatusOK, resp)
+}
