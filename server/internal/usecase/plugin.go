@@ -10,246 +10,91 @@ import (
 
 type PluginUseCase struct {
 	l        *zerolog.Logger
+	plugin   *service.PluginService
 	store    *service.PluginStoreService
 	instance model.InstanceRepository
 }
 
-func NewPluginUseCase(l *zerolog.Logger, store *service.PluginStoreService, instance model.InstanceRepository) PluginUseCase {
+func NewPluginUseCase(l *zerolog.Logger, plugin *service.PluginService, store *service.PluginStoreService, instance model.InstanceRepository) PluginUseCase {
 	return PluginUseCase{
 		l:        l,
+		plugin:   plugin,
 		store:    store,
 		instance: instance,
 	}
 }
 
-func (u *PluginUseCase) GetSong(c context.Context, user model.User, provider string, id string) (model.Song, error) {
-	instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+func (u *PluginUseCase) GetSong(ctx context.Context, user model.User, provider string, id string) (model.EnrichedSong, error) {
+	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.Song{}, err
+		return model.EnrichedSong{}, err
 	}
 
-	var song model.Song
-	for _, instance := range instances {
-		if plugin, ok := u.store.GetPluginByName(instance.Plugin); !ok {
-			err = model.ErrPluginNotFound
-			continue
-		} else {
-			song, err = plugin.Song(c, instance.Url, id)
-			if err == nil {
-				break
-			}
-		}
-	}
+	song, err := u.plugin.GetSong(ctx, instances, id)
 	if err != nil {
-		return model.Song{}, err
+		return model.EnrichedSong{}, err
 	}
-
-	// _, err = repository.GetSongByUserIDByISRC(userId, data.Isrc)
-	// if err == nil {
-	// 	data.Downloaded = true
-	// }
 
 	return song, nil
 }
 
-func (u *PluginUseCase) GetAlbum(c context.Context, user model.User, provider string, id string) (model.Album, error) {
-	instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+func (u *PluginUseCase) GetAlbum(ctx context.Context, user model.User, provider string, id string) (model.EnrichedAlbum, error) {
+	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.Album{}, err
+		return model.EnrichedAlbum{}, err
 	}
 
-	var album model.Album
-	for _, instance := range instances {
-		if plugin, ok := u.store.GetPluginByName(instance.Plugin); !ok {
-			err = model.ErrPluginNotFound
-			continue
-		} else {
-			album, err = plugin.Album(c, instance.Url, id)
-			if err == nil {
-				break
-			}
-		}
-	}
+	album, err := u.plugin.GetAlbum(ctx, instances, id)
 	if err != nil {
-		return model.Album{}, err
+		return model.EnrichedAlbum{}, err
 	}
-
-	// album.Downloaded = true
-	// for i, song := range album.Songs {
-	// 	_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-	// 	if err == nil {
-	// 		data.Songs[i].Downloaded = true
-	// 	} else {
-	// 		data.Downloaded = false
-	// 	}
-	// }
 
 	return album, nil
 }
 
-func (u *PluginUseCase) GetArtist(c context.Context, user model.User, provider string, id string) (model.Artist, error) {
-	instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+func (u *PluginUseCase) GetArtist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedArtist, error) {
+	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.Artist{}, err
+		return model.EnrichedArtist{}, err
 	}
 
-	var artist model.Artist
-	for _, instance := range instances {
-		if plugin, ok := u.store.GetPluginByName(instance.Plugin); !ok {
-			err = model.ErrPluginNotFound
-			continue
-		} else {
-			artist, err = plugin.Artist(c, instance.Url, id)
-			if err == nil {
-				break
-			}
-		}
-	}
+	artist, err := u.plugin.GetArtist(ctx, instances, id)
 	if err != nil {
-		return model.Artist{}, err
+		return model.EnrichedArtist{}, err
 	}
-
-	// follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.Id)
-	// if err == nil {
-	// 	data.Followed = follow.ID
-	// }
-
-	// var wg sync.WaitGroup
-	// for i, album := range data.Albums {
-	// 	wg.Add(1)
-	// 	go func(i int) {
-	// 		defer wg.Done()
-	// 		albumData, err := plugins.GetAlbum(c.Request.Context(), userId, provider, album.Id)
-	// 		if err != nil {
-	// 			return
-	// 		}
-	// 		downloaded := true
-	// 		for _, song := range albumData.Songs {
-	// 			_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-	// 			if err != nil {
-	// 				downloaded = false
-	// 				break
-	// 			}
-	// 		}
-	// 		data.Albums[i].Downloaded = downloaded
-	// 	}(i)
-	// }
-	// wg.Wait()
 
 	return artist, nil
 }
 
-func (u *PluginUseCase) GetPlaylist(c context.Context, user model.User, provider string, id string) (model.Playlist, error) {
-	instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedPlaylist, error) {
+	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.Playlist{}, err
+		return model.EnrichedPlaylist{}, err
 	}
 
-	var playlist model.Playlist
-	for _, instance := range instances {
-		if plugin, ok := u.store.GetPluginByName(instance.Plugin); !ok {
-			err = model.ErrPluginNotFound
-			continue
-		} else {
-			playlist, err = plugin.Playlist(c, instance.Url, id)
-			if err == nil {
-				break
-			}
-		}
-	}
+	playlist, err := u.plugin.GetPlaylist(ctx, instances, id)
 	if err != nil {
-		return model.Playlist{}, err
+		return model.EnrichedPlaylist{}, err
 	}
-
-	// data.Downloaded = true
-	// for i, song := range data.Songs {
-	// 	_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-	// 	if err == nil {
-	// 		data.Songs[i].Downloaded = true
-	// 	} else {
-	// 		data.Downloaded = false
-	// 	}
-	// }
 
 	return playlist, nil
 }
 
-func (u *PluginUseCase) GetSearch(c context.Context, user model.User, q string) (map[string]model.Search, error) {
-	providerResult := make(map[string]model.Search)
+func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string) (map[string]model.EnrichedSearch, error) {
+	providerResult := make(map[string]model.EnrichedSearch)
 
-	for provider, _ := range u.store.ListPluginsByProvider() {
-		instances, err := u.instance.ListInstancesByFilter(c, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+	for provider := range u.store.ListPluginsByProvider() {
+		instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 		if err != nil {
 			continue
 		}
 
-		var search model.Search
-		for _, instance := range instances {
-			if plugin, ok := u.store.GetPluginByName(instance.Plugin); !ok {
-				err = model.ErrPluginNotFound
-				continue
-			} else {
-				search, err = plugin.Search(c, instance.Url, q, q, q)
-				if err == nil {
-					break
-				}
-			}
+		result, err := u.plugin.Search(ctx, instances, q)
+		if err != nil {
+			continue
 		}
-		if err == nil {
-			// var wg sync.WaitGroup
-			// for i, song := range tmp.Songs {
-			// 	_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-			// 	if err == nil {
-			// 		tmp.Songs[i].Downloaded = true
-			// 	}
-			// }
-			// for i, album := range tmp.Albums {
-			// 	wg.Add(1)
-			// 	go func(i int) {
-			// 		defer wg.Done()
-			// 		albumData, err := plugins.GetAlbum(c.Request.Context(), userId, provider, album.Id)
-			// 		if err != nil {
-			// 			return
-			// 		}
-			// 		downloaded := true
-			// 		for _, song := range albumData.Songs {
-			// 			_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-			// 			if err != nil {
-			// 				downloaded = false
-			// 				break
-			// 			}
-			// 		}
-			// 		tmp.Albums[i].Downloaded = downloaded
-			// 	}(i)
-			// }
-			// for i, artist := range tmp.Artists {
-			// 	follow, err := repository.GetFollowByProviderByArtistID(provider, artist.Id)
-			// 	if err == nil {
-			// 		tmp.Artists[i].Followed = follow.ID
-			// 	}
-			// }
-			// for i, playlist := range tmp.Playlists {
-			// 	wg.Add(1)
-			// 	go func(i int) {
-			// 		defer wg.Done()
-			// 		playlist, err := plugins.GetPlaylist(c.Request.Context(), userId, provider, playlist.ID)
-			// 		if err != nil {
-			// 			return
-			// 		}
-			// 		downloaded := true
-			// 		for _, song := range playlist.Songs {
-			// 			_, err = repository.GetSongByUserIDByISRC(userId, song.Isrc)
-			// 			if err != nil {
-			// 				downloaded = false
-			// 				break
-			// 			}
-			// 		}
-			// 		tmp.Playlists[i].Downloaded = downloaded
-			// 	}(i)
-			// }
-			// wg.Wait()
-			providerResult[provider] = search
-		}
+
+		providerResult[provider] = result
 	}
 
 	return providerResult, nil

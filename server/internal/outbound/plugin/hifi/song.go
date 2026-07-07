@@ -73,8 +73,6 @@ func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, err
 	}
 
 	normalizeSongData := model.Song{
-		Provider:        p.Provider(),
-		Api:             p.Name(),
 		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
 		Title:           data.Data.Title,
 		Duration:        data.Data.Duration,
@@ -88,8 +86,8 @@ func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, err
 		Explicit:        data.Data.Explicit,
 		Popularity:      data.Data.Popularity,
 		Isrc:            data.Data.Isrc,
-		Artists:         make([]model.SongArtist, 0),
-		Album: model.SongAlbum{
+		Artists:         make([]model.Artist, 0),
+		Album: model.Album{
 			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
 			Title:    data.Data.Album.Title,
 			CoverUrl: hifi_utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
@@ -116,7 +114,7 @@ func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, err
 	}
 
 	for _, artist := range data.Data.Artists {
-		normalizeSongData.Artists = append(normalizeSongData.Artists, model.SongArtist{
+		normalizeSongData.Artists = append(normalizeSongData.Artists, model.Artist{
 			Id:   strconv.FormatUint(uint64(artist.Id), 10),
 			Name: artist.Name,
 		})

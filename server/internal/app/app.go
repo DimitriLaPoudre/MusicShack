@@ -38,7 +38,7 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	authU := usecase.NewAuthUseCase(l, cfg.Session, &repo, &repo)
 	userU := usecase.NewUserUseCase(l, cfg.Library, &userS, &repo)
 	instanceU := usecase.NewInstanceUseCase(l, &pluginS, &repo)
-	pluginU := usecase.NewPluginUseCase(l, &pluginStore, &repo)
+	pluginU := usecase.NewPluginUseCase(l, &pluginS, &pluginStore, &repo)
 
 	meH := handler.NewMeHandler(l, &userU)
 	userH := handler.NewUserHandler(l, &userU)

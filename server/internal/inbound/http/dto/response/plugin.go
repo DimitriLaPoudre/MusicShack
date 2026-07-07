@@ -39,7 +39,7 @@ type Song struct {
 	Album           SongAlbum    `json:"album"`
 }
 
-func SongToResponse(song model.Song) Song {
+func SongToResponse(song model.EnrichedSong) Song {
 	artists := []SongArtist{}
 	for _, a := range song.Artists {
 		artists = append(artists, SongArtist{
@@ -83,6 +83,7 @@ type AlbumSongArtist struct {
 }
 
 type AlbumSong struct {
+	Provider     string            `json:"provider"`
 	Downloaded   bool              `json:"downloaded"`
 	Id           string            `json:"id"`
 	Title        string            `json:"title"`
@@ -116,7 +117,7 @@ type Album struct {
 	Songs         []AlbumSong   `json:"songs"`
 }
 
-func AlbumToResponse(album model.Album) Album {
+func AlbumToResponse(album model.EnrichedAlbum) Album {
 	songs := []AlbumSong{}
 	for _, s := range album.Songs {
 		songArtists := []AlbumSongArtist{}
@@ -128,6 +129,7 @@ func AlbumToResponse(album model.Album) Album {
 		}
 
 		songs = append(songs, AlbumSong{
+			Provider:     s.Provider,
 			Downloaded:   s.Downloaded,
 			Id:           s.Id,
 			Title:        s.Title,
@@ -191,7 +193,7 @@ type ArtistAlbum struct {
 
 type Artist struct {
 	Provider   string        `json:"provider"`
-	Followed   uint          `json:"followed"`
+	Followed   string        `json:"followed"`
 	Id         string        `json:"id"`
 	Name       string        `json:"name"`
 	PictureUrl string        `json:"pictureUrl"`
@@ -200,7 +202,7 @@ type Artist struct {
 	Singles    []ArtistAlbum `json:"singles"`
 }
 
-func ArtistToResponse(artist model.Artist) Artist {
+func ArtistToResponse(artist model.EnrichedArtist) Artist {
 	albums := []ArtistAlbum{}
 	for _, album := range artist.Albums {
 		albumArtists := []ArtistAlbumArtist{}
@@ -281,7 +283,7 @@ func ArtistToResponse(artist model.Artist) Artist {
 
 	return Artist{
 		Provider:   artist.Provider,
-		Followed:   artist.Followed,
+		Followed:   artist.Followed.String(),
 		Id:         artist.Id,
 		Name:       artist.Name,
 		PictureUrl: artist.PictureUrl,
@@ -320,7 +322,7 @@ type Playlist struct {
 	Songs          []PlaylistSong `json:"songs"`
 }
 
-func PlaylistToResponse(playlist model.Playlist) Playlist {
+func PlaylistToResponse(playlist model.EnrichedPlaylist) Playlist {
 	songs := []PlaylistSong{}
 	for _, s := range playlist.Songs {
 		songArtists := []PlaylistSongArtist{}
@@ -401,7 +403,7 @@ type SearchAlbum struct {
 }
 
 type SearchArtist struct {
-	Followed   uint   `json:"followed"`
+	Followed   string `json:"followed"`
 	Id         string `json:"id"`
 	Name       string `json:"name"`
 	PictureUrl string `json:"pictureUrl"`
@@ -424,7 +426,7 @@ type Search struct {
 	Playlists []SearchPlaylist `json:"playlists"`
 }
 
-func SearchToResponse(search model.Search) Search {
+func SearchToResponse(search model.EnrichedSearch) Search {
 	songs := []SearchSong{}
 	for _, song := range search.Songs {
 		songArtists := []SearchSongArtist{}
@@ -479,7 +481,7 @@ func SearchToResponse(search model.Search) Search {
 	artists := []SearchArtist{}
 	for _, artist := range search.Artists {
 		artists = append(artists, SearchArtist{
-			Followed:   artist.Followed,
+			Followed:   artist.Followed.String(),
 			Id:         artist.Id,
 			Name:       artist.Name,
 			PictureUrl: artist.PictureUrl,
@@ -491,7 +493,7 @@ func SearchToResponse(search model.Search) Search {
 	for _, playlist := range search.Playlists {
 		playlists = append(playlists, SearchPlaylist{
 			Downloaded: playlist.Downloaded,
-			Id:         playlist.ID,
+			Id:         playlist.Id,
 			Title:      playlist.Title,
 			Duration:   playlist.Duration,
 			CoverURL:   playlist.CoverURL,
@@ -507,7 +509,7 @@ func SearchToResponse(search model.Search) Search {
 	}
 }
 
-func SearchResultToResponse(search map[string]model.Search) map[string]Search {
+func SearchResultToResponse(search map[string]model.EnrichedSearch) map[string]Search {
 	response := map[string]Search{}
 	for provider, result := range search {
 		response[provider] = SearchToResponse(result)
