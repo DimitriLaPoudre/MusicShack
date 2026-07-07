@@ -67,64 +67,64 @@ func getSongData(ctx context.Context, limiter *rate.Limiter, url string, id stri
 }
 
 func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, error) {
-	data, downloadInfo, err := getSongData(ctx, p.limiter, url, id)
+	songInfo, downloadInfo, err := getSongData(ctx, p.limiter, url, id)
 	if err != nil {
 		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
-	timeLayout := "2006-01-02T15:04:05.000Z0700"
-	releaseDate, err := time.Parse(timeLayout, data.Data.ReleaseDate)
+	releaseDate, err := time.Parse(StreamStartDateLayout, songInfo.Data.ReleaseDate)
 	if err != nil {
 		return model.Song{}, fmt.Errorf("Hifi.Song: time.Parse: %w", err)
 	}
 
-	normalizeSongData := model.Song{
-		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
-		Title:           data.Data.Title,
-		Duration:        data.Data.Duration,
-		ReplayGain:      downloadInfo.Data.TrackReplayGain,
-		Peak:            downloadInfo.Data.TrackPeakAmplitude,
-		AlbumReplayGain: downloadInfo.Data.AlbumReplayGain,
-		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
-		ReleaseDate:     releaseDate,
-		TrackNumber:     data.Data.TrackNumber,
-		VolumeNumber:    data.Data.VolumeNumber,
-		Explicit:        data.Data.Explicit,
-		Popularity:      data.Data.Popularity,
-		Isrc:            data.Data.Isrc,
-		Artists:         make([]model.Artist, 0),
-		Album: model.Album{
-			Id:       strconv.FormatUint(uint64(data.Data.Album.Id), 10),
-			Title:    data.Data.Album.Title,
-			CoverUrl: hifi_utils.GetImageURL(data.Data.Album.CoverUrl, 1280),
-		},
-	}
-
-	switch data.Data.AudioQuality {
+	audioQuality := LOW
+	switch songInfo.Data.AudioQuality {
 	case "LOW":
-		normalizeSongData.AudioQuality = LOW
+		audioQuality = LOW
 	case "HIGH":
-		normalizeSongData.AudioQuality = HIGH
+		audioQuality = HIGH
 	case "LOSSLESS":
-		normalizeSongData.AudioQuality = LOSSLESS
+		audioQuality = LOSSLESS
 	}
-	for _, quality := range data.Data.MediaMetadata.Tags {
+	for _, quality := range songInfo.Data.MediaMetadata.Tags {
 		switch quality {
 		case "HIRES_LOSSLESS":
-			normalizeSongData.AudioQuality = HIRES
+			audioQuality = HIRES
 		case "LOSSLESS", "DOLBY_ATMOS":
-			if normalizeSongData.AudioQuality != HIRES {
-				normalizeSongData.AudioQuality = LOSSLESS
+			if audioQuality != HIRES {
+				audioQuality = LOSSLESS
 			}
 		}
 	}
 
-	for _, artist := range data.Data.Artists {
-		normalizeSongData.Artists = append(normalizeSongData.Artists, model.Artist{
+	artists := []model.Artist{}
+	for _, artist := range songInfo.Data.Artists {
+		artists = append(artists, model.Artist{
 			Id:   strconv.FormatUint(uint64(artist.Id), 10),
 			Name: artist.Name,
 		})
 	}
 
-	return normalizeSongData, nil
+	return model.Song{
+		Id:              strconv.FormatUint(uint64(songInfo.Data.Id), 10),
+		Title:           songInfo.Data.Title,
+		Duration:        songInfo.Data.Duration,
+		ReplayGain:      downloadInfo.Data.TrackReplayGain,
+		Peak:            downloadInfo.Data.TrackPeakAmplitude,
+		AlbumReplayGain: downloadInfo.Data.AlbumReplayGain,
+		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
+		ReleaseDate:     releaseDate,
+		TrackNumber:     songInfo.Data.TrackNumber,
+		VolumeNumber:    songInfo.Data.VolumeNumber,
+		AudioQuality:    audioQuality,
+		Explicit:        songInfo.Data.Explicit,
+		Popularity:      songInfo.Data.Popularity,
+		Isrc:            songInfo.Data.Isrc,
+		Artists:         artists,
+		Album: model.Album{
+			Id:       strconv.FormatUint(uint64(songInfo.Data.Album.Id), 10),
+			Title:    songInfo.Data.Album.Title,
+			CoverUrl: hifi_utils.GetImageURL(songInfo.Data.Album.CoverUrl, 1280),
+		},
+	}, nil
 }

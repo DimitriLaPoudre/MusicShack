@@ -21,6 +21,9 @@ var (
 	}
 )
 
+const StreamStartDateLayout = "2006-01-02T15:04:05.000Z0700"
+const ReleaseDateLayout = "2006-01-02"
+
 type status struct {
 	Version string `json:"version"`
 	Repo    string `json:"Repo"`
