@@ -1,18 +1,16 @@
 package response
 
 import (
-	"time"
-
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 )
 
 type Instance struct {
-	ID       string        `json:"id"`
-	UserID   string        `json:"user_id"`
-	Provider string        `json:"provider"`
-	Plugin   string        `json:"plugin"`
-	Url      string        `json:"url"`
-	Ping     time.Duration `json:"ping"`
+	ID       string `json:"id"`
+	UserID   string `json:"user_id"`
+	Provider string `json:"provider"`
+	Plugin   string `json:"plugin"`
+	Url      string `json:"url"`
+	Ping     uint   `json:"ping"`
 }
 
 func InstanceToResponse(instance model.Instance) Instance {
@@ -22,7 +20,7 @@ func InstanceToResponse(instance model.Instance) Instance {
 		Provider: instance.Provider,
 		Plugin:   instance.Plugin,
 		Url:      instance.Url,
-		Ping:     instance.Ping,
+		Ping:     uint(instance.Ping.Milliseconds()),
 	}
 }
 

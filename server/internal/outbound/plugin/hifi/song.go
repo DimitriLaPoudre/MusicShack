@@ -72,6 +72,12 @@ func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, err
 		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
+	timeLayout := "2006-01-02T15:04:05.000Z0700"
+	releaseDate, err := time.Parse(timeLayout, data.Data.ReleaseDate)
+	if err != nil {
+		return model.Song{}, fmt.Errorf("Hifi.Song: time.Parse: %w", err)
+	}
+
 	normalizeSongData := model.Song{
 		Id:              strconv.FormatUint(uint64(data.Data.Id), 10),
 		Title:           data.Data.Title,
@@ -80,7 +86,7 @@ func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, err
 		Peak:            downloadInfo.Data.TrackPeakAmplitude,
 		AlbumReplayGain: downloadInfo.Data.AlbumReplayGain,
 		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
-		ReleaseDate:     data.Data.ReleaseDate[:10],
+		ReleaseDate:     releaseDate,
 		TrackNumber:     data.Data.TrackNumber,
 		VolumeNumber:    data.Data.VolumeNumber,
 		Explicit:        data.Data.Explicit,

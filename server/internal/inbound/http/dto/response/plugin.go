@@ -1,6 +1,10 @@
 package response
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import (
+	"time"
+
+	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+)
 
 type AudioQuality struct {
 	Name  string `json:"name"`
@@ -28,7 +32,7 @@ type Song struct {
 	Peak            float64      `json:"peak"`
 	AlbumReplayGain float64      `json:"albumReplayGain"`
 	AlbumPeak       float64      `json:"albumPeak"`
-	ReleaseDate     string       `json:"releaseDate"`
+	ReleaseDate     time.Time    `json:"releaseDate"`
 	TrackNumber     uint         `json:"trackNumber"`
 	VolumeNumber    uint         `json:"volumeNumber"`
 	AudioQuality    AudioQuality `json:"audioQuality"`
@@ -107,7 +111,7 @@ type Album struct {
 	Id            string        `json:"id"`
 	Title         string        `json:"title"`
 	Duration      uint          `json:"duration"`
-	ReleaseDate   string        `json:"releaseDate"`
+	ReleaseDate   time.Time     `json:"releaseDate"`
 	NumberTracks  uint          `json:"numberTracks"`
 	NumberVolumes uint          `json:"numberVolumes"`
 	CoverUrl      string        `json:"coverUrl"`
@@ -184,7 +188,7 @@ type ArtistAlbum struct {
 	Id           string              `json:"id"`
 	Title        string              `json:"title"`
 	Duration     uint                `json:"duration"`
-	ReleaseDate  string              `json:"releaseDate"`
+	ReleaseDate  time.Time           `json:"releaseDate"`
 	CoverUrl     string              `json:"coverUrl"`
 	AudioQuality AudioQuality        `json:"audioQuality"`
 	Explicit     bool                `json:"explicit"`
@@ -316,7 +320,7 @@ type Playlist struct {
 	Title          string         `json:"title"`
 	Description    string         `json:"description"`
 	Duration       uint           `json:"duration"`
-	LastUpdated    string         `json:"lastUpdated"`
+	LastUpdated    time.Time      `json:"lastUpdated"`
 	NumberOfTracks uint           `json:"numberOfTracks"`
 	CoverURL       string         `json:"coverUrl"`
 	Songs          []PlaylistSong `json:"songs"`

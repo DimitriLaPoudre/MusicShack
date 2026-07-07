@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Quality struct {
 	Name  string `json:"name"`
@@ -8,22 +12,22 @@ type Quality struct {
 }
 
 type Song struct {
-	Id              string   `json:"id"`
-	Title           string   `json:"title"`
-	Duration        uint     `json:"duration"`
-	ReplayGain      float64  `json:"replayGain"`
-	Peak            float64  `json:"peak"`
-	AlbumReplayGain float64  `json:"albumReplayGain"`
-	AlbumPeak       float64  `json:"albumPeak"`
-	ReleaseDate     string   `json:"releaseDate"`
-	TrackNumber     uint     `json:"trackNumber"`
-	VolumeNumber    uint     `json:"volumeNumber"`
-	AudioQuality    Quality  `json:"audioQuality"`
-	Popularity      uint     `json:"popularity"`
-	Explicit        bool     `json:"explicit"`
-	Isrc            string   `json:"isrc"`
-	Artists         []Artist `json:"artists"`
-	Album           Album    `json:"album"`
+	Id              string    `json:"id"`
+	Title           string    `json:"title"`
+	Duration        uint      `json:"duration"`
+	ReplayGain      float64   `json:"replayGain"`
+	Peak            float64   `json:"peak"`
+	AlbumReplayGain float64   `json:"albumReplayGain"`
+	AlbumPeak       float64   `json:"albumPeak"`
+	ReleaseDate     time.Time `json:"releaseDate"`
+	TrackNumber     uint      `json:"trackNumber"`
+	VolumeNumber    uint      `json:"volumeNumber"`
+	AudioQuality    Quality   `json:"audioQuality"`
+	Popularity      uint      `json:"popularity"`
+	Explicit        bool      `json:"explicit"`
+	Isrc            string    `json:"isrc"`
+	Artists         []Artist  `json:"artists"`
+	Album           Album     `json:"album"`
 }
 
 type EnrichedSong struct {
@@ -33,18 +37,18 @@ type EnrichedSong struct {
 }
 
 type Album struct {
-	Id            string   `json:"id"`
-	Title         string   `json:"title"`
-	Duration      uint     `json:"duration"`
-	ReleaseDate   string   `json:"releaseDate"`
-	NumberTracks  uint     `json:"numberTracks"`
-	NumberVolumes uint     `json:"numberVolumes"`
-	CoverUrl      string   `json:"coverUrl"`
-	AudioQuality  Quality  `json:"audioQuality"`
-	Popularity    uint     `json:"popularity"`
-	Explicit      bool     `json:"explicit"`
-	Artists       []Artist `json:"artists"`
-	Songs         []Song   `json:"songs"`
+	Id            string    `json:"id"`
+	Title         string    `json:"title"`
+	Duration      uint      `json:"duration"`
+	ReleaseDate   time.Time `json:"releaseDate"`
+	NumberTracks  uint      `json:"numberTracks"`
+	NumberVolumes uint      `json:"numberVolumes"`
+	CoverUrl      string    `json:"coverUrl"`
+	AudioQuality  Quality   `json:"audioQuality"`
+	Popularity    uint      `json:"popularity"`
+	Explicit      bool      `json:"explicit"`
+	Artists       []Artist  `json:"artists"`
+	Songs         []Song    `json:"songs"`
 }
 
 type EnrichedAlbum struct {
@@ -74,15 +78,15 @@ type EnrichedArtist struct {
 }
 
 type Playlist struct {
-	Id             string `json:"id"`
-	Title          string `json:"title"`
-	Description    string `json:"description"`
-	Duration       uint   `json:"duration"`
-	LastUpdated    string `json:"lastUpdated"`
-	NumberOfTracks uint   `json:"numberOfTracks"`
-	CoverURL       string `json:"coverUrl"`
-	Popularity     uint   `json:"popularity"`
-	Songs          []Song `json:"songs"`
+	Id             string    `json:"id"`
+	Title          string    `json:"title"`
+	Description    string    `json:"description"`
+	Duration       uint      `json:"duration"`
+	LastUpdated    time.Time `json:"lastUpdated"`
+	NumberOfTracks uint      `json:"numberOfTracks"`
+	CoverURL       string    `json:"coverUrl"`
+	Popularity     uint      `json:"popularity"`
+	Songs          []Song    `json:"songs"`
 }
 
 type EnrichedPlaylist struct {
