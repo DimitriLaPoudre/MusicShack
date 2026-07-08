@@ -2,8 +2,6 @@ package hifi
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	lib_url "net/url"
 	"strconv"
