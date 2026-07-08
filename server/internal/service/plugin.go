@@ -69,9 +69,6 @@ func (s *PluginService) GetSong(ctx context.Context, instances []model.Instance,
 	}
 
 	enrichedSong := s.enrichSong(ctx, provider, song)
-	if err != nil {
-		return model.EnrichedSong{}, err
-	}
 
 	return enrichedSong, nil
 }

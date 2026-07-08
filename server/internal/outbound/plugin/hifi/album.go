@@ -53,7 +53,7 @@ func (p *Hifi) Album(ctx context.Context, url string, id string) (model.Album, e
 
 	releaseDate, err := time.Parse(StreamStartDateLayout, album.Data.ReleaseDate)
 	if err != nil {
-		return model.Album{}, fmt.Errorf("Hifi.Album: time.Parse: %w", err)
+		p.l.Warn().Msg(fmt.Sprintf("Hifi.Album: time.Parse(%s): %s", album.Data.ReleaseDate, err.Error()))
 	}
 
 	audioQuality := LOW

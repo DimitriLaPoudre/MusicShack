@@ -8,15 +8,18 @@ import (
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/rs/zerolog"
 	"golang.org/x/time/rate"
 )
 
 type Hifi struct {
+	l       *zerolog.Logger
 	limiter *rate.Limiter
 }
 
-func NewHifi() Hifi {
+func NewHifi(l *zerolog.Logger) Hifi {
 	return Hifi{
+		l:       l,
 		limiter: rate.NewLimiter(rate.Every(6*time.Second), 150),
 	}
 }
@@ -31,10 +34,6 @@ func (p *Hifi) Provider() string {
 
 func (p *Hifi) Download(ctx context.Context, user *model.User, id string) (io.ReadCloser, string, error) {
 	return nil, "", nil
-}
-
-func (p *Hifi) Artist(ctx context.Context, url string, id string) (model.Artist, error) {
-	return model.Artist{}, nil
 }
 
 func (p *Hifi) Playlist(ctx context.Context, url string, id string) (model.Playlist, error) {

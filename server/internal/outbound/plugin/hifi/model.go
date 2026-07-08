@@ -146,17 +146,6 @@ type albumItem struct {
 	}
 }
 
-type albumItemComparaison struct {
-	Title       string
-	ReleaseDate string
-	TrackNumber uint
-}
-
-// type albumItemComparaisonExtension struct {
-// 	Title       string
-// 	ReleaseDate string
-// }
-
 type artistMinimalData struct {
 	ID   uint   `json:"id"`
 	Name string `json:"name"`

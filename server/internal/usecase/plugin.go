@@ -81,7 +81,7 @@ func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provid
 }
 
 func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string) (map[string]model.EnrichedSearch, error) {
-	providerResult := make(map[string]model.EnrichedSearch)
+	providerResult := map[string]model.EnrichedSearch{}
 
 	for provider := range u.store.ListPluginsByProvider() {
 		instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})

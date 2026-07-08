@@ -37,7 +37,7 @@ func fetchSong(ctx context.Context, limiter *rate.Limiter, url string, id string
 	return data, nil
 }
 
-func getSongData(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, downloadData, error) {
+func getSong(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, downloadData, error) {
 	var songInfo songData
 	var songInfoErr error
 	var downloadInfo downloadData
@@ -54,20 +54,19 @@ func getSongData(ctx context.Context, limiter *rate.Limiter, url string, id stri
 		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, url, id, "")
 	}()
 	wg.Wait()
-	err := songInfoErr
-	if err == nil {
-		err = downloadInfoErr
-	}
 
-	if err != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", err)
+	if songInfoErr != nil {
+		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", songInfoErr)
+	}
+	if downloadInfoErr != nil {
+		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", downloadInfoErr)
 	}
 
 	return songInfo, downloadInfo, nil
 }
 
 func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, error) {
-	songInfo, downloadInfo, err := getSongData(ctx, p.limiter, url, id)
+	songInfo, downloadInfo, err := getSong(ctx, p.limiter, url, id)
 	if err != nil {
 		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
