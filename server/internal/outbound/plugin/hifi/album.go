@@ -2,8 +2,6 @@ package hifi
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	lib_url "net/url"
 	"strconv"
@@ -14,32 +12,10 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func fetchAlbum(ctx context.Context, limiter *rate.Limiter, url string, id string) (albumData, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	resp, err := hifi_utils.Fetch(ctx, url+"/album/?id="+lib_url.QueryEscape(id), limiter)
-	if err != nil {
-		return albumData{}, fmt.Errorf("fetchAlbum: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return albumData{}, fmt.Errorf("fetchAlbum: http: %w", errors.New(resp.Status))
-	}
-
-	var data albumData
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return albumData{}, fmt.Errorf("fetchAlbum: json.Decode: %w", err)
-	}
-
-	return data, nil
-}
-
 func getAlbum(ctx context.Context, limiter *rate.Limiter, url string, id string) (albumData, error) {
-	album, err := fetchAlbum(ctx, limiter, url, id)
+	album, err := hifi_utils.FetchType[albumData](ctx, url+"/album/?id="+lib_url.QueryEscape(id), limiter)
 	if err != nil {
-		return albumData{}, nil
+		return albumData{}, fmt.Errorf("getAlbum: %w", err)
 	}
 
 	return album, nil

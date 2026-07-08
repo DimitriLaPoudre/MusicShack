@@ -36,10 +36,6 @@ func (p *Hifi) Download(ctx context.Context, user *model.User, id string) (io.Re
 	return nil, "", nil
 }
 
-func (p *Hifi) Search(ctx context.Context, url string, song string, album string, artist string) (model.Search, error) {
-	return model.Search{}, nil
-}
-
 func (p *Hifi) Url(ctx context.Context, url string, id string) (model.UrlItem, error) {
 	return model.UrlItem{}, nil
 }

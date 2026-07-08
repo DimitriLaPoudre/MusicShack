@@ -14,30 +14,8 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func fetchPlaylist(ctx context.Context, limiter *rate.Limiter, url string, id string) (playlistData, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	resp, err := hifi_utils.Fetch(ctx, url+"/playlist/?id="+lib_url.QueryEscape(id), limiter)
-	if err != nil {
-		return playlistData{}, fmt.Errorf("fetchPlaylist: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return playlistData{}, fmt.Errorf("fetchPlaylist: http: %w", errors.New(resp.Status))
-	}
-
-	var data playlistData
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return playlistData{}, fmt.Errorf("fetchPlaylist: json.Decode: %w", err)
-	}
-
-	return data, nil
-}
-
 func getPlaylist(ctx context.Context, limiter *rate.Limiter, url string, id string) (playlistData, error) {
-	playlist, err := fetchPlaylist(ctx, limiter, url, id)
+	playlist, err := hifi_utils.FetchType[playlistData](ctx, url+"/playlist/?id="+lib_url.QueryEscape(id), limiter)
 	if err != nil {
 		return playlistData{}, fmt.Errorf("getPlaylist: %w", err)
 	}

@@ -268,7 +268,7 @@ func (s *PluginService) Search(ctx context.Context, instances []model.Instance, 
 			err = model.ErrPluginNotFound
 			continue
 		}
-		result, err = plugin.Search(ctx, instance.Url, q, q, q)
+		result, err = plugin.Search(ctx, instance.Url, q, q, q, q)
 		if err == nil {
 			provider = plugin.Provider()
 			break

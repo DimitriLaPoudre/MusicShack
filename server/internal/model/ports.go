@@ -40,7 +40,7 @@ type Plugin interface {
 	Album(ctx context.Context, url string, id string) (Album, error)
 	Artist(ctx context.Context, url string, id string) (Artist, error)
 	Playlist(ctx context.Context, url string, id string) (Playlist, error)
-	Search(ctx context.Context, url string, song string, album string, artist string) (Search, error)
+	Search(ctx context.Context, url string, song string, album string, artist string, playlist string) (Search, error)
 	Url(ctx context.Context, url string, id string) (UrlItem, error)
 	Lyrics(ctx context.Context, url string, id string) (string, string, error)
 }

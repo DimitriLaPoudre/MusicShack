@@ -15,26 +15,13 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func fetchSong(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	resp, err := hifi_utils.Fetch(ctx, url+"/info/?id="+lib_url.QueryEscape(id), limiter)
+func getSongInfo(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, error) {
+	songInfo, err := hifi_utils.FetchType[songData](ctx, url+"/info/?id="+lib_url.QueryEscape(id), limiter)
 	if err != nil {
-		return songData{}, fmt.Errorf("fetchSong: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return songData{}, fmt.Errorf("fetchSong: http: %w", errors.New(resp.Status))
+		return songData{}, fmt.Errorf("getSongInfo: %w", err)
 	}
 
-	var data songData
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return songData{}, fmt.Errorf("fetchSong: json.Decode: %w", err)
-	}
-
-	return data, nil
+	return songInfo, nil
 }
 
 func getSong(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, downloadData, error) {
@@ -44,15 +31,14 @@ func getSong(ctx context.Context, limiter *rate.Limiter, url string, id string) 
 	var downloadInfoErr error
 	var wg sync.WaitGroup
 
-	wg.Add(2)
-	go func() {
+	wg.Go(func() {
 		defer wg.Done()
-		songInfo, songInfoErr = fetchSong(ctx, limiter, url, id)
-	}()
-	go func() {
+		songInfo, songInfoErr = getSongInfo(ctx, limiter, url, id)
+	})
+	wg.Go(func() {
 		defer wg.Done()
 		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, url, id, "")
-	}()
+	})
 	wg.Wait()
 
 	if songInfoErr != nil {

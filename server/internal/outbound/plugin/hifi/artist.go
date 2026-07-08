@@ -2,8 +2,6 @@ package hifi
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	lib_url "net/url"
 	"slices"
@@ -17,48 +15,22 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func fetchArtistInfo(ctx context.Context, limiter *rate.Limiter, url string, id string) (artistInfo, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	resp, err := hifi_utils.Fetch(ctx, url+"/artist/?id="+lib_url.QueryEscape(id), limiter)
+func getArtistInfo(ctx context.Context, limiter *rate.Limiter, url string, id string) (artistInfo, error) {
+	info, err := hifi_utils.FetchType[artistInfo](ctx, url+"/artist/?id="+lib_url.QueryEscape(id), limiter)
 	if err != nil {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: http: %w", errors.New(resp.Status))
+		return artistInfo{}, fmt.Errorf("getArtistInfo: %w", err)
 	}
 
-	var data artistInfo
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return artistInfo{}, fmt.Errorf("fetchArtistInfo: json.Decode: %w", err)
-	}
-
-	return data, nil
+	return info, nil
 }
 
-func fetchArtistAlbums(ctx context.Context, limiter *rate.Limiter, url string, id string) (artistAlbums, error) {
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
-	defer cancel()
-
-	resp, err := hifi_utils.Fetch(ctx, url+"/artist/?f="+lib_url.QueryEscape(id)+"&skip_tracks=1", limiter)
+func getArtistAlbums(ctx context.Context, limiter *rate.Limiter, url string, id string) (artistAlbums, error) {
+	albums, err := hifi_utils.FetchType[artistAlbums](ctx, url+"/artist/?f="+lib_url.QueryEscape(id)+"&skip_tracks=1", limiter)
 	if err != nil {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: http: %w", errors.New(resp.Status))
+		return artistAlbums{}, fmt.Errorf("getArtistAlbums: %w", err)
 	}
 
-	var data artistAlbums
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return artistAlbums{}, fmt.Errorf("fetchArtistAlbums: json.Decode: %w", err)
-	}
-
-	return data, nil
+	return albums, nil
 }
 
 func getArtist(ctx context.Context, limiter *rate.Limiter, url string, id string) (artistInfo, artistAlbums, error) {
@@ -68,15 +40,14 @@ func getArtist(ctx context.Context, limiter *rate.Limiter, url string, id string
 	var albumsErr error
 	var wg sync.WaitGroup
 
-	wg.Add(2)
-	go func() {
+	wg.Go(func() {
 		defer wg.Done()
-		artist, artistErr = fetchArtistInfo(ctx, limiter, url, id)
-	}()
-	go func() {
+		artist, artistErr = getArtistInfo(ctx, limiter, url, id)
+	})
+	wg.Go(func() {
 		defer wg.Done()
-		albums, albumsErr = fetchArtistAlbums(ctx, limiter, url, id)
-	}()
+		albums, albumsErr = getArtistAlbums(ctx, limiter, url, id)
+	})
 	wg.Wait()
 
 	if artistErr != nil {
