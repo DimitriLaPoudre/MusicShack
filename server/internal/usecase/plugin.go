@@ -30,7 +30,9 @@ func (u *PluginUseCase) GetSong(ctx context.Context, user model.User, provider s
 		return model.EnrichedSong{}, err
 	}
 
-	song, err := u.plugin.GetSong(ctx, instances, id)
+	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
+
+	song, err := u.plugin.GetSong(ctx, pluginInstances, id)
 	if err != nil {
 		return model.EnrichedSong{}, err
 	}
@@ -44,7 +46,9 @@ func (u *PluginUseCase) GetAlbum(ctx context.Context, user model.User, provider 
 		return model.EnrichedAlbum{}, err
 	}
 
-	album, err := u.plugin.GetAlbum(ctx, instances, id)
+	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
+
+	album, err := u.plugin.GetAlbum(ctx, pluginInstances, id)
 	if err != nil {
 		return model.EnrichedAlbum{}, err
 	}
@@ -58,7 +62,9 @@ func (u *PluginUseCase) GetArtist(ctx context.Context, user model.User, provider
 		return model.EnrichedArtist{}, err
 	}
 
-	artist, err := u.plugin.GetArtist(ctx, instances, id)
+	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
+
+	artist, err := u.plugin.GetArtist(ctx, pluginInstances, id)
 	if err != nil {
 		return model.EnrichedArtist{}, err
 	}
@@ -72,7 +78,9 @@ func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provid
 		return model.EnrichedPlaylist{}, err
 	}
 
-	playlist, err := u.plugin.GetPlaylist(ctx, instances, id)
+	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
+
+	playlist, err := u.plugin.GetPlaylist(ctx, pluginInstances, id)
 	if err != nil {
 		return model.EnrichedPlaylist{}, err
 	}
@@ -89,7 +97,9 @@ func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string
 			continue
 		}
 
-		result, err := u.plugin.Search(ctx, instances, q)
+		pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
+
+		result, err := u.plugin.Search(ctx, pluginInstances, q)
 		if err != nil {
 			continue
 		}

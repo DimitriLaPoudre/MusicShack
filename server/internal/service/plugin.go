@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -20,6 +21,29 @@ func NewPluginService(l *zerolog.Logger, store *PluginStoreService) PluginServic
 		l:     l,
 		store: store,
 	}
+}
+
+func (s *PluginService) InstancesToMapPluginInstances(instances []model.Instance) map[model.Plugin][]model.Instance {
+	pluginInstances := map[model.Plugin][]model.Instance{}
+	pluginNotFound := map[string]struct{}{}
+	for _, i := range instances {
+		plugin, ok := s.store.GetPluginByName(i.Plugin)
+		if !ok {
+			pluginNotFound[i.Plugin] = struct{}{}
+		}
+		if instances, ok := pluginInstances[plugin]; !ok {
+			pluginInstances[plugin] = []model.Instance{i}
+		} else {
+			instances = append(instances, i)
+			pluginInstances[plugin] = instances
+		}
+	}
+
+	for pluginName := range pluginNotFound {
+		s.l.Warn().Msg(fmt.Sprintf("PluginService.InstancesToMapPluginUrls: plugin not found: %s", pluginName))
+	}
+
+	return pluginInstances
 }
 
 func (s *PluginService) GetOriginalPlugin(ctx context.Context, url string) (model.Plugin, error) {
@@ -48,17 +72,12 @@ func (s *PluginService) GetOriginalPlugin(ctx context.Context, url string) (mode
 	}
 }
 
-func (s *PluginService) GetSong(ctx context.Context, instances []model.Instance, id string) (model.EnrichedSong, error) {
+func (s *PluginService) GetSong(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedSong, error) {
 	var song model.Song
 	var err error
 	var provider string
-	for _, instance := range instances {
-		plugin, ok := s.store.GetPluginByName(instance.Plugin)
-		if !ok {
-			err = model.ErrPluginNotFound
-			continue
-		}
-		song, err = plugin.Song(ctx, instance.Url, id)
+	for plugin, instances := range pluginInstances {
+		song, err = plugin.Song(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -87,17 +106,12 @@ func (s *PluginService) enrichSong(ctx context.Context, provider string, song mo
 	}
 }
 
-func (s *PluginService) GetAlbum(ctx context.Context, instances []model.Instance, id string) (model.EnrichedAlbum, error) {
+func (s *PluginService) GetAlbum(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedAlbum, error) {
 	var album model.Album
 	var err error
 	var provider string
-	for _, instance := range instances {
-		plugin, ok := s.store.GetPluginByName(instance.Plugin)
-		if !ok {
-			err = model.ErrPluginNotFound
-			continue
-		}
-		album, err = plugin.Album(ctx, instance.Url, id)
+	for plugin, instances := range pluginInstances {
+		album, err = plugin.Album(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -135,17 +149,12 @@ func (s *PluginService) enrichAlbum(ctx context.Context, provider string, album 
 	}
 }
 
-func (s *PluginService) GetArtist(ctx context.Context, instances []model.Instance, id string) (model.EnrichedArtist, error) {
+func (s *PluginService) GetArtist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedArtist, error) {
 	var artist model.Artist
 	var err error
 	var provider string
-	for _, instance := range instances {
-		plugin, ok := s.store.GetPluginByName(instance.Plugin)
-		if !ok {
-			err = model.ErrPluginNotFound
-			continue
-		}
-		artist, err = plugin.Artist(ctx, instance.Url, id)
+	for plugin, instances := range pluginInstances {
+		artist, err = plugin.Artist(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -155,12 +164,12 @@ func (s *PluginService) GetArtist(ctx context.Context, instances []model.Instanc
 		return model.EnrichedArtist{}, err
 	}
 
-	enrichedArtist := s.enrichArtist(ctx, provider, instances, artist)
+	enrichedArtist := s.enrichArtist(ctx, provider, pluginInstances, artist)
 
 	return enrichedArtist, nil
 }
 
-func (s *PluginService) enrichArtist(ctx context.Context, provider string, instances []model.Instance, artist model.Artist) model.EnrichedArtist {
+func (s *PluginService) enrichArtist(ctx context.Context, provider string, pluginInstances map[model.Plugin][]model.Instance, artist model.Artist) model.EnrichedArtist {
 	followed := uuid.UUID{}
 	// if follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.Id); err == nil {
 	// 	followed = follow.ID
@@ -171,31 +180,55 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, insta
 	singles := []model.EnrichedAlbum{}
 	var wg sync.WaitGroup
 	for _, album := range artist.Albums {
-		wg.Go(func() {
-			enrichedAlbum, err := s.GetAlbum(ctx, instances, album.Id)
-			if err != nil {
-				return
+		wg.Add(1)
+		go func(album model.Album) {
+			defer wg.Done()
+			enrichedAlbum := model.EnrichedAlbum{}
+			if album.NumberTracks == 0 || len(album.Songs) == 0 || album.Songs[0].Isrc != "" {
+				enrichedAlbum = s.enrichAlbum(ctx, provider, album)
+			} else {
+				if tmp, err := s.GetAlbum(ctx, pluginInstances, album.Id); err != nil {
+					return
+				} else {
+					enrichedAlbum = tmp
+				}
 			}
 			albums = append(albums, enrichedAlbum)
-		})
+		}(album)
 	}
 	for _, ep := range artist.Ep {
-		wg.Go(func() {
-			enrichedAlbum, err := s.GetAlbum(ctx, instances, ep.Id)
-			if err != nil {
-				return
+		wg.Add(1)
+		go func(ep model.Album) {
+			defer wg.Done()
+			enrichedAlbum := model.EnrichedAlbum{}
+			if ep.NumberTracks == 0 || len(ep.Songs) == 0 || ep.Songs[0].Isrc != "" {
+				enrichedAlbum = s.enrichAlbum(ctx, provider, ep)
+			} else {
+				if tmp, err := s.GetAlbum(ctx, pluginInstances, ep.Id); err != nil {
+					return
+				} else {
+					enrichedAlbum = tmp
+				}
 			}
 			eps = append(eps, enrichedAlbum)
-		})
+		}(ep)
 	}
 	for _, single := range artist.Albums {
-		wg.Go(func() {
-			enrichedAlbum, err := s.GetAlbum(ctx, instances, single.Id)
-			if err != nil {
-				return
+		wg.Add(1)
+		go func(single model.Album) {
+			defer wg.Done()
+			enrichedAlbum := model.EnrichedAlbum{}
+			if single.NumberTracks == 0 || len(single.Songs) == 0 || single.Songs[0].Isrc != "" {
+				enrichedAlbum = s.enrichAlbum(ctx, provider, single)
+			} else {
+				if tmp, err := s.GetAlbum(ctx, pluginInstances, single.Id); err != nil {
+					return
+				} else {
+					enrichedAlbum = tmp
+				}
 			}
 			singles = append(singles, enrichedAlbum)
-		})
+		}(single)
 	}
 	wg.Wait()
 
@@ -210,17 +243,12 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, insta
 
 }
 
-func (s *PluginService) GetPlaylist(ctx context.Context, instances []model.Instance, id string) (model.EnrichedPlaylist, error) {
+func (s *PluginService) GetPlaylist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedPlaylist, error) {
 	var playlist model.Playlist
 	var err error
 	var provider string
-	for _, instance := range instances {
-		plugin, ok := s.store.GetPluginByName(instance.Plugin)
-		if !ok {
-			err = model.ErrPluginNotFound
-			continue
-		}
-		playlist, err = plugin.Playlist(ctx, instance.Url, id)
+	for plugin, instances := range pluginInstances {
+		playlist, err = plugin.Playlist(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -258,17 +286,12 @@ func (s *PluginService) enrichPlaylist(ctx context.Context, provider string, pla
 	}
 }
 
-func (s *PluginService) Search(ctx context.Context, instances []model.Instance, q string) (model.EnrichedSearch, error) {
+func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedSearch, error) {
 	var result model.Search
 	var err error
 	var provider string
-	for _, instance := range instances {
-		plugin, ok := s.store.GetPluginByName(instance.Plugin)
-		if !ok {
-			err = model.ErrPluginNotFound
-			continue
-		}
-		result, err = plugin.Search(ctx, instance.Url, q, q, q, q)
+	for plugin, instances := range pluginInstances {
+		result, err = plugin.Search(ctx, instances, q, q, q, q)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -294,7 +317,7 @@ func (s *PluginService) Search(ctx context.Context, instances []model.Instance, 
 
 	artists := []model.EnrichedArtist{}
 	for _, artist := range result.Artists {
-		enrichedArtist := s.enrichArtist(ctx, provider, instances, artist)
+		enrichedArtist := s.enrichArtist(ctx, provider, pluginInstances, artist)
 
 		artists = append(artists, enrichedArtist)
 	}

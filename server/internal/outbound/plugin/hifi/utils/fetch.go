@@ -13,13 +13,31 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func FetchType[T any](ctx context.Context, url string, limiter *rate.Limiter) (T, error) {
+func FetchTypeSequential[T any](ctx context.Context, urls []string, path string, limiters map[string]*rate.Limiter) (T, error) {
+	var data T
+	var err error
+	for _, url := range urls {
+		limiter, ok := limiters[url]
+		if !ok {
+			limiter = rate.NewLimiter(rate.Every(6*time.Second), 150)
+			limiters[url] = limiter
+		}
+
+		data, err = FetchType[T](ctx, url, path, limiter)
+		if err == nil {
+			break
+		}
+	}
+	return data, err
+}
+
+func FetchType[T any](ctx context.Context, url string, path string, limiter *rate.Limiter) (T, error) {
 	var zero T
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := Fetch(ctx, url, limiter)
+	resp, err := Fetch(ctx, url+path, limiter)
 	if err != nil {
 		return zero, fmt.Errorf("hifi_utils.FetchType: %w", err)
 	}

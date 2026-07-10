@@ -5,7 +5,6 @@ package hifi
 import (
 	"context"
 	"io"
-	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
 	"github.com/rs/zerolog"
@@ -13,14 +12,14 @@ import (
 )
 
 type Hifi struct {
-	l       *zerolog.Logger
-	limiter *rate.Limiter
+	l        *zerolog.Logger
+	limiters map[string]*rate.Limiter
 }
 
 func NewHifi(l *zerolog.Logger) Hifi {
 	return Hifi{
-		l:       l,
-		limiter: rate.NewLimiter(rate.Every(6*time.Second), 150),
+		l:        l,
+		limiters: map[string]*rate.Limiter{},
 	}
 }
 
@@ -36,10 +35,10 @@ func (p *Hifi) Download(ctx context.Context, user *model.User, id string) (io.Re
 	return nil, "", nil
 }
 
-func (p *Hifi) Url(ctx context.Context, url string, id string) (model.UrlItem, error) {
+func (p *Hifi) Url(ctx context.Context, instances []model.Instance, url string) (model.UrlItem, error) {
 	return model.UrlItem{}, nil
 }
 
-func (p *Hifi) Lyrics(ctx context.Context, url string, id string) (string, string, error) {
+func (p *Hifi) Lyrics(ctx context.Context, instances []model.Instance, id string) (string, string, error) {
 	return "", "", nil
 }

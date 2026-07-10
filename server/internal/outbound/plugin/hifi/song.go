@@ -13,51 +13,51 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func getSongInfo(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, error) {
-	songInfo, err := hifi_utils.FetchType[songData](ctx, url+"/info/?id="+lib_url.QueryEscape(id), limiter)
+func getSongInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (songResponse, error) {
+	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return songData{}, fmt.Errorf("getSongInfo: %w", err)
+		return songResponse{}, fmt.Errorf("getSongInfo: %w", err)
 	}
 
 	return songInfo, nil
 }
 
-func getSong(ctx context.Context, limiter *rate.Limiter, url string, id string) (songData, downloadData, error) {
-	var songInfo songData
+func getSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (songResponse, downloadResponse, error) {
+	var songInfo songResponse
 	var songInfoErr error
-	var downloadInfo downloadData
+	var downloadInfo downloadResponse
 	var downloadInfoErr error
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		defer wg.Done()
-		songInfo, songInfoErr = getSongInfo(ctx, limiter, url, id)
+		songInfo, songInfoErr = getSongInfo(ctx, limiters, urls, id)
 	})
 	wg.Go(func() {
-		defer wg.Done()
-		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, url, id, "")
+		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, limiters, urls, id, "")
 	})
 	wg.Wait()
 
 	if songInfoErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", songInfoErr)
+		return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", songInfoErr)
 	}
 	if downloadInfoErr != nil {
-		return songData{}, downloadData{}, fmt.Errorf("getSongData: %w", downloadInfoErr)
+		return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", downloadInfoErr)
 	}
 
 	return songInfo, downloadInfo, nil
 }
 
-func (p *Hifi) Song(ctx context.Context, url string, id string) (model.Song, error) {
-	songInfo, downloadInfo, err := getSong(ctx, p.limiter, url, id)
+func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) (model.Song, error) {
+	urls := hifi_utils.InstancesToUrls(instances)
+
+	songInfo, downloadInfo, err := getSong(ctx, p.limiters, urls, id)
 	if err != nil {
 		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
 	}
 
 	releaseDate, err := time.Parse(StreamStartDateLayout, songInfo.Data.ReleaseDate)
 	if err != nil {
-		return model.Song{}, fmt.Errorf("Hifi.Song: time.Parse: %w", err)
+		p.l.Warn().Msg(fmt.Sprintf("Hifi.Song: time.Parse(%s): %s", songInfo.Data.ReleaseDate, err.Error()))
 	}
 
 	audioQuality := LOW

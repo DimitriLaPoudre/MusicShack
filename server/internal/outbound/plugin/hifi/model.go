@@ -24,219 +24,9 @@ var (
 const StreamStartDateLayout = "2006-01-02T15:04:05.000Z0700"
 const ReleaseDateLayout = "2006-01-02"
 
-type status struct {
+type statusResponse struct {
 	Version string `json:"version"`
 	Repo    string `json:"Repo"`
-}
-
-type artistInfo struct {
-	Version string
-	Artist  artistItem
-	Cover   struct {
-		// 750 string
-		Id   uint
-		Name string
-	}
-}
-
-type artistAlbums struct {
-	Version string
-	Albums  struct {
-		Items []albumItem
-	}
-	Tracks []songItem
-}
-
-type artistItem struct {
-	Id                 uint
-	Name               string
-	ArtistTypes        []string
-	Url                string
-	PictureUrl         string `json:"picture"`
-	PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
-	Popularity         uint
-	ArtistRoles        []struct {
-		CategoryId int
-		Category   string
-	}
-	Mixes struct {
-		Artist_mix string
-	}
-	Spotlighted bool
-}
-
-type albumData struct {
-	Version string
-	Data    struct {
-		Id                     uint
-		Title                  string
-		Duration               uint
-		StreamReady            bool
-		PayToStream            bool
-		AdSupportedStreamReady bool
-		DjReady                bool
-		StemReady              bool
-		StreamStartDate        string
-		AllowStreaming         bool
-		PremiumStreamingOnly   bool
-		NumberOfTracks         uint
-		NumberOfVideos         uint
-		NumberOfVolumes        uint
-		ReleaseDate            string
-		Copyright              string
-		Type                   string
-		Url                    string
-		CoverUrl               string `json:"cover"`
-		VibrantColor           string
-		Explicit               bool
-		Upc                    string
-		Popularity             uint
-		AudioQuality           string
-		AudioModes             []string
-		MediaMetadata          struct {
-			Tags []string
-		}
-		Upload  bool
-		Artists []struct {
-			Id   uint
-			Name string
-			Type string
-		}
-		Items []struct {
-			Item songItem
-			Type string
-		}
-	}
-}
-
-type albumItem struct {
-	Id                     uint
-	Title                  string
-	Duration               uint
-	StreamReady            bool
-	PayToStream            bool
-	AdSupportedStreamReady bool
-	DjReady                bool
-	StemReady              bool
-	StreamStartDate        string
-	AllowStreaming         bool
-	PremiumStreamingOnly   bool
-	NumberOfTracks         uint
-	NumberOfVideos         uint
-	NumberOfVolumes        uint
-	ReleaseDate            string
-	Copyright              string
-	Type                   string
-	Url                    string
-	CoverUrl               string `json:"cover"`
-	VibrantColor           string
-	Explicit               bool
-	Upc                    string
-	Popularity             uint
-	AudioQuality           string
-	AudioModes             []string
-	MediaMetadata          struct {
-		Tags []string
-	}
-	Upload  bool
-	Artists []struct {
-		Id   uint
-		Name string
-		Type string
-	}
-}
-
-type artistMinimalData struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-}
-
-type albumMinimalData struct {
-	ID           uint   `json:"id"`
-	Title        string `json:"title"`
-	CoverUrl     string `json:"cover"`
-	VibrantColor string `json:"vibrantColor"`
-}
-
-type mixesMinimalData struct {
-	Track_mix string `json:"TRACK_MIX"`
-}
-
-type playlistInfoData struct {
-	UUID           string `json:"uuid"`
-	Title          string `json:"title"`
-	NumberOfTracks uint   `json:"numberOfTracks"`
-	NumberOfVideos uint   `json:"numberOfVideos"`
-	Creator        struct {
-		ID uint `json:"id"`
-	} `json:"creator"`
-	Description     string              `json:"description"`
-	Duration        uint                `json:"duration"`
-	LastUpdated     string              `json:"lastUpdated"`
-	Created         string              `json:"created"`
-	Type            string              `json:"type"`
-	PublicPlaylist  bool                `json:"publicPlaylist"`
-	URL             string              `json:"url"`
-	Image           string              `json:"image"`
-	Popularity      uint                `json:"popularity"`
-	SquareImage     string              `json:"squareImage"`
-	PromotedArtists []artistMinimalData `json:"promotedArtists"`
-	LastItemAddedAt string              `json:"lastItemAddedAt"`
-}
-
-type playlistData struct {
-	Version  string           `json:"version"`
-	Playlist playlistInfoData `json:"playlist"`
-	Items    []struct {
-		Type string `json:"type"`
-		Item struct {
-			ID                     uint     `json:"id"`
-			Title                  string   `json:"title"`
-			Duration               uint     `json:"duration"`
-			ReplayGain             float64  `json:"replayGain"`
-			Peak                   float64  `json:"peak"`
-			AllowStreaming         bool     `json:"allowStreaming"`
-			StreamReady            bool     `json:"streamReady"`
-			PayToStream            bool     `json:"payToStream"`
-			AdSupportedStreamReady bool     `json:"adSupportedStreamReady"`
-			DjReady                bool     `json:"djReady"`
-			StemReady              bool     `json:"stemReady"`
-			ReleaseDate            string   `json:"streamStartDate"`
-			PremiumStreamingOnly   bool     `json:"premiumStreamingOnly"`
-			TrackNumber            uint     `json:"trackNumber"`
-			VolumeNumber           uint     `json:"volumeNumber"`
-			Popularity             uint     `json:"popularity"`
-			Copyright              string   `json:"copyright"`
-			Bpm                    uint     `json:"bpm"`
-			Key                    string   `json:"key"`
-			KeyScale               string   `json:"keyScale"`
-			URL                    string   `json:"url"`
-			ISRC                   string   `json:"isrc"`
-			Editable               bool     `json:"editable"`
-			Explicit               bool     `json:"explicit"`
-			AudioQuality           string   `json:"audioQuality"`
-			AudioModes             []string `json:"audioModes"`
-			MediaMetadata          struct {
-				Tags []string `json:"tags"`
-			} `json:"mediaMetadata"`
-			Upload      bool                `json:"upload"`
-			AccessType  string              `json:"accessType"`
-			Spotlighted bool                `json:"spotlighted"`
-			Artist      artistMinimalData   `json:"artist"`
-			Artists     []artistMinimalData `json:"artists"`
-			Album       albumMinimalData    `json:"album"`
-			Mixes       mixesMinimalData    `json:"mixes"`
-			DateAdded   string              `json:"dateAdded"`
-			Index       uint                `json:"index"`
-			ItemUUID    string              `json:"itemUuid"`
-		} `json:"item"`
-	} `json:"items"`
-}
-
-type songData struct {
-	Version string
-	Data    songItem
 }
 
 type songItem struct {
@@ -294,7 +84,215 @@ type songItem struct {
 	CoverUrl string
 }
 
-type searchSongData struct {
+type songResponse struct {
+	Version string
+	Data    songItem
+}
+
+type albumMinimalData struct {
+	ID           uint   `json:"id"`
+	Title        string `json:"title"`
+	CoverUrl     string `json:"cover"`
+	VibrantColor string `json:"vibrantColor"`
+}
+
+type albumItem struct {
+	Id                     uint
+	Title                  string
+	Duration               uint
+	StreamReady            bool
+	PayToStream            bool
+	AdSupportedStreamReady bool
+	DjReady                bool
+	StemReady              bool
+	StreamStartDate        string
+	AllowStreaming         bool
+	PremiumStreamingOnly   bool
+	NumberOfTracks         uint
+	NumberOfVideos         uint
+	NumberOfVolumes        uint
+	ReleaseDate            string
+	Copyright              string
+	Type                   string
+	Url                    string
+	CoverUrl               string `json:"cover"`
+	VibrantColor           string
+	Explicit               bool
+	Upc                    string
+	Popularity             uint
+	AudioQuality           string
+	AudioModes             []string
+	MediaMetadata          struct {
+		Tags []string
+	}
+	Upload  bool
+	Artists []struct {
+		Id   uint
+		Name string
+		Type string
+	}
+}
+
+type albumResponse struct {
+	Version string
+	Data    struct {
+		Id                     uint
+		Title                  string
+		Duration               uint
+		StreamReady            bool
+		PayToStream            bool
+		AdSupportedStreamReady bool
+		DjReady                bool
+		StemReady              bool
+		StreamStartDate        string
+		AllowStreaming         bool
+		PremiumStreamingOnly   bool
+		NumberOfTracks         uint
+		NumberOfVideos         uint
+		NumberOfVolumes        uint
+		ReleaseDate            string
+		Copyright              string
+		Type                   string
+		Url                    string
+		CoverUrl               string `json:"cover"`
+		VibrantColor           string
+		Explicit               bool
+		Upc                    string
+		Popularity             uint
+		AudioQuality           string
+		AudioModes             []string
+		MediaMetadata          struct {
+			Tags []string
+		}
+		Upload  bool
+		Artists []struct {
+			Id   uint
+			Name string
+			Type string
+		}
+		Items []struct {
+			Item songItem
+			Type string
+		}
+	}
+}
+
+type artistMinimalData struct {
+	ID   uint   `json:"id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type artistItem struct {
+	Id                 uint
+	Name               string
+	ArtistTypes        []string
+	Url                string
+	PictureUrl         string `json:"picture"`
+	PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
+	Popularity         uint
+	ArtistRoles        []struct {
+		CategoryId int
+		Category   string
+	}
+	Mixes struct {
+		Artist_mix string
+	}
+	Spotlighted bool
+}
+
+type artistResponse struct {
+	Version string
+	Artist  artistItem
+	Cover   struct {
+		// 750 string
+		Id   uint
+		Name string
+	}
+}
+
+type artistAlbumsResponse struct {
+	Version string
+	Albums  struct {
+		Items []albumItem
+	}
+	Tracks []songItem
+}
+
+type playlistInfo struct {
+	UUID           string `json:"uuid"`
+	Title          string `json:"title"`
+	NumberOfTracks uint   `json:"numberOfTracks"`
+	NumberOfVideos uint   `json:"numberOfVideos"`
+	Creator        struct {
+		ID uint `json:"id"`
+	} `json:"creator"`
+	Description     string              `json:"description"`
+	Duration        uint                `json:"duration"`
+	LastUpdated     string              `json:"lastUpdated"`
+	Created         string              `json:"created"`
+	Type            string              `json:"type"`
+	PublicPlaylist  bool                `json:"publicPlaylist"`
+	URL             string              `json:"url"`
+	Image           string              `json:"image"`
+	Popularity      uint                `json:"popularity"`
+	SquareImage     string              `json:"squareImage"`
+	PromotedArtists []artistMinimalData `json:"promotedArtists"`
+	LastItemAddedAt string              `json:"lastItemAddedAt"`
+}
+
+type playlistResponse struct {
+	Version  string       `json:"version"`
+	Playlist playlistInfo `json:"playlist"`
+	Items    []struct {
+		Type string `json:"type"`
+		Item struct {
+			ID                     uint     `json:"id"`
+			Title                  string   `json:"title"`
+			Duration               uint     `json:"duration"`
+			ReplayGain             float64  `json:"replayGain"`
+			Peak                   float64  `json:"peak"`
+			AllowStreaming         bool     `json:"allowStreaming"`
+			StreamReady            bool     `json:"streamReady"`
+			PayToStream            bool     `json:"payToStream"`
+			AdSupportedStreamReady bool     `json:"adSupportedStreamReady"`
+			DjReady                bool     `json:"djReady"`
+			StemReady              bool     `json:"stemReady"`
+			ReleaseDate            string   `json:"streamStartDate"`
+			PremiumStreamingOnly   bool     `json:"premiumStreamingOnly"`
+			TrackNumber            uint     `json:"trackNumber"`
+			VolumeNumber           uint     `json:"volumeNumber"`
+			Popularity             uint     `json:"popularity"`
+			Copyright              string   `json:"copyright"`
+			Bpm                    uint     `json:"bpm"`
+			Key                    string   `json:"key"`
+			KeyScale               string   `json:"keyScale"`
+			URL                    string   `json:"url"`
+			ISRC                   string   `json:"isrc"`
+			Editable               bool     `json:"editable"`
+			Explicit               bool     `json:"explicit"`
+			AudioQuality           string   `json:"audioQuality"`
+			AudioModes             []string `json:"audioModes"`
+			MediaMetadata          struct {
+				Tags []string `json:"tags"`
+			} `json:"mediaMetadata"`
+			Upload      bool                `json:"upload"`
+			AccessType  string              `json:"accessType"`
+			Spotlighted bool                `json:"spotlighted"`
+			Artist      artistMinimalData   `json:"artist"`
+			Artists     []artistMinimalData `json:"artists"`
+			Album       albumMinimalData    `json:"album"`
+			Mixes       struct {
+				Track_mix string `json:"TRACK_MIX"`
+			} `json:"mixes"`
+			DateAdded string `json:"dateAdded"`
+			Index     uint   `json:"index"`
+			ItemUUID  string `json:"itemUuid"`
+		} `json:"item"`
+	} `json:"items"`
+}
+
+type searchSongResponse struct {
 	Version string
 	Data    struct {
 		Limit              uint
@@ -304,7 +302,7 @@ type searchSongData struct {
 	}
 }
 
-type searchAlbumData struct {
+type searchAlbumResponse struct {
 	Version string
 	Data    struct {
 		Albums struct {
@@ -316,7 +314,7 @@ type searchAlbumData struct {
 	}
 }
 
-type searchArtistData struct {
+type searchArtistResponse struct {
 	Version string
 	Data    struct {
 		Artists struct {
@@ -328,19 +326,19 @@ type searchArtistData struct {
 	}
 }
 
-type searchPlaylistData struct {
+type searchPlaylistResponse struct {
 	Version string `json:"version"`
 	Data    struct {
 		Playlists struct {
-			Limit              uint               `json:"limit"`
-			Offset             uint               `json:"offset"`
-			TotalNumberOfItems uint               `json:"totalNumberOfItems"`
-			Playlists          []playlistInfoData `json:"items"`
+			Limit              uint           `json:"limit"`
+			Offset             uint           `json:"offset"`
+			TotalNumberOfItems uint           `json:"totalNumberOfItems"`
+			Playlists          []playlistInfo `json:"items"`
 		} `json:"playlists"`
 	} `json:"data"`
 }
 
-type downloadData struct {
+type downloadResponse struct {
 	Version string
 	Data    downloadItem
 }

@@ -12,21 +12,22 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func getAlbum(ctx context.Context, limiter *rate.Limiter, url string, id string) (albumData, error) {
-	album, err := hifi_utils.FetchType[albumData](ctx, url+"/album/?id="+lib_url.QueryEscape(id), limiter)
+func getAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (albumResponse, error) {
+	album, err := hifi_utils.FetchTypeSequential[albumResponse](ctx, urls, "/album/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return albumData{}, fmt.Errorf("getAlbum: %w", err)
+		return albumResponse{}, fmt.Errorf("getAlbum: %w", err)
 	}
 
 	return album, nil
 }
 
-func (p *Hifi) Album(ctx context.Context, url string, id string) (model.Album, error) {
-	album, err := getAlbum(ctx, p.limiter, url, id)
+func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string) (model.Album, error) {
+	urls := hifi_utils.InstancesToUrls(instances)
+
+	album, err := getAlbum(ctx, p.limiters, urls, id)
 	if err != nil {
 		return model.Album{}, fmt.Errorf("Hifi.Album: %w", err)
 	}
-
 	releaseDate, err := time.Parse(StreamStartDateLayout, album.Data.ReleaseDate)
 	if err != nil {
 		p.l.Warn().Msg(fmt.Sprintf("Hifi.Album: time.Parse(%s): %s", album.Data.ReleaseDate, err.Error()))

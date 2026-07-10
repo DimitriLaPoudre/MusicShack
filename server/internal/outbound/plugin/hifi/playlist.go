@@ -12,17 +12,19 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func getPlaylist(ctx context.Context, limiter *rate.Limiter, url string, id string) (playlistData, error) {
-	playlist, err := hifi_utils.FetchType[playlistData](ctx, url+"/playlist/?id="+lib_url.QueryEscape(id), limiter)
+func getPlaylist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (playlistResponse, error) {
+	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return playlistData{}, fmt.Errorf("getPlaylist: %w", err)
+		return playlistResponse{}, fmt.Errorf("getPlaylist: %w", err)
 	}
 
 	return playlist, nil
 }
 
-func (p *Hifi) Playlist(ctx context.Context, url string, id string) (model.Playlist, error) {
-	data, err := getPlaylist(ctx, p.limiter, url, id)
+func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id string) (model.Playlist, error) {
+	urls := hifi_utils.InstancesToUrls(instances)
+
+	data, err := getPlaylist(ctx, p.limiters, urls, id)
 	if err != nil {
 		return model.Playlist{}, fmt.Errorf("Hifi.Playlist: %w", err)
 	}

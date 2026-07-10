@@ -36,11 +36,11 @@ type Plugin interface {
 	Provider() string
 	Status(ctx context.Context, url string) error
 	Download(ctx context.Context, user *User, id string) (io.ReadCloser, string, error)
-	Song(ctx context.Context, url string, id string) (Song, error)
-	Album(ctx context.Context, url string, id string) (Album, error)
-	Artist(ctx context.Context, url string, id string) (Artist, error)
-	Playlist(ctx context.Context, url string, id string) (Playlist, error)
-	Search(ctx context.Context, url string, song string, album string, artist string, playlist string) (Search, error)
-	Url(ctx context.Context, url string, id string) (UrlItem, error)
-	Lyrics(ctx context.Context, url string, id string) (string, string, error)
+	Song(ctx context.Context, instances []Instance, id string) (Song, error)
+	Album(ctx context.Context, instances []Instance, id string) (Album, error)
+	Artist(ctx context.Context, instances []Instance, id string) (Artist, error)
+	Playlist(ctx context.Context, instances []Instance, id string) (Playlist, error)
+	Search(ctx context.Context, instances []Instance, song string, album string, artist string, playlist string) (Search, error)
+	Url(ctx context.Context, instances []Instance, url string) (UrlItem, error)
+	Lyrics(ctx context.Context, instances []Instance, id string) (string, string, error)
 }
