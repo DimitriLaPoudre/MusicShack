@@ -26,7 +26,7 @@ func NewInstanceHandler(l *zerolog.Logger, instance *usecase.InstanceUseCase) In
 }
 
 func (h *InstanceHandler) CreateForMe(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -54,7 +54,7 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 }
 
 func (h *InstanceHandler) ListForMe(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
@@ -71,7 +71,7 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 }
 
 func (h *InstanceHandler) DeleteForMe(c *gin.Context) {
-	me, err := utils.GetFromContext[*model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err, h.l)
 		return
