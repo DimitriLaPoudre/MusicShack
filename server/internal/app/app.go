@@ -29,7 +29,8 @@ func Run(l *zerolog.Logger, cfg *config.Config) {
 	}
 
 	pluginStore := service.NewPluginStoreService(l)
-	pluginStore.Register(&hifi.Hifi{})
+	pluginHifi := hifi.NewHifi(l)
+	pluginStore.Register(&pluginHifi)
 
 	authS := service.NewAuthService(l, cfg.Session, &repo, &repo)
 	userS := service.NewUserService(l, cfg.Library, &repo)
