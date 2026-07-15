@@ -36,12 +36,6 @@ func New(
 
 	api := app.Group("/api")
 	{
-		// adminGroup := api.Group("/admin")
-		// {
-		// 	adminGroup.POST("/login", middleware.RateLimiter(time.Minute, 5), adminH.Login)
-		// 	adminGroup.PUT("/change-password", middleware.RateLimiter(time.Minute, 25), adminH.ChangeAdminPassword)
-		// }
-
 		meGroup := api.Group("/me")
 		{
 			meGroup.Use(middleware.RateLimiter(time.Minute, 100))
@@ -49,7 +43,7 @@ func New(
 			meGroup.GET("", meH.Get)
 			meGroup.PUT("", meH.Update)
 
-			instancesGroup := api.Group("/instances")
+			instancesGroup := meGroup.Group("/instances")
 			{
 				instancesGroup.GET("", instanceH.ListForMe)
 				instancesGroup.POST("", instanceH.CreateForMe)
@@ -77,9 +71,12 @@ func New(
 
 		pluginGroup := api.Group("/plugin")
 		{
-			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
+			pluginGroup.GET("/song/:provider/:id", authMW, pluginH.GetSong)
+			pluginGroup.GET("/album/:provider/:id", authMW, pluginH.GetAlbum)
+			pluginGroup.GET("/artist/:provider/:id", authMW, pluginH.GetArtist)
+			pluginGroup.GET("/playlist/:provider/:id", authMW, pluginH.GetPlaylist)
+			pluginGroup.GET("/search", authMW, pluginH.GetSearch)
 		}
-
 	}
 }
 
