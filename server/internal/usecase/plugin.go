@@ -89,6 +89,10 @@ func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provid
 }
 
 func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string) (map[string]model.EnrichedSearch, error) {
+	if q == "" {
+		return nil, model.ErrPluginSearchEmptyQuery
+	}
+
 	providerResult := map[string]model.EnrichedSearch{}
 
 	for provider := range u.store.ListPluginsByProvider() {

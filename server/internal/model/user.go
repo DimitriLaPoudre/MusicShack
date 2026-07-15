@@ -1,6 +1,10 @@
 package model
 
-import "github.com/google/uuid"
+import (
+	"fmt"
+
+	"github.com/google/uuid"
+)
 
 type UserRole string
 
@@ -8,6 +12,15 @@ const (
 	UserRoleUser  UserRole = "user"
 	UserRoleAdmin UserRole = "admin"
 )
+
+func (r UserRole) IsValid() error {
+	switch r {
+	case UserRoleAdmin, UserRoleUser:
+		return nil
+	default:
+		return fmt.Errorf("UserRole.IsValid: %s: %w", r, ErrUserRoleInvalid)
+	}
+}
 
 type User struct {
 	ID       uuid.UUID

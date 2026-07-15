@@ -28,7 +28,7 @@ func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string)
 	if err != nil {
 		return model.Album{}, fmt.Errorf("Hifi.Album: %w", err)
 	}
-	releaseDate, err := time.Parse(StreamStartDateLayout, album.Data.ReleaseDate)
+	releaseDate, err := time.Parse(ReleaseDateLayout, album.Data.ReleaseDate)
 	if err != nil {
 		p.l.Warn().Msg(fmt.Sprintf("Hifi.Album: time.Parse(%s): %s", album.Data.ReleaseDate, err.Error()))
 	}

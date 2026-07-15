@@ -198,10 +198,12 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	}
 
 	return model.Artist{
-		Id:      strconv.FormatUint(uint64(artistInfo.Artist.Id), 10),
-		Name:    artistInfo.Artist.Name,
-		Albums:  albums,
-		Ep:      eps,
-		Singles: singles,
+		Id:         strconv.FormatUint(uint64(artistInfo.Artist.Id), 10),
+		Name:       artistInfo.Artist.Name,
+		PictureUrl: pictureURL,
+		Popularity: artistInfo.Artist.Popularity,
+		Albums:     albums,
+		Ep:         eps,
+		Singles:    singles,
 	}, nil
 }

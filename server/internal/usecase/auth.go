@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
@@ -31,21 +32,21 @@ func NewAuthUseCase(l *zerolog.Logger, cfg config.SessionConfig, user model.User
 func (s *AuthUseCase) Login(c context.Context, form model.LoginForm) (string, error) {
 	user, err := s.user.GetUserByFilter(c, model.UserFilter{Username: &form.Username})
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("AuthUseCase.Login: %w", err)
 	}
 
 	if err := crypto.ComparePassword(user.Password, form.Password); err != nil {
-		return "", err
+		return "", fmt.Errorf("AuthUseCase.Login: %w", err)
 	}
 
 	id, err := uuid.NewV7()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("AuthUseCase.Login: %w", err)
 	}
 
 	token, err := token.GenerateSessionToken()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("AuthUseCase.Login: %w", err)
 	}
 
 	var expiresAt time.Time
@@ -64,7 +65,7 @@ func (s *AuthUseCase) Login(c context.Context, form model.LoginForm) (string, er
 
 	session, err := s.session.CreateSession(c, newSession)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("AuthUseCase.Login: %w", err)
 	}
 
 	return session.Token, nil
@@ -72,6 +73,8 @@ func (s *AuthUseCase) Login(c context.Context, form model.LoginForm) (string, er
 }
 
 func (s *AuthUseCase) Logout(c context.Context, token string) error {
-	err := s.session.DeleteSessionByToken(c, token)
-	return err
+	if err := s.session.DeleteSessionByToken(c, token); err != nil {
+		return fmt.Errorf("AuthUseCase.Logout: %w", err)
+	}
+	return nil
 }

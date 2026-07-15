@@ -19,12 +19,14 @@ func NewPluginStoreService(l *zerolog.Logger) PluginStoreService {
 	}
 }
 
-func (store *PluginStoreService) Register(p model.Plugin) {
-	store.name[p.Name()] = p
-	store.provider[p.Provider()] = append(store.provider[p.Provider()], p)
-	// slices.SortFunc(store.provider[p.Provider()], func(a, b models.Plugin) int {
-	// 	return b.Priority() - a.Priority()
-	// })
+func (store *PluginStoreService) Register(plugins ...model.Plugin) {
+	for _, p := range plugins {
+		store.name[p.Name()] = p
+		store.provider[p.Provider()] = append(store.provider[p.Provider()], p)
+		// slices.SortFunc(store.provider[p.Provider()], func(a, b models.Plugin) int {
+		// 	return b.Priority() - a.Priority()
+		// })
+	}
 }
 
 func (store *PluginStoreService) GetPluginByName(name string) (model.Plugin, bool) {

@@ -19,12 +19,12 @@ func (r *PostgresRepository) CreateInstance(ctx context.Context, i model.Instanc
 		i.ID, i.UserID, i.Provider, i.Plugin, i.Url, i.Ping,
 	)
 	if err != nil {
-		return model.Instance{}, err
+		return model.Instance{}, fmt.Errorf("PostgresRepository.CreateInstance: %w", dto.Error(err))
 	}
 
 	dbInstance, err := pgx.CollectExactlyOneRow(rows, pgx.RowToStructByName[dto.Instance])
-	if err := dto.Error(err); err != nil {
-		return model.Instance{}, err
+	if err != nil {
+		return model.Instance{}, fmt.Errorf("PostgresRepository.CreateInstance: %w", dto.Error(err))
 	}
 
 	return dbInstance.ToInstance(), nil
@@ -66,19 +66,19 @@ func (r *PostgresRepository) ListInstancesByFilter(ctx context.Context, filter m
 	if argID == 1 {
 		query = "SELECT * FROM instances"
 	} else {
-		query = fmt.Sprintf("SELECT * FROM instances WHERE %s ORDER_BY ping asc", strings.Join(setParts, ", "))
+		query = fmt.Sprintf("SELECT * FROM instances WHERE %s ORDER BY ping ASC", strings.Join(setParts, " AND "))
 	}
 
 	tx := r.getTx(ctx)
 
 	rows, err := tx.Query(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return []model.Instance{}, fmt.Errorf("PostgresRepository.ListInstancesByFilter: %w", dto.Error(err))
 	}
 
 	dbInstances, err := pgx.CollectRows(rows, pgx.RowToStructByName[dto.Instance])
-	if err := dto.Error(err); err != nil {
-		return []model.Instance{}, err
+	if err != nil {
+		return []model.Instance{}, fmt.Errorf("PostgresRepository.ListInstancesByFilter: %w", dto.Error(err))
 	}
 
 	return dto.InstancesToInstances(dbInstances), nil
@@ -88,7 +88,7 @@ func (r *PostgresRepository) DeleteInstance(ctx context.Context, id uuid.UUID) e
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM instances WHERE id = $1", id); err != nil {
-		return dto.Error(err)
+		return fmt.Errorf("PostgresRepository.DeleteInstance: %w", dto.Error(err))
 	}
 	return nil
 }
@@ -97,7 +97,7 @@ func (r *PostgresRepository) DeleteInstanceByUserID(ctx context.Context, id uuid
 	tx := r.getTx(ctx)
 
 	if _, err := tx.Exec(ctx, "DELETE FROM instances WHERE id = $1 AND user_id = $2", id, userID); err != nil {
-		return dto.Error(err)
+		return fmt.Errorf("PostgresRepository.DeleteInstance: %w", dto.Error(err))
 	}
 	return nil
 }

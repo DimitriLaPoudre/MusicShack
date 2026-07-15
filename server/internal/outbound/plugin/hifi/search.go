@@ -71,6 +71,7 @@ func getSearch(ctx context.Context, limiters map[string]*rate.Limiter, urls []st
 	wg.Go(func() {
 		searchPlaylist, searchPlaylistErr = getSearchPlaylist(ctx, limiters, urls, playlist)
 	})
+	wg.Wait()
 
 	if searchSongErr != nil {
 		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, fmt.Errorf("getSearch: %w", searchSongErr)

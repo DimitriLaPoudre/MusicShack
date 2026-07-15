@@ -32,6 +32,7 @@ func FetchTypeSequential[T any](ctx context.Context, urls []string, path string,
 }
 
 func FetchType[T any](ctx context.Context, url string, path string, limiter *rate.Limiter) (T, error) {
+	fmt.Println("fetch: ", url+path)
 	var zero T
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)

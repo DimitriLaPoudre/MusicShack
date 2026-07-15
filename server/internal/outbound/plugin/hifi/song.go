@@ -26,23 +26,23 @@ func getSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []stri
 	var songInfo songResponse
 	var songInfoErr error
 	var downloadInfo downloadResponse
-	var downloadInfoErr error
+	// var downloadInfoErr error
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
 		songInfo, songInfoErr = getSongInfo(ctx, limiters, urls, id)
 	})
 	wg.Go(func() {
-		// downloadInfo, downloadInfoErr := getDownloadInfo(ctx, limiters, urls, id, "")
+		downloadInfo, _ = getDownloadInfo(ctx, limiters, urls, id, "")
 	})
 	wg.Wait()
 
 	if songInfoErr != nil {
 		return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", songInfoErr)
 	}
-	if downloadInfoErr != nil {
-		return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", downloadInfoErr)
-	}
+	// if downloadInfoErr != nil {
+	// 	return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", downloadInfoErr)
+	// }
 
 	return songInfo, downloadInfo, nil
 }
