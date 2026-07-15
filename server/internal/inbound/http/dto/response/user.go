@@ -6,6 +6,7 @@ type User struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	HiRes    bool   `json:"hi_res"`
+	Role     string `json:"role"`
 }
 
 func UserToResponse(user model.User) User {
@@ -13,6 +14,7 @@ func UserToResponse(user model.User) User {
 		ID:       user.ID.String(),
 		Username: user.Username,
 		HiRes:    user.HiRes,
+		Role:     string(user.Role),
 	}
 }
 

@@ -9,6 +9,7 @@ type CreateUser struct {
 	Username string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
 	Password string `json:"password" binding:"required"`
 	HiRes    bool   `json:"hi_res"`
+	Role     string `json:"role"`
 }
 
 func (req CreateUser) IntoUser() (model.User, error) {
@@ -16,6 +17,7 @@ func (req CreateUser) IntoUser() (model.User, error) {
 		Username: req.Username,
 		Password: req.Password,
 		HiRes:    req.HiRes,
+		Role:     model.UserRole(req.Role),
 	}, nil
 }
 
