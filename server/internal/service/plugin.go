@@ -3,22 +3,20 @@ package service
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type PluginService struct {
-	l     *zerolog.Logger
 	store *PluginStoreService
 }
 
-func NewPluginService(l *zerolog.Logger, store *PluginStoreService) PluginService {
+func NewPluginService(store *PluginStoreService) PluginService {
 	return PluginService{
-		l:     l,
 		store: store,
 	}
 }
@@ -40,7 +38,7 @@ func (s *PluginService) InstancesToMapPluginInstances(instances []model.Instance
 	}
 
 	for pluginName := range pluginNotFound {
-		s.l.Warn().Msg(fmt.Sprintf("PluginService.InstancesToMapPluginUrls: plugin not found: %s", pluginName))
+		slog.Warn(fmt.Sprintf("PluginService.InstancesToMapPluginUrls: plugin not found: %s", pluginName))
 	}
 
 	return pluginInstances

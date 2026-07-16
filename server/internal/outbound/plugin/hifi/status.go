@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/network"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/network"
 )
 
 func (p *Hifi) Status(ctx context.Context, url string) error {

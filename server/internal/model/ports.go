@@ -31,6 +31,10 @@ type InstanceRepository interface {
 	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
+type Migrator interface {
+	Migrate(dsn string) error
+}
+
 type Plugin interface {
 	Name() string
 	Provider() string

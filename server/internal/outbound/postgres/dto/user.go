@@ -1,7 +1,7 @@
 package dto
 
 import (
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/google/uuid"
 )
 

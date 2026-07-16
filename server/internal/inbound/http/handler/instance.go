@@ -3,24 +3,21 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type InstanceHandler struct {
-	l        *zerolog.Logger
 	instance *usecase.InstanceUseCase
 }
 
-func NewInstanceHandler(l *zerolog.Logger, instance *usecase.InstanceUseCase) InstanceHandler {
+func NewInstanceHandler(instance *usecase.InstanceUseCase) InstanceHandler {
 	return InstanceHandler{
-		l:        l,
 		instance: instance,
 	}
 }
@@ -28,7 +25,7 @@ func NewInstanceHandler(l *zerolog.Logger, instance *usecase.InstanceUseCase) In
 func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -45,7 +42,7 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 
 	createdInstance, err := h.instance.CreateInstance(c.Request.Context(), instance)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -56,13 +53,13 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 func (h *InstanceHandler) ListForMe(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
 	instances, err := h.instance.ListInstancesByFilter(c.Request.Context(), model.InstanceFilter{UserID: &me.ID})
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -73,7 +70,7 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 func (h *InstanceHandler) DeleteForMe(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -85,7 +82,7 @@ func (h *InstanceHandler) DeleteForMe(c *gin.Context) {
 	}
 
 	if err := h.instance.DeleteInstanceByUserID(c.Request.Context(), id, me.ID); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

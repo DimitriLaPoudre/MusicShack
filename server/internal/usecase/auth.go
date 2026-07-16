@@ -5,24 +5,21 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/crypto"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/token"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/token"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type AuthUseCase struct {
-	l       *zerolog.Logger
 	cfg     config.SessionConfig
 	user    model.UserRepository
 	session model.SessionRepository
 }
 
-func NewAuthUseCase(l *zerolog.Logger, cfg config.SessionConfig, user model.UserRepository, session model.SessionRepository) AuthUseCase {
+func NewAuthUseCase(cfg config.SessionConfig, user model.UserRepository, session model.SessionRepository) AuthUseCase {
 	return AuthUseCase{
-		l:       l,
 		cfg:     cfg,
 		user:    user,
 		session: session,

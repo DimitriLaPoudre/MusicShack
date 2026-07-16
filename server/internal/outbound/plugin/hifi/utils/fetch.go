@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/network"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/network"
 	"golang.org/x/time/rate"
 )
 
@@ -32,7 +32,6 @@ func FetchTypeSequential[T any](ctx context.Context, urls []string, path string,
 }
 
 func FetchType[T any](ctx context.Context, url string, path string, limiter *rate.Limiter) (T, error) {
-	fmt.Println("fetch: ", url+path)
 	var zero T
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)

@@ -3,23 +3,20 @@ package usecase
 import (
 	"context"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type UserUseCase struct {
-	l    *zerolog.Logger
 	cfg  config.LibraryConfig
 	user *service.UserService
 	repo model.UserRepository
 }
 
-func NewUserUseCase(l *zerolog.Logger, cfg config.LibraryConfig, user *service.UserService, repo model.UserRepository) UserUseCase {
+func NewUserUseCase(cfg config.LibraryConfig, user *service.UserService, repo model.UserRepository) UserUseCase {
 	return UserUseCase{
-		l:    l,
 		cfg:  cfg,
 		user: user,
 		repo: repo,

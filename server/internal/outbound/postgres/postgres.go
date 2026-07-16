@@ -2,22 +2,26 @@ package postgres
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog"
 )
 
+//go:embed migrations/*.sql
+var migrationFS embed.FS
+
 type PostgresRepository struct {
-	l    *zerolog.Logger
 	Pool *pgxpool.Pool
 }
 
-func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository, error) {
+func New(dsn string) (PostgresRepository, error) {
 	config, err := pgxpool.ParseConfig(dsn)
 	if err != nil {
 		return PostgresRepository{}, err
@@ -36,28 +40,28 @@ func New(l *zerolog.Logger, dsn string, migrationDir string) (PostgresRepository
 		return PostgresRepository{}, err
 	}
 
-	if migrationDir != "" {
-		if err := migrateDB(dsn, migrationDir); err != nil {
-			return PostgresRepository{}, err
-		}
-		l.Info().Msg("migration completed successfully")
-	}
-
-	return PostgresRepository{l: l, Pool: pool}, nil
+	return PostgresRepository{Pool: pool}, nil
 }
 
-func migrateDB(dsn string, migrationDir string) error {
-	m, err := migrate.New(
-		migrationDir,
+func (r *PostgresRepository) Migrate(dsn string) error {
+	source, err := iofs.New(migrationFS, "migrations")
+	if err != nil {
+		return fmt.Errorf("failed to create iofs: %v", err)
+	}
+
+	m, err := migrate.NewWithSourceInstance(
+		"iofs",
+		source,
 		dsn,
 	)
 	if err != nil {
-		return fmt.Errorf("cannot create migrate instance: %v", err)
+		return fmt.Errorf("failed to create migrator instance: %v", err)
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		return fmt.Errorf("cannot migrate: %v", err)
+		return fmt.Errorf("failed to load migration: %v", err)
 	}
 
+	slog.Info("postgres migration completed successfully")
 	return nil
 }

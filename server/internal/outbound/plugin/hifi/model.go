@@ -1,6 +1,6 @@
 package hifi
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import "github.com/DimitriLaPoudre/MusicShack/internal/model"
 
 var (
 	LOW = model.Quality{

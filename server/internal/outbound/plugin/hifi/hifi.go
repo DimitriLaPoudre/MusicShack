@@ -5,20 +5,19 @@ package hifi
 import (
 	"context"
 	"io"
+	"sync"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/rs/zerolog"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"golang.org/x/time/rate"
 )
 
 type Hifi struct {
-	l        *zerolog.Logger
+	mu       sync.Mutex
 	limiters map[string]*rate.Limiter
 }
 
-func NewHifi(l *zerolog.Logger) Hifi {
+func NewHifi() Hifi {
 	return Hifi{
-		l:        l,
 		limiters: map[string]*rate.Limiter{},
 	}
 }

@@ -1,6 +1,6 @@
 package request
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import "github.com/DimitriLaPoudre/MusicShack/internal/model"
 
 type LoginForm struct {
 	Username string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`

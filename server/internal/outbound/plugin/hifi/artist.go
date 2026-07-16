@@ -3,6 +3,7 @@ package hifi
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	lib_url "net/url"
 	"slices"
 	"strconv"
@@ -10,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 	"golang.org/x/time/rate"
 )
 
@@ -145,7 +146,7 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	for _, album := range list {
 		releaseDate, err := time.Parse(StreamStartDateLayout, album.ReleaseDate)
 		if err != nil {
-			p.l.Warn().Msg(fmt.Sprintf("Hifi.Artist: for album: time.Parse(%s): %s", album.ReleaseDate, err.Error()))
+			slog.Warn(fmt.Sprintf("hifi plugin failed to parse artist's album: %s releaseDate: %s", album.Title, album.ReleaseDate), slog.String("err", err.Error()))
 		}
 
 		audioQuality := LOW

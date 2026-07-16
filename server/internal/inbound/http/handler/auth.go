@@ -1,28 +1,26 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 type AuthHandler struct {
-	l          *zerolog.Logger
 	cfgHTTP    config.HTTPConfig
 	cfgSession config.SessionConfig
 	auth       *usecase.AuthUseCase
 }
 
-func NewAuthHandler(l *zerolog.Logger, cfgHTTP config.HTTPConfig, cfgSession config.SessionConfig, auth *usecase.AuthUseCase) AuthHandler {
+func NewAuthHandler(cfgHTTP config.HTTPConfig, cfgSession config.SessionConfig, auth *usecase.AuthUseCase) AuthHandler {
 	return AuthHandler{
-		l:          l,
 		cfgHTTP:    cfgHTTP,
 		cfgSession: cfgSession,
 		auth:       auth,
@@ -39,7 +37,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 
 	tkn, err := h.auth.Login(c.Request.Context(), loginForm)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -57,15 +55,18 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) Logout(c *gin.Context) {
 	tkn, err := c.Cookie(h.cfgSession.CookieName)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
 	c.SetCookie(h.cfgSession.CookieName, "", -1, "/api", "", h.cfgHTTP.HTTPS, true)
 
 	if err := h.auth.Logout(c, tkn); err != nil {
-		reqID := c.GetString("request_id")
-		h.l.Warn().Str("request_id", reqID).Msg(err.Error())
+		requestID, err := utils.GetFromContext[string](c, "request_id")
+		if err != nil {
+			requestID = "unknown"
+		}
+		slog.Error("logout failed", slog.String("request_id", requestID), slog.String("err", err.Error()))
 	}
 
 	c.JSON(http.StatusOK, response.Ok)

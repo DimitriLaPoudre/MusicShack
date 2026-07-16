@@ -5,21 +5,18 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type InstanceUseCase struct {
-	l      *zerolog.Logger
 	plugin *service.PluginService
 	repo   model.InstanceRepository
 }
 
-func NewInstanceUseCase(l *zerolog.Logger, plugin *service.PluginService, repo model.InstanceRepository) InstanceUseCase {
+func NewInstanceUseCase(plugin *service.PluginService, repo model.InstanceRepository) InstanceUseCase {
 	return InstanceUseCase{
-		l:      l,
 		plugin: plugin,
 		repo:   repo,
 	}

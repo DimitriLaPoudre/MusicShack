@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/url"
 
-	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 	"golang.org/x/time/rate"
 )
 

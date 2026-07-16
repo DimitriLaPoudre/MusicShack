@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	hifi_utils "github.com/Ascension-EIP/Ascension/apps/server/internal/outbound/plugin/hifi/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 	"golang.org/x/time/rate"
 )
 

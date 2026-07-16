@@ -1,19 +1,16 @@
 package service
 
 import (
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/rs/zerolog"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 )
 
 type PluginStoreService struct {
-	l        *zerolog.Logger
 	name     map[string]model.Plugin
 	provider map[string][]model.Plugin
 }
 
-func NewPluginStoreService(l *zerolog.Logger) PluginStoreService {
+func NewPluginStoreService() PluginStoreService {
 	return PluginStoreService{
-		l:        l,
 		name:     map[string]model.Plugin{},
 		provider: map[string][]model.Plugin{},
 	}

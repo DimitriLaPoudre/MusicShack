@@ -3,15 +3,14 @@ package middleware
 import (
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
-func AuthMiddleware(l *zerolog.Logger, cfg config.SessionConfig, auth *service.AuthService) gin.HandlerFunc {
+func AuthMiddleware(cfg config.SessionConfig, auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tkn, err := c.Cookie(cfg.CookieName)
 		if err != nil {
@@ -31,7 +30,7 @@ func AuthMiddleware(l *zerolog.Logger, cfg config.SessionConfig, auth *service.A
 	}
 }
 
-func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
+func AdminMiddleware(auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		me, err := utils.GetFromContext[model.User](c, "me")
 		if err != nil {
@@ -48,7 +47,7 @@ func AdminMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFu
 	}
 }
 
-func UserMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
+func UserMiddleware(auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		me, err := utils.GetFromContext[model.User](c, "me")
 		if err != nil {
@@ -65,7 +64,7 @@ func UserMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFun
 	}
 }
 
-func GuestMiddleware(l *zerolog.Logger, auth *service.AuthService) gin.HandlerFunc {
+func GuestMiddleware(auth *service.AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if _, err := utils.GetFromContext[model.User](c, "me"); err != nil {
 			c.Next()

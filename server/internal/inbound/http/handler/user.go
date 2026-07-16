@@ -3,23 +3,20 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type UserHandler struct {
-	l    *zerolog.Logger
 	user *usecase.UserUseCase
 }
 
-func NewUserHandler(l *zerolog.Logger, user *usecase.UserUseCase) UserHandler {
+func NewUserHandler(user *usecase.UserUseCase) UserHandler {
 	return UserHandler{
-		l:    l,
 		user: user,
 	}
 }
@@ -38,7 +35,7 @@ func (h *UserHandler) Create(c *gin.Context) {
 
 	createdUser, err := h.user.CreateUser(c.Request.Context(), user)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -56,7 +53,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 	user, err := h.user.GetUserByID(c.Request.Context(), userID)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -67,7 +64,7 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 func (h *UserHandler) List(c *gin.Context) {
 	users, err := h.user.ListAllUsers(c.Request.Context())
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -90,7 +87,7 @@ func (h *UserHandler) Update(c *gin.Context) {
 
 	updatedUser, err := h.user.UpdateUser(c.Request.Context(), user)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -107,7 +104,7 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	}
 
 	if err := h.user.DeleteUser(c.Request.Context(), userID); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

@@ -4,22 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/pkg/crypto"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog"
 )
 
 type UserService struct {
-	l    *zerolog.Logger
 	cfg  config.LibraryConfig
 	repo model.UserRepository
 }
 
-func NewUserService(l *zerolog.Logger, cfg config.LibraryConfig, repo model.UserRepository) UserService {
+func NewUserService(cfg config.LibraryConfig, repo model.UserRepository) UserService {
 	return UserService{
-		l:    l,
 		cfg:  cfg,
 		repo: repo,
 	}

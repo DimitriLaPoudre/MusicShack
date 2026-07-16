@@ -4,21 +4,18 @@ import (
 	"context"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
-	"github.com/rs/zerolog"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 )
 
 type AuthService struct {
-	l       *zerolog.Logger
 	cfg     config.SessionConfig
 	user    model.UserRepository
 	session model.SessionRepository
 }
 
-func NewAuthService(l *zerolog.Logger, cfg config.SessionConfig, user model.UserRepository, session model.SessionRepository) AuthService {
+func NewAuthService(cfg config.SessionConfig, user model.UserRepository, session model.SessionRepository) AuthService {
 	return AuthService{
-		l:       l,
 		cfg:     cfg,
 		user:    user,
 		session: session,

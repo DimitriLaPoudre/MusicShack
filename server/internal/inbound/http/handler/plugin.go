@@ -3,22 +3,19 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 type PluginHandler struct {
-	l      *zerolog.Logger
 	plugin *usecase.PluginUseCase
 }
 
-func NewPluginHandler(l *zerolog.Logger, plugin *usecase.PluginUseCase) PluginHandler {
+func NewPluginHandler(plugin *usecase.PluginUseCase) PluginHandler {
 	return PluginHandler{
-		l:      l,
 		plugin: plugin,
 	}
 }
@@ -26,7 +23,7 @@ func NewPluginHandler(l *zerolog.Logger, plugin *usecase.PluginUseCase) PluginHa
 func (h *PluginHandler) GetSong(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -35,7 +32,7 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 
 	song, err := h.plugin.GetSong(c.Request.Context(), me, provider, id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -46,7 +43,7 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 func (h *PluginHandler) GetAlbum(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -55,7 +52,7 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 
 	album, err := h.plugin.GetAlbum(c.Request.Context(), me, provider, id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -66,7 +63,7 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 func (h *PluginHandler) GetArtist(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -75,7 +72,7 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 
 	artist, err := h.plugin.GetArtist(c.Request.Context(), me, provider, id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -86,7 +83,7 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -95,7 +92,7 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 
 	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me, provider, id)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -106,7 +103,7 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 func (h *PluginHandler) GetSearch(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -114,7 +111,7 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 
 	results, err := h.plugin.GetSearch(c.Request.Context(), me, q)
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 

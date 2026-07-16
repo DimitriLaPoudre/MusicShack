@@ -3,21 +3,18 @@ package usecase
 import (
 	"context"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/service"
-	"github.com/rs/zerolog"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 )
 
 type PluginUseCase struct {
-	l        *zerolog.Logger
 	plugin   *service.PluginService
 	store    *service.PluginStoreService
 	instance model.InstanceRepository
 }
 
-func NewPluginUseCase(l *zerolog.Logger, plugin *service.PluginService, store *service.PluginStoreService, instance model.InstanceRepository) PluginUseCase {
+func NewPluginUseCase(plugin *service.PluginService, store *service.PluginStoreService, instance model.InstanceRepository) PluginUseCase {
 	return PluginUseCase{
-		l:        l,
 		plugin:   plugin,
 		store:    store,
 		instance: instance,

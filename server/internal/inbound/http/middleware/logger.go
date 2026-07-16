@@ -1,14 +1,14 @@
 package middleware
 
 import (
-	"strconv"
+	"log/slog"
 	"time"
 
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
-func Logger(l *zerolog.Logger) gin.HandlerFunc {
+func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 
@@ -22,32 +22,32 @@ func Logger(l *zerolog.Logger) gin.HandlerFunc {
 		status := c.Writer.Status()
 
 		if query != "" {
-			path = path + "?" + query
+			path += "?" + query
 		}
 
-		var event *zerolog.Event
-		switch {
-		case status >= 500:
-			event = l.Error()
-		case status >= 400:
-			event = l.Warn()
-		default:
-			event = l.Info()
-		}
-
-		requestID, exists := c.Get("request_id")
-		if !exists {
+		requestID, err := utils.GetFromContext[string](c, "request_id")
+		if err != nil {
 			requestID = "unknown"
 		}
 
-		event.
-			Str("request_id", requestID.(string)).
-			Str("ip", clientIP).
-			Str("method", method).
-			Str("path", path).
-			Str("status", strconv.Itoa(status)).
-			Str("latency", latency.String()).
-			Msg("")
+		attrs := []slog.Attr{
+			slog.String("request_id", requestID),
+			slog.String("ip", clientIP),
+			slog.String("method", method),
+			slog.String("path", path),
+			slog.Int("status", status),
+			slog.Duration("latency", latency),
+		}
 
+		var level slog.Level
+		switch {
+		case status >= 500:
+			level = slog.LevelError
+		case status >= 400:
+			level = slog.LevelWarn
+		default:
+			level = slog.LevelInfo
+		}
+		slog.LogAttrs(c.Request.Context(), level, "HTTP request", attrs...)
 	}
 }

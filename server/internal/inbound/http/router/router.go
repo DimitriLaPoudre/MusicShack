@@ -4,16 +4,14 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/handler"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/middleware"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/setup/config"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/handler"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/middleware"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 func New(
 	app *gin.Engine,
-	l *zerolog.Logger,
 	cfg *config.Config,
 
 	authMW gin.HandlerFunc,
@@ -28,8 +26,8 @@ func New(
 	pluginH *handler.PluginHandler,
 ) {
 	app.Use(middleware.RequestID())
-	app.Use(middleware.Logger(l))
-	app.Use(middleware.Recovery(l))
+	app.Use(middleware.Logger())
+	app.Use(middleware.Recovery())
 	gin.Recovery()
 
 	app.GET("/healthz", healthz)

@@ -1,7 +1,7 @@
 package response
 
 import (
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 )
 
 type Instance struct {

@@ -1,6 +1,6 @@
 package response
 
-import "github.com/Ascension-EIP/Ascension/apps/server/internal/model"
+import "github.com/DimitriLaPoudre/MusicShack/internal/model"
 
 type User struct {
 	ID       string `json:"id"`

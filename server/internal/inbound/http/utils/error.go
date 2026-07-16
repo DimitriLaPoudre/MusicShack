@@ -1,22 +1,23 @@
 package utils
 
 import (
+	"log/slog"
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
-func Error(c *gin.Context, err error, loggers ...*zerolog.Logger) {
+func Error(c *gin.Context, err error) {
 	if err == nil {
 		return
 	}
 
-	reqID := c.GetString("request_id")
-	for _, l := range loggers {
-		l.Err(err).Str("request_id", reqID).Msg("")
+	requestID, err := GetFromContext[string](c, "request_id")
+	if err != nil {
+		requestID = "unknown"
 	}
+	slog.Error("handler forward domain error", slog.String("request_id", requestID), slog.String("err", err.Error()))
 
 	switch {
 	// case errors.Is(err, model.ErrRoleInvalid):
@@ -27,6 +28,6 @@ func Error(c *gin.Context, err error, loggers ...*zerolog.Logger) {
 	// 	c.JSON(http.StatusNotFound, response.Error{Message: err.Error()})
 	default:
 		_ = c.Error(err)
-		c.JSON(http.StatusInternalServerError, response.Error{Message: err.Error()})
+		c.JSON(http.StatusInternalServerError, response.NewError(err))
 	}
 }

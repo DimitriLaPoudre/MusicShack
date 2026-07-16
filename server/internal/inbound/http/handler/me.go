@@ -3,23 +3,20 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/request"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/dto/response"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/inbound/http/utils"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/model"
-	"github.com/Ascension-EIP/Ascension/apps/server/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
-	"github.com/rs/zerolog"
 )
 
 type MeHandler struct {
-	l    *zerolog.Logger
 	user *usecase.UserUseCase
 }
 
-func NewMeHandler(l *zerolog.Logger, user *usecase.UserUseCase) MeHandler {
+func NewMeHandler(user *usecase.UserUseCase) MeHandler {
 	return MeHandler{
-		l:    l,
 		user: user,
 	}
 }
@@ -27,7 +24,7 @@ func NewMeHandler(l *zerolog.Logger, user *usecase.UserUseCase) MeHandler {
 func (h *MeHandler) Get(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -38,7 +35,7 @@ func (h *MeHandler) Get(c *gin.Context) {
 func (h *MeHandler) Update(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
@@ -54,7 +51,7 @@ func (h *MeHandler) Update(c *gin.Context) {
 	}
 
 	if _, err := h.user.UpdateUser(c, partialUser); err != nil {
-		utils.Error(c, err, h.l)
+		utils.Error(c, err)
 		return
 	}
 
