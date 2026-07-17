@@ -23,7 +23,7 @@ type SQLiteRepository struct {
 func New(filepath string) (SQLiteRepository, error) {
 	db, err := sqlx.Open(
 		"sqlite",
-		fmt.Sprintf("file:%s?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)", filepath),
+		fmt.Sprintf("file:%s?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_time_format=sqlite", filepath),
 	)
 	if err != nil {
 		return SQLiteRepository{}, fmt.Errorf("open connection to SQLite file: %s: %v", filepath, err)

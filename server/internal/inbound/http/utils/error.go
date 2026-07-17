@@ -13,8 +13,8 @@ func Error(c *gin.Context, err error) {
 		return
 	}
 
-	requestID, err := GetFromContext[string](c, "request_id")
-	if err != nil {
+	requestID, errRequestID := GetFromContext[string](c, "request_id")
+	if errRequestID != nil {
 		requestID = "unknown"
 	}
 	slog.Error("handler forward domain error", slog.String("request_id", requestID), slog.String("err", err.Error()))
@@ -27,7 +27,7 @@ func Error(c *gin.Context, err error) {
 	// case errors.Is(err, model.ErrUserNotFound):
 	// 	c.JSON(http.StatusNotFound, response.Error{Message: err.Error()})
 	default:
-		_ = c.Error(err)
+		// _ = c.Error(err)
 		c.JSON(http.StatusInternalServerError, response.NewError(err))
 	}
 }
