@@ -5,12 +5,12 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
-	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,45 +40,49 @@ func Recovery() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
-				requestID, err := utils.GetFromContext[string](c, "request_id")
-				if err != nil {
-					requestID = "unknown"
-				}
-				attrs := []slog.Attr{
-					slog.String("request_id", requestID),
-					slog.String("ip", c.ClientIP()),
-					slog.String("method", c.Request.Method),
-					slog.String("path", c.Request.URL.Path),
-					slog.Any("error", err),
-				}
+				path := c.Request.URL.Path
+				rawQuery := c.Request.URL.RawQuery
+				method := c.Request.Method
+				clientIP := c.ClientIP()
+				userAgent := c.Request.UserAgent()
+
+				query, _ := url.ParseQuery(rawQuery)
 
 				if isBrokenPipe(err) {
-					slog.LogAttrs(
-						c.Request.Context(),
-						slog.LevelWarn,
-						"client connection broken",
-						attrs...,
+
+					slog.LogAttrs(c.Request.Context(), slog.LevelError, "client connection broken",
+						slog.Group(
+							"request",
+							slog.String("method", method),
+							slog.String("path", path),
+							slog.Any("params", query),
+							slog.String("ip", clientIP),
+							slog.String("user_agent", userAgent),
+						),
+						slog.String("stack", string(debug.Stack())),
 					)
 
 					c.Abort()
 					return
 				}
 
-				attrs = append(attrs,
+				slog.LogAttrs(c.Request.Context(), slog.LevelError, "panic recovered",
+					slog.Group(
+						"request",
+						slog.String("method", method),
+						slog.String("path", path),
+						slog.Any("params", query),
+						slog.String("ip", clientIP),
+						slog.String("user_agent", userAgent),
+					),
 					slog.String("stack", string(debug.Stack())),
-				)
-
-				slog.LogAttrs(
-					c.Request.Context(),
-					slog.LevelError,
-					"panic recovered",
-					attrs...,
 				)
 
 				c.AbortWithStatusJSON(
 					http.StatusInternalServerError,
 					response.Error{Message: "Internal server error"},
 				)
+				return
 			}
 		}()
 

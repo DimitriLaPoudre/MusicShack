@@ -26,7 +26,7 @@ func New(filepath string) (SQLiteRepository, error) {
 		fmt.Sprintf("file:%s?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)&_time_format=sqlite", filepath),
 	)
 	if err != nil {
-		return SQLiteRepository{}, fmt.Errorf("open connection to SQLite file: %s: %v", filepath, err)
+		return SQLiteRepository{}, fmt.Errorf("open connection to SQLite file: %s: %w", filepath, err)
 	}
 
 	db.SetMaxOpenConns(5)
@@ -42,12 +42,12 @@ func New(filepath string) (SQLiteRepository, error) {
 func (r *SQLiteRepository) Migrate(filepath string) error {
 	driver, err := migratesqlite.WithInstance(r.DB.DB, &migratesqlite.Config{})
 	if err != nil {
-		return fmt.Errorf("create sqlite driver: %v", err)
+		return fmt.Errorf("create sqlite driver: %w", err)
 	}
 
 	source, err := iofs.New(migrationFS, "migrations")
 	if err != nil {
-		return fmt.Errorf("create iofs: %v", err)
+		return fmt.Errorf("create iofs: %w", err)
 	}
 
 	m, err := migrate.NewWithInstance(
@@ -57,11 +57,11 @@ func (r *SQLiteRepository) Migrate(filepath string) error {
 		driver,
 	)
 	if err != nil {
-		return fmt.Errorf("create migrator instance: %v", err)
+		return fmt.Errorf("create migrator instance: %w", err)
 	}
 
 	if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
-		return fmt.Errorf("load migration: %v", err)
+		return fmt.Errorf("load migration: %w", err)
 	}
 
 	slog.Info("sqlite migration completed successfully")

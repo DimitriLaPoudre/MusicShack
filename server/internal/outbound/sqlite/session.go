@@ -24,7 +24,7 @@ func (r *SQLiteRepository) CreateSession(ctx context.Context, s model.Session) (
 		s.ID, s.UserID, s.Token, s.ExpiresAt,
 	)
 	if err != nil {
-		return model.Session{}, fmt.Errorf("create session: %w", dto.Error(err))
+		return model.Session{}, dto.Error(err)
 	}
 
 	return dbSession.ToSession(), nil
@@ -61,7 +61,7 @@ func (r *SQLiteRepository) GetSessionByFilter(ctx context.Context, filter model.
 	dbSession := dto.Session{}
 	err := tx.GetContext(ctx, &dbSession, query, args...)
 	if err != nil {
-		return model.Session{}, fmt.Errorf("get session with filter %v: %w", filter, dto.Error(err))
+		return model.Session{}, dto.Error(err)
 	}
 
 	return dbSession.ToSession(), nil
@@ -97,7 +97,7 @@ func (r *SQLiteRepository) ListSessionsByFilter(ctx context.Context, filter mode
 	dbSessions := []dto.Session{}
 	err := tx.SelectContext(ctx, &dbSessions, query, args...)
 	if err != nil {
-		return []model.Session{}, fmt.Errorf("list session with filter %v: %w", filter, dto.Error(err))
+		return []model.Session{}, dto.Error(err)
 	}
 
 	return dto.SessionsToSessions(dbSessions), nil
@@ -111,7 +111,7 @@ func (r *SQLiteRepository) DeleteSession(ctx context.Context, sessionID uuid.UUI
 
 	_, err := tx.ExecContext(ctx, query, sessionID)
 	if err != nil {
-		return fmt.Errorf("delete session %s: %w", sessionID.String(), dto.Error(err))
+		return dto.Error(err)
 	}
 	return nil
 }
@@ -124,7 +124,7 @@ func (r *SQLiteRepository) DeleteSessionByToken(ctx context.Context, token strin
 
 	_, err := tx.ExecContext(ctx, query, token)
 	if err != nil {
-		return fmt.Errorf("delete session via token %s: %w", token, dto.Error(err))
+		return dto.Error(err)
 	}
 	return nil
 }
@@ -137,7 +137,7 @@ func (r *SQLiteRepository) DeleteSessionExpired(ctx context.Context) error {
 
 	_, err := tx.ExecContext(ctx, query, time.Now())
 	if err != nil {
-		return fmt.Errorf("delete expired sessions: %w", dto.Error(err))
+		return dto.Error(err)
 	}
 	return nil
 }

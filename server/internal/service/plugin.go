@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -23,11 +22,11 @@ func NewPluginService(store *PluginStoreService) PluginService {
 
 func (s *PluginService) InstancesToMapPluginInstances(instances []model.Instance) map[model.Plugin][]model.Instance {
 	pluginInstances := map[model.Plugin][]model.Instance{}
-	pluginNotFound := map[string]struct{}{}
+	pluginsNotFound := map[string]struct{}{}
 	for _, i := range instances {
 		plugin, ok := s.store.GetPluginByName(i.Plugin)
 		if !ok {
-			pluginNotFound[i.Plugin] = struct{}{}
+			pluginsNotFound[i.Plugin] = struct{}{}
 		}
 		if instances, ok := pluginInstances[plugin]; !ok {
 			pluginInstances[plugin] = []model.Instance{i}
@@ -37,8 +36,12 @@ func (s *PluginService) InstancesToMapPluginInstances(instances []model.Instance
 		}
 	}
 
-	for pluginName := range pluginNotFound {
-		slog.Warn(fmt.Sprintf("PluginService.InstancesToMapPluginUrls: plugin not found: %s", pluginName))
+	pluginsNotFoundList := []string{}
+	for pluginName := range pluginsNotFound {
+		pluginsNotFoundList = append(pluginsNotFoundList, pluginName)
+	}
+	if len(pluginsNotFoundList) > 0 {
+		slog.Warn("not found plugins", slog.Any("plugins", pluginsNotFoundList))
 	}
 
 	return pluginInstances

@@ -18,7 +18,7 @@ func (r UserRole) IsValid() error {
 	case UserRoleAdmin, UserRoleUser:
 		return nil
 	default:
-		return fmt.Errorf("UserRole.IsValid: %s: %w", r, ErrUserRoleInvalid)
+		return fmt.Errorf("role %s: %w", r, ErrUserRoleInvalid)
 	}
 }
 

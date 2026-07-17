@@ -78,11 +78,11 @@ func IsWritableDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")
 	f, err := os.Create(testFile)
 	if err != nil {
-		return fmt.Errorf("testFile creation: %v", err)
+		return fmt.Errorf("testFile creation: %w", err)
 	}
 	_ = f.Close()
 	if err := os.Remove(testFile); err != nil {
-		return fmt.Errorf("testFile deletion: %v", err)
+		return fmt.Errorf("testFile deletion: %w", err)
 	}
 	return nil
 }

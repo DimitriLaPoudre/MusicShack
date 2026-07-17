@@ -10,7 +10,7 @@ func GenerateSessionToken() (string, error) {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
-		return "", fmt.Errorf("session token generation: %v", err)
+		return "", fmt.Errorf("session token generation: %w", err)
 	}
 	return hex.EncodeToString(b), nil
 }

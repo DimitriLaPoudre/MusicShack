@@ -62,11 +62,7 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	c.SetCookie(h.cfgSession.CookieName, "", -1, "/api", "", h.cfgHTTP.HTTPS, true)
 
 	if err := h.auth.Logout(c, tkn); err != nil {
-		requestID, err := utils.GetFromContext[string](c, "request_id")
-		if err != nil {
-			requestID = "unknown"
-		}
-		slog.Error("logout failed", slog.String("request_id", requestID), slog.String("err", err.Error()))
+		slog.ErrorContext(c.Request.Context(), "logout failed", slog.String("err", err.Error()))
 	}
 
 	c.JSON(http.StatusOK, response.Ok)

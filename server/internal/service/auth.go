@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
@@ -25,16 +26,16 @@ func NewAuthService(cfg config.SessionConfig, user model.UserRepository, session
 func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, error) {
 	session, err := s.session.GetSessionByFilter(c, model.SessionFilter{Token: &tkn})
 	if err != nil {
-		return model.User{}, err
+		return model.User{}, fmt.Errorf("get token for authentication: %w", err)
 	}
 
 	if session.ExpiresAt.Before(time.Now()) {
-		return model.User{}, model.ErrBadToken
+		return model.User{}, model.ErrExpiredToken
 	}
 
 	user, err := s.user.GetUserByFilter(c, model.UserFilter{ID: &session.UserID})
 	if err != nil {
-		return model.User{}, err
+		return model.User{}, fmt.Errorf("get user %s from session %s: %w", session.UserID, session.ID, err)
 	}
 
 	return user, nil

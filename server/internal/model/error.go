@@ -8,6 +8,7 @@ var (
 	ErrUserRoleInvalid = errors.New("user role invalid")
 	ErrBadPassword     = errors.New("incorrect password")
 	ErrBadToken        = errors.New("invalid token")
+	ErrExpiredToken    = errors.New("expired token")
 
 	ErrPluginNotFound         = errors.New("plugin not found")
 	ErrInvalidUrlPlugin       = errors.New("url not recognized by plugins")
@@ -17,7 +18,7 @@ var (
 	ErrInvalidInput = errors.New("invalid input")
 	ErrConflict     = errors.New("conflict")
 	ErrNotFound     = errors.New("not found")
-	ErrInternal     = errors.New("internal_error")
+	ErrInternal     = errors.New("internal error")
 
 	ErrAdminAlreadyExist = errors.New("admin already exist")
 

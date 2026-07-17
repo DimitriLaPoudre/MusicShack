@@ -13,11 +13,7 @@ func Error(c *gin.Context, err error) {
 		return
 	}
 
-	requestID, errRequestID := GetFromContext[string](c, "request_id")
-	if errRequestID != nil {
-		requestID = "unknown"
-	}
-	slog.Error("handler forward domain error", slog.String("request_id", requestID), slog.String("err", err.Error()))
+	slog.ErrorContext(c.Request.Context(), "handler forward domain error", slog.String("err", err.Error()))
 
 	switch {
 	// case errors.Is(err, model.ErrRoleInvalid):

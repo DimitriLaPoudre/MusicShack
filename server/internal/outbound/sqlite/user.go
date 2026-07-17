@@ -22,7 +22,7 @@ func (r *SQLiteRepository) CreateUser(ctx context.Context, user model.User) (mod
 		query,
 		user.ID, user.Username, user.Password, user.HiRes, user.Role)
 	if err != nil {
-		return model.User{}, fmt.Errorf("create user: %w", dto.Error(err))
+		return model.User{}, dto.Error(err)
 	}
 
 	return dbUser.ToUser(), nil
@@ -66,7 +66,7 @@ func (r *SQLiteRepository) GetUserByFilter(ctx context.Context, filter model.Use
 	dbUser := dto.User{}
 	err := tx.GetContext(ctx, &dbUser, query, args...)
 	if err != nil {
-		return model.User{}, fmt.Errorf("get user with filter %v: %w", filter, dto.Error(err))
+		return model.User{}, dto.Error(err)
 	}
 
 	return dbUser.ToUser(), nil
@@ -110,7 +110,7 @@ func (r *SQLiteRepository) ListUsersByFilter(ctx context.Context, filter model.U
 	dbUsers := []dto.User{}
 	err := tx.SelectContext(ctx, &dbUsers, query, args...)
 	if err != nil {
-		return []model.User{}, fmt.Errorf("list user with filter %v: %w", filter, dto.Error(err))
+		return []model.User{}, dto.Error(err)
 	}
 
 	return dto.UsersToUsers(dbUsers), nil
@@ -146,7 +146,7 @@ func (r *SQLiteRepository) UpdateUser(ctx context.Context, partialUser model.Par
 	dbUser := dto.User{}
 	err := tx.GetContext(ctx, &dbUser, query, args...)
 	if err != nil {
-		return model.User{}, fmt.Errorf("update user %s: %w", partialUser.ID, dto.Error(err))
+		return model.User{}, dto.Error(err)
 	}
 
 	return dbUser.ToUser(), nil
@@ -160,7 +160,7 @@ func (r *SQLiteRepository) DeleteUser(ctx context.Context, userID uuid.UUID) err
 
 	_, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
-		return fmt.Errorf("delete user %s: %w", userID, dto.Error(err))
+		return dto.Error(err)
 	}
 
 	return nil

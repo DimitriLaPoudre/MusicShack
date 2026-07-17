@@ -5,7 +5,6 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,11 +25,6 @@ func Logger() gin.HandlerFunc {
 		latency := time.Since(start)
 		status := c.Writer.Status()
 
-		requestID, err := utils.GetFromContext[string](c, "request_id")
-		if err != nil {
-			requestID = "unknown"
-		}
-
 		var level slog.Level
 		switch {
 		case status >= 500:
@@ -42,7 +36,6 @@ func Logger() gin.HandlerFunc {
 		}
 
 		slog.LogAttrs(c.Request.Context(), level, "request_completed",
-			slog.String("request_id", requestID),
 			slog.Group(
 				"request",
 				slog.String("method", method),
