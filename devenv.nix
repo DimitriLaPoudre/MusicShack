@@ -5,18 +5,16 @@
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [ 
+  packages = [
     pkgs.git
     pkgs.air
   ];
 
+  # https://devenv.sh/languages/
   languages.go = {
     enable = true;
     lsp.enable = true;
   };
-
-  # https://devenv.sh/languages/
-  # languages.rust.enable = true;
 
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
@@ -25,9 +23,15 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
-  # scripts.hello.exec = ''
-  #   echo hello from $GREET
-  # '';
+  scripts.rsh.exec = ''
+    exec devenv shell
+  '';
+
+  scripts.go-dev.exec = ''
+	cd "$DEVENV_ROOT"/server
+	air -env_files ../.env.example
+  '';
+
 
   # https://devenv.sh/basics/
   # enterShell = ''

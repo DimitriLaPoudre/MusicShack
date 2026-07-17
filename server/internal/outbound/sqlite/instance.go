@@ -22,7 +22,7 @@ func (r *SQLiteRepository) CreateInstance(ctx context.Context, i model.Instance)
 		i.ID, i.UserID, i.Provider, i.Plugin, i.Url, i.Ping,
 	)
 	if err != nil {
-		return model.Instance{}, fmt.Errorf("failed to create instance: %w", dto.Error(err))
+		return model.Instance{}, fmt.Errorf("create instance: %w", dto.Error(err))
 	}
 
 	return dbInstance.ToInstance(), nil
@@ -67,7 +67,7 @@ func (r *SQLiteRepository) ListInstancesByFilter(ctx context.Context, filter mod
 	dbInstances := []dto.Instance{}
 	err := tx.SelectContext(ctx, &dbInstances, query, args...)
 	if err != nil {
-		return []model.Instance{}, fmt.Errorf("failed to create instance: %w", dto.Error(err))
+		return []model.Instance{}, fmt.Errorf("list instance with filter %v: %w", filter, dto.Error(err))
 	}
 
 	return dto.InstancesToInstances(dbInstances), nil
@@ -81,7 +81,7 @@ func (r *SQLiteRepository) DeleteInstance(ctx context.Context, instanceID uuid.U
 
 	_, err := tx.ExecContext(ctx, query, instanceID)
 	if err != nil {
-		return fmt.Errorf("failed to delete instance %s: %w", instanceID.String(), dto.Error(err))
+		return fmt.Errorf("delete instance %s: %w", instanceID.String(), dto.Error(err))
 	}
 
 	return nil
@@ -95,7 +95,7 @@ func (r *SQLiteRepository) DeleteInstanceByUserID(ctx context.Context, instanceI
 
 	_, err := tx.ExecContext(ctx, query, instanceID, userID)
 	if err != nil {
-		return fmt.Errorf("failed to delete instance %s of user %s: %w", instanceID.String(), userID.String(), dto.Error(err))
+		return fmt.Errorf("delete instance %s of user %s: %w", instanceID.String(), userID.String(), dto.Error(err))
 	}
 
 	return nil

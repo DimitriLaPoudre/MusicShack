@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"log/slog"
+	"net/url"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
@@ -15,28 +16,19 @@ func Logger() gin.HandlerFunc {
 		c.Next()
 
 		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+		rawQuery := c.Request.URL.RawQuery
 		method := c.Request.Method
 		clientIP := c.ClientIP()
+		userAgent := c.Request.UserAgent()
+
+		query, _ := url.ParseQuery(rawQuery)
+
 		latency := time.Since(start)
 		status := c.Writer.Status()
-
-		if query != "" {
-			path += "?" + query
-		}
 
 		requestID, err := utils.GetFromContext[string](c, "request_id")
 		if err != nil {
 			requestID = "unknown"
-		}
-
-		attrs := []slog.Attr{
-			slog.String("request_id", requestID),
-			slog.String("ip", clientIP),
-			slog.String("method", method),
-			slog.String("path", path),
-			slog.Int("status", status),
-			slog.Duration("latency", latency),
 		}
 
 		var level slog.Level
@@ -44,10 +36,26 @@ func Logger() gin.HandlerFunc {
 		case status >= 500:
 			level = slog.LevelError
 		case status >= 400:
-			level = slog.LevelWarn
+			level = slog.LevelInfo
 		default:
 			level = slog.LevelInfo
 		}
-		slog.LogAttrs(c.Request.Context(), level, "HTTP request", attrs...)
+
+		slog.LogAttrs(c.Request.Context(), level, "request_completed",
+			slog.String("request_id", requestID),
+			slog.Group(
+				"request",
+				slog.String("method", method),
+				slog.String("path", path),
+				slog.Any("params", query),
+				slog.String("ip", clientIP),
+				slog.String("user_agent", userAgent),
+			),
+			slog.Group(
+				"response",
+				slog.Int("status", status),
+				slog.Duration("latency", latency),
+			),
+		)
 	}
 }

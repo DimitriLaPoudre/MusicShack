@@ -27,14 +27,14 @@ func (r *SQLiteRepository) WithTransaction(ctx context.Context, fn func(ctx cont
 
 	tx, err := r.DB.BeginTxx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to begin transaction: %v", err)
+		return fmt.Errorf("begin transaction: %v", err)
 	}
 	defer tx.Rollback()
 
 	newCtx := context.WithValue(ctx, txKey, tx)
 
 	if err := fn(newCtx); err != nil {
-		return fmt.Errorf("fail in the transaction: %v", err)
+		return fmt.Errorf("during transaction: %v", err)
 	}
 
 	return tx.Commit()

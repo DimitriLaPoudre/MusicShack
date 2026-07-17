@@ -13,7 +13,7 @@ func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, rep
 	role := model.UserRoleAdmin
 	if _, err := repo.GetUserByFilter(c, model.UserFilter{Role: &role}); !errors.Is(err, model.ErrNotFound) {
 		if err != nil {
-			return fmt.Errorf("failed to check if admin already exist: %v", err)
+			return fmt.Errorf("check if admin already exist: %v", err)
 		}
 		return model.ErrAdminAlreadyExist
 	}
@@ -23,7 +23,7 @@ func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, rep
 		Password: cfg.DefaultPassword,
 		Role:     model.UserRoleAdmin,
 	}); err != nil {
-		return fmt.Errorf("failed to create admin: %v", err)
+		return fmt.Errorf("create admin: %v", err)
 	}
 
 	return nil

@@ -56,17 +56,18 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	info, err := os.Stat(cfg.Library.Path)
+	libraryPath := cfg.Library.Path
+	info, err := os.Stat(libraryPath)
 	if err != nil {
-		slog.Error(fmt.Sprintf("library path invalid: %v", err))
+		slog.Error(fmt.Sprintf("library path %s is invalid", libraryPath), slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 	if !info.IsDir() {
-		slog.Error("library path is not a directory")
+		slog.Error(fmt.Sprintf("library path %s is not a directory", libraryPath))
 		os.Exit(1)
 	}
-	if err := IsWritableDirectory(cfg.Library.Path); err != nil {
-		slog.Error(fmt.Sprintf("library path is not writable: %v", err))
+	if err := IsWritableDirectory(libraryPath); err != nil {
+		slog.Error(fmt.Sprintf("library path %s is not writable", libraryPath), slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
@@ -77,11 +78,11 @@ func IsWritableDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")
 	f, err := os.Create(testFile)
 	if err != nil {
-		return err
+		return fmt.Errorf("testFile creation: %v", err)
 	}
 	_ = f.Close()
 	if err := os.Remove(testFile); err != nil {
-		return err
+		return fmt.Errorf("testFile deletion: %v", err)
 	}
 	return nil
 }
