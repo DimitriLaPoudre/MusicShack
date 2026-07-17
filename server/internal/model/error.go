@@ -19,5 +19,7 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrInternal     = errors.New("internal_error")
 
+	ErrAdminAlreadyExist = errors.New("admin already exist")
+
 	ErrUnknown = errors.New("unknown error")
 )

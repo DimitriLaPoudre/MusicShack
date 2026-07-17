@@ -2,8 +2,7 @@ package config
 
 import (
 	"fmt"
-	"log"
-	"net/url"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -31,13 +30,7 @@ type (
 	}
 
 	DBConfig struct {
-		Host      string `env:"HOST" envDefault:"localhost"`
-		Port      int    `env:"PORT" envDefault:"5432"`
-		Name      string `env:"NAME,unset,required"`
-		User      string `env:"USER,unset,required"`
-		Password  string `env:"PASS,unset,required"`
-		Params    string `env:"PARAMS" envDefault:"sslmode=disable"`
-		Migration string `env:"MIGRATION"`
+		Path string `env:"PATH,unset,required"`
 	}
 
 	SessionConfig struct {
@@ -57,17 +50,6 @@ type (
 	}
 )
 
-func (c *DBConfig) DSN() string {
-	u := &url.URL{
-		Scheme:   "postgres",
-		User:     url.UserPassword(c.User, c.Password),
-		Host:     fmt.Sprintf("%s:%d", c.Host, c.Port),
-		Path:     "/" + c.Name,
-		RawQuery: c.Params,
-	}
-	return u.String()
-}
-
 func Load() (*Config, error) {
 	cfg := &Config{}
 	if err := env.Parse(cfg); err != nil {
@@ -76,19 +58,22 @@ func Load() (*Config, error) {
 
 	info, err := os.Stat(cfg.Library.Path)
 	if err != nil {
-		log.Fatal("LIBRARY_PATH: ", err)
+		slog.Error(fmt.Sprintf("library path invalid: %v", err))
+		os.Exit(1)
 	}
 	if !info.IsDir() {
-		log.Fatal("LIBRARY_PATH is not a directory")
+		slog.Error("library path is not a directory")
+		os.Exit(1)
 	}
-	if err := checkLibraryDirectory(cfg.Library.Path); err != nil {
-		log.Fatal("LIBRARY_PATH can't be written in: ", err)
+	if err := IsWritableDirectory(cfg.Library.Path); err != nil {
+		slog.Error(fmt.Sprintf("library path is not writable: %v", err))
+		os.Exit(1)
 	}
 
 	return cfg, nil
 }
 
-func checkLibraryDirectory(dir string) error {
+func IsWritableDirectory(dir string) error {
 	testFile := filepath.Join(dir, ".write_test")
 	f, err := os.Create(testFile)
 	if err != nil {

@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,8 +15,9 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/middleware"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/router"
 	"github.com/DimitriLaPoudre/MusicShack/internal/job"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi"
-	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/postgres"
+	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/sqlite"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
@@ -24,13 +26,13 @@ import (
 )
 
 func Run(cfg *config.Config) {
-	repo, err := postgres.New(cfg.DB.DSN())
+	repo, err := sqlite.New(cfg.DB.Path)
 	if err != nil {
 		slog.Error("failed to create a new postgres repository", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
-	if err := repo.Migrate(cfg.DB.DSN()); err != nil {
+	if err := repo.Migrate(cfg.DB.Path); err != nil {
 		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
@@ -62,7 +64,9 @@ func Run(cfg *config.Config) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	service.InitAdmin(ctx, cfg.Admin, &userS, &repo)
+	if err := service.InitAdmin(ctx, cfg.Admin, &userS, &repo); err != nil && !errors.Is(err, model.ErrAdminAlreadyExist) {
+		slog.Warn("admin initialisation failed", slog.String("err", err.Error()))
+	}
 
 	c := cron.New()
 	// if err := job.FetchFollows(c, ctx, l); err != nil {

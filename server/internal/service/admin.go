@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
@@ -10,8 +11,11 @@ import (
 
 func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, repo model.UserRepository) error {
 	role := model.UserRoleAdmin
-	if _, err := repo.GetUserByFilter(c, model.UserFilter{Role: &role}); err == nil || !errors.Is(err, model.ErrNotFound) {
-		return err
+	if _, err := repo.GetUserByFilter(c, model.UserFilter{Role: &role}); !errors.Is(err, model.ErrNotFound) {
+		if err != nil {
+			return fmt.Errorf("failed to check if admin already exist: %v", err)
+		}
+		return model.ErrAdminAlreadyExist
 	}
 
 	if _, err := user.CreateUser(c, model.User{
@@ -19,7 +23,7 @@ func InitAdmin(c context.Context, cfg config.AdminConfig, user *UserService, rep
 		Password: cfg.DefaultPassword,
 		Role:     model.UserRoleAdmin,
 	}); err != nil {
-		return err
+		return fmt.Errorf("failed to create admin: %v", err)
 	}
 
 	return nil
