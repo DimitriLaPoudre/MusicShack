@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -24,14 +25,14 @@ func NewPluginUseCase(plugin *service.PluginService, store *service.PluginStoreS
 func (u *PluginUseCase) GetSong(ctx context.Context, user model.User, provider string, id string) (model.EnrichedSong, error) {
 	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.EnrichedSong{}, err
+		return model.EnrichedSong{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
 	}
 
 	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
 
 	song, err := u.plugin.GetSong(ctx, pluginInstances, id)
 	if err != nil {
-		return model.EnrichedSong{}, err
+		return model.EnrichedSong{}, fmt.Errorf("get song %s from each plugin: %w", id, err)
 	}
 
 	return song, nil
@@ -40,14 +41,14 @@ func (u *PluginUseCase) GetSong(ctx context.Context, user model.User, provider s
 func (u *PluginUseCase) GetAlbum(ctx context.Context, user model.User, provider string, id string) (model.EnrichedAlbum, error) {
 	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.EnrichedAlbum{}, err
+		return model.EnrichedAlbum{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
 	}
 
 	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
 
 	album, err := u.plugin.GetAlbum(ctx, pluginInstances, id)
 	if err != nil {
-		return model.EnrichedAlbum{}, err
+		return model.EnrichedAlbum{}, fmt.Errorf("get album %s from each plugin: %w", id, err)
 	}
 
 	return album, nil
@@ -56,14 +57,14 @@ func (u *PluginUseCase) GetAlbum(ctx context.Context, user model.User, provider 
 func (u *PluginUseCase) GetArtist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedArtist, error) {
 	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.EnrichedArtist{}, err
+		return model.EnrichedArtist{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
 	}
 
 	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
 
 	artist, err := u.plugin.GetArtist(ctx, pluginInstances, id)
 	if err != nil {
-		return model.EnrichedArtist{}, err
+		return model.EnrichedArtist{}, fmt.Errorf("get artist %s from each plugin: %w", id, err)
 	}
 
 	return artist, nil
@@ -72,14 +73,14 @@ func (u *PluginUseCase) GetArtist(ctx context.Context, user model.User, provider
 func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedPlaylist, error) {
 	instances, err := u.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return model.EnrichedPlaylist{}, err
+		return model.EnrichedPlaylist{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
 	}
 
 	pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
 
 	playlist, err := u.plugin.GetPlaylist(ctx, pluginInstances, id)
 	if err != nil {
-		return model.EnrichedPlaylist{}, err
+		return model.EnrichedPlaylist{}, fmt.Errorf("get playlist %s from each: %w", id, err)
 	}
 
 	return playlist, nil

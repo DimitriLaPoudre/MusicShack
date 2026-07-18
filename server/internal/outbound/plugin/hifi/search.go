@@ -15,7 +15,7 @@ import (
 func getSearchSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, q string) (searchSongResponse, error) {
 	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?s="+lib_url.QueryEscape(q), limiters)
 	if err != nil {
-		return searchSongResponse{}, fmt.Errorf("getSearchSong: %w", err)
+		return searchSongResponse{}, fmt.Errorf("fetch search song with url list: %w", err)
 	}
 
 	return searchSong, nil
@@ -24,7 +24,7 @@ func getSearchSong(ctx context.Context, limiters map[string]*rate.Limiter, urls 
 func getSearchAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, q string) (searchAlbumResponse, error) {
 	searchAlbum, err := hifi_utils.FetchTypeSequential[searchAlbumResponse](ctx, urls, "/search/?al="+lib_url.QueryEscape(q), limiters)
 	if err != nil {
-		return searchAlbumResponse{}, fmt.Errorf("getSearchAlbum: %w", err)
+		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
 	}
 
 	return searchAlbum, nil
@@ -33,7 +33,7 @@ func getSearchAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls
 func getSearchArtist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, q string) (searchArtistResponse, error) {
 	searchArtist, err := hifi_utils.FetchTypeSequential[searchArtistResponse](ctx, urls, "/search/?a="+lib_url.QueryEscape(q), limiters)
 	if err != nil {
-		return searchArtistResponse{}, fmt.Errorf("getSearchArtist: %w", err)
+		return searchArtistResponse{}, fmt.Errorf("fetch search artist with url list: %w", err)
 	}
 
 	return searchArtist, nil
@@ -42,7 +42,7 @@ func getSearchArtist(ctx context.Context, limiters map[string]*rate.Limiter, url
 func getSearchPlaylist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, q string) (searchPlaylistResponse, error) {
 	searchPlaylist, err := hifi_utils.FetchTypeSequential[searchPlaylistResponse](ctx, urls, "/search/?a="+lib_url.QueryEscape(q), limiters)
 	if err != nil {
-		return searchPlaylistResponse{}, fmt.Errorf("getSearchPlaylist: %w", err)
+		return searchPlaylistResponse{}, fmt.Errorf("fetch search playlist with url list: %w", err)
 	}
 
 	return searchPlaylist, nil
@@ -74,16 +74,16 @@ func getSearch(ctx context.Context, limiters map[string]*rate.Limiter, urls []st
 	wg.Wait()
 
 	if searchSongErr != nil {
-		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, fmt.Errorf("getSearch: %w", searchSongErr)
+		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, searchSongErr
 	}
 	if searchAlbumErr != nil {
-		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, fmt.Errorf("getSearch: %w", searchAlbumErr)
+		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, searchAlbumErr
 	}
 	if searchArtistErr != nil {
-		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, fmt.Errorf("getSearch: %w", searchArtistErr)
+		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, searchArtistErr
 	}
 	if searchPlaylistErr != nil {
-		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, fmt.Errorf("getSearch: %w", searchPlaylistErr)
+		return searchSongResponse{}, searchAlbumResponse{}, searchArtistResponse{}, searchPlaylistResponse{}, searchPlaylistErr
 	}
 
 	return searchSong, searchAlbum, searchArtist, searchPlaylist, nil
@@ -94,7 +94,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 
 	songData, albumData, artistData, playlistData, err := getSearch(ctx, p.limiters, urls, song, album, artist, playlist)
 	if err != nil {
-		return model.Search{}, fmt.Errorf("Hifi.Search: %w", err)
+		return model.Search{}, err
 	}
 
 	songs := []model.Song{}

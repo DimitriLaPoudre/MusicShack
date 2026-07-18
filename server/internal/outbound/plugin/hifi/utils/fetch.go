@@ -39,17 +39,17 @@ func FetchType[T any](ctx context.Context, url string, path string, limiter *rat
 
 	resp, err := Fetch(ctx, url+path, limiter)
 	if err != nil {
-		return zero, fmt.Errorf("hifi_utils.FetchType: %w", err)
+		return zero, fmt.Errorf("fetch url %s: %w", url, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return zero, fmt.Errorf("hifi_utils.FetchType: http: %w", errors.New(resp.Status))
+		return zero, fmt.Errorf("fetch url %s response status: %w", url, errors.New(resp.Status))
 	}
 
 	var data T
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return zero, fmt.Errorf("hifi_utils.FetchType: json.Decode: %w", err)
+		return zero, fmt.Errorf("decode url %s response: %w", url, err)
 	}
 
 	return data, nil
@@ -57,7 +57,7 @@ func FetchType[T any](ctx context.Context, url string, path string, limiter *rat
 
 func Fetch(ctx context.Context, url string, limiter *rate.Limiter) (*http.Response, error) {
 	if !limiter.Allow() {
-		return nil, fmt.Errorf("hifi_utils.Fetch: %w", model.ErrPluginRateLimit)
+		return nil, model.ErrPluginRateLimit
 	}
 	return network.Fetch(ctx, url)
 }

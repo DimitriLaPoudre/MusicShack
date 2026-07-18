@@ -16,7 +16,7 @@ import (
 func getPlaylist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (playlistResponse, error) {
 	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return playlistResponse{}, fmt.Errorf("getPlaylist: %w", err)
+		return playlistResponse{}, fmt.Errorf("fetch playlist info with url list: %w", err)
 	}
 
 	return playlist, nil
@@ -27,12 +27,12 @@ func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id stri
 
 	data, err := getPlaylist(ctx, p.limiters, urls, id)
 	if err != nil {
-		return model.Playlist{}, fmt.Errorf("Hifi.Playlist: %w", err)
+		return model.Playlist{}, err
 	}
 
 	lastUpdated, err := time.Parse(StreamStartDateLayout, data.Playlist.LastUpdated)
 	if err != nil {
-		slog.Warn(fmt.Sprintf("hifi plugin failed to parse plugin last update date: %s", data.Playlist.LastUpdated), slog.String("err", err.Error()))
+		slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse playlist last update date: %s", data.Playlist.LastUpdated), slog.String("err", err.Error()))
 	}
 
 	songs := []model.Song{}

@@ -17,7 +17,7 @@ import (
 func getSongInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (songResponse, error) {
 	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return songResponse{}, fmt.Errorf("getSongInfo: %w", err)
+		return songResponse{}, fmt.Errorf("fetch song info with url list: %w", err)
 	}
 
 	return songInfo, nil
@@ -39,7 +39,7 @@ func getSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []stri
 	wg.Wait()
 
 	if songInfoErr != nil {
-		return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", songInfoErr)
+		return songResponse{}, downloadResponse{}, songInfoErr
 	}
 	// if downloadInfoErr != nil {
 	// 	return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", downloadInfoErr)
@@ -53,12 +53,12 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 
 	songInfo, downloadInfo, err := getSong(ctx, p.limiters, urls, id)
 	if err != nil {
-		return model.Song{}, fmt.Errorf("Hifi.Song: %w", err)
+		return model.Song{}, err
 	}
 
 	releaseDate, err := time.Parse(StreamStartDateLayout, songInfo.Data.ReleaseDate)
 	if err != nil {
-		slog.Warn(fmt.Sprintf("hifi plugin failed to parse song releaseDate: %s", songInfo.Data.ReleaseDate), slog.String("err", err.Error()))
+		slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse song releaseDate %s", songInfo.Data.ReleaseDate), slog.String("err", err.Error()))
 	}
 
 	audioQuality := LOW

@@ -19,7 +19,7 @@ import (
 func getArtistInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (artistResponse, error) {
 	info, err := hifi_utils.FetchTypeSequential[artistResponse](ctx, urls, "/artist/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return artistResponse{}, fmt.Errorf("getArtistInfo: %w", err)
+		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
 	}
 
 	return info, nil
@@ -28,7 +28,7 @@ func getArtistInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls 
 func getArtistAlbums(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (artistAlbumsResponse, error) {
 	albums, err := hifi_utils.FetchTypeSequential[artistAlbumsResponse](ctx, urls, "/artist/?f="+lib_url.QueryEscape(id)+"&skip_tracks=1", limiters)
 	if err != nil {
-		return artistAlbumsResponse{}, fmt.Errorf("getArtistAlbums: %w", err)
+		return artistAlbumsResponse{}, fmt.Errorf("fetch artist albums with url list: %w", err)
 	}
 
 	return albums, nil
@@ -50,10 +50,10 @@ func getArtist(ctx context.Context, limiters map[string]*rate.Limiter, urls []st
 	wg.Wait()
 
 	if artistErr != nil {
-		return artistResponse{}, artistAlbumsResponse{}, fmt.Errorf("getArtistData: %w", artistErr)
+		return artistResponse{}, artistAlbumsResponse{}, artistErr
 	}
 	if albumsErr != nil {
-		return artistResponse{}, artistAlbumsResponse{}, fmt.Errorf("getArtistData: %w", albumsErr)
+		return artistResponse{}, artistAlbumsResponse{}, albumsErr
 	}
 
 	return artist, albums, nil
@@ -64,7 +64,7 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 
 	artistInfo, artistAlbums, err := getArtist(ctx, p.limiters, urls, id)
 	if err != nil {
-		return model.Artist{}, fmt.Errorf("Hifi.Artist: %w", err)
+		return model.Artist{}, err
 	}
 
 	pictureURL := artistInfo.Artist.PictureUrl
@@ -146,7 +146,7 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	for _, album := range list {
 		releaseDate, err := time.Parse(StreamStartDateLayout, album.ReleaseDate)
 		if err != nil {
-			slog.Warn(fmt.Sprintf("hifi plugin failed to parse artist's album: %s releaseDate: %s", album.Title, album.ReleaseDate), slog.String("err", err.Error()))
+			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse artist's album %s releaseDate %s", album.Title, album.ReleaseDate), slog.String("err", err.Error()))
 		}
 
 		audioQuality := LOW

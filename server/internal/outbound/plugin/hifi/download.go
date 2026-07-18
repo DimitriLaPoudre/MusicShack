@@ -17,7 +17,7 @@ func getDownloadInfo(ctx context.Context, limiters map[string]*rate.Limiter, url
 
 	downloadInfo, err := hifi_utils.FetchTypeSequential[downloadResponse](ctx, urls, path, limiters)
 	if err != nil {
-		return downloadResponse{}, fmt.Errorf("getSongInfo: %w", err)
+		return downloadResponse{}, fmt.Errorf("fetch download info with url list: %w", err)
 	}
 
 	return downloadInfo, nil

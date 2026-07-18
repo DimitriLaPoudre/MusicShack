@@ -26,7 +26,7 @@ func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (m
 	ping_start := time.Now()
 	plugin, err := s.plugin.GetOriginalPlugin(c, i.Url)
 	if err != nil {
-		return model.Instance{}, err
+		return model.Instance{}, fmt.Errorf("get plugin design for url %s: %w", i.Url, err)
 	}
 	ping := time.Since(ping_start)
 
@@ -35,18 +35,32 @@ func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (m
 
 	id, err := uuid.NewV7()
 	if err != nil {
-		return model.Instance{}, fmt.Errorf("InstanceUseCase.CreateInstance: uuid.NewV7 %w", err)
+		return model.Instance{}, fmt.Errorf("create id for new instance: %w", err)
 	}
 	i.ID = id
 	i.Ping = ping
 
-	return s.repo.CreateInstance(c, i)
+	i, err = s.repo.CreateInstance(c, i)
+	if err != nil {
+		return model.Instance{}, fmt.Errorf("create new instance: %w", err)
+	}
+
+	return i, nil
 }
 
 func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
-	return s.repo.ListInstancesByFilter(c, filter)
+	instances, err := s.repo.ListInstancesByFilter(c, filter)
+	if err != nil {
+		return []model.Instance{}, fmt.Errorf("list instance for filter %v: %w", filter, err)
+	}
+
+	return instances, nil
 }
 
 func (s *InstanceUseCase) DeleteInstanceByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {
-	return s.repo.DeleteInstanceByUserID(c, id, userID)
+	if err := s.repo.DeleteInstanceByUserID(c, id, userID); err != nil {
+		return fmt.Errorf("delete instance %s of user %s: %w", id.String(), userID.String(), err)
+	}
+
+	return nil
 }

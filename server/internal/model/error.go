@@ -14,6 +14,7 @@ var (
 	ErrInvalidUrlPlugin       = errors.New("url not recognized by plugins")
 	ErrPluginRateLimit        = errors.New("plugin rate limit reached")
 	ErrPluginSearchEmptyQuery = errors.New("search query empty")
+	ErrPluginDataNotFound     = errors.New("data not found")
 
 	ErrInvalidInput = errors.New("invalid input")
 	ErrConflict     = errors.New("conflict")

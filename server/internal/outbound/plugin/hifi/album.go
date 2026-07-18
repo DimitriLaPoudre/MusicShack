@@ -16,7 +16,7 @@ import (
 func getAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (albumResponse, error) {
 	album, err := hifi_utils.FetchTypeSequential[albumResponse](ctx, urls, "/album/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
-		return albumResponse{}, fmt.Errorf("getAlbum: %w", err)
+		return albumResponse{}, fmt.Errorf("fetch album info with url list: %w", err)
 	}
 
 	return album, nil
@@ -27,11 +27,11 @@ func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string)
 
 	album, err := getAlbum(ctx, p.limiters, urls, id)
 	if err != nil {
-		return model.Album{}, fmt.Errorf("Hifi.Album: %w", err)
+		return model.Album{}, err
 	}
 	releaseDate, err := time.Parse(ReleaseDateLayout, album.Data.ReleaseDate)
 	if err != nil {
-		slog.Warn(fmt.Sprintf("hifi plugin failed to parse album releaseDate: %s", album.Data.ReleaseDate), slog.String("err", err.Error()))
+		slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse album releaseDate %s", album.Data.ReleaseDate), slog.String("err", err.Error()))
 	}
 
 	audioQuality := LOW

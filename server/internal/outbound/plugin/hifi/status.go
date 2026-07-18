@@ -16,17 +16,17 @@ func (p *Hifi) Status(ctx context.Context, url string) error {
 
 	resp, err := network.Fetch(ctx, url)
 	if err != nil {
-		return fmt.Errorf("Hifi.Status: %w", err)
+		return fmt.Errorf("fetch status page: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Hifi.Status: http: %w", errors.New(resp.Status))
+		return fmt.Errorf("fetch response status: %w", errors.New(resp.Status))
 	}
 
 	var status statusResponse
 	if err := json.NewDecoder(resp.Body).Decode(&status); err != nil {
-		return fmt.Errorf("Hifi.Status: json.Decode: %w", err)
+		return fmt.Errorf("decode response: %w", err)
 	}
 
 	return nil

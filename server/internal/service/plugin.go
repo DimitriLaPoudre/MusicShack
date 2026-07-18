@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -75,17 +76,19 @@ func (s *PluginService) GetOriginalPlugin(ctx context.Context, url string) (mode
 
 func (s *PluginService) GetSong(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedSong, error) {
 	var song model.Song
-	var err error
 	var provider string
+	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
+		var err error
 		song, err = plugin.Song(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
 		}
+		errMap[plugin.Name()] = err.Error()
 	}
-	if err != nil {
-		return model.EnrichedSong{}, err
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedSong{}, fmt.Errorf("song %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
 	enrichedSong := s.enrichSong(ctx, provider, song)
@@ -109,17 +112,19 @@ func (s *PluginService) enrichSong(ctx context.Context, provider string, song mo
 
 func (s *PluginService) GetAlbum(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedAlbum, error) {
 	var album model.Album
-	var err error
 	var provider string
+	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
+		var err error
 		album, err = plugin.Album(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
 		}
+		errMap[plugin.Name()] = err.Error()
 	}
-	if err != nil {
-		return model.EnrichedAlbum{}, err
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedAlbum{}, fmt.Errorf("album %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
 	enrichedAlbum := s.enrichAlbum(ctx, provider, album)
@@ -152,17 +157,19 @@ func (s *PluginService) enrichAlbum(ctx context.Context, provider string, album 
 
 func (s *PluginService) GetArtist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedArtist, error) {
 	var artist model.Artist
-	var err error
 	var provider string
+	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
+		var err error
 		artist, err = plugin.Artist(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
 		}
+		errMap[plugin.Name()] = err.Error()
 	}
-	if err != nil {
-		return model.EnrichedArtist{}, err
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedArtist{}, fmt.Errorf("artist %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
 	enrichedArtist := s.enrichArtist(ctx, provider, pluginInstances, artist)
@@ -246,17 +253,19 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 
 func (s *PluginService) GetPlaylist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedPlaylist, error) {
 	var playlist model.Playlist
-	var err error
 	var provider string
+	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
+		var err error
 		playlist, err = plugin.Playlist(ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
 		}
+		errMap[plugin.Name()] = err.Error()
 	}
-	if err != nil {
-		return model.EnrichedPlaylist{}, err
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedPlaylist{}, fmt.Errorf("playlist %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
 	enrichedPlaylist := s.enrichPlaylist(ctx, provider, playlist)
@@ -289,17 +298,19 @@ func (s *PluginService) enrichPlaylist(ctx context.Context, provider string, pla
 
 func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedSearch, error) {
 	var result model.Search
-	var err error
 	var provider string
+	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
+		var err error
 		result, err = plugin.Search(ctx, instances, q, q, q, q)
 		if err == nil {
 			provider = plugin.Provider()
 			break
 		}
+		errMap[plugin.Name()] = err.Error()
 	}
-	if err != nil {
-		return model.EnrichedSearch{}, err
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedSearch{}, fmt.Errorf("search %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
 	songs := []model.EnrichedSong{}
