@@ -6,14 +6,14 @@ import (
 	"log/slog"
 	lib_url "net/url"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
-	"golang.org/x/time/rate"
 )
 
-func getAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (albumResponse, error) {
+func getAlbum(ctx context.Context, limiters *sync.Map, urls []string, id string) (albumResponse, error) {
 	album, err := hifi_utils.FetchTypeSequential[albumResponse](ctx, urls, "/album/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
 		return albumResponse{}, fmt.Errorf("fetch album info with url list: %w", err)
@@ -25,7 +25,7 @@ func getAlbum(ctx context.Context, limiters map[string]*rate.Limiter, urls []str
 func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string) (model.Album, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	album, err := getAlbum(ctx, p.limiters, urls, id)
+	album, err := getAlbum(ctx, &p.limiters, urls, id)
 	if err != nil {
 		return model.Album{}, err
 	}

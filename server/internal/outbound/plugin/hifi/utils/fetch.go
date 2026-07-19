@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
@@ -13,15 +14,12 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func FetchTypeSequential[T any](ctx context.Context, urls []string, path string, limiters map[string]*rate.Limiter) (T, error) {
+func FetchTypeSequential[T any](ctx context.Context, urls []string, path string, limiters *sync.Map) (T, error) {
 	var data T
 	var err error
 	for _, url := range urls {
-		limiter, ok := limiters[url]
-		if !ok {
-			limiter = rate.NewLimiter(rate.Every(6*time.Second), 150)
-			limiters[url] = limiter
-		}
+		value, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
+		limiter := value.(*rate.Limiter)
 
 		data, err = FetchType[T](ctx, url, path, limiter)
 		if err == nil {

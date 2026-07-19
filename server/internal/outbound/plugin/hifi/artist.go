@@ -13,10 +13,9 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
-	"golang.org/x/time/rate"
 )
 
-func getArtistInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (artistResponse, error) {
+func getArtistInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistResponse, error) {
 	info, err := hifi_utils.FetchTypeSequential[artistResponse](ctx, urls, "/artist/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
 		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
@@ -25,7 +24,7 @@ func getArtistInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls 
 	return info, nil
 }
 
-func getArtistAlbums(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (artistAlbumsResponse, error) {
+func getArtistAlbums(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistAlbumsResponse, error) {
 	albums, err := hifi_utils.FetchTypeSequential[artistAlbumsResponse](ctx, urls, "/artist/?f="+lib_url.QueryEscape(id)+"&skip_tracks=1", limiters)
 	if err != nil {
 		return artistAlbumsResponse{}, fmt.Errorf("fetch artist albums with url list: %w", err)
@@ -34,7 +33,7 @@ func getArtistAlbums(ctx context.Context, limiters map[string]*rate.Limiter, url
 	return albums, nil
 }
 
-func getArtist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (artistResponse, artistAlbumsResponse, error) {
+func getArtist(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistResponse, artistAlbumsResponse, error) {
 	var artist artistResponse
 	var artistErr error
 	var albums artistAlbumsResponse
@@ -62,7 +61,7 @@ func getArtist(ctx context.Context, limiters map[string]*rate.Limiter, urls []st
 func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string) (model.Artist, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	artistInfo, artistAlbums, err := getArtist(ctx, p.limiters, urls, id)
+	artistInfo, artistAlbums, err := getArtist(ctx, &p.limiters, urls, id)
 	if err != nil {
 		return model.Artist{}, err
 	}

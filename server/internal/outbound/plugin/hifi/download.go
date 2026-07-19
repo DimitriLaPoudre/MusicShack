@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"sync"
 
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
-	"golang.org/x/time/rate"
 )
 
-func getDownloadInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string, quality string) (downloadResponse, error) {
+func getDownloadInfo(ctx context.Context, limiters *sync.Map, urls []string, id string, quality string) (downloadResponse, error) {
 	path := "/track/?id=" + url.QueryEscape(id)
 	if quality != "" {
 		path += "&quality=" + url.QueryEscape(quality)

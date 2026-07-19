@@ -6,14 +6,14 @@ import (
 	"log/slog"
 	lib_url "net/url"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
-	"golang.org/x/time/rate"
 )
 
-func getPlaylist(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (playlistResponse, error) {
+func getPlaylist(ctx context.Context, limiters *sync.Map, urls []string, id string) (playlistResponse, error) {
 	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
 		return playlistResponse{}, fmt.Errorf("fetch playlist info with url list: %w", err)
@@ -25,7 +25,7 @@ func getPlaylist(ctx context.Context, limiters map[string]*rate.Limiter, urls []
 func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id string) (model.Playlist, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	data, err := getPlaylist(ctx, p.limiters, urls, id)
+	data, err := getPlaylist(ctx, &p.limiters, urls, id)
 	if err != nil {
 		return model.Playlist{}, err
 	}

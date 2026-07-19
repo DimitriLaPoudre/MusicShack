@@ -11,10 +11,9 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
-	"golang.org/x/time/rate"
 )
 
-func getSongInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (songResponse, error) {
+func getSongInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, error) {
 	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+lib_url.QueryEscape(id), limiters)
 	if err != nil {
 		return songResponse{}, fmt.Errorf("fetch song info with url list: %w", err)
@@ -23,7 +22,7 @@ func getSongInfo(ctx context.Context, limiters map[string]*rate.Limiter, urls []
 	return songInfo, nil
 }
 
-func getSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []string, id string) (songResponse, downloadResponse, error) {
+func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, downloadResponse, error) {
 	var songInfo songResponse
 	var songInfoErr error
 	var downloadInfo downloadResponse
@@ -51,7 +50,7 @@ func getSong(ctx context.Context, limiters map[string]*rate.Limiter, urls []stri
 func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) (model.Song, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	songInfo, downloadInfo, err := getSong(ctx, p.limiters, urls, id)
+	songInfo, downloadInfo, err := getSong(ctx, &p.limiters, urls, id)
 	if err != nil {
 		return model.Song{}, err
 	}
