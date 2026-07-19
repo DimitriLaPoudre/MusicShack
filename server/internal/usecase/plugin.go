@@ -86,9 +86,9 @@ func (u *PluginUseCase) GetPlaylist(ctx context.Context, user model.User, provid
 	return playlist, nil
 }
 
-func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string) (map[string]model.EnrichedSearch, error) {
+func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string) (model.SearchResult, error) {
 	if q == "" {
-		return nil, model.ErrPluginSearchEmptyQuery
+		return model.SearchResult{}, model.ErrPluginSearchEmptyQuery
 	}
 
 	providerResult := map[string]model.EnrichedSearch{}
@@ -101,6 +101,10 @@ func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string
 
 		pluginInstances := u.plugin.InstancesToMapPluginInstances(instances)
 
+		if item, err := u.plugin.Url(ctx, pluginInstances, q); err == nil {
+			return model.SearchResult{ItemFound: item}, nil
+		}
+
 		result, err := u.plugin.Search(ctx, pluginInstances, q)
 		if err != nil {
 			continue
@@ -109,5 +113,5 @@ func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string
 		providerResult[provider] = result
 	}
 
-	return providerResult, nil
+	return model.SearchResult{ProviderResult: providerResult}, nil
 }

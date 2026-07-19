@@ -110,6 +110,11 @@ type EnrichedSearch struct {
 	Playlists []EnrichedPlaylist `json:"playlists"`
 }
 
+type SearchResult struct {
+	ItemFound      EnrichedUrlItem
+	ProviderResult map[string]EnrichedSearch
+}
+
 type Type string
 
 const (
@@ -122,4 +127,9 @@ const (
 type UrlItem struct {
 	Type Type   `json:"type"`
 	Id   string `json:"id"`
+}
+
+type EnrichedUrlItem struct {
+	Provider string `json:"provider"`
+	UrlItem
 }

@@ -365,6 +365,12 @@ func PlaylistToResponse(playlist model.EnrichedPlaylist) Playlist {
 	}
 }
 
+type SearchItem struct {
+	Provider string `json:"provider"`
+	Type     string `json:"type"`
+	Id       string `json:"id"`
+}
+
 type SearchSongArtist struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
@@ -423,14 +429,19 @@ type SearchPlaylist struct {
 	Popularity uint   `json:"popularity"`
 }
 
-type Search struct {
+type SearchProviderResult struct {
 	Songs     []SearchSong     `json:"songs"`
 	Albums    []SearchAlbum    `json:"albums"`
 	Artists   []SearchArtist   `json:"artists"`
 	Playlists []SearchPlaylist `json:"playlists"`
 }
 
-func SearchToResponse(search model.EnrichedSearch) Search {
+type SearchResult struct {
+	Item           SearchItem
+	ProviderResult map[string]SearchProviderResult
+}
+
+func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderResult {
 	songs := []SearchSong{}
 	for _, song := range search.Songs {
 		songArtists := []SearchSongArtist{}
@@ -505,7 +516,7 @@ func SearchToResponse(search model.EnrichedSearch) Search {
 		})
 	}
 
-	return Search{
+	return SearchProviderResult{
 		Songs:     songs,
 		Albums:    albums,
 		Artists:   artists,
@@ -513,10 +524,22 @@ func SearchToResponse(search model.EnrichedSearch) Search {
 	}
 }
 
-func SearchResultToResponse(search map[string]model.EnrichedSearch) map[string]Search {
-	response := map[string]Search{}
-	for provider, result := range search {
-		response[provider] = SearchToResponse(result)
+func SearchResultToResponse(searchResult model.SearchResult) SearchResult {
+	if searchResult.ProviderResult == nil {
+		return SearchResult{
+			Item: SearchItem{
+				Provider: searchResult.ItemFound.Provider,
+				Type:     string(searchResult.ItemFound.Type),
+				Id:       searchResult.ItemFound.Id,
+			},
+		}
 	}
-	return response
+
+	providerResult := map[string]SearchProviderResult{}
+	for provider, result := range searchResult.ProviderResult {
+		providerResult[provider] = SearchProviderResultToResponse(result)
+	}
+	return SearchResult{
+		ProviderResult: providerResult,
+	}
 }

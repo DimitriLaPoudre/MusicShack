@@ -348,3 +348,28 @@ func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Pl
 		Playlists: playlists,
 	}, nil
 }
+
+func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedUrlItem, error) {
+	var urlItem model.UrlItem
+	var provider string
+	errMap := map[string]string{}
+	for plugin := range pluginInstances {
+		var err error
+		urlItem, err = plugin.Url(ctx, q)
+		if err == nil {
+			provider = plugin.Provider()
+			break
+		}
+		errMap[plugin.Name()] = err.Error()
+	}
+	if len(errMap) == len(pluginInstances) {
+		return model.EnrichedUrlItem{}, fmt.Errorf("url parsed %w: %v", model.ErrPluginDataNotFound, errMap)
+	}
+
+	enrichedUrlItem := model.EnrichedUrlItem{
+		Provider: provider,
+		UrlItem:  urlItem,
+	}
+
+	return enrichedUrlItem, nil
+}

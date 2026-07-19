@@ -45,6 +45,6 @@ type Plugin interface {
 	Artist(ctx context.Context, instances []Instance, id string) (Artist, error)
 	Playlist(ctx context.Context, instances []Instance, id string) (Playlist, error)
 	Search(ctx context.Context, instances []Instance, song string, album string, artist string, playlist string) (Search, error)
-	Url(ctx context.Context, instances []Instance, url string) (UrlItem, error)
+	Url(ctx context.Context, url string) (UrlItem, error)
 	Lyrics(ctx context.Context, instances []Instance, id string) (string, string, error)
 }
