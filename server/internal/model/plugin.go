@@ -6,6 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
+type DataType string
+
+const (
+	TypeSong     DataType = "song"
+	TypeAlbum    DataType = "album"
+	TypeArtist   DataType = "artist"
+	TypePlaylist DataType = "playlist"
+)
+
 type Quality struct {
 	Name  string `json:"name"`
 	Color string `json:"color"`
@@ -96,6 +105,11 @@ type EnrichedPlaylist struct {
 	Songs []EnrichedSong `json:"songs"`
 }
 
+type TypedItem struct {
+	Type DataType
+	Data any
+}
+
 type Search struct {
 	Songs     []Song     `json:"songs"`
 	Albums    []Album    `json:"albums"`
@@ -111,25 +125,11 @@ type EnrichedSearch struct {
 }
 
 type SearchResult struct {
-	ItemFound      EnrichedUrlItem
+	ItemFound      TypedItem
 	ProviderResult map[string]EnrichedSearch
 }
 
-type Type string
-
-const (
-	TypeSong     Type = "song"
-	TypeAlbum    Type = "album"
-	TypeArtist   Type = "artist"
-	TypePlaylist Type = "playlist"
-)
-
 type UrlItem struct {
-	Type Type   `json:"type"`
-	Id   string `json:"id"`
-}
-
-type EnrichedUrlItem struct {
-	Provider string `json:"provider"`
-	UrlItem
+	Type DataType `json:"type"`
+	Id   string   `json:"id"`
 }

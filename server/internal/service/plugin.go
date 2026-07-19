@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -72,6 +74,12 @@ func (s *PluginService) GetOriginalPlugin(ctx context.Context, url string) (mode
 	case <-ctx.Done():
 		return nil, model.ErrInvalidUrlPlugin
 	}
+}
+
+var isrcRegexp = regexp.MustCompile(`^[A-Z]{2}[A-Z0-9]{3}[0-9]{2}[0-9]{5}$`)
+
+func (s *PluginService) IsISRC(isrc string) bool {
+	return isrcRegexp.MatchString(strings.ToUpper(isrc))
 }
 
 func (s *PluginService) GetSong(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedSong, error) {
@@ -349,13 +357,50 @@ func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Pl
 	}, nil
 }
 
-func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedUrlItem, error) {
+func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.TypedItem, error) {
 	var urlItem model.UrlItem
-	var provider string
 	errMap := map[string]string{}
 	for plugin := range pluginInstances {
 		var err error
 		urlItem, err = plugin.Url(ctx, q)
+		if err == nil {
+			break
+		}
+		errMap[plugin.Name()] = err.Error()
+	}
+	if len(errMap) == len(pluginInstances) {
+		return model.TypedItem{}, fmt.Errorf("url parsed %w: %v", model.ErrPluginDataNotFound, errMap)
+	}
+
+	var data any
+	var err error
+	switch urlItem.Type {
+	case model.TypeSong:
+		data, err = s.GetSong(ctx, pluginInstances, urlItem.Id)
+	case model.TypeAlbum:
+		data, err = s.GetAlbum(ctx, pluginInstances, urlItem.Id)
+	case model.TypeArtist:
+		data, err = s.GetArtist(ctx, pluginInstances, urlItem.Id)
+	case model.TypePlaylist:
+		data, err = s.GetPlaylist(ctx, pluginInstances, urlItem.Id)
+	}
+	if err != nil {
+		return model.TypedItem{}, fmt.Errorf("from url %s: %w", q, err)
+	}
+
+	return model.TypedItem{
+		Type: urlItem.Type,
+		Data: data,
+	}, nil
+}
+
+func (s *PluginService) GetSongByISRC(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, isrc string) (model.EnrichedSong, error) {
+	var song model.Song
+	var provider string
+	errMap := map[string]string{}
+	for plugin, instances := range pluginInstances {
+		var err error
+		song, err = plugin.SongByISRC(ctx, instances, isrc)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -363,13 +408,10 @@ func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugi
 		errMap[plugin.Name()] = err.Error()
 	}
 	if len(errMap) == len(pluginInstances) {
-		return model.EnrichedUrlItem{}, fmt.Errorf("url parsed %w: %v", model.ErrPluginDataNotFound, errMap)
+		return model.EnrichedSong{}, fmt.Errorf("song by ISRC %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
-	enrichedUrlItem := model.EnrichedUrlItem{
-		Provider: provider,
-		UrlItem:  urlItem,
-	}
+	enrichedSong := s.enrichSong(ctx, provider, song)
 
-	return enrichedUrlItem, nil
+	return enrichedSong, nil
 }

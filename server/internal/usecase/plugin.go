@@ -105,6 +105,15 @@ func (u *PluginUseCase) GetSearch(ctx context.Context, user model.User, q string
 			return model.SearchResult{ItemFound: item}, nil
 		}
 
+		if u.plugin.IsISRC(q) {
+			if data, err := u.plugin.GetSongByISRC(ctx, pluginInstances, q); err == nil {
+				return model.SearchResult{ItemFound: model.TypedItem{
+					Type: model.TypeSong,
+					Data: data,
+				}}, nil
+			}
+		}
+
 		result, err := u.plugin.Search(ctx, pluginInstances, q)
 		if err != nil {
 			continue

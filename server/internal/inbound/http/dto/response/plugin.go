@@ -366,9 +366,8 @@ func PlaylistToResponse(playlist model.EnrichedPlaylist) Playlist {
 }
 
 type SearchItem struct {
-	Provider string `json:"provider"`
-	Type     string `json:"type"`
-	Id       string `json:"id"`
+	Type string `json:"type"`
+	Data any    `json:"data"`
 }
 
 type SearchSongArtist struct {
@@ -528,9 +527,8 @@ func SearchResultToResponse(searchResult model.SearchResult) SearchResult {
 	if searchResult.ProviderResult == nil {
 		return SearchResult{
 			Item: SearchItem{
-				Provider: searchResult.ItemFound.Provider,
-				Type:     string(searchResult.ItemFound.Type),
-				Id:       searchResult.ItemFound.Id,
+				Type: string(searchResult.ItemFound.Type),
+				Data: searchResult.ItemFound.Data,
 			},
 		}
 	}

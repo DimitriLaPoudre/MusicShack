@@ -41,6 +41,7 @@ type Plugin interface {
 	Status(ctx context.Context, url string) error
 	Download(ctx context.Context, user *User, id string) (io.ReadCloser, string, error)
 	Song(ctx context.Context, instances []Instance, id string) (Song, error)
+	SongByISRC(ctx context.Context, instances []Instance, isrc string) (Song, error)
 	Album(ctx context.Context, instances []Instance, id string) (Album, error)
 	Artist(ctx context.Context, instances []Instance, id string) (Artist, error)
 	Playlist(ctx context.Context, instances []Instance, id string) (Playlist, error)

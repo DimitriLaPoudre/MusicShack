@@ -10,8 +10,8 @@ import (
 )
 
 func checkSong(arr []string) (model.UrlItem, error) {
-	if len(arr) != 2 {
-		return model.UrlItem{}, fmt.Errorf("/track without id path")
+	if len(arr) != 1 {
+		return model.UrlItem{}, fmt.Errorf("/track/id path but extra path found")
 	}
 
 	return model.UrlItem{
@@ -21,25 +21,18 @@ func checkSong(arr []string) (model.UrlItem, error) {
 }
 
 func checkAlbum(arr []string) (model.UrlItem, error) {
-	if len(arr) == 2 {
-		return model.UrlItem{
-			Type: model.TypeAlbum,
-			Id:   arr[1],
-		}, nil
-	} else if len(arr) == 4 {
-		if item, err := checkSong(arr[2:]); err != nil {
-			return model.UrlItem{}, fmt.Errorf("/album: %w", err)
-		} else {
-			return item, nil
-		}
-	} else {
-		return model.UrlItem{}, fmt.Errorf("/album without id path or id/track/id path")
+	if len(arr) != 1 {
+		return model.UrlItem{}, fmt.Errorf("/album/id path but extra path found")
 	}
+	return model.UrlItem{
+		Type: model.TypeAlbum,
+		Id:   arr[1],
+	}, nil
 }
 
 func checkArtist(arr []string) (model.UrlItem, error) {
-	if len(arr) != 2 {
-		return model.UrlItem{}, fmt.Errorf("/artist without id path")
+	if len(arr) != 1 {
+		return model.UrlItem{}, fmt.Errorf("/artist/id path but extra path found")
 	}
 
 	return model.UrlItem{
@@ -50,7 +43,7 @@ func checkArtist(arr []string) (model.UrlItem, error) {
 
 func checkPlaylist(arr []string) (model.UrlItem, error) {
 	if len(arr) != 1 {
-		return model.UrlItem{}, fmt.Errorf("/playlist without id path")
+		return model.UrlItem{}, fmt.Errorf("/playlist/id path but extra path found")
 	}
 
 	return model.UrlItem{
@@ -68,23 +61,29 @@ func (p *Hifi) Url(ctx context.Context, url string) (model.UrlItem, error) {
 	}
 
 	arr := strings.Split(clean_url, "/")
-	if len(arr) == 1 {
-		return model.UrlItem{}, fmt.Errorf("url contain 1 sub path: %v", arr)
+	if len(arr) == 0 {
+		return model.UrlItem{}, fmt.Errorf("url %s: path missing", url)
+	}
+	if arr[len(arr)-1] == "u" {
+		arr = arr[:len(arr)-1]
+	}
+	if len(arr) <= 1 {
+		return model.UrlItem{}, fmt.Errorf("url %s: path missing /type/id pattern", url)
 	}
 
 	var item model.UrlItem
 	var err error
 	switch arr[0] {
 	case "track":
-		item, err = checkSong(arr)
+		item, err = checkSong(arr[1:])
 	case "album":
-		item, err = checkAlbum(arr)
+		item, err = checkAlbum(arr[1:])
 	case "artist":
-		item, err = checkArtist(arr)
+		item, err = checkArtist(arr[1:])
 	case "playlist":
 		item, err = checkPlaylist(arr[1:])
 	default:
-		item, err = model.UrlItem{}, fmt.Errorf("url contain unknown sub path: %v", arr)
+		item, err = model.UrlItem{}, fmt.Errorf("/type/id bad type: %v", arr)
 	}
 
 	if err != nil {

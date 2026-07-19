@@ -97,124 +97,116 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 	}
 
 	songs := []model.Song{}
-	if len(songData.Data.Songs) != 0 {
-		for _, song := range songData.Data.Songs {
-			audioQuality := LOW
-			switch song.AudioQuality {
-			case "LOW":
-				audioQuality = LOW
-			case "HIGH":
-				audioQuality = HIGH
-			case "LOSSLESS":
-				audioQuality = LOSSLESS
-			}
-			for _, quality := range song.MediaMetadata.Tags {
-				switch quality {
-				case "HIRES_LOSSLESS":
-					audioQuality = HIRES
-				case "LOSSLESS", "DOLBY_ATMOS":
-					if audioQuality != HIRES {
-						audioQuality = LOSSLESS
-					}
+	for _, song := range songData.Data.Songs {
+		audioQuality := LOW
+		switch song.AudioQuality {
+		case "LOW":
+			audioQuality = LOW
+		case "HIGH":
+			audioQuality = HIGH
+		case "LOSSLESS":
+			audioQuality = LOSSLESS
+		}
+		for _, quality := range song.MediaMetadata.Tags {
+			switch quality {
+			case "HIRES_LOSSLESS":
+				audioQuality = HIRES
+			case "LOSSLESS", "DOLBY_ATMOS":
+				if audioQuality != HIRES {
+					audioQuality = LOSSLESS
 				}
 			}
-
-			artists := []model.Artist{}
-			for _, artist := range song.Artists {
-				artists = append(artists, model.Artist{
-					Id:   strconv.FormatUint(uint64(artist.Id), 10),
-					Name: artist.Name,
-				})
-			}
-
-			songs = append(songs,
-				model.Song{
-					Id:           strconv.FormatUint(uint64(song.Id), 10),
-					Title:        song.Title,
-					Duration:     song.Duration,
-					AudioQuality: audioQuality,
-					Popularity:   song.Popularity,
-					Explicit:     song.Explicit,
-					Isrc:         song.Isrc,
-					Artists:      artists,
-					Album: model.Album{
-						Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
-						Title:    song.Album.Title,
-						CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
-					},
-				})
 		}
+
+		artists := []model.Artist{}
+		for _, artist := range song.Artists {
+			artists = append(artists, model.Artist{
+				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				Name: artist.Name,
+			})
+		}
+
+		songs = append(songs,
+			model.Song{
+				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				Title:        song.Title,
+				Duration:     song.Duration,
+				AudioQuality: audioQuality,
+				Popularity:   song.Popularity,
+				Explicit:     song.Explicit,
+				Isrc:         song.Isrc,
+				Artists:      artists,
+				Album: model.Album{
+					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
+					Title:    song.Album.Title,
+					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
+				},
+			})
 	}
 
 	albums := []model.Album{}
-	if len(albumData.Data.Albums.Albums) != 0 {
-		for _, album := range albumData.Data.Albums.Albums {
-			audioQuality := LOW
-			switch album.AudioQuality {
-			case "LOW":
-				audioQuality = LOW
-			case "HIGH":
-				audioQuality = HIGH
-			case "LOSSLESS":
-				audioQuality = LOSSLESS
-			}
-			for _, quality := range album.MediaMetadata.Tags {
-				switch quality {
-				case "HIRES_LOSSLESS":
-					audioQuality = HIRES
-				case "LOSSLESS", "DOLBY_ATMOS":
-					if audioQuality != HIRES {
-						audioQuality = LOSSLESS
-					}
+	for _, album := range albumData.Data.Albums.Albums {
+		audioQuality := LOW
+		switch album.AudioQuality {
+		case "LOW":
+			audioQuality = LOW
+		case "HIGH":
+			audioQuality = HIGH
+		case "LOSSLESS":
+			audioQuality = LOSSLESS
+		}
+		for _, quality := range album.MediaMetadata.Tags {
+			switch quality {
+			case "HIRES_LOSSLESS":
+				audioQuality = HIRES
+			case "LOSSLESS", "DOLBY_ATMOS":
+				if audioQuality != HIRES {
+					audioQuality = LOSSLESS
 				}
 			}
-
-			artists := []model.Artist{}
-			for _, artist := range album.Artists {
-				artists = append(artists, model.Artist{
-					Id:   strconv.FormatUint(uint64(artist.Id), 10),
-					Name: artist.Name,
-				})
-			}
-
-			albums = append(albums,
-				model.Album{
-					Id:           strconv.FormatUint(uint64(album.Id), 10),
-					Title:        album.Title,
-					Duration:     album.Duration,
-					CoverUrl:     hifi_utils.GetImageURL(album.CoverUrl, 640),
-					AudioQuality: audioQuality,
-					Explicit:     album.Explicit,
-					Popularity:   album.Popularity,
-					Artists:      artists,
-				})
 		}
+
+		artists := []model.Artist{}
+		for _, artist := range album.Artists {
+			artists = append(artists, model.Artist{
+				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				Name: artist.Name,
+			})
+		}
+
+		albums = append(albums,
+			model.Album{
+				Id:           strconv.FormatUint(uint64(album.Id), 10),
+				Title:        album.Title,
+				Duration:     album.Duration,
+				CoverUrl:     hifi_utils.GetImageURL(album.CoverUrl, 640),
+				AudioQuality: audioQuality,
+				Explicit:     album.Explicit,
+				Popularity:   album.Popularity,
+				Artists:      artists,
+			})
 	}
 
 	artists := []model.Artist{}
-	if len(artistData.Data.Artists.Artists) != 0 {
-		for _, artist := range artistData.Data.Artists.Artists {
-			artists = append(artists,
-				model.Artist{
-					Id:         strconv.FormatUint(uint64(artist.Id), 10),
-					Name:       artist.Name,
-					PictureUrl: hifi_utils.GetImageURL(artist.PictureUrl, 750),
-					Popularity: artist.Popularity,
-				})
-		}
+	for _, artist := range artistData.Data.Artists.Artists {
+		artists = append(artists,
+			model.Artist{
+				Id:         strconv.FormatUint(uint64(artist.Id), 10),
+				Name:       artist.Name,
+				PictureUrl: hifi_utils.GetImageURL(artist.PictureUrl, 750),
+				Popularity: artist.Popularity,
+			})
 	}
 
 	playlists := []model.Playlist{}
-	if len(playlistData.Data.Playlists.Playlists) != 0 {
-		for _, playlist := range playlistData.Data.Playlists.Playlists {
-			playlists = append(playlists,
-				model.Playlist{
-					Id:       playlist.UUID,
-					Title:    playlist.Title,
-					Duration: playlist.Duration,
-					CoverURL: hifi_utils.GetImageURL(playlist.SquareImage, 640),
-				})
-		}
+	for _, playlist := range playlistData.Data.Playlists.Playlists {
+		playlists = append(playlists,
+			model.Playlist{
+				Id:       playlist.UUID,
+				Title:    playlist.Title,
+				Duration: playlist.Duration,
+				CoverURL: hifi_utils.GetImageURL(playlist.SquareImage, 640),
+			})
 	}
 
 	return model.Search{
