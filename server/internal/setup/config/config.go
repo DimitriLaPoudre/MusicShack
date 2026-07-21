@@ -57,6 +57,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
+	cfg.Download.Path = filepath.Clean(cfg.Download.Path)
 	libraryPath := cfg.Download.Path
 	info, err := os.Stat(libraryPath)
 	if err != nil {
