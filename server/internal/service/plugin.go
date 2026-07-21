@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"regexp"
 	"strings"
@@ -14,12 +15,16 @@ import (
 )
 
 type PluginService struct {
-	store *PluginStoreService
+	store    *PluginStoreService
+	instance model.InstanceRepository
+	user     model.UserRepository
 }
 
-func NewPluginService(store *PluginStoreService) PluginService {
+func NewPluginService(store *PluginStoreService, instance model.InstanceRepository, user model.UserRepository) PluginService {
 	return PluginService{
-		store: store,
+		store:    store,
+		instance: instance,
+		user:     user,
 	}
 }
 
@@ -82,7 +87,23 @@ func (s *PluginService) IsISRC(isrc string) bool {
 	return isrcRegexp.MatchString(strings.ToUpper(isrc))
 }
 
-func (s *PluginService) GetSong(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedSong, error) {
+func (s *PluginService) GetSong(ctx context.Context, user model.User, provider string, id string) (model.EnrichedSong, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+	if err != nil {
+		return model.EnrichedSong{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
+	}
+
+	pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+	song, err := s.GetSongFromPluginInstances(ctx, pluginInstances, id)
+	if err != nil {
+		return model.EnrichedSong{}, fmt.Errorf("get song %s from each plugin: %w", id, err)
+	}
+
+	return song, nil
+}
+
+func (s *PluginService) GetSongFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedSong, error) {
 	var song model.Song
 	var provider string
 	errMap := map[string]string{}
@@ -118,7 +139,23 @@ func (s *PluginService) enrichSong(ctx context.Context, provider string, song mo
 	}
 }
 
-func (s *PluginService) GetAlbum(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedAlbum, error) {
+func (s *PluginService) GetAlbum(ctx context.Context, user model.User, provider string, id string) (model.EnrichedAlbum, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+	if err != nil {
+		return model.EnrichedAlbum{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
+	}
+
+	pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+	album, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, id)
+	if err != nil {
+		return model.EnrichedAlbum{}, fmt.Errorf("get album %s from each plugin: %w", id, err)
+	}
+
+	return album, nil
+}
+
+func (s *PluginService) GetAlbumFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedAlbum, error) {
 	var album model.Album
 	var provider string
 	errMap := map[string]string{}
@@ -163,7 +200,23 @@ func (s *PluginService) enrichAlbum(ctx context.Context, provider string, album 
 	}
 }
 
-func (s *PluginService) GetArtist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedArtist, error) {
+func (s *PluginService) GetArtist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedArtist, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+	if err != nil {
+		return model.EnrichedArtist{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
+	}
+
+	pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+	artist, err := s.GetArtistFromPluginInstances(ctx, pluginInstances, id)
+	if err != nil {
+		return model.EnrichedArtist{}, fmt.Errorf("get artist %s from each plugin: %w", id, err)
+	}
+
+	return artist, nil
+}
+
+func (s *PluginService) GetArtistFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedArtist, error) {
 	var artist model.Artist
 	var provider string
 	errMap := map[string]string{}
@@ -203,7 +256,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			if album.NumberTracks == 0 || len(album.Songs) == 0 || album.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, album)
 			} else {
-				if tmp, err := s.GetAlbum(ctx, pluginInstances, album.Id); err != nil {
+				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, album.Id); err != nil {
 					return
 				} else {
 					enrichedAlbum = tmp
@@ -220,7 +273,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			if ep.NumberTracks == 0 || len(ep.Songs) == 0 || ep.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, ep)
 			} else {
-				if tmp, err := s.GetAlbum(ctx, pluginInstances, ep.Id); err != nil {
+				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, ep.Id); err != nil {
 					return
 				} else {
 					enrichedAlbum = tmp
@@ -237,7 +290,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			if single.NumberTracks == 0 || len(single.Songs) == 0 || single.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, single)
 			} else {
-				if tmp, err := s.GetAlbum(ctx, pluginInstances, single.Id); err != nil {
+				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, single.Id); err != nil {
 					return
 				} else {
 					enrichedAlbum = tmp
@@ -259,7 +312,23 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 
 }
 
-func (s *PluginService) GetPlaylist(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedPlaylist, error) {
+func (s *PluginService) GetPlaylist(ctx context.Context, user model.User, provider string, id string) (model.EnrichedPlaylist, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+	if err != nil {
+		return model.EnrichedPlaylist{}, fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
+	}
+
+	pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+	playlist, err := s.GetPlaylistFromPluginInstances(ctx, pluginInstances, id)
+	if err != nil {
+		return model.EnrichedPlaylist{}, fmt.Errorf("get playlist %s from each: %w", id, err)
+	}
+
+	return playlist, nil
+}
+
+func (s *PluginService) GetPlaylistFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string) (model.EnrichedPlaylist, error) {
 	var playlist model.Playlist
 	var provider string
 	errMap := map[string]string{}
@@ -304,7 +373,46 @@ func (s *PluginService) enrichPlaylist(ctx context.Context, provider string, pla
 	}
 }
 
-func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedSearch, error) {
+func (s *PluginService) Search(ctx context.Context, user model.User, q string) (model.SearchResult, error) {
+	if q == "" {
+		return model.SearchResult{}, model.ErrPluginSearchEmptyQuery
+	}
+
+	providerResult := map[string]model.EnrichedSearch{}
+
+	for provider := range s.store.ListPluginsByProvider() {
+		instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
+		if err != nil {
+			continue
+		}
+
+		pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+		if item, err := s.UrlFromPluginInstances(ctx, pluginInstances, q); err == nil {
+			return model.SearchResult{ItemFound: item}, nil
+		}
+
+		if s.IsISRC(q) {
+			if data, err := s.GetSongByISRCFromPluginInstances(ctx, pluginInstances, q); err == nil {
+				return model.SearchResult{ItemFound: model.TypedItem{
+					Type: model.TypeSong,
+					Data: data,
+				}}, nil
+			}
+		}
+
+		result, err := s.SearchFromPluginInstances(ctx, pluginInstances, q)
+		if err != nil {
+			continue
+		}
+
+		providerResult[provider] = result
+	}
+
+	return model.SearchResult{ProviderResult: providerResult}, nil
+}
+
+func (s *PluginService) SearchFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.EnrichedSearch, error) {
 	var result model.Search
 	var provider string
 	errMap := map[string]string{}
@@ -357,7 +465,7 @@ func (s *PluginService) Search(ctx context.Context, pluginInstances map[model.Pl
 	}, nil
 }
 
-func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.TypedItem, error) {
+func (s *PluginService) UrlFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.TypedItem, error) {
 	var urlItem model.UrlItem
 	errMap := map[string]string{}
 	for plugin := range pluginInstances {
@@ -376,13 +484,13 @@ func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugi
 	var err error
 	switch urlItem.Type {
 	case model.TypeSong:
-		data, err = s.GetSong(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetSongFromPluginInstances(ctx, pluginInstances, urlItem.Id)
 	case model.TypeAlbum:
-		data, err = s.GetAlbum(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetAlbumFromPluginInstances(ctx, pluginInstances, urlItem.Id)
 	case model.TypeArtist:
-		data, err = s.GetArtist(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetArtistFromPluginInstances(ctx, pluginInstances, urlItem.Id)
 	case model.TypePlaylist:
-		data, err = s.GetPlaylist(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetPlaylistFromPluginInstances(ctx, pluginInstances, urlItem.Id)
 	}
 	if err != nil {
 		return model.TypedItem{}, fmt.Errorf("from url %s: %w", q, err)
@@ -394,7 +502,7 @@ func (s *PluginService) Url(ctx context.Context, pluginInstances map[model.Plugi
 	}, nil
 }
 
-func (s *PluginService) GetSongByISRC(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, isrc string) (model.EnrichedSong, error) {
+func (s *PluginService) GetSongByISRCFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, isrc string) (model.EnrichedSong, error) {
 	var song model.Song
 	var provider string
 	errMap := map[string]string{}
@@ -414,4 +522,44 @@ func (s *PluginService) GetSongByISRC(ctx context.Context, pluginInstances map[m
 	enrichedSong := s.enrichSong(ctx, provider, song)
 
 	return enrichedSong, nil
+}
+
+func (s *PluginService) DownloadWithUserID(ctx context.Context, userID uuid.UUID, provider string, id string) (io.ReadCloser, string, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
+	if err != nil {
+		return nil, "", fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
+	}
+
+	pluginInstances := s.InstancesToMapPluginInstances(instances)
+
+	user, err := s.user.GetUserByFilter(ctx, model.UserFilter{ID: &userID})
+	if err != nil {
+		return nil, "", fmt.Errorf("get user %s: %w", userID.String(), err)
+	}
+
+	reader, extension, err := s.DownloadFromPluginInstances(ctx, pluginInstances, id, user.HiRes)
+	if err != nil {
+		return nil, "", fmt.Errorf("download %s from each: %w", id, err)
+	}
+
+	return reader, extension, nil
+}
+
+func (s *PluginService) DownloadFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, id string, hiRes bool) (io.ReadCloser, string, error) {
+	var reader io.ReadCloser
+	var extension string
+	errMap := map[string]string{}
+	for plugin, instances := range pluginInstances {
+		var err error
+		reader, extension, err = plugin.Download(ctx, instances, id, hiRes)
+		if err == nil {
+			break
+		}
+		errMap[plugin.Name()] = err.Error()
+	}
+	if len(errMap) == len(pluginInstances) {
+		return nil, "", fmt.Errorf("download %w: %v", model.ErrPluginDataNotFound, errMap)
+	}
+
+	return reader, extension, nil
 }

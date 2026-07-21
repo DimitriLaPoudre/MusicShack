@@ -6,19 +6,16 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
-	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
 )
 
 type UserUseCase struct {
-	cfg  config.LibraryConfig
 	user *service.UserService
 	repo model.UserRepository
 }
 
-func NewUserUseCase(cfg config.LibraryConfig, user *service.UserService, repo model.UserRepository) UserUseCase {
+func NewUserUseCase(user *service.UserService, repo model.UserRepository) UserUseCase {
 	return UserUseCase{
-		cfg:  cfg,
 		user: user,
 		repo: repo,
 	}

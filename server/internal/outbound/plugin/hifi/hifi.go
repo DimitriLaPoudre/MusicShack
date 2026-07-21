@@ -4,7 +4,6 @@ package hifi
 
 import (
 	"context"
-	"io"
 	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
@@ -24,10 +23,6 @@ func (p *Hifi) Name() string {
 
 func (p *Hifi) Provider() string {
 	return "tidal"
-}
-
-func (p *Hifi) Download(ctx context.Context, user *model.User, id string) (io.ReadCloser, string, error) {
-	return nil, "", nil
 }
 
 func (p *Hifi) Lyrics(ctx context.Context, instances []model.Instance, id string) (string, string, error) {

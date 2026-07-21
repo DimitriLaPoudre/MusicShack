@@ -42,13 +42,13 @@ func Run(cfg *config.Config) {
 	pluginStore.Register(&pluginHifi)
 
 	authS := service.NewAuthService(cfg.Session, &repo, &repo)
-	userS := service.NewUserService(cfg.Library, &repo)
-	pluginS := service.NewPluginService(&pluginStore)
+	userS := service.NewUserService(cfg.Download, &repo)
+	pluginS := service.NewPluginService(&pluginStore, &repo, &repo)
 
 	authU := usecase.NewAuthUseCase(cfg.Session, &repo, &repo)
-	userU := usecase.NewUserUseCase(cfg.Library, &userS, &repo)
+	userU := usecase.NewUserUseCase(&userS, &repo)
 	instanceU := usecase.NewInstanceUseCase(&pluginS, &repo)
-	pluginU := usecase.NewPluginUseCase(&pluginS, &pluginStore, &repo)
+	pluginU := usecase.NewPluginUseCase(&pluginS)
 
 	meH := handler.NewMeHandler(&userU)
 	userH := handler.NewUserHandler(&userU)

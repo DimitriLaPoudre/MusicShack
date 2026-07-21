@@ -11,11 +11,11 @@ import (
 )
 
 type UserService struct {
-	cfg  config.LibraryConfig
+	cfg  config.DownloadConfig
 	repo model.UserRepository
 }
 
-func NewUserService(cfg config.LibraryConfig, repo model.UserRepository) UserService {
+func NewUserService(cfg config.DownloadConfig, repo model.UserRepository) UserService {
 	return UserService{
 		cfg:  cfg,
 		repo: repo,

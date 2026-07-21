@@ -2,6 +2,13 @@ package hifi
 
 import "github.com/DimitriLaPoudre/MusicShack/internal/model"
 
+const (
+	AudioQualityLOW      string = "LOW"
+	AudioQualityHIGH     string = "HIGH"
+	AudioQualityLOSSLESS string = "LOSSLESS"
+	AudioQualityHIRES    string = "HI_RES_LOSSLESS"
+)
+
 var (
 	LOW = model.Quality{
 		Name:  "LOW",

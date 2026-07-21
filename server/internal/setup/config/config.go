@@ -12,21 +12,17 @@ import (
 
 type (
 	Config struct {
-		Admin   AdminConfig   `envPrefix:"ADMIN_"`
-		Library LibraryConfig `envPrefix:"LIBRARY_"`
-		DB      DBConfig      `envPrefix:"DB_"`
-		Session SessionConfig `envPrefix:"SESSION_"`
-		HTTP    HTTPConfig
-		Log     LogConfig `envPrefix:"LOG_"`
+		Admin    AdminConfig   `envPrefix:"ADMIN_"`
+		DB       DBConfig      `envPrefix:"DB_"`
+		Session  SessionConfig `envPrefix:"SESSION_"`
+		HTTP     HTTPConfig
+		Log      LogConfig      `envPrefix:"LOG_"`
+		Download DownloadConfig `envPrefix:"DOWNLOAD_"`
 	}
 
 	AdminConfig struct {
 		DefaultUsername string `env:"DEFAULT_USERNAME,unset" envDefault:"admin"`
 		DefaultPassword string `env:"DEFAULT_PASSWORD,unset" envDefault:"changemenow"`
-	}
-
-	LibraryConfig struct {
-		Path string `env:"PATH,required"`
 	}
 
 	DBConfig struct {
@@ -48,6 +44,11 @@ type (
 		Pretty bool   `env:"PRETTY" envDefault:"false"`
 		Level  string `env:"LEVEL" envDefault:"info"`
 	}
+
+	DownloadConfig struct {
+		Path       string `env:"PATH"`
+		Concurrent int    `env:"CONCURRENT" envDefault:"3"`
+	}
 )
 
 func Load() (*Config, error) {
@@ -56,7 +57,7 @@ func Load() (*Config, error) {
 		return nil, err
 	}
 
-	libraryPath := cfg.Library.Path
+	libraryPath := cfg.Download.Path
 	info, err := os.Stat(libraryPath)
 	if err != nil {
 		slog.Error(fmt.Sprintf("library path %s is invalid", libraryPath), slog.String("err", err.Error()))
