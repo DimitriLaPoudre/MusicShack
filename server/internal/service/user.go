@@ -39,7 +39,7 @@ func (s *UserService) CreateUser(c context.Context, user model.User) (model.User
 		return model.User{}, fmt.Errorf("validate role of new user: %w", err)
 	}
 
-	//TODO create user space too
+	//TODO create user space too with id as folder name
 
 	user, err = s.repo.CreateUser(c, user)
 	if err != nil {

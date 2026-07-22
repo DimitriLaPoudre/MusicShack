@@ -21,8 +21,8 @@ var (
 	ErrNotFound     = errors.New("not found")
 	ErrInternal     = errors.New("internal error")
 
-	ErrDownloadNotFound    = errors.New("download not found")
-	ErrDownloadInvalidType = errors.New("invalid type for item to download")
+	ErrDownloadNotFound  = errors.New("download not found")
+	ErrDownloadInvalidID = errors.New("invalid download id")
 
 	ErrAdminAlreadyExist = errors.New("admin already exist")
 

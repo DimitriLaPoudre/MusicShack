@@ -69,15 +69,18 @@ func New(
 		pluginGroup := api.Group("/plugin")
 		{
 			pluginGroup.GET("/song/:provider/:id", authMW, pluginH.GetSong)
+			pluginGroup.POST("/song/:provider/:id/download", authMW, downloadH.DownloadArtist)
 			pluginGroup.GET("/album/:provider/:id", authMW, pluginH.GetAlbum)
+			pluginGroup.POST("/album/:provider/:id/download", authMW, downloadH.DownloadAlbum)
 			pluginGroup.GET("/artist/:provider/:id", authMW, pluginH.GetArtist)
+			pluginGroup.POST("/artist/:provider/:id/download", authMW, downloadH.DownloadSong)
 			pluginGroup.GET("/playlist/:provider/:id", authMW, pluginH.GetPlaylist)
+			pluginGroup.POST("/playlist/:provider/:id/download", authMW, downloadH.DownloadPlaylist)
 			pluginGroup.GET("/search", authMW, pluginH.GetSearch)
 		}
 
 		downloadGroup := api.Group("/download")
 		{
-			downloadGroup.POST("", authMW, downloadH.Download)
 			downloadGroup.PUT("/:id/retry", authMW, downloadH.Retry)
 			downloadGroup.PUT("/retry", authMW, downloadH.RetryAll)
 			downloadGroup.PUT("/:id/cancel", authMW, downloadH.Cancel)

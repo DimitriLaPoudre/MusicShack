@@ -48,101 +48,109 @@ func NewDownloadService(cfg config.DownloadConfig, plugin *PluginService, metada
 	}
 }
 
-func (s *DownloadService) Download(ctx context.Context, userID uuid.UUID, order model.DownloadOrder) ([]model.AddDownloadError, error) {
-	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &order.Provider})
+func (s *DownloadService) DownloadArtist(ctx context.Context, userID uuid.UUID, provider string, id string) error {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
 	if err != nil {
-		return []model.AddDownloadError{}, fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), order.Provider, err)
+		return fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
 	}
 
 	pluginInstances := s.plugin.InstancesToMapPluginInstances(instances)
 
-	var subErr []model.AddDownloadError
-	switch order.Type {
-	case model.TypeArtist:
-		subErr, err = s.AddArtist(ctx, userID, pluginInstances, order.ID)
-	case model.TypeAlbum:
-		subErr, err = s.AddAlbum(ctx, userID, pluginInstances, order.ID)
-	case model.TypeSong:
-		err = s.AddSong(ctx, userID, pluginInstances, order.ID, nil)
-	default:
-		err = model.ErrDownloadInvalidType
-	}
+	err = s.AddArtist(ctx, userID, pluginInstances, id)
 	if err != nil {
-		return []model.AddDownloadError{}, err
-	}
-	if len(subErr) > 0 {
-		return subErr, err
+		return err
 	}
 
-	return []model.AddDownloadError{}, nil
+	return nil
 }
 
-func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, artistID string) ([]model.AddDownloadError, error) {
+func (s *DownloadService) DownloadAlbum(ctx context.Context, userID uuid.UUID, provider string, id string) error {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
+	if err != nil {
+		return fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
+	}
+
+	pluginInstances := s.plugin.InstancesToMapPluginInstances(instances)
+
+	err = s.AddAlbum(ctx, userID, pluginInstances, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DownloadService) DownloadPlaylist(ctx context.Context, userID uuid.UUID, provider string, id string) error {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
+	if err != nil {
+		return fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
+	}
+
+	pluginInstances := s.plugin.InstancesToMapPluginInstances(instances)
+
+	err = s.AddPlaylist(ctx, userID, pluginInstances, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DownloadService) DownloadSong(ctx context.Context, userID uuid.UUID, provider string, id string) error {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
+	if err != nil {
+		return fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
+	}
+
+	pluginInstances := s.plugin.InstancesToMapPluginInstances(instances)
+
+	err = s.AddSong(ctx, userID, pluginInstances, id, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, artistID string) error {
 	artist, err := s.plugin.GetArtistFromPluginInstances(ctx, pluginInstances, artistID)
 	if err != nil {
-		return []model.AddDownloadError{}, fmt.Errorf("get artist %s info for download: %w", artistID, err)
+		return fmt.Errorf("get artist %s info for download: %w", artistID, err)
 	}
 
-	errList := []model.AddDownloadError{}
 	for _, album := range artist.Albums {
-		subErrList, err := s.AddAlbum(ctx, userID, pluginInstances, album.Id)
-		if err != nil {
-			errList = append(errList, model.AddDownloadError{
-				Type:   model.TypeAlbum,
-				ID:     album.Id,
-				Name:   album.Title,
-				Reason: err.Error(),
-			})
-		}
-		errList = append(errList, subErrList...)
+		_ = s.AddAlbum(ctx, userID, pluginInstances, album.Id)
 	}
 
-	return errList, nil
+	return nil
 }
 
-func (s *DownloadService) AddAlbum(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, albumID string) ([]model.AddDownloadError, error) {
+func (s *DownloadService) AddAlbum(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, albumID string) error {
 	album, err := s.plugin.GetAlbumFromPluginInstances(ctx, pluginInstances, albumID)
 	if err != nil {
-		return []model.AddDownloadError{}, fmt.Errorf("get album %s info for download: %w", albumID, err)
+		return fmt.Errorf("get album %s info for download: %w", albumID, err)
 	}
 
-	errList := []model.AddDownloadError{}
 	for _, song := range album.Songs {
-		err := s.AddSong(ctx, userID, pluginInstances, song.Id, &album.Album)
-		if err != nil {
-			errList = append(errList, model.AddDownloadError{
-				Type:   model.TypeSong,
-				ID:     song.Id,
-				Name:   song.Title,
-				Reason: err.Error(),
-			})
-		}
+		_ = s.AddSong(ctx, userID, pluginInstances, song.Id, &album.Album)
 	}
 
-	return errList, nil
+	return nil
 }
 
-// func (s *DownloadService) AddPlaylist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, playlistID string) ([]model.AddDownloadError, error) {
-// 	playlist, err := s.plugin.GetPlaylistFromPluginInstances(ctx, pluginInstances, playlistID)
-// 	if err != nil {
-// 		return []model.AddDownloadError{}, fmt.Errorf("get playlist %s info for download: %w", playlistID, err)
-// 	}
-//
-// 	errList := []model.AddDownloadError{}
-// 	for _, song := range playlist.Songs {
-// 		err := s.AddSong(ctx, userID, pluginInstances, song.Id, nil)
-// 		if err != nil {
-// 			errList = append(errList, model.AddDownloadError{
-// 				Type:   model.TypeSong,
-// 				ID:     song.Id,
-// 				Name:   song.Title,
-// 				Reason: err.Error(),
-// 			})
-// 		}
-// 	}
-//
-// 	return errList, nil
-// }
+func (s *DownloadService) AddPlaylist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, playlistID string) error {
+	playlist, err := s.plugin.GetPlaylistFromPluginInstances(ctx, pluginInstances, playlistID)
+	if err != nil {
+		return fmt.Errorf("get playlist %s info for download: %w", playlistID, err)
+	}
+
+	_ = playlist
+	// for _, song := range playlist.Songs {
+	// 	_ = s.AddSong(ctx, userID, pluginInstances, song.Id, nil)
+	// }
+
+	return nil
+}
 
 func (s *DownloadService) AddSong(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, songID string, optAlbum *model.Album) error {
 	song, err := s.plugin.GetSongFromPluginInstances(ctx, pluginInstances, songID)
@@ -161,14 +169,14 @@ func (s *DownloadService) AddSong(ctx context.Context, userID uuid.UUID, pluginI
 		song.Album = album.Album
 	}
 
-	if err := s.DownloadSong(userID, song); err != nil {
+	if err := s.AddDownloadTask(userID, song); err != nil {
 		return fmt.Errorf("download song %s: %w", song.Title, err)
 	}
 
 	return nil
 }
 
-func (s *DownloadService) DownloadSong(userID uuid.UUID, song model.EnrichedSong) error {
+func (s *DownloadService) AddDownloadTask(userID uuid.UUID, song model.EnrichedSong) error {
 	// check if song already owned
 
 	taskID, err := uuid.NewV7()
