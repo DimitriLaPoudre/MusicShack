@@ -31,7 +31,6 @@ func Error(c *gin.Context, err error) {
 	// case errors.Is(err, model.ErrEmailDuplicate):
 	// 	c.JSON(http.StatusConflict, response.Error{Message: err.Error()})
 	default:
-		// _ = c.Error(err)
 		c.JSON(http.StatusInternalServerError, response.NewError(err))
 	}
 }

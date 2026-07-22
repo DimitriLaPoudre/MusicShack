@@ -28,8 +28,8 @@ func (h *DownloadHandler) DownloadArtist(c *gin.Context) {
 		return
 	}
 
-	provider := c.Query("provider")
-	id := c.Query("id")
+	provider := c.Param("provider")
+	id := c.Param("id")
 
 	if err := h.download.DownloadArtist(c.Request.Context(), me.ID, provider, id); err != nil {
 		utils.Error(c, err)
@@ -46,8 +46,8 @@ func (h *DownloadHandler) DownloadAlbum(c *gin.Context) {
 		return
 	}
 
-	provider := c.Query("provider")
-	id := c.Query("id")
+	provider := c.Param("provider")
+	id := c.Param("id")
 
 	if err := h.download.DownloadAlbum(c.Request.Context(), me.ID, provider, id); err != nil {
 		utils.Error(c, err)
@@ -64,8 +64,8 @@ func (h *DownloadHandler) DownloadPlaylist(c *gin.Context) {
 		return
 	}
 
-	provider := c.Query("provider")
-	id := c.Query("id")
+	provider := c.Param("provider")
+	id := c.Param("id")
 
 	if err := h.download.DownloadPlaylist(c.Request.Context(), me.ID, provider, id); err != nil {
 		utils.Error(c, err)
@@ -82,8 +82,8 @@ func (h *DownloadHandler) DownloadSong(c *gin.Context) {
 		return
 	}
 
-	provider := c.Query("provider")
-	id := c.Query("id")
+	provider := c.Param("provider")
+	id := c.Param("id")
 
 	if err := h.download.DownloadSong(c.Request.Context(), me.ID, provider, id); err != nil {
 		utils.Error(c, err)
@@ -100,7 +100,7 @@ func (h *DownloadHandler) Retry(c *gin.Context) {
 		return
 	}
 
-	rawTaskID := c.Query("id")
+	rawTaskID := c.Param("id")
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)
@@ -134,7 +134,7 @@ func (h *DownloadHandler) Cancel(c *gin.Context) {
 		return
 	}
 
-	rawTaskID := c.Query("id")
+	rawTaskID := c.Param("id")
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)
@@ -167,7 +167,7 @@ func (h *DownloadHandler) Remove(c *gin.Context) {
 		return
 	}
 
-	rawTaskID := c.Query("id")
+	rawTaskID := c.Param("id")
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)

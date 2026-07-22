@@ -22,7 +22,7 @@ func (req CreateUser) IntoUser() (model.User, error) {
 }
 
 type UpdateUser struct {
-	Username *string `json:"username" binding:"min=3,max=20,alphanumunicode|contains=_"`
+	Username *string `json:"username" binding:"omitempty,min=3,max=20,alphanumunicode|contains=_"`
 	Password *string `json:"password"`
 	HiRes    *bool   `json:"hi_res"`
 }

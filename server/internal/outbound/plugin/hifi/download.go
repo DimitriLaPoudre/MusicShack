@@ -173,19 +173,6 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 		return nil, "", fmt.Errorf("decoding song %s download manifest: %w", id, err)
 	}
 
-	var reader io.ReadCloser
-	switch downloadInfo.Data.ManifestMimeType {
-	case "application/vnd.tidal.bts":
-		reader, err = downloadTidal(ctx, manifest)
-	case "application/dash+xml":
-		reader, err = downloadMPD(ctx, manifest)
-	default:
-		err = errors.New("manifest type unknown")
-	}
-	if err != nil {
-		return nil, "", fmt.Errorf("downloading song %s: %w", id, err)
-	}
-
 	var extension string
 	switch downloadInfo.Data.AudioQuality {
 	case AudioQualityHIRES:
@@ -199,10 +186,24 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 		extension = "m4a"
 	}
 
-	if quality == AudioQualityHIRES {
+	var reader io.ReadCloser
+	switch downloadInfo.Data.ManifestMimeType {
+	case "application/vnd.tidal.bts":
+		reader, err = downloadTidal(ctx, manifest)
+	case "application/dash+xml":
+		reader, err = downloadMPD(ctx, manifest)
+	default:
+		err = errors.New("manifest type unknown")
+	}
+	if err != nil {
+		return nil, "", fmt.Errorf("downloading song %s: %w", id, err)
+	}
+
+	switch downloadInfo.Data.AudioQuality {
+	case AudioQualityHIRES, AudioQualityLOSSLESS:
 		reader, err = remuxM4AtoFLAC(reader)
 		if err != nil {
-			return nil, "", fmt.Errorf("hires remux: %w", err)
+			return nil, "", fmt.Errorf("remux from M4A to FLAC: %w", err)
 		}
 	}
 

@@ -274,6 +274,7 @@ func (t *downloadTask) SaveDownload(ctx context.Context, reader io.ReadCloser, e
 	}
 
 	if err := t.download.metadata.Format(ctx, t.user, t.song.Provider, path, t.song.Song); err != nil {
+		os.Remove(path)
 		return fmt.Errorf("format song metadata: %w", err)
 	}
 
