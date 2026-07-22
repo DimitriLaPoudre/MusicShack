@@ -26,3 +26,9 @@ type AddDownloadError struct {
 	Name   string   `json:"name"`
 	Reason string   `json:"reason"`
 }
+
+type DownloadOrder struct {
+	Type     DataType
+	Provider string
+	ID       string
+}

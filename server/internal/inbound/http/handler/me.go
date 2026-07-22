@@ -7,15 +7,15 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
 type MeHandler struct {
-	user *usecase.UserUseCase
+	user *service.UserService
 }
 
-func NewMeHandler(user *usecase.UserUseCase) MeHandler {
+func NewMeHandler(user *service.UserService) MeHandler {
 	return MeHandler{
 		user: user,
 	}

@@ -1,4 +1,4 @@
-package usecase
+package service
 
 import (
 	"context"
@@ -6,23 +6,22 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/google/uuid"
 )
 
-type InstanceUseCase struct {
-	plugin *service.PluginService
+type InstanceService struct {
+	plugin *PluginService
 	repo   model.InstanceRepository
 }
 
-func NewInstanceUseCase(plugin *service.PluginService, repo model.InstanceRepository) InstanceUseCase {
-	return InstanceUseCase{
+func NewInstanceService(plugin *PluginService, repo model.InstanceRepository) InstanceService {
+	return InstanceService{
 		plugin: plugin,
 		repo:   repo,
 	}
 }
 
-func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (model.Instance, error) {
+func (s *InstanceService) CreateInstance(c context.Context, i model.Instance) (model.Instance, error) {
 	ping_start := time.Now()
 	plugin, err := s.plugin.GetOriginalPlugin(c, i.Url)
 	if err != nil {
@@ -48,7 +47,7 @@ func (s *InstanceUseCase) CreateInstance(c context.Context, i model.Instance) (m
 	return i, nil
 }
 
-func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
+func (s *InstanceService) ListInstancesByFilter(c context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
 	instances, err := s.repo.ListInstancesByFilter(c, filter)
 	if err != nil {
 		return []model.Instance{}, fmt.Errorf("list instance for filter %v: %w", filter, err)
@@ -57,7 +56,7 @@ func (s *InstanceUseCase) ListInstancesByFilter(c context.Context, filter model.
 	return instances, nil
 }
 
-func (s *InstanceUseCase) DeleteInstanceByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {
+func (s *InstanceService) DeleteInstanceByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {
 	if err := s.repo.DeleteInstanceByUserID(c, id, userID); err != nil {
 		return fmt.Errorf("delete instance %s of user %s: %w", id.String(), userID.String(), err)
 	}

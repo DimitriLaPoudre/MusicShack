@@ -524,18 +524,13 @@ func (s *PluginService) GetSongByISRCFromPluginInstances(ctx context.Context, pl
 	return enrichedSong, nil
 }
 
-func (s *PluginService) DownloadWithUserID(ctx context.Context, userID uuid.UUID, provider string, id string) (io.ReadCloser, string, error) {
-	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
+func (s *PluginService) Download(ctx context.Context, user model.User, provider string, id string) (io.ReadCloser, string, error) {
+	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &user.ID, Provider: &provider})
 	if err != nil {
-		return nil, "", fmt.Errorf("list instances of user %s for provider %s: %w", userID.String(), provider, err)
+		return nil, "", fmt.Errorf("list instances of user %s for provider %s: %w", user.ID.String(), provider, err)
 	}
 
 	pluginInstances := s.InstancesToMapPluginInstances(instances)
-
-	user, err := s.user.GetUserByFilter(ctx, model.UserFilter{ID: &userID})
-	if err != nil {
-		return nil, "", fmt.Errorf("get user %s: %w", userID.String(), err)
-	}
 
 	reader, extension, err := s.DownloadFromPluginInstances(ctx, pluginInstances, id, user.HiRes)
 	if err != nil {

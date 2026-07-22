@@ -7,16 +7,16 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type InstanceHandler struct {
-	instance *usecase.InstanceUseCase
+	instance *service.InstanceService
 }
 
-func NewInstanceHandler(instance *usecase.InstanceUseCase) InstanceHandler {
+func NewInstanceHandler(instance *service.InstanceService) InstanceHandler {
 	return InstanceHandler{
 		instance: instance,
 	}

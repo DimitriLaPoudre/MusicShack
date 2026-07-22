@@ -6,15 +6,15 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
 type PluginHandler struct {
-	plugin *usecase.PluginUseCase
+	plugin *service.PluginService
 }
 
-func NewPluginHandler(plugin *usecase.PluginUseCase) PluginHandler {
+func NewPluginHandler(plugin *service.PluginService) PluginHandler {
 	return PluginHandler{
 		plugin: plugin,
 	}
@@ -109,7 +109,7 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 
 	q := c.Query("q")
 
-	results, err := h.plugin.GetSearch(c.Request.Context(), me, q)
+	results, err := h.plugin.Search(c.Request.Context(), me, q)
 	if err != nil {
 		utils.Error(c, err)
 		return

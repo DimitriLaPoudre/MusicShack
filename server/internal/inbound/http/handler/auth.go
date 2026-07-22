@@ -8,18 +8,18 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
 )
 
 type AuthHandler struct {
 	cfgHTTP    config.HTTPConfig
 	cfgSession config.SessionConfig
-	auth       *usecase.AuthUseCase
+	auth       *service.AuthService
 }
 
-func NewAuthHandler(cfgHTTP config.HTTPConfig, cfgSession config.SessionConfig, auth *usecase.AuthUseCase) AuthHandler {
+func NewAuthHandler(cfgHTTP config.HTTPConfig, cfgSession config.SessionConfig, auth *service.AuthService) AuthHandler {
 	return AuthHandler{
 		cfgHTTP:    cfgHTTP,
 		cfgSession: cfgSession,

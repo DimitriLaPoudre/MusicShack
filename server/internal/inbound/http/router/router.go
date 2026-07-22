@@ -6,13 +6,11 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/handler"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/middleware"
-	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/gin-gonic/gin"
 )
 
 func New(
 	app *gin.Engine,
-	cfg *config.Config,
 
 	authMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
@@ -24,6 +22,7 @@ func New(
 	authH *handler.AuthHandler,
 	instanceH *handler.InstanceHandler,
 	pluginH *handler.PluginHandler,
+	downloadH *handler.DownloadHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -74,6 +73,17 @@ func New(
 			pluginGroup.GET("/artist/:provider/:id", authMW, pluginH.GetArtist)
 			pluginGroup.GET("/playlist/:provider/:id", authMW, pluginH.GetPlaylist)
 			pluginGroup.GET("/search", authMW, pluginH.GetSearch)
+		}
+
+		downloadGroup := api.Group("/download")
+		{
+			downloadGroup.POST("", authMW, downloadH.Download)
+			downloadGroup.PUT("/:id/retry", authMW, downloadH.Retry)
+			downloadGroup.PUT("/retry", authMW, downloadH.RetryAll)
+			downloadGroup.PUT("/:id/cancel", authMW, downloadH.Cancel)
+			downloadGroup.PUT("/remove", authMW, downloadH.RemoveDone)
+			downloadGroup.PUT("/:id/remove", authMW, downloadH.Remove)
+			downloadGroup.GET("", authMW, downloadH.List)
 		}
 	}
 }

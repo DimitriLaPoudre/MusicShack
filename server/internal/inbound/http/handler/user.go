@@ -6,16 +6,16 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UserHandler struct {
-	user *usecase.UserUseCase
+	user *service.UserService
 }
 
-func NewUserHandler(user *usecase.UserUseCase) UserHandler {
+func NewUserHandler(user *service.UserService) UserHandler {
 	return UserHandler{
 		user: user,
 	}

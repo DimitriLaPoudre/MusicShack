@@ -20,7 +20,6 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/sqlite"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/DimitriLaPoudre/MusicShack/internal/usecase"
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron/v3"
 )
@@ -44,17 +43,16 @@ func Run(cfg *config.Config) {
 	authS := service.NewAuthService(cfg.Session, &repo, &repo)
 	userS := service.NewUserService(cfg.Download, &repo)
 	pluginS := service.NewPluginService(&pluginStore, &repo, &repo)
+	instanceS := service.NewInstanceService(&pluginS, &repo)
+	metadataS := service.NewMetadataService(&pluginS)
+	downloadS := service.NewDownloadService(cfg.Download, &pluginS, &metadataS, &repo, &repo)
 
-	authU := usecase.NewAuthUseCase(cfg.Session, &repo, &repo)
-	userU := usecase.NewUserUseCase(&userS, &repo)
-	instanceU := usecase.NewInstanceUseCase(&pluginS, &repo)
-	pluginU := usecase.NewPluginUseCase(&pluginS)
-
-	meH := handler.NewMeHandler(&userU)
-	userH := handler.NewUserHandler(&userU)
-	authH := handler.NewAuthHandler(cfg.HTTP, cfg.Session, &authU)
-	instanceH := handler.NewInstanceHandler(&instanceU)
-	pluginH := handler.NewPluginHandler(&pluginU)
+	meH := handler.NewMeHandler(&userS)
+	userH := handler.NewUserHandler(&userS)
+	authH := handler.NewAuthHandler(cfg.HTTP, cfg.Session, &authS)
+	instanceH := handler.NewInstanceHandler(&instanceS)
+	pluginH := handler.NewPluginHandler(&pluginS)
+	downloadH := handler.NewDownloadHandler(downloadS)
 
 	authMW := middleware.AuthMiddleware(cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(&authS)
@@ -79,7 +77,7 @@ func Run(cfg *config.Config) {
 	c.Start()
 
 	app := gin.New()
-	router.New(app, cfg,
+	router.New(app,
 		authMW,
 		adminMW,
 		userMW,
@@ -89,6 +87,7 @@ func Run(cfg *config.Config) {
 		&authH,
 		&instanceH,
 		&pluginH,
+		&downloadH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),
