@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	lib_url "net/url"
+	"net/url"
 	"slices"
 	"strconv"
 	"sync"
@@ -15,7 +15,7 @@ import (
 )
 
 func getSearchISRC(ctx context.Context, limiters *sync.Map, urls []string, isrc string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?i="+lib_url.QueryEscape(isrc), limiters)
+	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?i="+url.QueryEscape(isrc), limiters)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with ISRC %s with url list: %w", isrc, err)
 	}

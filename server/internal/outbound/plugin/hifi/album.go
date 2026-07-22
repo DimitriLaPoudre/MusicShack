@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	lib_url "net/url"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -14,7 +14,7 @@ import (
 )
 
 func getAlbum(ctx context.Context, limiters *sync.Map, urls []string, id string) (albumResponse, error) {
-	album, err := hifi_utils.FetchTypeSequential[albumResponse](ctx, urls, "/album/?id="+lib_url.QueryEscape(id), limiters)
+	album, err := hifi_utils.FetchTypeSequential[albumResponse](ctx, urls, "/album/?id="+url.QueryEscape(id), limiters)
 	if err != nil {
 		return albumResponse{}, fmt.Errorf("fetch album info with url list: %w", err)
 	}

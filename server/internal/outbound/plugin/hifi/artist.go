@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	lib_url "net/url"
+	"net/url"
 	"slices"
 	"strconv"
 	"strings"
@@ -16,7 +16,7 @@ import (
 )
 
 func getArtistInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistResponse, error) {
-	info, err := hifi_utils.FetchTypeSequential[artistResponse](ctx, urls, "/artist/?id="+lib_url.QueryEscape(id), limiters)
+	info, err := hifi_utils.FetchTypeSequential[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), limiters)
 	if err != nil {
 		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
 	}
@@ -25,7 +25,7 @@ func getArtistInfo(ctx context.Context, limiters *sync.Map, urls []string, id st
 }
 
 func getArtistAlbums(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistAlbumsResponse, error) {
-	albums, err := hifi_utils.FetchTypeSequential[artistAlbumsResponse](ctx, urls, "/artist/?f="+lib_url.QueryEscape(id)+"&skip_tracks=1", limiters)
+	albums, err := hifi_utils.FetchTypeSequential[artistAlbumsResponse](ctx, urls, "/artist/?f="+url.QueryEscape(id)+"&skip_tracks=1", limiters)
 	if err != nil {
 		return artistAlbumsResponse{}, fmt.Errorf("fetch artist albums with url list: %w", err)
 	}

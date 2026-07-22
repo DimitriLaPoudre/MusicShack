@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	lib_url "net/url"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -14,7 +14,7 @@ import (
 )
 
 func getPlaylist(ctx context.Context, limiters *sync.Map, urls []string, id string) (playlistResponse, error) {
-	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+lib_url.QueryEscape(id), limiters)
+	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+url.QueryEscape(id), limiters)
 	if err != nil {
 		return playlistResponse{}, fmt.Errorf("fetch playlist info with url list: %w", err)
 	}

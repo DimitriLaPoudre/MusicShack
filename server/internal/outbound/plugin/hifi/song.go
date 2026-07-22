@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	lib_url "net/url"
+	"net/url"
 	"strconv"
 	"sync"
 	"time"
@@ -14,12 +14,21 @@ import (
 )
 
 func getSongInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, error) {
-	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+lib_url.QueryEscape(id), limiters)
+	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+url.QueryEscape(id), limiters)
 	if err != nil {
 		return songResponse{}, fmt.Errorf("fetch song info with url list: %w", err)
 	}
 
 	return songInfo, nil
+}
+
+func getSongDownloadInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (downloadResponse, error) {
+	downloadInfo, err := hifi_utils.FetchTypeSequential[downloadResponse](ctx, urls, "/track/?id="+url.QueryEscape(id), limiters)
+	if err != nil {
+		return downloadResponse{}, fmt.Errorf("fetch song download info with url list: %w", err)
+	}
+
+	return downloadInfo, nil
 }
 
 func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, downloadResponse, error) {
@@ -33,16 +42,13 @@ func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) 
 		songInfo, songInfoErr = getSongInfo(ctx, limiters, urls, id)
 	})
 	wg.Go(func() {
-		downloadInfo, _ = getDownloadInfo(ctx, limiters, urls, id, "")
+		downloadInfo, _ = getSongDownloadInfo(ctx, limiters, urls, id)
 	})
 	wg.Wait()
 
 	if songInfoErr != nil {
 		return songResponse{}, downloadResponse{}, songInfoErr
 	}
-	// if downloadInfoErr != nil {
-	// 	return songResponse{}, downloadResponse{}, fmt.Errorf("getSong: %w", downloadInfoErr)
-	// }
 
 	return songInfo, downloadInfo, nil
 }
@@ -93,8 +99,8 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 		Title:           songInfo.Data.Title,
 		Duration:        songInfo.Data.Duration,
 		ReplayGain:      downloadInfo.Data.TrackReplayGain,
-		Peak:            downloadInfo.Data.TrackPeakAmplitude,
-		AlbumReplayGain: downloadInfo.Data.AlbumReplayGain,
+		Peak:            songInfo.Data.Peak,
+		AlbumReplayGain: songInfo.Data.ReplayGain,
 		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
 		ReleaseDate:     releaseDate,
 		TrackNumber:     songInfo.Data.TrackNumber,

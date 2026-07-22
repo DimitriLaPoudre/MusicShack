@@ -3,7 +3,7 @@ package hifi
 import (
 	"context"
 	"fmt"
-	lib_url "net/url"
+	"net/url"
 	"strconv"
 	"sync"
 
@@ -12,7 +12,7 @@ import (
 )
 
 func getSearchSong(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?s="+lib_url.QueryEscape(q), limiters)
+	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?s="+url.QueryEscape(q), limiters)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with url list: %w", err)
 	}
@@ -21,7 +21,7 @@ func getSearchSong(ctx context.Context, limiters *sync.Map, urls []string, q str
 }
 
 func getSearchAlbum(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchAlbumResponse, error) {
-	searchAlbum, err := hifi_utils.FetchTypeSequential[searchAlbumResponse](ctx, urls, "/search/?al="+lib_url.QueryEscape(q), limiters)
+	searchAlbum, err := hifi_utils.FetchTypeSequential[searchAlbumResponse](ctx, urls, "/search/?al="+url.QueryEscape(q), limiters)
 	if err != nil {
 		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
 	}
@@ -30,7 +30,7 @@ func getSearchAlbum(ctx context.Context, limiters *sync.Map, urls []string, q st
 }
 
 func getSearchArtist(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchArtistResponse, error) {
-	searchArtist, err := hifi_utils.FetchTypeSequential[searchArtistResponse](ctx, urls, "/search/?a="+lib_url.QueryEscape(q), limiters)
+	searchArtist, err := hifi_utils.FetchTypeSequential[searchArtistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), limiters)
 	if err != nil {
 		return searchArtistResponse{}, fmt.Errorf("fetch search artist with url list: %w", err)
 	}
@@ -39,7 +39,7 @@ func getSearchArtist(ctx context.Context, limiters *sync.Map, urls []string, q s
 }
 
 func getSearchPlaylist(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchPlaylistResponse, error) {
-	searchPlaylist, err := hifi_utils.FetchTypeSequential[searchPlaylistResponse](ctx, urls, "/search/?a="+lib_url.QueryEscape(q), limiters)
+	searchPlaylist, err := hifi_utils.FetchTypeSequential[searchPlaylistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), limiters)
 	if err != nil {
 		return searchPlaylistResponse{}, fmt.Errorf("fetch search playlist with url list: %w", err)
 	}
