@@ -12,6 +12,7 @@ import (
 	"sync/atomic"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	pkg_path "github.com/DimitriLaPoudre/MusicShack/internal/pkg/path"
 	pkg_sync "github.com/DimitriLaPoudre/MusicShack/internal/pkg/sync"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
@@ -299,20 +300,20 @@ func (s *DownloadService) SaveSong(ctx context.Context, user model.User, song mo
 
 	artistName := "UnknownArtist"
 	if len(song.Album.Artists) > 0 {
-		artistName = strings.ReplaceAll(song.Album.Artists[0].Name, "/", "_")
+		artistName = pkg_path.SanitizeName(song.Album.Artists[0].Name)
 	}
-	albumTitle := strings.ReplaceAll(song.Album.Title, "/", "_")
-	songTitle := strings.ReplaceAll(song.Title, "/", "_")
+	albumTitle := pkg_path.SanitizeName(song.Album.Title)
+	songTitle := pkg_path.SanitizeName(song.Title)
 
 	dirFile := filepath.Join(artistName, albumTitle)
 	filename := filepath.Join(dirFile, fmt.Sprintf("%d - %s.%s", song.TrackNumber, songTitle, extension))
 
-	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
+	if err := rootUser.MkdirAll(dirFile, 755); err != nil {
 		return "", fmt.Errorf("create song folders: %w", err)
 	}
 
 	path := filepath.Join(rootUser.Name(), filename)
-	file, err := rootUser.Create(filename)
+	file, err := rootUser.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 644)
 	if err != nil {
 		return "", fmt.Errorf("create song file: %w", err)
 	}

@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
@@ -39,11 +41,24 @@ func (s *UserService) CreateUser(c context.Context, user model.User) (model.User
 		return model.User{}, fmt.Errorf("validate role of new user: %w", err)
 	}
 
-	//TODO create user space too with id as folder name
+	if err := s.repo.WithTransaction(c, func(ctx context.Context) error {
+		user, err = s.repo.CreateUser(c, user)
+		if err != nil {
+			return fmt.Errorf("create new user: %w", err)
+		}
 
-	user, err = s.repo.CreateUser(c, user)
-	if err != nil {
-		return model.User{}, fmt.Errorf("create new user: %w", err)
+		root, err := os.OpenRoot(s.cfg.Path)
+		if err != nil {
+			return fmt.Errorf("open download folder: %w", err)
+		}
+
+		if err := root.Mkdir(user.ID.String(), 755); err != nil {
+			return fmt.Errorf("create user folder: %w", err)
+		}
+
+		return nil
+	}); err != nil {
+		return model.User{}, err
 	}
 
 	return user, nil

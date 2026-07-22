@@ -8,6 +8,7 @@ import (
 )
 
 type UserRepository interface {
+	TransactionRepository
 	CreateUser(ctx context.Context, user User) (User, error)
 	GetUserByFilter(ctx context.Context, filter UserFilter) (User, error)
 	ListUsersByFilter(ctx context.Context, filter UserFilter) ([]User, error)
@@ -16,6 +17,7 @@ type UserRepository interface {
 }
 
 type SessionRepository interface {
+	TransactionRepository
 	CreateSession(ctx context.Context, s Session) (Session, error)
 	GetSessionByFilter(ctx context.Context, filter SessionFilter) (Session, error)
 	ListSessionsByFilter(ctx context.Context, filter SessionFilter) ([]Session, error)
@@ -25,10 +27,15 @@ type SessionRepository interface {
 }
 
 type InstanceRepository interface {
+	TransactionRepository
 	CreateInstance(ctx context.Context, i Instance) (Instance, error)
 	ListInstancesByFilter(ctx context.Context, filter InstanceFilter) ([]Instance, error)
 	DeleteInstance(ctx context.Context, id uuid.UUID) error
 	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+}
+
+type TransactionRepository interface {
+	WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
 
 type Migrator interface {
