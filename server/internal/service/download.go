@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 	"sync/atomic"
 
@@ -308,12 +307,12 @@ func (s *DownloadService) SaveSong(ctx context.Context, user model.User, song mo
 	dirFile := filepath.Join(artistName, albumTitle)
 	filename := filepath.Join(dirFile, fmt.Sprintf("%d - %s.%s", song.TrackNumber, songTitle, extension))
 
-	if err := rootUser.MkdirAll(dirFile, 755); err != nil {
+	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
 		return "", fmt.Errorf("create song folders: %w", err)
 	}
 
 	path := filepath.Join(rootUser.Name(), filename)
-	file, err := rootUser.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 644)
+	file, err := rootUser.OpenFile(filename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return "", fmt.Errorf("create song file: %w", err)
 	}

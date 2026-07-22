@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
@@ -52,7 +51,7 @@ func (s *UserService) CreateUser(c context.Context, user model.User) (model.User
 			return fmt.Errorf("open download folder: %w", err)
 		}
 
-		if err := root.Mkdir(user.ID.String(), 755); err != nil {
+		if err := root.Mkdir(user.ID.String(), 0755); err != nil {
 			return fmt.Errorf("create user folder: %w", err)
 		}
 
