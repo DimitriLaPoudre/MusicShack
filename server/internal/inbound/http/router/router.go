@@ -37,15 +37,20 @@ func New(
 		{
 			meGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			meGroup.Use(authMW)
+
 			meGroup.GET("", meH.Get)
 			meGroup.PUT("", meH.Update)
 
-			instancesGroup := meGroup.Group("/instances")
-			{
-				instancesGroup.GET("", instanceH.ListForMe)
-				instancesGroup.POST("", instanceH.CreateForMe)
-				instancesGroup.DELETE(":id", instanceH.DeleteForMe)
-			}
+		}
+
+		instancesGroup := meGroup.Group("/instances")
+		{
+			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			instancesGroup.Use(authMW)
+
+			instancesGroup.GET("", instanceH.ListForMe)
+			instancesGroup.POST("", instanceH.CreateForMe)
+			instancesGroup.DELETE(":id", instanceH.DeleteForMe)
 		}
 
 		usersGroup := api.Group("/users")
@@ -53,6 +58,7 @@ func New(
 			usersGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			usersGroup.Use(authMW)
 			usersGroup.Use(adminMW)
+
 			usersGroup.POST("", userH.Create)
 			usersGroup.GET("", userH.List)
 			usersGroup.GET("/:id", userH.GetByID)
@@ -62,31 +68,60 @@ func New(
 
 		authGroup := api.Group("/auth")
 		{
-			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 10), guestMW, authH.Login)
+			authGroup.POST("/login", middleware.RateLimiter(time.Minute, 5), guestMW, authH.Login)
 			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW, authH.Logout)
 		}
 
 		pluginGroup := api.Group("/plugin")
 		{
-			pluginGroup.GET("/song/:provider/:id", authMW, pluginH.GetSong)
-			pluginGroup.POST("/song/:provider/:id/download", authMW, downloadH.DownloadSong)
-			pluginGroup.GET("/album/:provider/:id", authMW, pluginH.GetAlbum)
-			pluginGroup.POST("/album/:provider/:id/download", authMW, downloadH.DownloadAlbum)
-			pluginGroup.GET("/artist/:provider/:id", authMW, pluginH.GetArtist)
-			pluginGroup.POST("/artist/:provider/:id/download", authMW, downloadH.DownloadArtist)
-			pluginGroup.GET("/playlist/:provider/:id", authMW, pluginH.GetPlaylist)
-			pluginGroup.POST("/playlist/:provider/:id/download", authMW, downloadH.DownloadPlaylist)
-			pluginGroup.GET("/search", authMW, pluginH.GetSearch)
+			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			pluginGroup.Use(authMW)
+
+			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
+			pluginGroup.POST("/song/:provider/:id/download", downloadH.DownloadSong)
+			pluginGroup.GET("/album/:provider/:id", pluginH.GetAlbum)
+			pluginGroup.POST("/album/:provider/:id/download", downloadH.DownloadAlbum)
+			pluginGroup.GET("/artist/:provider/:id", pluginH.GetArtist)
+			pluginGroup.POST("/artist/:provider/:id/download", downloadH.DownloadArtist)
+			pluginGroup.GET("/playlist/:provider/:id", pluginH.GetPlaylist)
+			pluginGroup.POST("/playlist/:provider/:id/download", downloadH.DownloadPlaylist)
+			pluginGroup.GET("/search", pluginH.GetSearch)
 		}
 
 		downloadGroup := api.Group("/download")
 		{
-			downloadGroup.PUT("/:id/retry", authMW, downloadH.Retry)
-			downloadGroup.PUT("/retry", authMW, downloadH.RetryAll)
-			downloadGroup.PUT("/:id/cancel", authMW, downloadH.Cancel)
-			downloadGroup.PUT("/remove", authMW, downloadH.RemoveDone)
-			downloadGroup.PUT("/:id/remove", authMW, downloadH.Remove)
-			downloadGroup.GET("", authMW, downloadH.List)
+			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			downloadGroup.Use(authMW)
+
+			downloadGroup.PUT("/:id/retry", downloadH.Retry)
+			downloadGroup.PUT("/retry", downloadH.RetryAll)
+			downloadGroup.PUT("/:id/cancel", downloadH.Cancel)
+			downloadGroup.PUT("/remove", downloadH.RemoveDone)
+			downloadGroup.PUT("/:id/remove", downloadH.Remove)
+			downloadGroup.GET("", downloadH.List)
+		}
+
+		followGroup := api.Group("/follows")
+		{
+			followGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			followGroup.Use(authMW)
+
+			// followGroup.POST("", followH.Add)
+			// followGroup.GET("", followH.List)
+			// followGroup.DELETE("/:id", followH.Delete)
+		}
+
+		libraryGroup := api.Group("/library")
+		{
+			libraryGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			libraryGroup.Use(authMW)
+
+			// libraryGroup.GET("", libraryH.List)
+			// libraryGroup.POST("", libraryH.Upload)
+			// libraryGroup.PUT("/:id", libraryH.Edit)
+			// libraryGroup.GET("/:id/img", libraryH.GetCover)
+			// libraryGroup.DELETE("/:id", libraryH.Delete)
+			// libraryGroup.PUT("", libraryH.Sync)
 		}
 	}
 }
