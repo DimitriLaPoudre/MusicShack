@@ -13,7 +13,6 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -21,13 +20,13 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/network"
 )
 
-func getDownloadInfo(ctx context.Context, limiters *sync.Map, urls []string, id string, quality string) (downloadResponse, error) {
+func (p *Hifi) getDownloadInfo(ctx context.Context, urls []string, id string, quality string) (downloadResponse, error) {
 	path := "/track/?id=" + url.QueryEscape(id)
 	if quality != "" {
 		path += "&quality=" + url.QueryEscape(quality)
 	}
 
-	downloadInfo, err := hifi_utils.FetchTypeSequential[downloadResponse](ctx, urls, path, limiters)
+	downloadInfo, err := hifi_utils.MultiFetchTyped[downloadResponse](ctx, urls, path, &p.limiters)
 	if err != nil {
 		return downloadResponse{}, fmt.Errorf("fetch download info with url list: %w", err)
 	}
@@ -133,7 +132,7 @@ func remuxM4AtoFLAC(reader io.ReadCloser) (io.ReadCloser, error) {
 
 	go func() {
 		if _, err := io.Copy(stdin, reader); err != nil {
-			slog.Error("copy from source stream to stdin: %w", err)
+			slog.Error("copy from source stream to stdin", slog.String("err", err.Error()))
 		}
 		stdin.Close()
 		reader.Close()
@@ -163,7 +162,7 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	downloadInfo, err := getDownloadInfo(ctx, &p.limiters, urls, id, quality)
+	downloadInfo, err := p.getDownloadInfo(ctx, urls, id, quality)
 	if err != nil {
 		return nil, "", err
 	}

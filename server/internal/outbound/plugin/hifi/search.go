@@ -11,8 +11,8 @@ import (
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func getSearchSong(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?s="+url.QueryEscape(q), limiters)
+func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string) (searchSongResponse, error) {
+	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, "/search/?s="+url.QueryEscape(q), &p.limiters, &p.cache)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with url list: %w", err)
 	}
@@ -20,8 +20,8 @@ func getSearchSong(ctx context.Context, limiters *sync.Map, urls []string, q str
 	return searchSong, nil
 }
 
-func getSearchAlbum(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchAlbumResponse, error) {
-	searchAlbum, err := hifi_utils.FetchTypeSequential[searchAlbumResponse](ctx, urls, "/search/?al="+url.QueryEscape(q), limiters)
+func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string) (searchAlbumResponse, error) {
+	searchAlbum, err := hifi_utils.CachedMultiFetchTyped[searchAlbumResponse](ctx, urls, "/search/?al="+url.QueryEscape(q), &p.limiters, &p.cache)
 	if err != nil {
 		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
 	}
@@ -29,8 +29,8 @@ func getSearchAlbum(ctx context.Context, limiters *sync.Map, urls []string, q st
 	return searchAlbum, nil
 }
 
-func getSearchArtist(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchArtistResponse, error) {
-	searchArtist, err := hifi_utils.FetchTypeSequential[searchArtistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), limiters)
+func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string) (searchArtistResponse, error) {
+	searchArtist, err := hifi_utils.CachedMultiFetchTyped[searchArtistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), &p.limiters, &p.cache)
 	if err != nil {
 		return searchArtistResponse{}, fmt.Errorf("fetch search artist with url list: %w", err)
 	}
@@ -38,8 +38,8 @@ func getSearchArtist(ctx context.Context, limiters *sync.Map, urls []string, q s
 	return searchArtist, nil
 }
 
-func getSearchPlaylist(ctx context.Context, limiters *sync.Map, urls []string, q string) (searchPlaylistResponse, error) {
-	searchPlaylist, err := hifi_utils.FetchTypeSequential[searchPlaylistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), limiters)
+func (p *Hifi) getSearchPlaylist(ctx context.Context, urls []string, q string) (searchPlaylistResponse, error) {
+	searchPlaylist, err := hifi_utils.CachedMultiFetchTyped[searchPlaylistResponse](ctx, urls, "/search/?p="+url.QueryEscape(q), &p.limiters, &p.cache)
 	if err != nil {
 		return searchPlaylistResponse{}, fmt.Errorf("fetch search playlist with url list: %w", err)
 	}
@@ -47,7 +47,7 @@ func getSearchPlaylist(ctx context.Context, limiters *sync.Map, urls []string, q
 	return searchPlaylist, nil
 }
 
-func getSearch(ctx context.Context, limiters *sync.Map, urls []string, song, album, artist, playlist string) (searchSongResponse, searchAlbumResponse, searchArtistResponse, searchPlaylistResponse, error) {
+func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist, playlist string) (searchSongResponse, searchAlbumResponse, searchArtistResponse, searchPlaylistResponse, error) {
 	var searchSong searchSongResponse
 	var searchSongErr error
 	var searchAlbum searchAlbumResponse
@@ -59,16 +59,16 @@ func getSearch(ctx context.Context, limiters *sync.Map, urls []string, song, alb
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		searchSong, searchSongErr = getSearchSong(ctx, limiters, urls, song)
+		searchSong, searchSongErr = p.getSearchSong(ctx, urls, song)
 	})
 	wg.Go(func() {
-		searchAlbum, searchAlbumErr = getSearchAlbum(ctx, limiters, urls, album)
+		searchAlbum, searchAlbumErr = p.getSearchAlbum(ctx, urls, album)
 	})
 	wg.Go(func() {
-		searchArtist, searchArtistErr = getSearchArtist(ctx, limiters, urls, artist)
+		searchArtist, searchArtistErr = p.getSearchArtist(ctx, urls, artist)
 	})
 	wg.Go(func() {
-		searchPlaylist, searchPlaylistErr = getSearchPlaylist(ctx, limiters, urls, playlist)
+		searchPlaylist, searchPlaylistErr = p.getSearchPlaylist(ctx, urls, playlist)
 	})
 	wg.Wait()
 
@@ -91,7 +91,7 @@ func getSearch(ctx context.Context, limiters *sync.Map, urls []string, song, alb
 func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, album, artist, playlist string) (model.Search, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	songData, albumData, artistData, playlistData, err := getSearch(ctx, &p.limiters, urls, song, album, artist, playlist)
+	songData, albumData, artistData, playlistData, err := p.getSearch(ctx, urls, song, album, artist, playlist)
 	if err != nil {
 		return model.Search{}, err
 	}

@@ -5,6 +5,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 )
@@ -29,7 +30,7 @@ func New(level string, pretty bool) *slog.Logger {
 }
 
 func parseLevel(level string) slog.Level {
-	switch level {
+	switch strings.ToLower(level) {
 	case "debug":
 		return slog.LevelDebug
 	case "info":

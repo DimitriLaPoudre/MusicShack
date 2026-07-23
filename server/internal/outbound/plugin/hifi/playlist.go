@@ -6,15 +6,14 @@ import (
 	"log/slog"
 	"net/url"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func getPlaylist(ctx context.Context, limiters *sync.Map, urls []string, id string) (playlistResponse, error) {
-	playlist, err := hifi_utils.FetchTypeSequential[playlistResponse](ctx, urls, "/playlist/?id="+url.QueryEscape(id), limiters)
+func (p *Hifi) getPlaylist(ctx context.Context, urls []string, id string) (playlistResponse, error) {
+	playlist, err := hifi_utils.CachedMultiFetchTyped[playlistResponse](ctx, urls, "/playlist/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
 	if err != nil {
 		return playlistResponse{}, fmt.Errorf("fetch playlist info with url list: %w", err)
 	}
@@ -25,7 +24,7 @@ func getPlaylist(ctx context.Context, limiters *sync.Map, urls []string, id stri
 func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id string) (model.Playlist, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	data, err := getPlaylist(ctx, &p.limiters, urls, id)
+	data, err := p.getPlaylist(ctx, urls, id)
 	if err != nil {
 		return model.Playlist{}, err
 	}

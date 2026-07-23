@@ -1,20 +1,26 @@
 package hifi
 
-// https://github.com/uimaxbai/hifi-api
+// https://github.com/binimum/hifi-api
 
 import (
 	"context"
-	"sync"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/sync"
+	"golang.org/x/time/rate"
 )
 
 type Hifi struct {
-	limiters sync.Map // map[string]*rate.Limiter
+	limiters sync.Map[string, *rate.Limiter]
+	cache    sync.Cache[string]
 }
 
 func NewHifi() Hifi {
-	return Hifi{}
+	return Hifi{
+		limiters: sync.NewMap[string, *rate.Limiter](),
+		cache:    sync.NewCache[string](20 * time.Minute),
+	}
 }
 
 func (p *Hifi) Name() string {

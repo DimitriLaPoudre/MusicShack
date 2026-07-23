@@ -13,8 +13,8 @@ import (
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func getSongInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, error) {
-	songInfo, err := hifi_utils.FetchTypeSequential[songResponse](ctx, urls, "/info/?id="+url.QueryEscape(id), limiters)
+func (p *Hifi) getSongInfo(ctx context.Context, urls []string, id string) (songResponse, error) {
+	songInfo, err := hifi_utils.CachedMultiFetchTyped[songResponse](ctx, urls, "/info/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
 	if err != nil {
 		return songResponse{}, fmt.Errorf("fetch song info with url list: %w", err)
 	}
@@ -22,8 +22,8 @@ func getSongInfo(ctx context.Context, limiters *sync.Map, urls []string, id stri
 	return songInfo, nil
 }
 
-func getSongDownloadInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (downloadResponse, error) {
-	downloadInfo, err := hifi_utils.FetchTypeSequential[downloadResponse](ctx, urls, "/track/?id="+url.QueryEscape(id), limiters)
+func (p *Hifi) getSongDownloadInfo(ctx context.Context, urls []string, id string) (downloadResponse, error) {
+	downloadInfo, err := hifi_utils.CachedMultiFetchTyped[downloadResponse](ctx, urls, "/track/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
 	if err != nil {
 		return downloadResponse{}, fmt.Errorf("fetch song download info with url list: %w", err)
 	}
@@ -31,7 +31,7 @@ func getSongDownloadInfo(ctx context.Context, limiters *sync.Map, urls []string,
 	return downloadInfo, nil
 }
 
-func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) (songResponse, downloadResponse, error) {
+func (p *Hifi) getSong(ctx context.Context, urls []string, id string) (songResponse, downloadResponse, error) {
 	var songInfo songResponse
 	var songInfoErr error
 	var downloadInfo downloadResponse
@@ -39,10 +39,10 @@ func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) 
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		songInfo, songInfoErr = getSongInfo(ctx, limiters, urls, id)
+		songInfo, songInfoErr = p.getSongInfo(ctx, urls, id)
 	})
 	wg.Go(func() {
-		downloadInfo, _ = getSongDownloadInfo(ctx, limiters, urls, id)
+		downloadInfo, _ = p.getSongDownloadInfo(ctx, urls, id)
 	})
 	wg.Wait()
 
@@ -56,7 +56,7 @@ func getSong(ctx context.Context, limiters *sync.Map, urls []string, id string) 
 func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) (model.Song, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	songInfo, downloadInfo, err := getSong(ctx, &p.limiters, urls, id)
+	songInfo, downloadInfo, err := p.getSong(ctx, urls, id)
 	if err != nil {
 		return model.Song{}, err
 	}

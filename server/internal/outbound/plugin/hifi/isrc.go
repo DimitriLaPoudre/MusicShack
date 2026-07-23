@@ -7,15 +7,14 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func getSearchISRC(ctx context.Context, limiters *sync.Map, urls []string, isrc string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.FetchTypeSequential[searchSongResponse](ctx, urls, "/search/?i="+url.QueryEscape(isrc), limiters)
+func (p *Hifi) getSearchISRC(ctx context.Context, urls []string, isrc string) (searchSongResponse, error) {
+	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, "/search/?i="+url.QueryEscape(isrc), &p.limiters, &p.cache)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with ISRC %s with url list: %w", isrc, err)
 	}
@@ -26,7 +25,7 @@ func getSearchISRC(ctx context.Context, limiters *sync.Map, urls []string, isrc 
 func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc string) (model.Song, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	songData, err := getSearchISRC(ctx, &p.limiters, urls, isrc)
+	songData, err := p.getSearchISRC(ctx, urls, isrc)
 	if err != nil {
 		return model.Song{}, err
 	}

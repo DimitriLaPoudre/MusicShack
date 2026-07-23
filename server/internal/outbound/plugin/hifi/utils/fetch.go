@@ -6,22 +6,41 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/network"
+	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/sync"
 	"golang.org/x/time/rate"
 )
 
-func FetchTypeSequential[T any](ctx context.Context, urls []string, path string, limiters *sync.Map) (T, error) {
+func CachedMultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter], cache *sync.Cache[string]) (T, error) {
 	var data T
 	var err error
 	for _, url := range urls {
-		value, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
-		limiter := value.(*rate.Limiter)
+		if cached, ok := cache.Load(url + path); ok {
+			if data := cached.(T); ok {
+				return data, nil
+			}
+		}
+		limiter, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
 
-		data, err = FetchType[T](ctx, url, path, limiter)
+		data, err = FetchTyped[T](ctx, url, path, limiter)
+		if err == nil {
+			cache.Store(url+path, data)
+			break
+		}
+	}
+	return data, err
+}
+
+func MultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter]) (T, error) {
+	var data T
+	var err error
+	for _, url := range urls {
+		limiter, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
+
+		data, err = FetchTyped[T](ctx, url, path, limiter)
 		if err == nil {
 			break
 		}
@@ -29,7 +48,7 @@ func FetchTypeSequential[T any](ctx context.Context, urls []string, path string,
 	return data, err
 }
 
-func FetchType[T any](ctx context.Context, url string, path string, limiter *rate.Limiter) (T, error) {
+func FetchTyped[T any](ctx context.Context, url string, path string, limiter *rate.Limiter) (T, error) {
 	var zero T
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)

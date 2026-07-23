@@ -15,8 +15,8 @@ import (
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func getArtistInfo(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistResponse, error) {
-	info, err := hifi_utils.FetchTypeSequential[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), limiters)
+func (p *Hifi) getArtistInfo(ctx context.Context, urls []string, id string) (artistResponse, error) {
+	info, err := hifi_utils.CachedMultiFetchTyped[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
 	if err != nil {
 		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
 	}
@@ -24,8 +24,8 @@ func getArtistInfo(ctx context.Context, limiters *sync.Map, urls []string, id st
 	return info, nil
 }
 
-func getArtistAlbums(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistAlbumsResponse, error) {
-	albums, err := hifi_utils.FetchTypeSequential[artistAlbumsResponse](ctx, urls, "/artist/?f="+url.QueryEscape(id)+"&skip_tracks=1", limiters)
+func (p *Hifi) getArtistAlbums(ctx context.Context, urls []string, id string) (artistAlbumsResponse, error) {
+	albums, err := hifi_utils.CachedMultiFetchTyped[artistAlbumsResponse](ctx, urls, "/artist/?f="+url.QueryEscape(id)+"&skip_tracks=1", &p.limiters, &p.cache)
 	if err != nil {
 		return artistAlbumsResponse{}, fmt.Errorf("fetch artist albums with url list: %w", err)
 	}
@@ -33,7 +33,7 @@ func getArtistAlbums(ctx context.Context, limiters *sync.Map, urls []string, id 
 	return albums, nil
 }
 
-func getArtist(ctx context.Context, limiters *sync.Map, urls []string, id string) (artistResponse, artistAlbumsResponse, error) {
+func (p *Hifi) getArtist(ctx context.Context, urls []string, id string) (artistResponse, artistAlbumsResponse, error) {
 	var artist artistResponse
 	var artistErr error
 	var albums artistAlbumsResponse
@@ -41,10 +41,10 @@ func getArtist(ctx context.Context, limiters *sync.Map, urls []string, id string
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		artist, artistErr = getArtistInfo(ctx, limiters, urls, id)
+		artist, artistErr = p.getArtistInfo(ctx, urls, id)
 	})
 	wg.Go(func() {
-		albums, albumsErr = getArtistAlbums(ctx, limiters, urls, id)
+		albums, albumsErr = p.getArtistAlbums(ctx, urls, id)
 	})
 	wg.Wait()
 
@@ -61,7 +61,7 @@ func getArtist(ctx context.Context, limiters *sync.Map, urls []string, id string
 func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string) (model.Artist, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	artistInfo, artistAlbums, err := getArtist(ctx, &p.limiters, urls, id)
+	artistInfo, artistAlbums, err := p.getArtist(ctx, urls, id)
 	if err != nil {
 		return model.Artist{}, err
 	}
