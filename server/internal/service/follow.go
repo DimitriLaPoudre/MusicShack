@@ -20,14 +20,14 @@ func NewFollowService(plugin *PluginService, repo model.FollowRepository) Follow
 	}
 }
 
-func (s *FollowService) Create(ctx context.Context, user model.User, follow model.Follow) (model.Follow, error) {
+func (s *FollowService) Create(ctx context.Context, follow model.Follow) (model.Follow, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return model.Follow{}, fmt.Errorf("create id for new follow: %w", err)
 	}
 	follow.ID = id
 
-	artist, err := s.plugin.GetArtist(ctx, user, follow.Provider, follow.ArtistID)
+	artist, err := s.plugin.GetArtist(ctx, follow.UserID, follow.Provider, follow.ArtistID)
 	follow.ArtistName = artist.Name
 	follow.ArtistPictureURL = artist.PictureUrl
 

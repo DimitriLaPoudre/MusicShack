@@ -26,8 +26,8 @@ func NewAuthService(cfg config.SessionConfig, user model.UserRepository, session
 	}
 }
 
-func (s *AuthService) Login(c context.Context, form model.LoginForm) (string, error) {
-	user, err := s.user.GetUserByFilter(c, model.UserFilter{Username: &form.Username})
+func (s *AuthService) Login(ctx context.Context, form model.LoginForm) (string, error) {
+	user, err := s.user.GetUserByFilter(ctx, model.UserFilter{Username: &form.Username})
 	if err != nil {
 		return "", fmt.Errorf("get user by username %s: %w", form.Username, err)
 	}
@@ -60,7 +60,7 @@ func (s *AuthService) Login(c context.Context, form model.LoginForm) (string, er
 		ExpiresAt: expiresAt,
 	}
 
-	session, err := s.session.CreateSession(c, newSession)
+	session, err := s.session.CreateSession(ctx, newSession)
 	if err != nil {
 		return "", fmt.Errorf("create new session: %w", err)
 	}
@@ -69,15 +69,15 @@ func (s *AuthService) Login(c context.Context, form model.LoginForm) (string, er
 
 }
 
-func (s *AuthService) Logout(c context.Context, token string) error {
-	if err := s.session.DeleteSessionByToken(c, token); err != nil {
+func (s *AuthService) Logout(ctx context.Context, token string) error {
+	if err := s.session.DeleteSessionByToken(ctx, token); err != nil {
 		return fmt.Errorf("delete session by token %s: %w", token, err)
 	}
 	return nil
 }
 
-func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, error) {
-	session, err := s.session.GetSessionByFilter(c, model.SessionFilter{Token: &tkn})
+func (s *AuthService) Authenticate(ctx context.Context, tkn string) (model.User, error) {
+	session, err := s.session.GetSessionByFilter(ctx, model.SessionFilter{Token: &tkn})
 	if err != nil {
 		return model.User{}, fmt.Errorf("get token for authentication: %w", err)
 	}
@@ -86,7 +86,7 @@ func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, e
 		return model.User{}, model.ErrExpiredToken
 	}
 
-	user, err := s.user.GetUserByFilter(c, model.UserFilter{ID: &session.UserID})
+	user, err := s.user.GetUserByFilter(ctx, model.UserFilter{ID: &session.UserID})
 	if err != nil {
 		return model.User{}, fmt.Errorf("get user %s from session %s: %w", session.UserID, session.ID, err)
 	}
@@ -94,10 +94,14 @@ func (s *AuthService) Authenticate(c context.Context, tkn string) (model.User, e
 	return user, nil
 }
 
-func (s *AuthService) IsAdmin(c context.Context, user model.User) bool {
+func (s *AuthService) IsAdmin(user model.User) bool {
 	return user.Role == model.UserRoleAdmin
 }
 
-func (s *AuthService) IsUser(c context.Context, user model.User) bool {
+func (s *AuthService) IsUser(user model.User) bool {
 	return user.Role == model.UserRoleUser
+}
+
+func (s *AuthService) CleanExpiredSession(ctx context.Context) error {
+	return s.session.DeleteSessionExpired(ctx)
 }

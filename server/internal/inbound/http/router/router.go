@@ -28,7 +28,6 @@ func New(
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recovery())
-	gin.Recovery()
 
 	app.GET("/healthz", healthz)
 
@@ -75,7 +74,7 @@ func New(
 
 		pluginGroup := api.Group("/plugin")
 		{
-			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			pluginGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			pluginGroup.Use(authMW)
 
 			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
@@ -87,7 +86,7 @@ func New(
 
 		downloadGroup := api.Group("/download")
 		{
-			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
+			downloadGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			downloadGroup.Use(authMW)
 
 			downloadGroup.POST("/song", downloadH.DownloadSong)

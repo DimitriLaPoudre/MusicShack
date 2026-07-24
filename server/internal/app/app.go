@@ -47,14 +47,15 @@ func Run(cfg *config.Config) {
 	metadataS := service.NewMetadataService(&pluginS)
 	downloadS := service.NewDownloadService(cfg.Download, &pluginS, &metadataS, &repo, &repo)
 	followS := service.NewFollowService(&pluginS, &repo)
+	fetchNewReleasesS := service.NewFetchNewReleasesService(&pluginS, &followS, downloadS)
 
 	meH := handler.NewMeHandler(&userS)
 	userH := handler.NewUserHandler(&userS)
 	authH := handler.NewAuthHandler(cfg.HTTP, cfg.Session, &authS)
 	instanceH := handler.NewInstanceHandler(&instanceS)
+	followH := handler.NewFollowHandler(&followS)
 	pluginH := handler.NewPluginHandler(&pluginS)
 	downloadH := handler.NewDownloadHandler(downloadS)
-	followH := handler.NewFollowHandler(&followS)
 
 	authMW := middleware.AuthMiddleware(cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(&authS)
@@ -69,10 +70,11 @@ func Run(cfg *config.Config) {
 	}
 
 	c := cron.New()
-	// if err := job.FetchFollows(c, ctx, l); err != nil {
-	// 	l.Fatal().Err(err).Msg("failed to start job: FetchFollows")
-	// }
-	if err := job.CleanExpiredSession(c, ctx, &repo); err != nil {
+	if err := job.DownloadNewReleases(c, ctx, &fetchNewReleasesS); err != nil {
+		slog.Error("start the job: FetchFollows", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
+	if err := job.CleanExpiredSession(c, ctx, &authS); err != nil {
 		slog.Error("start the job: CleanExpiredSession", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
@@ -92,6 +94,16 @@ func Run(cfg *config.Config) {
 		&downloadH,
 		&followH,
 	)
+	app.GET("/fetch", func(ctx *gin.Context) {
+		lastFetchDate := time.Now().Add(-1 * time.Hour * 24 * 14)
+		slog.Info("fetch start")
+		if errList := fetchNewReleasesS.FetchNewReleases(ctx.Request.Context(), lastFetchDate); len(errList) > 0 {
+			slog.Error("download new releases", slog.Any("err", errList))
+			ctx.Status(http.StatusInternalServerError)
+		}
+		ctx.Status(http.StatusNoContent)
+		slog.Info("fetch end")
+	})
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),
 		Handler: app,

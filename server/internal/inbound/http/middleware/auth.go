@@ -38,7 +38,7 @@ func AdminMiddleware(auth *service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		if !auth.IsAdmin(c, me) {
+		if !auth.IsAdmin(me) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -55,7 +55,7 @@ func UserMiddleware(auth *service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		if !auth.IsUser(c, me) {
+		if !auth.IsUser(me) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}

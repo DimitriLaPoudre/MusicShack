@@ -30,7 +30,7 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 	provider := c.Param("provider")
 	id := c.Param("id")
 
-	song, err := h.plugin.GetSong(c.Request.Context(), me, provider, id)
+	song, err := h.plugin.GetSong(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -50,7 +50,7 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 	provider := c.Param("provider")
 	id := c.Param("id")
 
-	album, err := h.plugin.GetAlbum(c.Request.Context(), me, provider, id)
+	album, err := h.plugin.GetAlbum(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -70,7 +70,7 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 	provider := c.Param("provider")
 	id := c.Param("id")
 
-	artist, err := h.plugin.GetArtist(c.Request.Context(), me, provider, id)
+	artist, err := h.plugin.GetArtist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -90,7 +90,7 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 	provider := c.Param("provider")
 	id := c.Param("id")
 
-	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me, provider, id)
+	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -109,7 +109,7 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 
 	q := c.Query("q")
 
-	results, err := h.plugin.Search(c.Request.Context(), me, q)
+	results, err := h.plugin.Search(c.Request.Context(), me.ID, q)
 	if err != nil {
 		utils.Error(c, err)
 		return

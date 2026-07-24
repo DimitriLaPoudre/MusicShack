@@ -240,7 +240,7 @@ func (t *downloadTask) run(ctx context.Context) {
 
 	t.status.Store(model.DownloadStatusRunning)
 
-	reader, extension, err := t.download.plugin.Download(ctx, t.user, t.song.Provider, t.song.Id)
+	reader, extension, err := t.download.plugin.Download(ctx, t.user.ID, t.song.Provider, t.song.Id, t.user.HiRes)
 	if err != nil {
 		t.running.CompareAndSwap(true, false)
 		if errors.Is(err, context.Canceled) {

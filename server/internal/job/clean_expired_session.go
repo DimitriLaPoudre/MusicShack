@@ -4,17 +4,13 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/robfig/cron/v3"
 )
 
-func cleanExpiredSession(ctx context.Context, repo model.SessionRepository) error {
-	return repo.DeleteSessionExpired(ctx)
-}
-
-func CleanExpiredSession(c *cron.Cron, ctx context.Context, repo model.SessionRepository) error {
+func CleanExpiredSession(c *cron.Cron, ctx context.Context, auth *service.AuthService) error {
 	if _, err := c.AddFunc("0 0 * * *", func() {
-		if err := cleanExpiredSession(ctx, repo); err != nil {
+		if err := auth.CleanExpiredSession(ctx); err != nil {
 			slog.Error("failed to clean expired session", slog.String("err", err.Error()))
 		}
 	}); err != nil {

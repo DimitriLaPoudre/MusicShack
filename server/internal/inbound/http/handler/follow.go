@@ -40,7 +40,7 @@ func (h *FollowHandler) Add(c *gin.Context) {
 		return
 	}
 
-	createdFollow, err := h.follow.Create(c.Request.Context(), me, follow)
+	createdFollow, err := h.follow.Create(c.Request.Context(), follow)
 	if err != nil {
 		utils.Error(c, err)
 		return
