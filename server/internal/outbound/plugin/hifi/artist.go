@@ -143,7 +143,7 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	eps := []model.Album{}
 	singles := []model.Album{}
 	for _, album := range list {
-		releaseDate, err := time.Parse(StreamStartDateLayout, album.ReleaseDate)
+		releaseDate, err := time.Parse(ReleaseDateLayout, album.ReleaseDate)
 		if err != nil {
 			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse artist's album %s releaseDate %s", album.Title, album.ReleaseDate), slog.String("err", err.Error()))
 		}
