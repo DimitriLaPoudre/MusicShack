@@ -30,7 +30,7 @@ func New(filepath string) (SQLiteRepository, error) {
 	}
 
 	db.SetMaxOpenConns(5)
-	db.SetMaxIdleConns(5)
+	db.SetMaxIDleConns(5)
 
 	if err := db.Ping(); err != nil {
 		return SQLiteRepository{}, err

@@ -127,7 +127,7 @@ func (s *PluginService) GetSongFromPluginInstances(ctx context.Context, pluginIn
 
 func (s *PluginService) enrichSong(ctx context.Context, provider string, song model.Song) model.EnrichedSong {
 	downloaded := false
-	// repository.GetSongByUserIDByISRC(userId, song.Isrc)
+	// repository.GetSongByUserIDByISRC(userID, song.Isrc)
 	// if err == nil {
 	// 	downloaded = true
 	// }
@@ -240,7 +240,7 @@ func (s *PluginService) GetArtistFromPluginInstances(ctx context.Context, plugin
 
 func (s *PluginService) enrichArtist(ctx context.Context, provider string, pluginInstances map[model.Plugin][]model.Instance, artist model.Artist) model.EnrichedArtist {
 	followed := uuid.UUID{}
-	// if follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.Id); err == nil {
+	// if follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.ID); err == nil {
 	// 	followed = follow.ID
 	// }
 
@@ -256,7 +256,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			// if len(album.Songs) == 0 || album.Songs[0].Isrc != "" {
 			// 	enrichedAlbum = s.enrichAlbum(ctx, provider, album)
 			// } else {
-			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, album.Id); err != nil {
+			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, album.ID); err != nil {
 				slog.Error("get album", slog.String("err", err.Error()))
 				return
 			} else {
@@ -274,7 +274,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			// if len(ep.Songs) == 0 || ep.Songs[0].Isrc != "" {
 			// 	enrichedAlbum = s.enrichAlbum(ctx, provider, ep)
 			// } else {
-			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, ep.Id); err != nil {
+			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, ep.ID); err != nil {
 				slog.Error("get ep", slog.String("err", err.Error()))
 				return
 			} else {
@@ -292,7 +292,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 			// if len(single.Songs) == 0 || single.Songs[0].Isrc != "" {
 			// 	enrichedAlbum = s.enrichAlbum(ctx, provider, single)
 			// } else {
-			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, single.Id); err != nil {
+			if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, single.ID); err != nil {
 				slog.Error("get single", slog.String("err", err.Error()))
 				return
 			} else {
@@ -487,13 +487,13 @@ func (s *PluginService) UrlFromPluginInstances(ctx context.Context, pluginInstan
 	var err error
 	switch urlItem.Type {
 	case model.TypeSong:
-		data, err = s.GetSongFromPluginInstances(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetSongFromPluginInstances(ctx, pluginInstances, urlItem.ID)
 	case model.TypeAlbum:
-		data, err = s.GetAlbumFromPluginInstances(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetAlbumFromPluginInstances(ctx, pluginInstances, urlItem.ID)
 	case model.TypeArtist:
-		data, err = s.GetArtistFromPluginInstances(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetArtistFromPluginInstances(ctx, pluginInstances, urlItem.ID)
 	case model.TypePlaylist:
-		data, err = s.GetPlaylistFromPluginInstances(ctx, pluginInstances, urlItem.Id)
+		data, err = s.GetPlaylistFromPluginInstances(ctx, pluginInstances, urlItem.ID)
 	}
 	if err != nil {
 		return model.TypedItem{}, fmt.Errorf("from url %s: %w", q, err)

@@ -21,7 +21,7 @@ type Quality struct {
 }
 
 type Song struct {
-	Id              string    `json:"id"`
+	ID              string    `json:"id"`
 	Title           string    `json:"title"`
 	Duration        uint      `json:"duration"`
 	ReplayGain      float64   `json:"replayGain"`
@@ -46,7 +46,7 @@ type EnrichedSong struct {
 }
 
 type Album struct {
-	Id            string    `json:"id"`
+	ID            string    `json:"id"`
 	Title         string    `json:"title"`
 	Duration      uint      `json:"duration"`
 	ReleaseDate   time.Time `json:"releaseDate"`
@@ -68,7 +68,7 @@ type EnrichedAlbum struct {
 }
 
 type Artist struct {
-	Id         string  `json:"id"`
+	ID         string  `json:"id"`
 	Name       string  `json:"name"`
 	PictureUrl string  `json:"pictureUrl"`
 	Popularity uint    `json:"popularity"`
@@ -87,7 +87,7 @@ type EnrichedArtist struct {
 }
 
 type Playlist struct {
-	Id             string    `json:"id"`
+	ID             string    `json:"id"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
 	Duration       uint      `json:"duration"`
@@ -131,5 +131,5 @@ type SearchResult struct {
 
 type UrlItem struct {
 	Type DataType `json:"type"`
-	Id   string   `json:"id"`
+	ID   string   `json:"id"`
 }

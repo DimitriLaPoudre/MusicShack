@@ -119,7 +119,7 @@ func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, plugi
 	}
 
 	for _, album := range artist.Albums {
-		_ = s.AddAlbum(ctx, userID, pluginInstances, album.Id)
+		_ = s.AddAlbum(ctx, userID, pluginInstances, album.ID)
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func (s *DownloadService) AddAlbum(ctx context.Context, userID uuid.UUID, plugin
 	}
 
 	for _, song := range album.Songs {
-		_ = s.AddSong(ctx, userID, pluginInstances, song.Id, &album.Album)
+		_ = s.AddSong(ctx, userID, pluginInstances, song.ID, &album.Album)
 	}
 
 	return nil
@@ -146,7 +146,7 @@ func (s *DownloadService) AddPlaylist(ctx context.Context, userID uuid.UUID, plu
 
 	_ = playlist
 	// for _, song := range playlist.Songs {
-	// 	_ = s.AddSong(ctx, userID, pluginInstances, song.Id, nil)
+	// 	_ = s.AddSong(ctx, userID, pluginInstances, song.ID, nil)
 	// }
 
 	return nil
@@ -161,7 +161,7 @@ func (s *DownloadService) AddSong(ctx context.Context, userID uuid.UUID, pluginI
 	if optAlbum != nil {
 		song.Album = *optAlbum
 	} else {
-		album, err := s.plugin.GetAlbumFromPluginInstances(ctx, pluginInstances, song.Album.Id)
+		album, err := s.plugin.GetAlbumFromPluginInstances(ctx, pluginInstances, song.Album.ID)
 		if err != nil {
 			return fmt.Errorf("get song %s album info for download: %w", songID, err)
 		}
@@ -240,7 +240,7 @@ func (t *downloadTask) run(ctx context.Context) {
 
 	t.status.Store(model.DownloadStatusRunning)
 
-	reader, extension, err := t.download.plugin.Download(ctx, t.user.ID, t.song.Provider, t.song.Id, t.user.HiRes)
+	reader, extension, err := t.download.plugin.Download(ctx, t.user.ID, t.song.Provider, t.song.ID, t.user.HiRes)
 	if err != nil {
 		t.running.CompareAndSwap(true, false)
 		if errors.Is(err, context.Canceled) {
@@ -273,7 +273,7 @@ func (t *downloadTask) SaveDownload(ctx context.Context, reader io.ReadCloser, e
 		return fmt.Errorf("save song: %w", err)
 	}
 
-	if err := t.download.metadata.Format(ctx, t.user, t.song.Provider, path, t.song.Song); err != nil {
+	if err := t.download.metadata.FormatMetadata(ctx, t.user, t.song.Provider, path, t.song.Song); err != nil {
 		os.Remove(path)
 		return fmt.Errorf("format song metadata: %w", err)
 	}

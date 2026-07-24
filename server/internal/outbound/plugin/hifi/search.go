@@ -121,14 +121,14 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 		artists := []model.Artist{}
 		for _, artist := range song.Artists {
 			artists = append(artists, model.Artist{
-				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs,
 			model.Song{
-				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				ID:           strconv.FormatUint(uint64(song.ID), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
 				AudioQuality: audioQuality,
@@ -137,7 +137,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				Isrc:         song.Isrc,
 				Artists:      artists,
 				Album: model.Album{
-					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
+					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
 					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
 				},
@@ -169,14 +169,14 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 		artists := []model.Artist{}
 		for _, artist := range album.Artists {
 			artists = append(artists, model.Artist{
-				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		albums = append(albums,
 			model.Album{
-				Id:           strconv.FormatUint(uint64(album.Id), 10),
+				ID:           strconv.FormatUint(uint64(album.ID), 10),
 				Title:        album.Title,
 				Duration:     album.Duration,
 				CoverUrl:     hifi_utils.GetImageURL(album.CoverUrl, 640),
@@ -191,7 +191,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 	for _, artist := range artistData.Data.Artists.Artists {
 		artists = append(artists,
 			model.Artist{
-				Id:         strconv.FormatUint(uint64(artist.Id), 10),
+				ID:         strconv.FormatUint(uint64(artist.ID), 10),
 				Name:       artist.Name,
 				PictureUrl: hifi_utils.GetImageURL(artist.PictureUrl, 750),
 				Popularity: artist.Popularity,
@@ -202,7 +202,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 	for _, playlist := range playlistData.Data.Playlists.Playlists {
 		playlists = append(playlists,
 			model.Playlist{
-				Id:       playlist.UUID,
+				ID:       playlist.UUID,
 				Title:    playlist.Title,
 				Duration: playlist.Duration,
 				CoverURL: hifi_utils.GetImageURL(playlist.SquareImage, 640),

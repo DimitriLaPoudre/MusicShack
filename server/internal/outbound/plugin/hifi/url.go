@@ -16,7 +16,7 @@ func checkSong(arr []string) (model.UrlItem, error) {
 
 	return model.UrlItem{
 		Type: model.TypeSong,
-		Id:   arr[1],
+		ID:   arr[1],
 	}, nil
 }
 
@@ -26,7 +26,7 @@ func checkAlbum(arr []string) (model.UrlItem, error) {
 	}
 	return model.UrlItem{
 		Type: model.TypeAlbum,
-		Id:   arr[1],
+		ID:   arr[1],
 	}, nil
 }
 
@@ -37,7 +37,7 @@ func checkArtist(arr []string) (model.UrlItem, error) {
 
 	return model.UrlItem{
 		Type: model.TypeArtist,
-		Id:   arr[1],
+		ID:   arr[1],
 	}, nil
 }
 
@@ -48,7 +48,7 @@ func checkPlaylist(arr []string) (model.UrlItem, error) {
 
 	return model.UrlItem{
 		Type: model.TypePlaylist,
-		Id:   arr[0],
+		ID:   arr[0],
 	}, nil
 }
 

@@ -12,12 +12,12 @@ type AudioQuality struct {
 }
 
 type SongArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type SongAlbum struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Title    string `json:"title"`
 	CoverUrl string `json:"coverUrl"`
 }
@@ -25,7 +25,7 @@ type SongAlbum struct {
 type Song struct {
 	Provider        string       `json:"provider"`
 	Downloaded      bool         `json:"downloaded"`
-	Id              string       `json:"id"`
+	ID              string       `json:"id"`
 	Title           string       `json:"title"`
 	Duration        uint         `json:"duration"`
 	ReplayGain      float64      `json:"replayGain"`
@@ -47,7 +47,7 @@ func SongToResponse(song model.EnrichedSong) Song {
 	artists := []SongArtist{}
 	for _, a := range song.Artists {
 		artists = append(artists, SongArtist{
-			Id:   a.Id,
+			ID:   a.ID,
 			Name: a.Name,
 		})
 	}
@@ -55,7 +55,7 @@ func SongToResponse(song model.EnrichedSong) Song {
 	return Song{
 		Provider:        song.Provider,
 		Downloaded:      song.Downloaded,
-		Id:              song.Id,
+		ID:              song.ID,
 		Title:           song.Title,
 		Duration:        song.Duration,
 		ReplayGain:      song.ReplayGain,
@@ -74,7 +74,7 @@ func SongToResponse(song model.EnrichedSong) Song {
 		Isrc:       song.Isrc,
 		Artists:    artists,
 		Album: SongAlbum{
-			Id:       song.Album.Id,
+			ID:       song.Album.ID,
 			Title:    song.Album.Title,
 			CoverUrl: song.Album.CoverUrl,
 		},
@@ -82,14 +82,14 @@ func SongToResponse(song model.EnrichedSong) Song {
 }
 
 type AlbumSongArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type AlbumSong struct {
 	Provider     string            `json:"provider"`
 	Downloaded   bool              `json:"downloaded"`
-	Id           string            `json:"id"`
+	ID           string            `json:"id"`
 	Title        string            `json:"title"`
 	Duration     uint              `json:"duration"`
 	TrackNumber  uint              `json:"trackNumber"`
@@ -101,14 +101,14 @@ type AlbumSong struct {
 }
 
 type AlbumArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type Album struct {
 	Provider      string        `json:"provider"`
 	Downloaded    bool          `json:"downloaded"`
-	Id            string        `json:"id"`
+	ID            string        `json:"id"`
 	Title         string        `json:"title"`
 	Duration      uint          `json:"duration"`
 	ReleaseDate   time.Time     `json:"releaseDate"`
@@ -127,7 +127,7 @@ func AlbumToResponse(album model.EnrichedAlbum) Album {
 		songArtists := []AlbumSongArtist{}
 		for _, a := range s.Artists {
 			songArtists = append(songArtists, AlbumSongArtist{
-				Id:   a.Id,
+				ID:   a.ID,
 				Name: a.Name,
 			})
 		}
@@ -135,7 +135,7 @@ func AlbumToResponse(album model.EnrichedAlbum) Album {
 		songs = append(songs, AlbumSong{
 			Provider:     s.Provider,
 			Downloaded:   s.Downloaded,
-			Id:           s.Id,
+			ID:           s.ID,
 			Title:        s.Title,
 			Duration:     s.Duration,
 			TrackNumber:  s.TrackNumber,
@@ -153,7 +153,7 @@ func AlbumToResponse(album model.EnrichedAlbum) Album {
 	artists := []AlbumArtist{}
 	for _, a := range album.Artists {
 		artists = append(artists, AlbumArtist{
-			Id:   a.Id,
+			ID:   a.ID,
 			Name: a.Name,
 		})
 	}
@@ -161,7 +161,7 @@ func AlbumToResponse(album model.EnrichedAlbum) Album {
 	return Album{
 		Provider:      album.Provider,
 		Downloaded:    album.Downloaded,
-		Id:            album.Id,
+		ID:            album.ID,
 		Title:         album.Title,
 		Duration:      album.Duration,
 		ReleaseDate:   album.ReleaseDate,
@@ -179,13 +179,13 @@ func AlbumToResponse(album model.EnrichedAlbum) Album {
 }
 
 type ArtistAlbumArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type ArtistAlbum struct {
 	Downloaded   bool                `json:"downloaded"`
-	Id           string              `json:"id"`
+	ID           string              `json:"id"`
 	Title        string              `json:"title"`
 	Duration     uint                `json:"duration"`
 	ReleaseDate  time.Time           `json:"releaseDate"`
@@ -198,7 +198,7 @@ type ArtistAlbum struct {
 type Artist struct {
 	Provider   string        `json:"provider"`
 	Followed   string        `json:"followed"`
-	Id         string        `json:"id"`
+	ID         string        `json:"id"`
 	Name       string        `json:"name"`
 	PictureUrl string        `json:"pictureUrl"`
 	Albums     []ArtistAlbum `json:"albums"`
@@ -212,14 +212,14 @@ func ArtistToResponse(artist model.EnrichedArtist) Artist {
 		albumArtists := []ArtistAlbumArtist{}
 		for _, a := range album.Artists {
 			albumArtists = append(albumArtists, ArtistAlbumArtist{
-				Id:   a.Id,
+				ID:   a.ID,
 				Name: a.Name,
 			})
 		}
 
 		albums = append(albums, ArtistAlbum{
 			Downloaded:  album.Downloaded,
-			Id:          album.Id,
+			ID:          album.ID,
 			Title:       album.Title,
 			Duration:    album.Duration,
 			ReleaseDate: album.ReleaseDate,
@@ -238,14 +238,14 @@ func ArtistToResponse(artist model.EnrichedArtist) Artist {
 		epArtists := []ArtistAlbumArtist{}
 		for _, a := range ep.Artists {
 			epArtists = append(epArtists, ArtistAlbumArtist{
-				Id:   a.Id,
+				ID:   a.ID,
 				Name: a.Name,
 			})
 		}
 
 		eps = append(eps, ArtistAlbum{
 			Downloaded:  ep.Downloaded,
-			Id:          ep.Id,
+			ID:          ep.ID,
 			Title:       ep.Title,
 			Duration:    ep.Duration,
 			ReleaseDate: ep.ReleaseDate,
@@ -264,14 +264,14 @@ func ArtistToResponse(artist model.EnrichedArtist) Artist {
 		singleArtists := []ArtistAlbumArtist{}
 		for _, a := range single.Artists {
 			singleArtists = append(singleArtists, ArtistAlbumArtist{
-				Id:   a.Id,
+				ID:   a.ID,
 				Name: a.Name,
 			})
 		}
 
 		singles = append(singles, ArtistAlbum{
 			Downloaded:  single.Downloaded,
-			Id:          single.Id,
+			ID:          single.ID,
 			Title:       single.Title,
 			Duration:    single.Duration,
 			ReleaseDate: single.ReleaseDate,
@@ -288,7 +288,7 @@ func ArtistToResponse(artist model.EnrichedArtist) Artist {
 	return Artist{
 		Provider:   artist.Provider,
 		Followed:   artist.Followed.String(),
-		Id:         artist.Id,
+		ID:         artist.ID,
 		Name:       artist.Name,
 		PictureUrl: artist.PictureUrl,
 		Albums:     albums,
@@ -298,13 +298,13 @@ func ArtistToResponse(artist model.EnrichedArtist) Artist {
 }
 
 type PlaylistSongArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type PlaylistSong struct {
 	Downloaded   bool                 `json:"downloaded"`
-	Id           string               `json:"id"`
+	ID           string               `json:"id"`
 	Title        string               `json:"title"`
 	Duration     uint                 `json:"duration"`
 	AudioQuality AudioQuality         `json:"audioQuality"`
@@ -316,7 +316,7 @@ type PlaylistSong struct {
 type Playlist struct {
 	Provider       string         `json:"provider"`
 	Downloaded     bool           `json:"downloaded"`
-	Id             string         `json:"id"`
+	ID             string         `json:"id"`
 	Title          string         `json:"title"`
 	Description    string         `json:"description"`
 	Duration       uint           `json:"duration"`
@@ -332,14 +332,14 @@ func PlaylistToResponse(playlist model.EnrichedPlaylist) Playlist {
 		songArtists := []PlaylistSongArtist{}
 		for _, a := range s.Artists {
 			songArtists = append(songArtists, PlaylistSongArtist{
-				Id:   a.Id,
+				ID:   a.ID,
 				Name: a.Name,
 			})
 		}
 
 		songs = append(songs, PlaylistSong{
 			Downloaded: s.Downloaded,
-			Id:         s.Id,
+			ID:         s.ID,
 			Title:      s.Title,
 			Duration:   s.Duration,
 			AudioQuality: AudioQuality{
@@ -354,7 +354,7 @@ func PlaylistToResponse(playlist model.EnrichedPlaylist) Playlist {
 	return Playlist{
 		Provider:       playlist.Provider,
 		Downloaded:     playlist.Downloaded,
-		Id:             playlist.Id,
+		ID:             playlist.ID,
 		Title:          playlist.Title,
 		Description:    playlist.Description,
 		Duration:       playlist.Duration,
@@ -371,13 +371,13 @@ type SearchItem struct {
 }
 
 type SearchSongArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type SearchSong struct {
 	Downloaded   bool               `json:"downloaded"`
-	Id           string             `json:"id"`
+	ID           string             `json:"id"`
 	Title        string             `json:"title"`
 	Duration     uint               `json:"duration"`
 	AudioQuality AudioQuality       `json:"audioQuality"`
@@ -389,19 +389,19 @@ type SearchSong struct {
 }
 
 type SearchSongAlbum struct {
-	Id       string `json:"id"`
+	ID       string `json:"id"`
 	Title    string `json:"title"`
 	CoverUrl string `json:"coverUrl"`
 }
 
 type SearchAlbumArtist struct {
-	Id   string `json:"id"`
+	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
 type SearchAlbum struct {
 	Downloaded   bool                `json:"downloaded"`
-	Id           string              `json:"id"`
+	ID           string              `json:"id"`
 	Title        string              `json:"title"`
 	Duration     uint                `json:"duration"`
 	CoverUrl     string              `json:"coverUrl"`
@@ -413,7 +413,7 @@ type SearchAlbum struct {
 
 type SearchArtist struct {
 	Followed   string `json:"followed"`
-	Id         string `json:"id"`
+	ID         string `json:"id"`
 	Name       string `json:"name"`
 	PictureUrl string `json:"pictureUrl"`
 	Popularity uint   `json:"popularity"`
@@ -421,7 +421,7 @@ type SearchArtist struct {
 
 type SearchPlaylist struct {
 	Downloaded bool   `json:"downloaded"`
-	Id         string `json:"id"`
+	ID         string `json:"id"`
 	Title      string `json:"title"`
 	Duration   uint   `json:"duration"`
 	CoverURL   string `json:"coverUrl"`
@@ -446,14 +446,14 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 		songArtists := []SearchSongArtist{}
 		for _, artist := range song.Artists {
 			songArtists = append(songArtists, SearchSongArtist{
-				Id:   artist.Id,
+				ID:   artist.ID,
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs, SearchSong{
 			Downloaded:   song.Downloaded,
-			Id:           song.Id,
+			ID:           song.ID,
 			Title:        song.Title,
 			Duration:     song.Duration,
 			AudioQuality: AudioQuality{Name: song.AudioQuality.Name, Color: song.AudioQuality.Color},
@@ -462,7 +462,7 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 			Isrc:         song.Isrc,
 			Artists:      songArtists,
 			Album: SearchSongAlbum{
-				Id:       song.Album.Id,
+				ID:       song.Album.ID,
 				Title:    song.Album.Title,
 				CoverUrl: song.Album.CoverUrl,
 			},
@@ -474,14 +474,14 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 		albumArtists := []SearchAlbumArtist{}
 		for _, artist := range album.Artists {
 			albumArtists = append(albumArtists, SearchAlbumArtist{
-				Id:   artist.Id,
+				ID:   artist.ID,
 				Name: artist.Name,
 			})
 		}
 
 		albums = append(albums, SearchAlbum{
 			Downloaded:   album.Downloaded,
-			Id:           album.Id,
+			ID:           album.ID,
 			Title:        album.Title,
 			Duration:     album.Duration,
 			CoverUrl:     album.CoverUrl,
@@ -496,7 +496,7 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 	for _, artist := range search.Artists {
 		artists = append(artists, SearchArtist{
 			Followed:   artist.Followed.String(),
-			Id:         artist.Id,
+			ID:         artist.ID,
 			Name:       artist.Name,
 			PictureUrl: artist.PictureUrl,
 			Popularity: artist.Popularity,
@@ -507,7 +507,7 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 	for _, playlist := range search.Playlists {
 		playlists = append(playlists, SearchPlaylist{
 			Downloaded: playlist.Downloaded,
-			Id:         playlist.Id,
+			ID:         playlist.ID,
 			Title:      playlist.Title,
 			Duration:   playlist.Duration,
 			CoverURL:   playlist.CoverURL,

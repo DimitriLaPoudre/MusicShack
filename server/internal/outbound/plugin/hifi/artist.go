@@ -130,10 +130,10 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 		if a.ReleaseDate < b.ReleaseDate {
 			return 1
 		}
-		if a.Id > b.Id {
+		if a.ID > b.ID {
 			return -1
 		}
-		if a.Id < b.Id {
+		if a.ID < b.ID {
 			return 1
 		}
 		return 0
@@ -171,13 +171,13 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 		artists := []model.Artist{}
 		for _, artist := range album.Artists {
 			artists = append(artists, model.Artist{
-				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		newAlbum := model.Album{
-			Id:           strconv.FormatUint(uint64(album.Id), 10),
+			ID:           strconv.FormatUint(uint64(album.ID), 10),
 			Title:        album.Title,
 			Duration:     album.Duration,
 			ReleaseDate:  releaseDate,
@@ -198,7 +198,7 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	}
 
 	return model.Artist{
-		Id:         strconv.FormatUint(uint64(artistInfo.Artist.Id), 10),
+		ID:         strconv.FormatUint(uint64(artistInfo.Artist.ID), 10),
 		Name:       artistInfo.Artist.Name,
 		PictureUrl: pictureURL,
 		Popularity: artistInfo.Artist.Popularity,

@@ -64,14 +64,14 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 		artists := []model.Artist{}
 		for _, artist := range song.Artists {
 			artists = append(artists, model.Artist{
-				Id:   strconv.FormatUint(uint64(artist.Id), 10),
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs,
 			model.Song{
-				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				ID:           strconv.FormatUint(uint64(song.ID), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
 				AudioQuality: audioQuality,
@@ -80,14 +80,14 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 				Isrc:         song.Isrc,
 				Artists:      artists,
 				Album: model.Album{
-					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
+					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
 					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
 				},
 			})
 		songs = append(songs,
 			model.Song{
-				Id:           strconv.FormatUint(uint64(song.Id), 10),
+				ID:           strconv.FormatUint(uint64(song.ID), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
 				ReleaseDate:  releaseDate,
@@ -99,7 +99,7 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 				Isrc:         song.Isrc,
 				Artists:      artists,
 				Album: model.Album{
-					Id:       strconv.FormatUint(uint64(song.Album.Id), 10),
+					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
 					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 1280),
 				},
@@ -113,10 +113,10 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 		if a.ReleaseDate.Before(b.ReleaseDate) {
 			return 1
 		}
-		if a.Id > b.Id {
+		if a.ID > b.ID {
 			return -1
 		}
-		if a.Id < b.Id {
+		if a.ID < b.ID {
 			return 1
 		}
 		return 0

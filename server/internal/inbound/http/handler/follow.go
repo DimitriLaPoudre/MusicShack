@@ -40,7 +40,7 @@ func (h *FollowHandler) Add(c *gin.Context) {
 		return
 	}
 
-	createdFollow, err := h.follow.Create(c.Request.Context(), follow)
+	createdFollow, err := h.follow.CreateFollow(c.Request.Context(), follow)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -57,7 +57,7 @@ func (h *FollowHandler) List(c *gin.Context) {
 		return
 	}
 
-	follows, err := h.follow.ListWithFilter(c.Request.Context(), model.FollowFilter{UserID: &me.ID})
+	follows, err := h.follow.ListFollowsByFilter(c.Request.Context(), model.FollowFilter{UserID: &me.ID})
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -81,7 +81,7 @@ func (h *FollowHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	if err := h.follow.DeleteByUserID(c.Request.Context(), id, me.ID); err != nil {
+	if err := h.follow.DeleteFollowByUserID(c.Request.Context(), id, me.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}

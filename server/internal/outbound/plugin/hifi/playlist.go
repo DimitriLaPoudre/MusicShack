@@ -66,13 +66,13 @@ func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id stri
 		artists := []model.Artist{}
 		for _, artist := range song.Artists {
 			artists = append(artists, model.Artist{
-				Id:   strconv.FormatUint(uint64(artist.ID), 10),
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs, model.Song{
-			Id:       strconv.FormatUint(uint64(song.ID), 10),
+			ID:       strconv.FormatUint(uint64(song.ID), 10),
 			Title:    song.Title,
 			Duration: song.Duration,
 			Explicit: song.Explicit,
@@ -82,7 +82,7 @@ func (p *Hifi) Playlist(ctx context.Context, instances []model.Instance, id stri
 	}
 
 	return model.Playlist{
-		Id:             data.Playlist.UUID,
+		ID:             data.Playlist.UUID,
 		Title:          data.Playlist.Title,
 		Description:    data.Playlist.Description,
 		Duration:       data.Playlist.Duration,

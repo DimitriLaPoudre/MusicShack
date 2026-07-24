@@ -69,7 +69,7 @@ func (s *MetadataService) WriteCover(path string, reader io.Reader) error {
 	return nil
 }
 
-func (s *MetadataService) Format(ctx context.Context, user model.User, provider string, path string, song model.Song) error {
+func (s *MetadataService) FormatMetadata(ctx context.Context, user model.User, provider string, path string, song model.Song) error {
 	var albumArtists []string
 	for _, artist := range song.Album.Artists {
 		albumArtists = append(albumArtists, artist.Name)

@@ -46,7 +46,7 @@ func (s *FetchNewReleasesService) getArtistNewReleases(ctx context.Context, foll
 			newReleases = append(newReleases, release{
 				userID:   follow.UserID,
 				provider: artist.Provider,
-				albumID:  r.Id,
+				albumID:  r.ID,
 			})
 		}
 	}
@@ -69,7 +69,7 @@ func (s *FetchNewReleasesService) getNewReleases(ctx context.Context, follows []
 }
 
 func (s *FetchNewReleasesService) FetchNewReleases(ctx context.Context, lastFetchDate time.Time) []error {
-	follows, err := s.follow.ListWithFilter(ctx, model.FollowFilter{})
+	follows, err := s.follow.ListFollowsByFilter(ctx, model.FollowFilter{})
 	if err != nil {
 		return []error{err}
 	}

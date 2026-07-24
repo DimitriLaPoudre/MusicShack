@@ -37,7 +37,7 @@ type statusResponse struct {
 }
 
 type songItem struct {
-	Id                     uint
+	ID                     uint
 	Title                  string
 	Duration               uint
 	ReplayGain             float64
@@ -70,17 +70,17 @@ type songItem struct {
 	AccessType  string
 	Spotlighted bool
 	Artist      struct {
-		Id   uint
+		ID   uint
 		Name string
 		Type string
 	}
 	Artists []struct {
-		Id   uint
+		ID   uint
 		Name string
 		Type string
 	}
 	Album struct {
-		Id           uint
+		ID           uint
 		Title        string
 		CoverUrl     string `json:"cover"`
 		VibrantColor string
@@ -104,7 +104,7 @@ type albumMinimalData struct {
 }
 
 type albumItem struct {
-	Id                     uint
+	ID                     uint
 	Title                  string
 	Duration               uint
 	StreamReady            bool
@@ -134,7 +134,7 @@ type albumItem struct {
 	}
 	Upload  bool
 	Artists []struct {
-		Id   uint
+		ID   uint
 		Name string
 		Type string
 	}
@@ -143,7 +143,7 @@ type albumItem struct {
 type albumResponse struct {
 	Version string
 	Data    struct {
-		Id                     uint
+		ID                     uint
 		Title                  string
 		Duration               uint
 		StreamReady            bool
@@ -173,7 +173,7 @@ type albumResponse struct {
 		}
 		Upload  bool
 		Artists []struct {
-			Id   uint
+			ID   uint
 			Name string
 			Type string
 		}
@@ -191,7 +191,7 @@ type artistMinimalData struct {
 }
 
 type artistItem struct {
-	Id                 uint
+	ID                 uint
 	Name               string
 	ArtistTypes        []string
 	Url                string
@@ -199,7 +199,7 @@ type artistItem struct {
 	PictureUrlFallback string `json:"selectedAlbumCoverFallback"`
 	Popularity         uint
 	ArtistRoles        []struct {
-		CategoryId int
+		CategoryID int
 		Category   string
 	}
 	Mixes struct {
@@ -213,7 +213,7 @@ type artistResponse struct {
 	Artist  artistItem
 	Cover   struct {
 		// 750 string
-		Id   uint
+		ID   uint
 		Name string
 	}
 }
@@ -351,7 +351,7 @@ type downloadResponse struct {
 }
 
 type downloadItem struct {
-	TrackId            uint
+	TrackID            uint
 	AssetPresentation  string
 	AudioMode          string
 	AudioQuality       string

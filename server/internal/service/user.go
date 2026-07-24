@@ -23,7 +23,7 @@ func NewUserService(cfg config.DownloadConfig, repo model.UserRepository) UserSe
 	}
 }
 
-func (s *UserService) CreateUser(c context.Context, user model.User) (model.User, error) {
+func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return model.User{}, fmt.Errorf("create id for new user: %w", err)
@@ -40,8 +40,8 @@ func (s *UserService) CreateUser(c context.Context, user model.User) (model.User
 		return model.User{}, fmt.Errorf("validate role of new user: %w", err)
 	}
 
-	if err := s.repo.WithTransaction(c, func(ctx context.Context) error {
-		user, err = s.repo.CreateUser(c, user)
+	if err := s.repo.WithTransaction(ctx, func(ctx context.Context) error {
+		user, err = s.repo.CreateUser(ctx, user)
 		if err != nil {
 			return fmt.Errorf("create new user: %w", err)
 		}
@@ -63,8 +63,8 @@ func (s *UserService) CreateUser(c context.Context, user model.User) (model.User
 	return user, nil
 }
 
-func (s *UserService) GetUserByID(c context.Context, id uuid.UUID) (model.User, error) {
-	user, err := s.repo.GetUserByFilter(c, model.UserFilter{ID: &id})
+func (s *UserService) GetUserByID(ctx context.Context, id uuid.UUID) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, model.UserFilter{ID: &id})
 	if err != nil {
 		return model.User{}, fmt.Errorf("get user %s: %w", id.String(), err)
 	}
@@ -72,8 +72,8 @@ func (s *UserService) GetUserByID(c context.Context, id uuid.UUID) (model.User, 
 	return user, nil
 }
 
-func (s *UserService) GetUserByFilter(c context.Context, filter model.UserFilter) (model.User, error) {
-	user, err := s.repo.GetUserByFilter(c, filter)
+func (s *UserService) GetUserByFilter(ctx context.Context, filter model.UserFilter) (model.User, error) {
+	user, err := s.repo.GetUserByFilter(ctx, filter)
 	if err != nil {
 		return model.User{}, fmt.Errorf("get user for filter %v: %w", filter, err)
 	}
@@ -81,8 +81,8 @@ func (s *UserService) GetUserByFilter(c context.Context, filter model.UserFilter
 	return user, nil
 }
 
-func (s *UserService) ListAllUsers(c context.Context) ([]model.User, error) {
-	users, err := s.repo.ListUsersByFilter(c, model.UserFilter{})
+func (s *UserService) ListAllUsers(ctx context.Context) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, model.UserFilter{})
 	if err != nil {
 		return []model.User{}, fmt.Errorf("list all users: %w", err)
 	}
@@ -90,8 +90,8 @@ func (s *UserService) ListAllUsers(c context.Context) ([]model.User, error) {
 	return users, nil
 }
 
-func (s *UserService) ListUsersWithFilter(c context.Context, filter model.UserFilter) ([]model.User, error) {
-	users, err := s.repo.ListUsersByFilter(c, filter)
+func (s *UserService) ListUsersByFilter(ctx context.Context, filter model.UserFilter) ([]model.User, error) {
+	users, err := s.repo.ListUsersByFilter(ctx, filter)
 	if err != nil {
 		return []model.User{}, fmt.Errorf("list users for filter %v: %w", filter, err)
 	}
@@ -99,8 +99,8 @@ func (s *UserService) ListUsersWithFilter(c context.Context, filter model.UserFi
 	return users, nil
 }
 
-func (s *UserService) UpdateUser(c context.Context, partial model.PartialUser) (model.User, error) {
-	user, err := s.repo.UpdateUser(c, partial)
+func (s *UserService) UpdateUser(ctx context.Context, partial model.PartialUser) (model.User, error) {
+	user, err := s.repo.UpdateUser(ctx, partial)
 	if err != nil {
 		return model.User{}, fmt.Errorf("update user %s: %w", partial.ID.String(), err)
 	}
@@ -108,8 +108,8 @@ func (s *UserService) UpdateUser(c context.Context, partial model.PartialUser) (
 	return user, nil
 }
 
-func (s *UserService) DeleteUser(c context.Context, id uuid.UUID) error {
-	if err := s.repo.DeleteUser(c, id); err != nil {
+func (s *UserService) DeleteUser(ctx context.Context, id uuid.UUID) error {
+	if err := s.repo.DeleteUser(ctx, id); err != nil {
 		return fmt.Errorf("delete user %s: %w", id.String(), err)
 	}
 

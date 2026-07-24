@@ -20,7 +20,7 @@ func NewFollowService(plugin *PluginService, repo model.FollowRepository) Follow
 	}
 }
 
-func (s *FollowService) Create(ctx context.Context, follow model.Follow) (model.Follow, error) {
+func (s *FollowService) CreateFollow(ctx context.Context, follow model.Follow) (model.Follow, error) {
 	id, err := uuid.NewV7()
 	if err != nil {
 		return model.Follow{}, fmt.Errorf("create id for new follow: %w", err)
@@ -40,8 +40,8 @@ func (s *FollowService) Create(ctx context.Context, follow model.Follow) (model.
 
 }
 
-func (s *FollowService) ListWithFilter(c context.Context, filter model.FollowFilter) ([]model.Follow, error) {
-	follows, err := s.repo.ListFollowsByFilter(c, filter)
+func (s *FollowService) ListFollowsByFilter(ctx context.Context, filter model.FollowFilter) ([]model.Follow, error) {
+	follows, err := s.repo.ListFollowsByFilter(ctx, filter)
 	if err != nil {
 		return []model.Follow{}, fmt.Errorf("list follows for filter %#v: %w", filter, err)
 	}
@@ -49,16 +49,16 @@ func (s *FollowService) ListWithFilter(c context.Context, filter model.FollowFil
 	return follows, nil
 }
 
-func (s *FollowService) Delete(c context.Context, id uuid.UUID) error {
-	if err := s.repo.DeleteFollow(c, id); err != nil {
+func (s *FollowService) DeleteFollow(ctx context.Context, id uuid.UUID) error {
+	if err := s.repo.DeleteFollow(ctx, id); err != nil {
 		return fmt.Errorf("delete follow %s: %w", id.String(), err)
 	}
 
 	return nil
 }
 
-func (s *FollowService) DeleteByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {
-	if err := s.repo.DeleteFollowByUserID(c, id, userID); err != nil {
+func (s *FollowService) DeleteFollowByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	if err := s.repo.DeleteFollowByUserID(ctx, id, userID); err != nil {
 		return fmt.Errorf("delete follow %s for user %s: %w", id.String(), userID.String(), err)
 	}
 

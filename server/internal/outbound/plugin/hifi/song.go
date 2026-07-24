@@ -89,13 +89,13 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 	artists := []model.Artist{}
 	for _, artist := range songInfo.Data.Artists {
 		artists = append(artists, model.Artist{
-			Id:   strconv.FormatUint(uint64(artist.Id), 10),
+			ID:   strconv.FormatUint(uint64(artist.ID), 10),
 			Name: artist.Name,
 		})
 	}
 
 	return model.Song{
-		Id:              strconv.FormatUint(uint64(songInfo.Data.Id), 10),
+		ID:              strconv.FormatUint(uint64(songInfo.Data.ID), 10),
 		Title:           songInfo.Data.Title,
 		Duration:        songInfo.Data.Duration,
 		ReplayGain:      downloadInfo.Data.TrackReplayGain,
@@ -111,7 +111,7 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 		Isrc:            songInfo.Data.Isrc,
 		Artists:         artists,
 		Album: model.Album{
-			Id:       strconv.FormatUint(uint64(songInfo.Data.Album.Id), 10),
+			ID:       strconv.FormatUint(uint64(songInfo.Data.Album.ID), 10),
 			Title:    songInfo.Data.Album.Title,
 			CoverUrl: hifi_utils.GetImageURL(songInfo.Data.Album.CoverUrl, 1280),
 		},

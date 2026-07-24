@@ -21,9 +21,9 @@ func NewInstanceService(plugin *PluginService, repo model.InstanceRepository) In
 	}
 }
 
-func (s *InstanceService) CreateInstance(c context.Context, i model.Instance) (model.Instance, error) {
+func (s *InstanceService) CreateInstance(ctx context.Context, i model.Instance) (model.Instance, error) {
 	ping_start := time.Now()
-	plugin, err := s.plugin.GetOriginalPlugin(c, i.Url)
+	plugin, err := s.plugin.GetOriginalPlugin(ctx, i.Url)
 	if err != nil {
 		return model.Instance{}, fmt.Errorf("get plugin design for url %s: %w", i.Url, err)
 	}
@@ -39,7 +39,7 @@ func (s *InstanceService) CreateInstance(c context.Context, i model.Instance) (m
 	i.ID = id
 	i.Ping = ping
 
-	i, err = s.repo.CreateInstance(c, i)
+	i, err = s.repo.CreateInstance(ctx, i)
 	if err != nil {
 		return model.Instance{}, fmt.Errorf("create new instance: %w", err)
 	}
@@ -47,8 +47,8 @@ func (s *InstanceService) CreateInstance(c context.Context, i model.Instance) (m
 	return i, nil
 }
 
-func (s *InstanceService) ListInstancesByFilter(c context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
-	instances, err := s.repo.ListInstancesByFilter(c, filter)
+func (s *InstanceService) ListInstancesByFilter(ctx context.Context, filter model.InstanceFilter) ([]model.Instance, error) {
+	instances, err := s.repo.ListInstancesByFilter(ctx, filter)
 	if err != nil {
 		return []model.Instance{}, fmt.Errorf("list instance for filter %v: %w", filter, err)
 	}
@@ -56,8 +56,8 @@ func (s *InstanceService) ListInstancesByFilter(c context.Context, filter model.
 	return instances, nil
 }
 
-func (s *InstanceService) DeleteInstanceByUserID(c context.Context, id uuid.UUID, userID uuid.UUID) error {
-	if err := s.repo.DeleteInstanceByUserID(c, id, userID); err != nil {
+func (s *InstanceService) DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error {
+	if err := s.repo.DeleteInstanceByUserID(ctx, id, userID); err != nil {
 		return fmt.Errorf("delete instance %s of user %s: %w", id.String(), userID.String(), err)
 	}
 
