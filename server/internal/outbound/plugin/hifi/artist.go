@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"slices"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -71,26 +72,26 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	}
 	pictureURL = hifi_utils.GetImageURL(pictureURL, 750)
 
-	// type albumItemComparaison struct {
-	// 	Title       string
-	// 	ReleaseDate string
-	// 	TrackNumber uint
-	// }
+	type albumItemComparaison struct {
+		Title       string
+		ReleaseDate string
+		TrackNumber uint
+	}
 
-	// best := make(map[albumItemComparaison]albumItem)
-	// for _, album := range artistAlbums.Albums.Items {
-	// 	if bestVersion, ok := best[albumItemComparaison{
-	// 		Title:       strings.ToLower(album.Title),
-	// 		ReleaseDate: album.ReleaseDate,
-	// 		TrackNumber: album.NumberOfTracks,
-	// 	}]; !ok || (!bestVersion.Explicit && album.Explicit) || (bestVersion.Explicit == album.Explicit && len(bestVersion.MediaMetadata.Tags) < len(album.MediaMetadata.Tags)) {
-	// 		best[albumItemComparaison{
-	// 			Title:       strings.ToLower(album.Title),
-	// 			ReleaseDate: album.ReleaseDate,
-	// 			TrackNumber: album.NumberOfTracks,
-	// 		}] = album
-	// 	}
-	// }
+	best := make(map[albumItemComparaison]albumItem)
+	for _, album := range artistAlbums.Albums.Items {
+		if bestVersion, ok := best[albumItemComparaison{
+			Title:       strings.ToLower(album.Title),
+			ReleaseDate: album.ReleaseDate,
+			TrackNumber: album.NumberOfTracks,
+		}]; !ok || (!bestVersion.Explicit && album.Explicit) || (bestVersion.Explicit == album.Explicit && len(bestVersion.MediaMetadata.Tags) < len(album.MediaMetadata.Tags)) {
+			best[albumItemComparaison{
+				Title:       strings.ToLower(album.Title),
+				ReleaseDate: album.ReleaseDate,
+				TrackNumber: album.NumberOfTracks,
+			}] = album
+		}
+	}
 
 	// type albumItemComparaisonExtension struct {
 	// 	Title       string
@@ -117,12 +118,10 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 	// 	}
 	// }
 
-	// list := []albumItem{}
-	// for _, album := range best {
-	// 	list = append(list, album)
-	// }
-
-	list := artistAlbums.Albums.Items
+	list := []albumItem{}
+	for _, album := range best {
+		list = append(list, album)
+	}
 
 	slices.SortFunc(list, func(a, b albumItem) int {
 		if a.ReleaseDate > b.ReleaseDate {

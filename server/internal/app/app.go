@@ -94,16 +94,6 @@ func Run(cfg *config.Config) {
 		&downloadH,
 		&followH,
 	)
-	app.GET("/fetch", func(ctx *gin.Context) {
-		lastFetchDate := time.Now().Add(-1 * time.Hour * 24 * 14)
-		slog.Info("fetch start")
-		if errList := fetchNewReleasesS.FetchNewReleases(ctx.Request.Context(), lastFetchDate); len(errList) > 0 {
-			slog.Error("download new releases", slog.Any("err", errList))
-			ctx.Status(http.StatusInternalServerError)
-		}
-		ctx.Status(http.StatusNoContent)
-		slog.Info("fetch end")
-	})
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),
 		Handler: app,
