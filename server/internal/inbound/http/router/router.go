@@ -23,6 +23,7 @@ func New(
 	instanceH *handler.InstanceHandler,
 	pluginH *handler.PluginHandler,
 	downloadH *handler.DownloadHandler,
+	followH *handler.FollowHandler,
 ) {
 	app.Use(middleware.RequestID())
 	app.Use(middleware.Logger())
@@ -78,13 +79,9 @@ func New(
 			pluginGroup.Use(authMW)
 
 			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
-			pluginGroup.POST("/song/:provider/:id/download", downloadH.DownloadSong)
 			pluginGroup.GET("/album/:provider/:id", pluginH.GetAlbum)
-			pluginGroup.POST("/album/:provider/:id/download", downloadH.DownloadAlbum)
 			pluginGroup.GET("/artist/:provider/:id", pluginH.GetArtist)
-			pluginGroup.POST("/artist/:provider/:id/download", downloadH.DownloadArtist)
 			pluginGroup.GET("/playlist/:provider/:id", pluginH.GetPlaylist)
-			pluginGroup.POST("/playlist/:provider/:id/download", downloadH.DownloadPlaylist)
 			pluginGroup.GET("/search", pluginH.GetSearch)
 		}
 
@@ -92,6 +89,11 @@ func New(
 		{
 			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			downloadGroup.Use(authMW)
+
+			downloadGroup.POST("/song", downloadH.DownloadSong)
+			downloadGroup.POST("/album", downloadH.DownloadAlbum)
+			downloadGroup.POST("/artist", downloadH.DownloadArtist)
+			downloadGroup.POST("/playlist", downloadH.DownloadPlaylist)
 
 			downloadGroup.PUT("/:id/retry", downloadH.Retry)
 			downloadGroup.PUT("/retry", downloadH.RetryAll)
@@ -106,9 +108,9 @@ func New(
 			followGroup.Use(middleware.RateLimiter(time.Minute, 100))
 			followGroup.Use(authMW)
 
-			// followGroup.POST("", followH.Add)
-			// followGroup.GET("", followH.List)
-			// followGroup.DELETE("/:id", followH.Delete)
+			followGroup.POST("/artist", followH.Add)
+			followGroup.GET("", followH.List)
+			followGroup.DELETE("/:id", followH.Delete)
 		}
 
 		libraryGroup := api.Group("/library")

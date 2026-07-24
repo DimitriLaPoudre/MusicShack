@@ -34,6 +34,14 @@ type InstanceRepository interface {
 	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
+type FollowRepository interface {
+	TransactionRepository
+	CreateFollow(ctx context.Context, f Follow) (Follow, error)
+	ListFollowsByFilter(ctx context.Context, filter FollowFilter) ([]Follow, error)
+	DeleteFollow(ctx context.Context, id uuid.UUID) error
+	DeleteFollowByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+}
+
 type TransactionRepository interface {
 	WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 }

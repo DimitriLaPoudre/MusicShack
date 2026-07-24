@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
@@ -28,10 +29,13 @@ func (h *DownloadHandler) DownloadArtist(c *gin.Context) {
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	var req request.CreateDownload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
-	if err := h.download.DownloadArtist(c.Request.Context(), me.ID, provider, id); err != nil {
+	if err := h.download.DownloadArtist(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -46,10 +50,13 @@ func (h *DownloadHandler) DownloadAlbum(c *gin.Context) {
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	var req request.CreateDownload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
-	if err := h.download.DownloadAlbum(c.Request.Context(), me.ID, provider, id); err != nil {
+	if err := h.download.DownloadAlbum(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -64,10 +71,13 @@ func (h *DownloadHandler) DownloadPlaylist(c *gin.Context) {
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	var req request.CreateDownload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
-	if err := h.download.DownloadPlaylist(c.Request.Context(), me.ID, provider, id); err != nil {
+	if err := h.download.DownloadPlaylist(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -82,10 +92,13 @@ func (h *DownloadHandler) DownloadSong(c *gin.Context) {
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	var req request.CreateDownload
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
-	if err := h.download.DownloadSong(c.Request.Context(), me.ID, provider, id); err != nil {
+	if err := h.download.DownloadSong(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}

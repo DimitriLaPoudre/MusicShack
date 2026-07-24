@@ -13,13 +13,13 @@ import (
 func (r *SQLiteRepository) CreateFollow(ctx context.Context, f model.Follow) (model.Follow, error) {
 	tx := r.getTx(ctx)
 
-	query := "INSERT INTO follows (id, user_id, provider, artist_id, artist_name, artist_picture, featuring) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *"
+	query := "INSERT INTO follows (id, user_id, provider, artist_id, artist_name, artist_picture_url, featuring) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *"
 	query = tx.Rebind(query)
 
 	dbFollow := dto.Follow{}
 	err := tx.GetContext(ctx,
 		&dbFollow, query,
-		f.ID, f.UserID, f.Provider, f.ArtistID, f.ArtistName, f.ArtistPicture, f.Featuring,
+		f.ID, f.UserID, f.Provider, f.ArtistID, f.ArtistName, f.ArtistPictureURL, f.Featuring,
 	)
 	if err != nil {
 		return model.Follow{}, dto.Error(err)
@@ -55,9 +55,9 @@ func (r *SQLiteRepository) ListFollowsByFilter(ctx context.Context, filter model
 		setParts = append(setParts, "artist_name=?")
 		args = append(args, *filter.ArtistName)
 	}
-	if filter.ArtistPicture != nil {
-		setParts = append(setParts, "artist_picture=?")
-		args = append(args, *filter.ArtistPicture)
+	if filter.ArtistPictureURL != nil {
+		setParts = append(setParts, "artist_picture_url=?")
+		args = append(args, *filter.ArtistPictureURL)
 	}
 	if filter.Featuring != nil {
 		setParts = append(setParts, "featuring=?")
@@ -87,9 +87,14 @@ func (r *SQLiteRepository) DeleteFollow(ctx context.Context, followID uuid.UUID)
 	query := "DELETE FROM follows WHERE id = ?"
 	query = tx.Rebind(query)
 
-	_, err := tx.ExecContext(ctx, query, followID)
+	result, err := tx.ExecContext(ctx, query, followID)
 	if err != nil {
 		return dto.Error(err)
+	}
+	if n, err := result.RowsAffected(); err != nil {
+		return dto.Error(err)
+	} else if n == 0 {
+		return model.ErrNotFound
 	}
 
 	return nil
@@ -101,9 +106,14 @@ func (r *SQLiteRepository) DeleteFollowByUserID(ctx context.Context, followID uu
 	query := "DELETE FROM follows WHERE id = ? AND user_id = ?"
 	query = tx.Rebind(query)
 
-	_, err := tx.ExecContext(ctx, query, followID, userID)
+	result, err := tx.ExecContext(ctx, query, followID, userID)
 	if err != nil {
 		return dto.Error(err)
+	}
+	if n, err := result.RowsAffected(); err != nil {
+		return dto.Error(err)
+	} else if n == 0 {
+		return model.ErrNotFound
 	}
 
 	return nil

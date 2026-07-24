@@ -253,7 +253,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 		go func(album model.Album) {
 			defer wg.Done()
 			enrichedAlbum := model.EnrichedAlbum{}
-			if album.NumberTracks == 0 || len(album.Songs) == 0 || album.Songs[0].Isrc != "" {
+			if len(album.Songs) == 0 || album.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, album)
 			} else {
 				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, album.Id); err != nil {
@@ -270,7 +270,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 		go func(ep model.Album) {
 			defer wg.Done()
 			enrichedAlbum := model.EnrichedAlbum{}
-			if ep.NumberTracks == 0 || len(ep.Songs) == 0 || ep.Songs[0].Isrc != "" {
+			if len(ep.Songs) == 0 || ep.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, ep)
 			} else {
 				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, ep.Id); err != nil {
@@ -287,7 +287,7 @@ func (s *PluginService) enrichArtist(ctx context.Context, provider string, plugi
 		go func(single model.Album) {
 			defer wg.Done()
 			enrichedAlbum := model.EnrichedAlbum{}
-			if single.NumberTracks == 0 || len(single.Songs) == 0 || single.Songs[0].Isrc != "" {
+			if len(single.Songs) == 0 || single.Songs[0].Isrc != "" {
 				enrichedAlbum = s.enrichAlbum(ctx, provider, single)
 			} else {
 				if tmp, err := s.GetAlbumFromPluginInstances(ctx, pluginInstances, single.Id); err != nil {

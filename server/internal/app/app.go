@@ -46,6 +46,7 @@ func Run(cfg *config.Config) {
 	instanceS := service.NewInstanceService(&pluginS, &repo)
 	metadataS := service.NewMetadataService(&pluginS)
 	downloadS := service.NewDownloadService(cfg.Download, &pluginS, &metadataS, &repo, &repo)
+	followS := service.NewFollowService(&pluginS, &repo)
 
 	meH := handler.NewMeHandler(&userS)
 	userH := handler.NewUserHandler(&userS)
@@ -53,6 +54,7 @@ func Run(cfg *config.Config) {
 	instanceH := handler.NewInstanceHandler(&instanceS)
 	pluginH := handler.NewPluginHandler(&pluginS)
 	downloadH := handler.NewDownloadHandler(downloadS)
+	followH := handler.NewFollowHandler(&followS)
 
 	authMW := middleware.AuthMiddleware(cfg.Session, &authS)
 	adminMW := middleware.AdminMiddleware(&authS)
@@ -88,6 +90,7 @@ func Run(cfg *config.Config) {
 		&instanceH,
 		&pluginH,
 		&downloadH,
+		&followH,
 	)
 	httpServ := &http.Server{
 		Addr:    ":" + strconv.Itoa(cfg.HTTP.Port),

@@ -6,24 +6,24 @@ import (
 )
 
 type Follow struct {
-	ID            uuid.UUID `json:"id"`
-	UserID        uuid.UUID `json:"user_id"`
-	Provider      string    `json:"provider"`
-	ArtistID      string    `json:"artist_id"`
-	ArtistName    string    `json:"artist_name"`
-	ArtistPicture string    `json:"artist_picture"`
-	Featuring     bool      `json:"featuring"`
+	ID               uuid.UUID `db:"id"`
+	UserID           uuid.UUID `db:"user_id"`
+	Provider         string    `db:"provider"`
+	ArtistID         string    `db:"artist_id"`
+	ArtistName       string    `db:"artist_name"`
+	ArtistPictureURL string    `db:"artist_picture_url"`
+	Featuring        bool      `db:"featuring"`
 }
 
 func (f Follow) ToFollow() model.Follow {
 	return model.Follow{
-		ID:            f.ID,
-		UserID:        f.UserID,
-		Provider:      f.Provider,
-		ArtistID:      f.ArtistID,
-		ArtistName:    f.ArtistName,
-		ArtistPicture: f.ArtistPicture,
-		Featuring:     f.Featuring,
+		ID:               f.ID,
+		UserID:           f.UserID,
+		Provider:         f.Provider,
+		ArtistID:         f.ArtistID,
+		ArtistName:       f.ArtistName,
+		ArtistPictureURL: f.ArtistPictureURL,
+		Featuring:        f.Featuring,
 	}
 }
 
