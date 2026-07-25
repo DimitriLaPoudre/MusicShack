@@ -49,7 +49,6 @@ func Run(cfg *config.Config) {
 	followS := service.NewFollowService(&pluginS, &repo)
 	fetchNewReleasesS := service.NewFetchNewReleasesService(&pluginS, &followS, downloadS)
 
-	meH := handler.NewMeHandler(&userS)
 	userH := handler.NewUserHandler(&userS)
 	authH := handler.NewAuthHandler(cfg.HTTP, cfg.Session, &authS)
 	instanceH := handler.NewInstanceHandler(&instanceS)
@@ -58,9 +57,9 @@ func Run(cfg *config.Config) {
 	downloadH := handler.NewDownloadHandler(downloadS)
 
 	authMW := middleware.AuthMiddleware(cfg.Session, &authS)
-	adminMW := middleware.AdminMiddleware(&authS)
-	userMW := middleware.UserMiddleware(&authS)
-	guestMW := middleware.GuestMiddleware(&authS)
+	adminMW := middleware.AdminMiddleware()
+	targetUserMW := middleware.TargetUserMiddleware(&repo)
+	guestMW := middleware.GuestMiddleware()
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -84,9 +83,8 @@ func Run(cfg *config.Config) {
 	router.New(app,
 		authMW,
 		adminMW,
-		userMW,
+		targetUserMW,
 		guestMW,
-		&meH,
 		&userH,
 		&authH,
 		&instanceH,

@@ -6,9 +6,9 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type UserHandler struct {
@@ -44,20 +44,13 @@ func (h *UserHandler) Create(c *gin.Context) {
 }
 
 func (h *UserHandler) GetByID(c *gin.Context) {
-	id := c.Param("id")
-	userID, err := uuid.Parse(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
-
-	user, err := h.user.GetUserByID(c.Request.Context(), userID)
+	targetUser, err := utils.GetFromContext[model.User](c, "target_user")
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.UserToResponse(user)
+	resp := response.UserToResponse(targetUser)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -73,19 +66,20 @@ func (h *UserHandler) List(c *gin.Context) {
 }
 
 func (h *UserHandler) Update(c *gin.Context) {
+	targetUser, err := utils.GetFromContext[model.User](c, "target_user")
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
 	var req request.UpdateUser
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
-	id := c.Param("id")
-	user, err := req.IntoPartialUser(id)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
-		return
-	}
+	partialUser := req.IntoPartialUser(targetUser.ID)
 
-	updatedUser, err := h.user.UpdateUser(c.Request.Context(), user)
+	updatedUser, err := h.user.UpdateUser(c.Request.Context(), partialUser)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -96,14 +90,13 @@ func (h *UserHandler) Update(c *gin.Context) {
 }
 
 func (h *UserHandler) Delete(c *gin.Context) {
-	id := c.Param("id")
-	userID, err := uuid.Parse(id)
+	targetUser, err := utils.GetFromContext[model.User](c, "target_user")
 	if err != nil {
-		c.JSON(http.StatusBadRequest, response.NewError(err))
+		utils.Error(c, err)
 		return
 	}
 
-	if err := h.user.DeleteUser(c.Request.Context(), userID); err != nil {
+	if err := h.user.DeleteUser(c.Request.Context(), targetUser.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}

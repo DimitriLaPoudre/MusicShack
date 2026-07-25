@@ -94,14 +94,6 @@ func (s *AuthService) Authenticate(ctx context.Context, tkn string) (model.User,
 	return user, nil
 }
 
-func (s *AuthService) IsAdmin(user model.User) bool {
-	return user.Role == model.UserRoleAdmin
-}
-
-func (s *AuthService) IsUser(user model.User) bool {
-	return user.Role == model.UserRoleUser
-}
-
 func (s *AuthService) CleanExpiredSession(ctx context.Context) error {
 	return s.session.DeleteSessionExpired(ctx)
 }

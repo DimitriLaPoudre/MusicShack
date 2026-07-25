@@ -47,8 +47,9 @@ func parseLevel(level string) slog.Level {
 type contextKey string
 
 const (
-	RequestIDKey contextKey = "request_id"
-	MeKey        contextKey = "me"
+	RequestIDKey  contextKey = "request_id"
+	MeKey         contextKey = "me"
+	TargetUserKey contextKey = "target_user"
 )
 
 type contextHandler struct {
@@ -61,6 +62,10 @@ func (h *contextHandler) Handle(ctx context.Context, r slog.Record) error {
 
 		if me, ok := ctx.Value(MeKey).(model.User); ok {
 			r.AddAttrs(slog.Group("user", slog.String("id", me.ID.String()), slog.String("username", me.Username), slog.String("role", string(me.Role))))
+		}
+
+		if targetUser, ok := ctx.Value(TargetUserKey).(model.User); ok {
+			r.AddAttrs(slog.Group("target_user", slog.String("id", targetUser.ID.String()), slog.String("username", targetUser.Username), slog.String("role", string(targetUser.Role))))
 		}
 	}
 

@@ -30,7 +30,7 @@ func AuthMiddleware(cfg config.SessionConfig, auth *service.AuthService) gin.Han
 	}
 }
 
-func AdminMiddleware(auth *service.AuthService) gin.HandlerFunc {
+func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		me, err := utils.GetFromContext[model.User](c, "me")
 		if err != nil {
@@ -38,8 +38,8 @@ func AdminMiddleware(auth *service.AuthService) gin.HandlerFunc {
 			return
 		}
 
-		if !auth.IsAdmin(me) {
-			c.AbortWithStatus(http.StatusUnauthorized)
+		if me.Role != model.UserRoleAdmin {
+			c.AbortWithStatus(http.StatusForbidden)
 			return
 		}
 
@@ -47,24 +47,7 @@ func AdminMiddleware(auth *service.AuthService) gin.HandlerFunc {
 	}
 }
 
-func UserMiddleware(auth *service.AuthService) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		me, err := utils.GetFromContext[model.User](c, "me")
-		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		if !auth.IsUser(me) {
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		c.Next()
-	}
-}
-
-func GuestMiddleware(auth *service.AuthService) gin.HandlerFunc {
+func GuestMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if _, err := utils.GetFromContext[model.User](c, "me"); err != nil {
 			c.Next()

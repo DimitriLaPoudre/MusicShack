@@ -14,10 +14,9 @@ func New(
 
 	authMW gin.HandlerFunc,
 	adminMW gin.HandlerFunc,
-	userMW gin.HandlerFunc,
+	targetUserMW gin.HandlerFunc,
 	guestMW gin.HandlerFunc,
 
-	meH *handler.MeHandler,
 	userH *handler.UserHandler,
 	authH *handler.AuthHandler,
 	instanceH *handler.InstanceHandler,
@@ -33,37 +32,38 @@ func New(
 
 	api := app.Group("/api")
 	{
-		meGroup := api.Group("/me")
+		meGroup := api.Group("/me",
+			middleware.RateLimiter(time.Minute, 100),
+			authMW,
+			targetUserMW,
+		)
 		{
-			meGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			meGroup.Use(authMW)
-
-			meGroup.GET("", meH.Get)
-			meGroup.PUT("", meH.Update)
-
+			meGroup.GET("", userH.GetByID)
+			meGroup.PUT("", userH.Update)
+			meGroup.DELETE("", userH.Delete)
 		}
 
-		instancesGroup := meGroup.Group("/instances")
+		instancesGroup := meGroup.Group("/instances",
+			middleware.RateLimiter(time.Minute, 100),
+			authMW,
+		)
 		{
-			instancesGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			instancesGroup.Use(authMW)
-
-			instancesGroup.GET("", instanceH.ListForMe)
-			instancesGroup.POST("", instanceH.CreateForMe)
-			instancesGroup.DELETE(":id", instanceH.DeleteForMe)
+			instancesGroup.GET("", instanceH.List)
+			instancesGroup.POST("", instanceH.Create)
+			instancesGroup.DELETE(":id", instanceH.Delete)
 		}
 
-		usersGroup := api.Group("/users")
+		usersGroup := api.Group("/users",
+			middleware.RateLimiter(time.Minute, 100),
+			authMW,
+			adminMW,
+		)
 		{
-			usersGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			usersGroup.Use(authMW)
-			usersGroup.Use(adminMW)
-
 			usersGroup.POST("", userH.Create)
 			usersGroup.GET("", userH.List)
-			usersGroup.GET("/:id", userH.GetByID)
-			usersGroup.PUT("/:id", userH.Update)
-			usersGroup.DELETE("/:id", userH.Delete)
+			usersGroup.GET("/:user_id", userH.GetByID)
+			usersGroup.PUT("/:user_id", userH.Update)
+			usersGroup.DELETE("/:user_id", userH.Delete)
 		}
 
 		authGroup := api.Group("/auth")
@@ -72,11 +72,11 @@ func New(
 			authGroup.DELETE("/logout", middleware.RateLimiter(time.Minute, 10), authMW, authH.Logout)
 		}
 
-		pluginGroup := api.Group("/plugin")
+		pluginGroup := api.Group("",
+			middleware.RateLimiter(time.Minute, 100),
+			authMW,
+		)
 		{
-			pluginGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			pluginGroup.Use(authMW)
-
 			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
 			pluginGroup.GET("/album/:provider/:id", pluginH.GetAlbum)
 			pluginGroup.GET("/artist/:provider/:id", pluginH.GetArtist)
@@ -84,10 +84,8 @@ func New(
 			pluginGroup.GET("/search", pluginH.GetSearch)
 		}
 
-		downloadGroup := api.Group("/download")
+		downloadGroup := api.Group("/download", middleware.RateLimiter(time.Minute, 100), authMW)
 		{
-			downloadGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			downloadGroup.Use(authMW)
 
 			downloadGroup.POST("/song", downloadH.DownloadSong)
 			downloadGroup.POST("/album", downloadH.DownloadAlbum)
@@ -102,21 +100,15 @@ func New(
 			downloadGroup.GET("", downloadH.List)
 		}
 
-		followGroup := api.Group("/follows")
+		followGroup := api.Group("/follows", middleware.RateLimiter(time.Minute, 100), authMW)
 		{
-			followGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			followGroup.Use(authMW)
-
 			followGroup.POST("/artist", followH.Add)
 			followGroup.GET("", followH.List)
 			followGroup.DELETE("/:id", followH.Delete)
 		}
 
-		libraryGroup := api.Group("/library")
+		// libraryGroup := api.Group("/library", middleware.RateLimiter(time.Minute, 100), authMW)
 		{
-			libraryGroup.Use(middleware.RateLimiter(time.Minute, 100))
-			libraryGroup.Use(authMW)
-
 			// libraryGroup.GET("", libraryH.List)
 			// libraryGroup.POST("", libraryH.Upload)
 			// libraryGroup.PUT("/:id", libraryH.Edit)

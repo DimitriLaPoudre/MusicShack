@@ -22,7 +22,7 @@ func NewInstanceHandler(instance *service.InstanceService) InstanceHandler {
 	}
 }
 
-func (h *InstanceHandler) CreateForMe(c *gin.Context) {
+func (h *InstanceHandler) Create(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err)
@@ -50,7 +50,7 @@ func (h *InstanceHandler) CreateForMe(c *gin.Context) {
 	c.JSON(http.StatusCreated, resp)
 }
 
-func (h *InstanceHandler) ListForMe(c *gin.Context) {
+func (h *InstanceHandler) List(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err)
@@ -67,7 +67,7 @@ func (h *InstanceHandler) ListForMe(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *InstanceHandler) DeleteForMe(c *gin.Context) {
+func (h *InstanceHandler) Delete(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, "me")
 	if err != nil {
 		utils.Error(c, err)
