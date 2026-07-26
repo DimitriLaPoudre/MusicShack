@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
@@ -51,6 +52,12 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 	provider := c.Param(macro.Provider)
 	id := c.Param(macro.ID)
 
+	var query request.PaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
 	album, err := h.plugin.GetAlbum(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
@@ -70,6 +77,12 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 
 	provider := c.Param(macro.Provider)
 	id := c.Param(macro.ID)
+
+	var query request.PaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
 	artist, err := h.plugin.GetArtist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
@@ -91,6 +104,12 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 	provider := c.Param(macro.Provider)
 	id := c.Param(macro.ID)
 
+	var query request.PaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
 	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
@@ -108,9 +127,13 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 		return
 	}
 
-	q := c.Query("q")
+	var query request.SearchQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
 
-	results, err := h.plugin.Search(c.Request.Context(), me.ID, q)
+	results, err := h.plugin.Search(c.Request.Context(), me.ID, query.Q)
 	if err != nil {
 		utils.Error(c, err)
 		return
