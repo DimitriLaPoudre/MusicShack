@@ -87,6 +87,19 @@ func (s *PluginService) IsISRC(isrc string) bool {
 	return isrcRegexp.MatchString(strings.ToUpper(isrc))
 }
 
+func (s *PluginService) GetStatus(ctx context.Context, pluginName string, url string) error {
+	p, ok := s.store.GetPluginByName(pluginName)
+	if !ok {
+		return model.ErrPluginNotFound
+	}
+
+	if err := p.Status(ctx, url); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *PluginService) GetSong(ctx context.Context, userID uuid.UUID, provider string, id string) (model.EnrichedSong, error) {
 	instances, err := s.instance.ListInstancesByFilter(ctx, model.InstanceFilter{UserID: &userID, Provider: &provider})
 	if err != nil {

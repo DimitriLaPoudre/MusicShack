@@ -3,6 +3,7 @@ package model
 import (
 	"context"
 	"io"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -30,6 +31,7 @@ type InstanceRepository interface {
 	TransactionRepository
 	CreateInstance(ctx context.Context, i Instance) (Instance, error)
 	ListInstancesByFilter(ctx context.Context, filter InstanceFilter) ([]Instance, error)
+	UpdateInstancePing(ctx context.Context, id uuid.UUID, ping *time.Duration) (Instance, error)
 	DeleteInstance(ctx context.Context, id uuid.UUID) error
 	DeleteInstanceByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }

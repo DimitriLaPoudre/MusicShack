@@ -4,6 +4,6 @@ CREATE TABLE instances (
 	provider TEXT NOT NULL,
 	plugin TEXT NOT NULL,
 	url TEXT NOT NULL,
-	ping INTEGER NOT NULL,
+	ping INTEGER,
 	UNIQUE (user_id, url)
 );

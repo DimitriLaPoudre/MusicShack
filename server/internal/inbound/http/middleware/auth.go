@@ -3,6 +3,7 @@ package middleware
 import (
 	"net/http"
 
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -24,7 +25,7 @@ func AuthMiddleware(cfg config.SessionConfig, auth *service.AuthService) gin.Han
 			return
 		}
 
-		c.Set("me", me)
+		c.Set(macro.Me, me)
 
 		c.Next()
 	}
@@ -32,7 +33,7 @@ func AuthMiddleware(cfg config.SessionConfig, auth *service.AuthService) gin.Han
 
 func AdminMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		me, err := utils.GetFromContext[model.User](c, "me")
+		me, err := utils.GetFromContext[model.User](c, macro.Me)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
@@ -49,7 +50,7 @@ func AdminMiddleware() gin.HandlerFunc {
 
 func GuestMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if _, err := utils.GetFromContext[model.User](c, "me"); err != nil {
+		if _, err := utils.GetFromContext[model.User](c, macro.Me); err != nil {
 			c.Next()
 			return
 		}

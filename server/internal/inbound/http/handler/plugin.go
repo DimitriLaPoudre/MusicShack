@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -21,14 +22,14 @@ func NewPluginHandler(plugin *service.PluginService) PluginHandler {
 }
 
 func (h *PluginHandler) GetSong(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
 
 	song, err := h.plugin.GetSong(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
@@ -41,14 +42,14 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 }
 
 func (h *PluginHandler) GetAlbum(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
 
 	album, err := h.plugin.GetAlbum(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
@@ -61,14 +62,14 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 }
 
 func (h *PluginHandler) GetArtist(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
 
 	artist, err := h.plugin.GetArtist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
@@ -81,14 +82,14 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 }
 
 func (h *PluginHandler) GetPlaylist(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	provider := c.Param("provider")
-	id := c.Param("id")
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
 
 	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
@@ -101,7 +102,7 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 }
 
 func (h *PluginHandler) GetSearch(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return

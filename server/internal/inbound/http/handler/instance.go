@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -23,7 +24,7 @@ func NewInstanceHandler(instance *service.InstanceService) InstanceHandler {
 }
 
 func (h *InstanceHandler) Create(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -51,16 +52,27 @@ func (h *InstanceHandler) Create(c *gin.Context) {
 }
 
 func (h *InstanceHandler) List(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	instances, err := h.instance.ListInstancesByFilter(c.Request.Context(), model.InstanceFilter{UserID: &me.ID})
-	if err != nil {
-		utils.Error(c, err)
-		return
+	_, exists := c.GetQuery("refresh")
+
+	var instances []model.Instance
+	if exists {
+		instances, err = h.instance.RefreshListByUserID(c.Request.Context(), me.ID)
+		if err != nil {
+			utils.Error(c, err)
+			return
+		}
+	} else {
+		instances, err = h.instance.ListInstancesByFilter(c.Request.Context(), model.InstanceFilter{UserID: &me.ID})
+		if err != nil {
+			utils.Error(c, err)
+			return
+		}
 	}
 
 	resp := response.InstancesToResponse(instances)
@@ -68,13 +80,13 @@ func (h *InstanceHandler) List(c *gin.Context) {
 }
 
 func (h *InstanceHandler) Delete(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	idStr := c.Param("id")
+	idStr := c.Param(macro.ID)
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))

@@ -12,7 +12,7 @@ type Instance struct {
 	Provider string
 	Plugin   string
 	Url      string
-	Ping     time.Duration
+	Ping     *time.Duration
 }
 
 type InstanceFilter struct {

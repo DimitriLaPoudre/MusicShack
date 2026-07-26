@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -23,7 +24,7 @@ func NewFollowHandler(follow *service.FollowService) FollowHandler {
 }
 
 func (h *FollowHandler) Add(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -51,7 +52,7 @@ func (h *FollowHandler) Add(c *gin.Context) {
 }
 
 func (h *FollowHandler) List(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -68,13 +69,13 @@ func (h *FollowHandler) List(c *gin.Context) {
 }
 
 func (h *FollowHandler) Delete(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	idStr := c.Param("id")
+	idStr := c.Param(macro.ID)
 	id, err := uuid.Parse(idStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))

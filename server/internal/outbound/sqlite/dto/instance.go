@@ -8,12 +8,12 @@ import (
 )
 
 type Instance struct {
-	ID       uuid.UUID     `db:"id"`
-	UserID   uuid.UUID     `db:"user_id"`
-	Provider string        `db:"provider"`
-	Plugin   string        `db:"plugin"`
-	Url      string        `db:"url"`
-	Ping     time.Duration `db:"ping"`
+	ID       uuid.UUID      `db:"id"`
+	UserID   uuid.UUID      `db:"user_id"`
+	Provider string         `db:"provider"`
+	Plugin   string         `db:"plugin"`
+	Url      string         `db:"url"`
+	Ping     *time.Duration `db:"ping"`
 }
 
 func (i Instance) ToInstance() model.Instance {

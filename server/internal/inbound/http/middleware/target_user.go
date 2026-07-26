@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/gin-gonic/gin"
@@ -12,7 +13,7 @@ import (
 
 func TargetUserMiddleware(user model.UserRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		me, err := utils.GetFromContext[model.User](c, "me")
+		me, err := utils.GetFromContext[model.User](c, macro.Me)
 		if err != nil {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
@@ -20,7 +21,7 @@ func TargetUserMiddleware(user model.UserRepository) gin.HandlerFunc {
 
 		targetUser := me
 
-		if targetUserIDRaw := c.Param("user_id"); targetUserIDRaw != "" {
+		if targetUserIDRaw := c.Param(macro.UserID); targetUserIDRaw != "" {
 			targetUserID, err := uuid.Parse(targetUserIDRaw)
 			if err != nil {
 				c.JSON(http.StatusBadRequest, response.NewError(err))

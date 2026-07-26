@@ -5,6 +5,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/request"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/dto/response"
+	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/macro"
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/service"
@@ -23,7 +24,7 @@ func NewDownloadHandler(download *service.DownloadService) DownloadHandler {
 }
 
 func (h *DownloadHandler) DownloadArtist(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -44,7 +45,7 @@ func (h *DownloadHandler) DownloadArtist(c *gin.Context) {
 }
 
 func (h *DownloadHandler) DownloadAlbum(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -65,7 +66,7 @@ func (h *DownloadHandler) DownloadAlbum(c *gin.Context) {
 }
 
 func (h *DownloadHandler) DownloadPlaylist(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -86,7 +87,7 @@ func (h *DownloadHandler) DownloadPlaylist(c *gin.Context) {
 }
 
 func (h *DownloadHandler) DownloadSong(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -107,13 +108,13 @@ func (h *DownloadHandler) DownloadSong(c *gin.Context) {
 }
 
 func (h *DownloadHandler) Retry(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	rawTaskID := c.Param("id")
+	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)
@@ -129,7 +130,7 @@ func (h *DownloadHandler) Retry(c *gin.Context) {
 }
 
 func (h *DownloadHandler) RetryAll(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -141,13 +142,13 @@ func (h *DownloadHandler) RetryAll(c *gin.Context) {
 }
 
 func (h *DownloadHandler) Cancel(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	rawTaskID := c.Param("id")
+	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)
@@ -163,7 +164,7 @@ func (h *DownloadHandler) Cancel(c *gin.Context) {
 }
 
 func (h *DownloadHandler) RemoveDone(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
@@ -174,13 +175,13 @@ func (h *DownloadHandler) RemoveDone(c *gin.Context) {
 }
 
 func (h *DownloadHandler) Remove(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	rawTaskID := c.Param("id")
+	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
 		utils.Error(c, model.ErrDownloadInvalidID)
@@ -192,7 +193,7 @@ func (h *DownloadHandler) Remove(c *gin.Context) {
 }
 
 func (h *DownloadHandler) List(c *gin.Context) {
-	me, err := utils.GetFromContext[model.User](c, "me")
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
 		return

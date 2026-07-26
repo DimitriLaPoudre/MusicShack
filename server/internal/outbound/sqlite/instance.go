@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/sqlite/dto"
@@ -71,6 +72,21 @@ func (r *SQLiteRepository) ListInstancesByFilter(ctx context.Context, filter mod
 	}
 
 	return dto.InstancesToInstances(dbInstances), nil
+}
+
+func (r *SQLiteRepository) UpdateInstancePing(ctx context.Context, id uuid.UUID, ping *time.Duration) (model.Instance, error) {
+	tx := r.getTx(ctx)
+
+	query := "UPDATE instances SET ping = ? WHERE id = ? RETURNING *"
+	query = tx.Rebind(query)
+
+	dbInstance := dto.Instance{}
+	err := tx.GetContext(ctx, &dbInstance, query, ping, id)
+	if err != nil {
+		return model.Instance{}, dto.Error(err)
+	}
+
+	return dbInstance.ToInstance(), nil
 }
 
 func (r *SQLiteRepository) DeleteInstance(ctx context.Context, instanceID uuid.UUID) error {

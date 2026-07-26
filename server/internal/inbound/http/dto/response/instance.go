@@ -10,17 +10,24 @@ type Instance struct {
 	Provider string `json:"provider"`
 	Plugin   string `json:"plugin"`
 	Url      string `json:"url"`
-	Ping     uint   `json:"ping"`
+	Ping     *uint  `json:"ping"`
 }
 
 func InstanceToResponse(instance model.Instance) Instance {
+	var ping *uint
+	if instance.Ping == nil {
+		ping = nil
+	} else {
+		tmp := uint(instance.Ping.Milliseconds())
+		ping = &tmp
+	}
 	return Instance{
 		ID:       instance.ID.String(),
 		UserID:   instance.UserID.String(),
 		Provider: instance.Provider,
 		Plugin:   instance.Plugin,
 		Url:      instance.Url,
-		Ping:     uint(instance.Ping.Milliseconds()),
+		Ping:     ping,
 	}
 }
 
