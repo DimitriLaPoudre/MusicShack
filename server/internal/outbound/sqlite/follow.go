@@ -29,6 +29,58 @@ func (r *SQLiteRepository) CreateFollow(ctx context.Context, f model.Follow) (mo
 
 }
 
+func (r *SQLiteRepository) GetFollowByFilter(ctx context.Context, filter model.FollowFilter) (model.Follow, error) {
+	tx := r.getTx(ctx)
+
+	setParts := []string{}
+	args := []any{}
+
+	if filter.ID != nil {
+		setParts = append(setParts, "id=?")
+		args = append(args, *filter.ID)
+	}
+	if filter.UserID != nil {
+		setParts = append(setParts, "user_id=?")
+		args = append(args, *filter.UserID)
+	}
+	if filter.Provider != nil {
+		setParts = append(setParts, "provider=?")
+		args = append(args, *filter.Provider)
+	}
+	if filter.ArtistID != nil {
+		setParts = append(setParts, "artist_id=?")
+		args = append(args, *filter.ArtistID)
+	}
+	if filter.ArtistName != nil {
+		setParts = append(setParts, "artist_name=?")
+		args = append(args, *filter.ArtistName)
+	}
+	if filter.ArtistPictureURL != nil {
+		setParts = append(setParts, "artist_picture_url=?")
+		args = append(args, *filter.ArtistPictureURL)
+	}
+	if filter.Featuring != nil {
+		setParts = append(setParts, "featuring=?")
+		args = append(args, *filter.Featuring)
+	}
+
+	var query string
+	if len(args) == 0 {
+		query = "SELECT * FROM follows LIMIT 1"
+	} else {
+		query = fmt.Sprintf("SELECT * FROM follows WHERE %s LIMIT 1", strings.Join(setParts, " AND "))
+	}
+	query = tx.Rebind(query)
+
+	dbFollow := dto.Follow{}
+	err := tx.GetContext(ctx, &dbFollow, query, args...)
+	if err != nil {
+		return model.Follow{}, dto.Error(err)
+	}
+
+	return dbFollow.ToFollow(), nil
+}
+
 func (r *SQLiteRepository) ListFollowsByFilter(ctx context.Context, filter model.FollowFilter) ([]model.Follow, error) {
 	tx := r.getTx(ctx)
 

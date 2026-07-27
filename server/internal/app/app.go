@@ -42,7 +42,7 @@ func Run(cfg *config.Config) {
 
 	authS := service.NewAuthService(cfg.Session, &repo, &repo)
 	userS := service.NewUserService(cfg.Download, &repo)
-	pluginS := service.NewPluginService(&pluginStore, &repo, &repo)
+	pluginS := service.NewPluginService(&pluginStore, &repo, &repo, &repo)
 	instanceS := service.NewInstanceService(&pluginS, &repo)
 	metadataS := service.NewMetadataService(&pluginS)
 	downloadS := service.NewDownloadService(cfg.Download, cfg.Plugin, &pluginS, &metadataS, &repo, &repo)

@@ -17,13 +17,15 @@ type PluginService struct {
 	store    *PluginStoreService
 	instance model.InstanceRepository
 	user     model.UserRepository
+	follow   model.FollowRepository
 }
 
-func NewPluginService(store *PluginStoreService, instance model.InstanceRepository, user model.UserRepository) PluginService {
+func NewPluginService(store *PluginStoreService, instance model.InstanceRepository, user model.UserRepository, follow model.FollowRepository) PluginService {
 	return PluginService{
 		store:    store,
 		instance: instance,
 		user:     user,
+		follow:   follow,
 	}
 }
 
@@ -281,14 +283,14 @@ func (s *PluginService) GetArtistInfoFromPluginInstances(ctx context.Context, pl
 		return model.EnrichedArtistInfo{}, fmt.Errorf("artist info %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
-	enrichedArtistInfo := s.enrichArtistInfo(ctx, provider, pluginInstances, artistInfo)
+	enrichedArtistInfo := s.enrichArtistInfo(ctx, provider, artistInfo)
 
 	return enrichedArtistInfo, nil
 }
 
-func (s *PluginService) enrichArtistInfo(ctx context.Context, provider string, pluginInstances map[model.Plugin][]model.Instance, artistInfo model.ArtistInfo) model.EnrichedArtistInfo {
+func (s *PluginService) enrichArtistInfo(ctx context.Context, provider string, artistInfo model.ArtistInfo) model.EnrichedArtistInfo {
 	followed := uuid.UUID{}
-	// if follow, err := repository.GetFollowByProviderByArtistID(data.Provider, data.ID); err == nil {
+	// if follow, err := s.follow.GetFollowByFilter(ctx, model.FollowFilter{Provider: &provider, ID: &artistInfo.ID}); err == nil {
 	// 	followed = follow.ID
 	// }
 
@@ -335,12 +337,12 @@ func (s *PluginService) GetArtistAlbumsFromPluginInstances(ctx context.Context, 
 		return model.EnrichedArtistAlbums{}, fmt.Errorf("artist albums %w: %v", model.ErrPluginDataNotFound, errMap)
 	}
 
-	enrichedArtistAlbums := s.enrichArtistAlbums(ctx, provider, pluginInstances, artist)
+	enrichedArtistAlbums := s.enrichArtistAlbums(ctx, provider, artist)
 
 	return enrichedArtistAlbums, nil
 }
 
-func (s *PluginService) enrichArtistAlbums(ctx context.Context, provider string, pluginInstances map[model.Plugin][]model.Instance, artistAlbums model.ArtistAlbums) model.EnrichedArtistAlbums {
+func (s *PluginService) enrichArtistAlbums(ctx context.Context, provider string, artistAlbums model.ArtistAlbums) model.EnrichedArtistAlbums {
 	albums := []model.EnrichedAlbumInfo{}
 	eps := []model.EnrichedAlbumInfo{}
 	singles := []model.EnrichedAlbumInfo{}

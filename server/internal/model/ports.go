@@ -39,6 +39,7 @@ type InstanceRepository interface {
 type FollowRepository interface {
 	TransactionRepository
 	CreateFollow(ctx context.Context, f Follow) (Follow, error)
+	GetFollowByFilter(ctx context.Context, filter FollowFilter) (Follow, error)
 	ListFollowsByFilter(ctx context.Context, filter FollowFilter) ([]Follow, error)
 	DeleteFollow(ctx context.Context, id uuid.UUID) error
 	DeleteFollowByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
