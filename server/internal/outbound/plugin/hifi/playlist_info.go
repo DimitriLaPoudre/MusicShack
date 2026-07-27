@@ -12,7 +12,7 @@ import (
 )
 
 func (p *Hifi) getPlaylistInfo(ctx context.Context, urls []string, id string) (playlistResponse, error) {
-	playlistInfo, err := hifi_utils.CachedMultiFetchTyped[playlistResponse](ctx, urls, "/playlist/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
+	playlistInfo, err := hifi_utils.MultiFetchTyped[playlistResponse](ctx, urls, "/playlist/?id="+url.QueryEscape(id), &p.limiters)
 	if err != nil {
 		return playlistResponse{}, fmt.Errorf("fetch playlist info with url list: %w", err)
 	}

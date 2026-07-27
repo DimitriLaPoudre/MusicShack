@@ -14,14 +14,16 @@ import (
 )
 
 type PluginService struct {
+	cache    *PluginCacheService
 	store    *PluginStoreService
 	instance model.InstanceRepository
 	user     model.UserRepository
 	follow   model.FollowRepository
 }
 
-func NewPluginService(store *PluginStoreService, instance model.InstanceRepository, user model.UserRepository, follow model.FollowRepository) PluginService {
+func NewPluginService(cache *PluginCacheService, store *PluginStoreService, instance model.InstanceRepository, user model.UserRepository, follow model.FollowRepository) PluginService {
 	return PluginService{
+		cache:    cache,
 		store:    store,
 		instance: instance,
 		user:     user,
@@ -125,7 +127,7 @@ func (s *PluginService) GetSongInfoFromPluginInstances(ctx context.Context, plug
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		songInfo, err = plugin.SongInfo(ctx, instances, id)
+		songInfo, err = s.cache.SongInfo(plugin, ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -172,7 +174,7 @@ func (s *PluginService) GetAlbumInfoFromPluginInstances(ctx context.Context, plu
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		albumInfo, err = plugin.AlbumInfo(ctx, instances, id)
+		albumInfo, err = s.cache.AlbumInfo(plugin, ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -219,7 +221,7 @@ func (s *PluginService) GetAlbumSongsFromPluginInstances(ctx context.Context, pl
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		albumSongs, err = plugin.AlbumSongs(ctx, instances, id, limit, offset)
+		albumSongs, err = s.cache.AlbumSongs(plugin, ctx, instances, id, limit, offset)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -272,7 +274,7 @@ func (s *PluginService) GetArtistInfoFromPluginInstances(ctx context.Context, pl
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		artistInfo, err = plugin.ArtistInfo(ctx, instances, id)
+		artistInfo, err = s.cache.ArtistInfo(plugin, ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -326,7 +328,7 @@ func (s *PluginService) GetArtistAlbumsFromPluginInstances(ctx context.Context, 
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		artist, err = plugin.ArtistAlbums(ctx, instances, id, limit, offset)
+		artist, err = s.cache.ArtistAlbums(plugin, ctx, instances, id, limit, offset)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -446,7 +448,7 @@ func (s *PluginService) GetPlaylistInfoFromPluginInstances(ctx context.Context, 
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		playlistInfo, err = plugin.PlaylistInfo(ctx, instances, id)
+		playlistInfo, err = s.cache.PlaylistInfo(plugin, ctx, instances, id)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -493,7 +495,7 @@ func (s *PluginService) GetPlaylistSongsFromPluginInstances(ctx context.Context,
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		playlistSongs, err = plugin.PlaylistSongs(ctx, instances, id, limit, offset)
+		playlistSongs, err = s.cache.PlaylistSongs(plugin, ctx, instances, id, limit, offset)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -569,7 +571,7 @@ func (s *PluginService) SearchFromPluginInstances(ctx context.Context, pluginIns
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		result, err = plugin.Search(ctx, instances, q, q, q, q, limit, offset)
+		result, err = s.cache.Search(plugin, ctx, instances, q, q, q, q, limit, offset)
 		if err == nil {
 			provider = plugin.Provider()
 			break
@@ -592,7 +594,7 @@ func (s *PluginService) SearchFromPluginInstances(ctx context.Context, pluginIns
 
 	artists := []model.EnrichedArtistInfo{}
 	for _, artist := range result.Artists {
-		artists = append(artists, s.enrichArtistInfo(ctx, provider, pluginInstances, artist))
+		artists = append(artists, s.enrichArtistInfo(ctx, provider, artist))
 	}
 
 	playlists := []model.EnrichedPlaylistInfo{}
@@ -613,7 +615,7 @@ func (s *PluginService) UrlFromPluginInstances(ctx context.Context, pluginInstan
 	errMap := map[string]string{}
 	for plugin := range pluginInstances {
 		var err error
-		urlItem, err = plugin.Url(ctx, q)
+		urlItem, err = s.cache.Url(plugin, ctx, q)
 		if err == nil {
 			break
 		}
@@ -651,7 +653,7 @@ func (s *PluginService) GetSongByISRCFromPluginInstances(ctx context.Context, pl
 	errMap := map[string]string{}
 	for plugin, instances := range pluginInstances {
 		var err error
-		song, err = plugin.SongInfoByISRC(ctx, instances, isrc)
+		song, err = s.cache.SongInfoByISRC(plugin, ctx, instances, isrc)
 		if err == nil {
 			provider = plugin.Provider()
 			break

@@ -56,6 +56,9 @@ type (
 			Limit  int `env:"LIMIT" envDefault:"25"`
 			Offset int `env:"LIMIT" envDefault:"0"`
 		} `envPrefix:"PAGINATION_"`
+		Cache struct {
+			Expiration time.Duration `env:"EXPIRATION" envDefault:"30m"`
+		} `envPrefix:"CACHE_"`
 	}
 )
 

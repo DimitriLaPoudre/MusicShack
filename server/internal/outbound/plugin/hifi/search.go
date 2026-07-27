@@ -12,7 +12,7 @@ import (
 )
 
 func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string, limit int, offset int) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, fmt.Sprintf("/search/?s=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
+	searchSong, err := hifi_utils.MultiFetchTyped[searchSongResponse](ctx, urls, fmt.Sprintf("/search/?s=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with url list: %w", err)
 	}
@@ -21,7 +21,7 @@ func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string, limit
 }
 
 func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string, limit int, offset int) (searchAlbumResponse, error) {
-	searchAlbum, err := hifi_utils.CachedMultiFetchTyped[searchAlbumResponse](ctx, urls, fmt.Sprintf("/search/?al=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
+	searchAlbum, err := hifi_utils.MultiFetchTyped[searchAlbumResponse](ctx, urls, fmt.Sprintf("/search/?al=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters)
 	if err != nil {
 		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
 	}
@@ -30,7 +30,7 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string, limi
 }
 
 func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string, limit int, offset int) (searchArtistResponse, error) {
-	searchArtist, err := hifi_utils.CachedMultiFetchTyped[searchArtistResponse](ctx, urls, fmt.Sprintf("/search/?a=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
+	searchArtist, err := hifi_utils.MultiFetchTyped[searchArtistResponse](ctx, urls, fmt.Sprintf("/search/?a=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters)
 	if err != nil {
 		return searchArtistResponse{}, fmt.Errorf("fetch search artist with url list: %w", err)
 	}
@@ -39,7 +39,7 @@ func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string, lim
 }
 
 func (p *Hifi) getSearchPlaylist(ctx context.Context, urls []string, q string, limit int, offset int) (searchPlaylistResponse, error) {
-	searchPlaylist, err := hifi_utils.CachedMultiFetchTyped[searchPlaylistResponse](ctx, urls, fmt.Sprintf("/search/?p=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
+	searchPlaylist, err := hifi_utils.MultiFetchTyped[searchPlaylistResponse](ctx, urls, fmt.Sprintf("/search/?p=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters)
 	if err != nil {
 		return searchPlaylistResponse{}, fmt.Errorf("fetch search playlist with url list: %w", err)
 	}

@@ -14,7 +14,7 @@ import (
 )
 
 func (p *Hifi) getSongInfo(ctx context.Context, urls []string, id string) (songResponse, error) {
-	songInfo, err := hifi_utils.CachedMultiFetchTyped[songResponse](ctx, urls, "/info/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
+	songInfo, err := hifi_utils.MultiFetchTyped[songResponse](ctx, urls, "/info/?id="+url.QueryEscape(id), &p.limiters)
 	if err != nil {
 		return songResponse{}, fmt.Errorf("fetch song info with url list: %w", err)
 	}
@@ -23,7 +23,7 @@ func (p *Hifi) getSongInfo(ctx context.Context, urls []string, id string) (songR
 }
 
 func (p *Hifi) getSongDownloadInfo(ctx context.Context, urls []string, id string) (downloadResponse, error) {
-	downloadInfo, err := hifi_utils.CachedMultiFetchTyped[downloadResponse](ctx, urls, "/track/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
+	downloadInfo, err := hifi_utils.MultiFetchTyped[downloadResponse](ctx, urls, "/track/?id="+url.QueryEscape(id), &p.limiters)
 	if err != nil {
 		return downloadResponse{}, fmt.Errorf("fetch song download info with url list: %w", err)
 	}

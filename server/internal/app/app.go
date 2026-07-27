@@ -40,9 +40,11 @@ func Run(cfg *config.Config) {
 	pluginHifi := hifi.NewHifi()
 	pluginStore.Register(&pluginHifi)
 
+	pluginCache := service.NewPluginCacheService(cfg.Plugin)
+
 	authS := service.NewAuthService(cfg.Session, &repo, &repo)
 	userS := service.NewUserService(cfg.Download, &repo)
-	pluginS := service.NewPluginService(&pluginStore, &repo, &repo, &repo)
+	pluginS := service.NewPluginService(&pluginCache, &pluginStore, &repo, &repo, &repo)
 	instanceS := service.NewInstanceService(&pluginS, &repo)
 	metadataS := service.NewMetadataService(&pluginS)
 	downloadS := service.NewDownloadService(cfg.Download, cfg.Plugin, &pluginS, &metadataS, &repo, &repo)

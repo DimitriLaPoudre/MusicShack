@@ -14,26 +14,6 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func CachedMultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter], cache *sync.Cache[string]) (T, error) {
-	var data T
-	var err error
-	for _, url := range urls {
-		if cached, ok := cache.Load(url + path); ok {
-			if data := cached.(T); ok {
-				return data, nil
-			}
-		}
-		limiter, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
-
-		data, err = FetchTyped[T](ctx, url, path, limiter)
-		if err == nil {
-			cache.Store(url+path, data)
-			break
-		}
-	}
-	return data, err
-}
-
 func MultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter]) (T, error) {
 	var data T
 	var err error

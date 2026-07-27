@@ -13,7 +13,7 @@ import (
 )
 
 func (p *Hifi) getAlbumSongs(ctx context.Context, urls []string, id string, limit int, offset int) (albumResponse, error) {
-	album, err := hifi_utils.CachedMultiFetchTyped[albumResponse](ctx, urls, fmt.Sprintf("/album/?id=%s&limit=%d&offset=%d", url.QueryEscape(id), limit, offset), &p.limiters, &p.cache)
+	album, err := hifi_utils.MultiFetchTyped[albumResponse](ctx, urls, fmt.Sprintf("/album/?id=%s&limit=%d&offset=%d", url.QueryEscape(id), limit, offset), &p.limiters)
 	if err != nil {
 		return albumResponse{}, fmt.Errorf("fetch album songs with url list: %w", err)
 	}

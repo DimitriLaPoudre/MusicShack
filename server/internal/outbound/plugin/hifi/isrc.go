@@ -14,7 +14,7 @@ import (
 )
 
 func (p *Hifi) getSearchISRC(ctx context.Context, urls []string, isrc string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, "/search/?i="+url.QueryEscape(isrc), &p.limiters, &p.cache)
+	searchSong, err := hifi_utils.MultiFetchTyped[searchSongResponse](ctx, urls, "/search/?i="+url.QueryEscape(isrc), &p.limiters)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with ISRC %s with url list: %w", isrc, err)
 	}

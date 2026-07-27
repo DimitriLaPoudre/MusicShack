@@ -11,7 +11,7 @@ import (
 )
 
 func (p *Hifi) getArtistInfo(ctx context.Context, urls []string, id string) (artistResponse, error) {
-	info, err := hifi_utils.CachedMultiFetchTyped[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
+	info, err := hifi_utils.MultiFetchTyped[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), &p.limiters)
 	if err != nil {
 		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
 	}
