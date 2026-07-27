@@ -8,23 +8,14 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func (p *Hifi) getArtistInfo(ctx context.Context, urls []string, id string) (artistResponse, error) {
-	info, err := hifi_utils.CachedMultiFetchTyped[artistResponse](ctx, urls, "/artist/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
-	if err != nil {
-		return artistResponse{}, fmt.Errorf("fetch artist info with url list: %w", err)
-	}
-
-	return info, nil
-}
-
-func (p *Hifi) getArtistAlbums(ctx context.Context, urls []string, id string) (artistAlbumsResponse, error) {
+func (p *Hifi) getArtistAlbums(ctx context.Context, urls []string, id string, limit int, offset int) (artistAlbumsResponse, error) {
+	_, _ = limit, offset
 	albums, err := hifi_utils.CachedMultiFetchTyped[artistAlbumsResponse](ctx, urls, "/artist/?f="+url.QueryEscape(id)+"&skip_tracks=1", &p.limiters, &p.cache)
 	if err != nil {
 		return artistAlbumsResponse{}, fmt.Errorf("fetch artist albums with url list: %w", err)
@@ -33,44 +24,13 @@ func (p *Hifi) getArtistAlbums(ctx context.Context, urls []string, id string) (a
 	return albums, nil
 }
 
-func (p *Hifi) getArtist(ctx context.Context, urls []string, id string) (artistResponse, artistAlbumsResponse, error) {
-	var artist artistResponse
-	var artistErr error
-	var albums artistAlbumsResponse
-	var albumsErr error
-	var wg sync.WaitGroup
-
-	wg.Go(func() {
-		artist, artistErr = p.getArtistInfo(ctx, urls, id)
-	})
-	wg.Go(func() {
-		albums, albumsErr = p.getArtistAlbums(ctx, urls, id)
-	})
-	wg.Wait()
-
-	if artistErr != nil {
-		return artistResponse{}, artistAlbumsResponse{}, artistErr
-	}
-	if albumsErr != nil {
-		return artistResponse{}, artistAlbumsResponse{}, albumsErr
-	}
-
-	return artist, albums, nil
-}
-
-func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string) (model.Artist, error) {
+func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.ArtistAlbums, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	artistInfo, artistAlbums, err := p.getArtist(ctx, urls, id)
+	artistAlbums, err := p.getArtistAlbums(ctx, urls, id, limit, offset)
 	if err != nil {
-		return model.Artist{}, err
+		return model.ArtistAlbums{}, err
 	}
-
-	pictureURL := artistInfo.Artist.PictureUrl
-	if pictureURL == "" {
-		pictureURL = artistInfo.Artist.PictureUrlFallback
-	}
-	pictureURL = hifi_utils.GetImageURL(pictureURL, 750)
 
 	type albumItemComparaison struct {
 		Title       string
@@ -139,9 +99,9 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 		return 0
 	})
 
-	albums := []model.Album{}
-	eps := []model.Album{}
-	singles := []model.Album{}
+	albums := []model.AlbumInfo{}
+	eps := []model.AlbumInfo{}
+	singles := []model.AlbumInfo{}
 	for _, album := range list {
 		releaseDate, err := time.Parse(ReleaseDateLayout, album.ReleaseDate)
 		if err != nil {
@@ -168,15 +128,15 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 			}
 		}
 
-		artists := []model.Artist{}
+		artists := []model.ArtistInfo{}
 		for _, artist := range album.Artists {
-			artists = append(artists, model.Artist{
+			artists = append(artists, model.ArtistInfo{
 				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
-		newAlbum := model.Album{
+		newAlbum := model.AlbumInfo{
 			ID:           strconv.FormatUint(uint64(album.ID), 10),
 			Title:        album.Title,
 			Duration:     album.Duration,
@@ -197,13 +157,9 @@ func (p *Hifi) Artist(ctx context.Context, instances []model.Instance, id string
 		}
 	}
 
-	return model.Artist{
-		ID:         strconv.FormatUint(uint64(artistInfo.Artist.ID), 10),
-		Name:       artistInfo.Artist.Name,
-		PictureUrl: pictureURL,
-		Popularity: artistInfo.Artist.Popularity,
-		Albums:     albums,
-		Ep:         eps,
-		Singles:    singles,
+	return model.ArtistAlbums{
+		Albums:  albums,
+		Ep:      eps,
+		Singles: singles,
 	}, nil
 }

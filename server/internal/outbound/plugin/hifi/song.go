@@ -53,12 +53,12 @@ func (p *Hifi) getSong(ctx context.Context, urls []string, id string) (songRespo
 	return songInfo, downloadInfo, nil
 }
 
-func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) (model.Song, error) {
+func (p *Hifi) SongInfo(ctx context.Context, instances []model.Instance, id string) (model.SongInfo, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
 	songInfo, downloadInfo, err := p.getSong(ctx, urls, id)
 	if err != nil {
-		return model.Song{}, err
+		return model.SongInfo{}, err
 	}
 
 	releaseDate, err := time.Parse(StreamStartDateLayout, songInfo.Data.ReleaseDate)
@@ -86,15 +86,15 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 		}
 	}
 
-	artists := []model.Artist{}
+	artists := []model.ArtistInfo{}
 	for _, artist := range songInfo.Data.Artists {
-		artists = append(artists, model.Artist{
+		artists = append(artists, model.ArtistInfo{
 			ID:   strconv.FormatUint(uint64(artist.ID), 10),
 			Name: artist.Name,
 		})
 	}
 
-	return model.Song{
+	return model.SongInfo{
 		ID:              strconv.FormatUint(uint64(songInfo.Data.ID), 10),
 		Title:           songInfo.Data.Title,
 		Duration:        songInfo.Data.Duration,
@@ -110,7 +110,7 @@ func (p *Hifi) Song(ctx context.Context, instances []model.Instance, id string) 
 		Popularity:      songInfo.Data.Popularity,
 		Isrc:            songInfo.Data.Isrc,
 		Artists:         artists,
-		Album: model.Album{
+		Album: model.AlbumInfo{
 			ID:       strconv.FormatUint(uint64(songInfo.Data.Album.ID), 10),
 			Title:    songInfo.Data.Album.Title,
 			CoverUrl: hifi_utils.GetImageURL(songInfo.Data.Album.CoverUrl, 1280),

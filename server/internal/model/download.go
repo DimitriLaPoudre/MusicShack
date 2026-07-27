@@ -13,11 +13,11 @@ const (
 )
 
 type DownloadTaskInfo struct {
-	ID            uuid.UUID      `json:"id"`
-	UserID        uuid.UUID      `json:"user_id"`
-	Data          EnrichedSong   `json:"data"`
-	Status        DownloadStatus `json:"status"`
-	StatusComment string         `json:"status_comment"`
+	ID            uuid.UUID        `json:"id"`
+	UserID        uuid.UUID        `json:"user_id"`
+	Data          EnrichedSongInfo `json:"data"`
+	Status        DownloadStatus   `json:"status"`
+	StatusComment string           `json:"status_comment"`
 }
 
 type AddDownloadError struct {

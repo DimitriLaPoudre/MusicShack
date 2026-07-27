@@ -12,7 +12,7 @@ import (
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func (p *Hifi) getAlbum(ctx context.Context, urls []string, id string) (albumResponse, error) {
+func (p *Hifi) getAlbumInfo(ctx context.Context, urls []string, id string) (albumResponse, error) {
 	album, err := hifi_utils.CachedMultiFetchTyped[albumResponse](ctx, urls, "/album/?id="+url.QueryEscape(id), &p.limiters, &p.cache)
 	if err != nil {
 		return albumResponse{}, fmt.Errorf("fetch album info with url list: %w", err)
@@ -21,12 +21,12 @@ func (p *Hifi) getAlbum(ctx context.Context, urls []string, id string) (albumRes
 	return album, nil
 }
 
-func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string) (model.Album, error) {
+func (p *Hifi) AlbumInfo(ctx context.Context, instances []model.Instance, id string) (model.AlbumInfo, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	album, err := p.getAlbum(ctx, urls, id)
+	album, err := p.getAlbumInfo(ctx, urls, id)
 	if err != nil {
-		return model.Album{}, err
+		return model.AlbumInfo{}, err
 	}
 	releaseDate, err := time.Parse(ReleaseDateLayout, album.Data.ReleaseDate)
 	if err != nil {
@@ -55,62 +55,15 @@ func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string)
 		}
 	}
 
-	songs := []model.Song{}
-	for _, item := range album.Data.Items {
-		song := item.Item
-
-		audioQuality := LOW
-		switch song.AudioQuality {
-		case "LOW":
-			audioQuality = LOW
-		case "HIGH":
-			audioQuality = HIGH
-		case "LOSSLESS":
-			audioQuality = LOSSLESS
-		default:
-			audioQuality = LOW
-		}
-		for _, quality := range song.MediaMetadata.Tags {
-			switch quality {
-			case "HIRES_LOSSLESS":
-				audioQuality = HIRES
-			case "LOSSLESS", "DOLBY_ATMOS":
-				if audioQuality != HIRES {
-					audioQuality = LOSSLESS
-				}
-			}
-		}
-
-		artists := []model.Artist{}
-		for _, artist := range song.Artists {
-			artists = append(artists, model.Artist{
-				ID:   strconv.FormatUint(uint64(artist.ID), 10),
-				Name: artist.Name,
-			})
-		}
-
-		songs = append(songs, model.Song{
-			ID:           strconv.FormatUint(uint64(song.ID), 10),
-			Title:        song.Title,
-			Duration:     song.Duration,
-			TrackNumber:  song.TrackNumber,
-			VolumeNumber: song.VolumeNumber,
-			AudioQuality: audioQuality,
-			Explicit:     song.Explicit,
-			Isrc:         song.Isrc,
-			Artists:      artists,
-		})
-	}
-
-	artists := []model.Artist{}
+	artists := []model.ArtistInfo{}
 	for _, artist := range album.Data.Artists {
-		artists = append(artists, model.Artist{
+		artists = append(artists, model.ArtistInfo{
 			ID:   strconv.FormatUint(uint64(artist.ID), 10),
 			Name: artist.Name,
 		})
 	}
 
-	return model.Album{
+	return model.AlbumInfo{
 		ID:            strconv.FormatUint(uint64(album.Data.ID), 10),
 		Title:         album.Data.Title,
 		Duration:      album.Data.Duration,
@@ -120,7 +73,6 @@ func (p *Hifi) Album(ctx context.Context, instances []model.Instance, id string)
 		CoverUrl:      hifi_utils.GetImageURL(album.Data.CoverUrl, 640),
 		AudioQuality:  audioQuality,
 		Explicit:      album.Data.Explicit,
-		Songs:         songs,
 		Artists:       artists,
 	}, nil
 }

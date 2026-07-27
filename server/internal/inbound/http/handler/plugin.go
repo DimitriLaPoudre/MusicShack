@@ -22,7 +22,7 @@ func NewPluginHandler(plugin *service.PluginService) PluginHandler {
 	}
 }
 
-func (h *PluginHandler) GetSong(c *gin.Context) {
+func (h *PluginHandler) GetSongInfo(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
@@ -32,17 +32,37 @@ func (h *PluginHandler) GetSong(c *gin.Context) {
 	provider := c.Param(macro.Provider)
 	id := c.Param(macro.ID)
 
-	song, err := h.plugin.GetSong(c.Request.Context(), me.ID, provider, id)
+	songInfo, err := h.plugin.GetSongInfo(c.Request.Context(), me.ID, provider, id)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.SongToResponse(song)
+	resp := response.SongInfoToResponse(songInfo)
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *PluginHandler) GetAlbum(c *gin.Context) {
+func (h *PluginHandler) GetAlbumInfo(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
+
+	albumInfo, err := h.plugin.GetAlbumInfo(c.Request.Context(), me.ID, provider, id)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.AlbumInfoToResponse(albumInfo)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetAlbumSongs(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
@@ -58,17 +78,37 @@ func (h *PluginHandler) GetAlbum(c *gin.Context) {
 		return
 	}
 
-	album, err := h.plugin.GetAlbum(c.Request.Context(), me.ID, provider, id)
+	albumSongs, err := h.plugin.GetAlbumSongs(c.Request.Context(), me.ID, provider, id, query.Limit, query.Offset)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.AlbumToResponse(album)
+	resp := response.AlbumSongsToResponse(albumSongs)
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *PluginHandler) GetArtist(c *gin.Context) {
+func (h *PluginHandler) GetArtistInfo(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
+
+	artistInfo, err := h.plugin.GetArtistInfo(c.Request.Context(), me.ID, provider, id)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.ArtistInfoToResponse(artistInfo)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetArtistAlbums(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
@@ -84,17 +124,37 @@ func (h *PluginHandler) GetArtist(c *gin.Context) {
 		return
 	}
 
-	artist, err := h.plugin.GetArtist(c.Request.Context(), me.ID, provider, id)
+	artistAlbums, err := h.plugin.GetArtistAlbums(c.Request.Context(), me.ID, provider, id, query.Limit, query.Offset)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.ArtistToResponse(artist)
+	resp := response.ArtistAlbumsToResponse(artistAlbums)
 	c.JSON(http.StatusOK, resp)
 }
 
-func (h *PluginHandler) GetPlaylist(c *gin.Context) {
+func (h *PluginHandler) GetPlaylistInfo(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	provider := c.Param(macro.Provider)
+	id := c.Param(macro.ID)
+
+	playlistInfo, err := h.plugin.GetPlaylistInfo(c.Request.Context(), me.ID, provider, id)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.PlaylistInfoToResponse(playlistInfo)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetPlaylistSongs(c *gin.Context) {
 	me, err := utils.GetFromContext[model.User](c, macro.Me)
 	if err != nil {
 		utils.Error(c, err)
@@ -110,13 +170,13 @@ func (h *PluginHandler) GetPlaylist(c *gin.Context) {
 		return
 	}
 
-	playlist, err := h.plugin.GetPlaylist(c.Request.Context(), me.ID, provider, id)
+	playlist, err := h.plugin.GetPlaylistSongs(c.Request.Context(), me.ID, provider, id, query.Limit, query.Offset)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.PlaylistToResponse(playlist)
+	resp := response.PlaylistSongsToResponse(playlist)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -133,7 +193,7 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 		return
 	}
 
-	results, err := h.plugin.Search(c.Request.Context(), me.ID, query.Q)
+	results, err := h.plugin.Search(c.Request.Context(), me.ID, query.Q, query.Limit, query.Offset)
 	if err != nil {
 		utils.Error(c, err)
 		return

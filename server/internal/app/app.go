@@ -45,9 +45,9 @@ func Run(cfg *config.Config) {
 	pluginS := service.NewPluginService(&pluginStore, &repo, &repo)
 	instanceS := service.NewInstanceService(&pluginS, &repo)
 	metadataS := service.NewMetadataService(&pluginS)
-	downloadS := service.NewDownloadService(cfg.Download, &pluginS, &metadataS, &repo, &repo)
+	downloadS := service.NewDownloadService(cfg.Download, cfg.Plugin, &pluginS, &metadataS, &repo, &repo)
 	followS := service.NewFollowService(&pluginS, &repo)
-	fetchNewReleasesS := service.NewFetchNewReleasesService(&pluginS, &followS, downloadS)
+	fetchNewReleasesS := service.NewFetchNewReleasesService(cfg.Plugin, &pluginS, &followS, downloadS)
 
 	userH := handler.NewUserHandler(&userS)
 	authH := handler.NewAuthHandler(cfg.HTTP, cfg.Session, &authS)

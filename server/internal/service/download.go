@@ -18,7 +18,8 @@ import (
 )
 
 type DownloadService struct {
-	cfg            config.DownloadConfig
+	cfgDownload    config.DownloadConfig
+	cfgPlugin      config.PluginConfig
 	tasks          sync.Map // map[uuid.UUID]sync.Map -> map[uuid.UUID]*downloadTask
 	limit          pkg_sync.Semaphore
 	plugin         *PluginService
@@ -29,7 +30,7 @@ type DownloadService struct {
 
 type downloadTask struct {
 	user           model.User
-	song           model.EnrichedSong
+	songInfo       model.EnrichedSongInfo
 	running        atomic.Bool
 	status         atomic.Value // model.DownloadStatus
 	statusComment  atomic.Value // string
@@ -37,10 +38,11 @@ type downloadTask struct {
 	download       *DownloadService
 }
 
-func NewDownloadService(cfg config.DownloadConfig, plugin *PluginService, metadata *MetadataService, instance model.InstanceRepository, userRepository model.UserRepository) *DownloadService {
+func NewDownloadService(cfgDownload config.DownloadConfig, cfgPlugin config.PluginConfig, plugin *PluginService, metadata *MetadataService, instance model.InstanceRepository, userRepository model.UserRepository) *DownloadService {
 	return &DownloadService{
-		cfg:            cfg,
-		limit:          pkg_sync.NewSemaphore(cfg.Concurrent),
+		cfgDownload:    cfgDownload,
+		cfgPlugin:      cfgPlugin,
+		limit:          pkg_sync.NewSemaphore(cfgDownload.Concurrent),
 		plugin:         plugin,
 		metadata:       metadata,
 		instance:       instance,
@@ -104,7 +106,7 @@ func (s *DownloadService) DownloadSong(ctx context.Context, userID uuid.UUID, pr
 
 	pluginInstances := s.plugin.InstancesToMapPluginInstances(instances)
 
-	err = s.AddSong(ctx, userID, pluginInstances, id, nil)
+	err = s.AddSong(ctx, userID, pluginInstances, id)
 	if err != nil {
 		return err
 	}
@@ -113,12 +115,17 @@ func (s *DownloadService) DownloadSong(ctx context.Context, userID uuid.UUID, pr
 }
 
 func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, artistID string) error {
-	artist, err := s.plugin.GetArtistFromPluginInstances(ctx, pluginInstances, artistID)
+	artistAlbums, err := s.plugin.GetArtistAlbumsFromPluginInstances(ctx, pluginInstances, artistID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
 	if err != nil {
 		return fmt.Errorf("get artist %s info for download: %w", artistID, err)
 	}
 
-	for _, album := range artist.Albums {
+	var allAlbums []model.EnrichedAlbumInfo
+	allAlbums = append(allAlbums, artistAlbums.Albums...)
+	allAlbums = append(allAlbums, artistAlbums.Ep...)
+	allAlbums = append(allAlbums, artistAlbums.Singles...)
+
+	for _, album := range allAlbums {
 		_ = s.AddAlbum(ctx, userID, pluginInstances, album.ID)
 	}
 
@@ -126,57 +133,52 @@ func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, plugi
 }
 
 func (s *DownloadService) AddAlbum(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, albumID string) error {
-	album, err := s.plugin.GetAlbumFromPluginInstances(ctx, pluginInstances, albumID)
+	albumSongs, err := s.plugin.GetAlbumSongsFromPluginInstances(ctx, pluginInstances, albumID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
 	if err != nil {
 		return fmt.Errorf("get album %s info for download: %w", albumID, err)
 	}
 
-	for _, song := range album.Songs {
-		_ = s.AddSong(ctx, userID, pluginInstances, song.ID, &album.Album)
+	for _, song := range albumSongs.Songs {
+		_ = s.AddSong(ctx, userID, pluginInstances, song.ID)
 	}
 
 	return nil
 }
 
 func (s *DownloadService) AddPlaylist(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, playlistID string) error {
-	playlist, err := s.plugin.GetPlaylistFromPluginInstances(ctx, pluginInstances, playlistID)
+	playlistSongs, err := s.plugin.GetPlaylistSongsFromPluginInstances(ctx, pluginInstances, playlistID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
 	if err != nil {
 		return fmt.Errorf("get playlist %s info for download: %w", playlistID, err)
 	}
 
-	_ = playlist
-	// for _, song := range playlist.Songs {
-	// 	_ = s.AddSong(ctx, userID, pluginInstances, song.ID, nil)
-	// }
+	for _, song := range playlistSongs.Songs {
+		_ = s.AddSong(ctx, userID, pluginInstances, song.ID)
+	}
 
 	return nil
 }
 
-func (s *DownloadService) AddSong(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, songID string, optAlbum *model.Album) error {
-	song, err := s.plugin.GetSongFromPluginInstances(ctx, pluginInstances, songID)
+func (s *DownloadService) AddSong(ctx context.Context, userID uuid.UUID, pluginInstances map[model.Plugin][]model.Instance, songID string) error {
+	songInfo, err := s.plugin.GetSongInfoFromPluginInstances(ctx, pluginInstances, songID)
 	if err != nil {
 		return fmt.Errorf("get song %s info for download: %w", songID, err)
 	}
 
-	if optAlbum != nil {
-		song.Album = *optAlbum
-	} else {
-		album, err := s.plugin.GetAlbumFromPluginInstances(ctx, pluginInstances, song.Album.ID)
-		if err != nil {
-			return fmt.Errorf("get song %s album info for download: %w", songID, err)
-		}
-
-		song.Album = album.Album
+	albumInfo, err := s.plugin.GetAlbumInfoFromPluginInstances(ctx, pluginInstances, songInfo.Album.ID)
+	if err != nil {
+		return fmt.Errorf("get song %s album info for download: %w", songID, err)
 	}
 
-	if err := s.AddDownloadTask(userID, song); err != nil {
-		return fmt.Errorf("download song %s: %w", song.Title, err)
+	songInfo.Album = albumInfo.AlbumInfo
+
+	if err := s.AddDownloadTask(userID, songInfo); err != nil {
+		return fmt.Errorf("download song %s: %w", songInfo.Title, err)
 	}
 
 	return nil
 }
 
-func (s *DownloadService) AddDownloadTask(userID uuid.UUID, song model.EnrichedSong) error {
+func (s *DownloadService) AddDownloadTask(userID uuid.UUID, songInfo model.EnrichedSongInfo) error {
 	// check if song already owned
 
 	taskID, err := uuid.NewV7()
@@ -186,7 +188,7 @@ func (s *DownloadService) AddDownloadTask(userID uuid.UUID, song model.EnrichedS
 
 	newTask := &downloadTask{
 		user:           model.User{ID: userID},
-		song:           song,
+		songInfo:       songInfo,
 		running:        atomic.Bool{},
 		status:         atomic.Value{},
 		statusComment:  atomic.Value{},
@@ -240,7 +242,7 @@ func (t *downloadTask) run(ctx context.Context) {
 
 	t.status.Store(model.DownloadStatusRunning)
 
-	reader, extension, err := t.download.plugin.Download(ctx, t.user.ID, t.song.Provider, t.song.ID, t.user.HiRes)
+	reader, extension, err := t.download.plugin.Download(ctx, t.user.ID, t.songInfo.Provider, t.songInfo.ID, t.user.HiRes)
 	if err != nil {
 		t.running.CompareAndSwap(true, false)
 		if errors.Is(err, context.Canceled) {
@@ -268,12 +270,12 @@ func (t *downloadTask) run(ctx context.Context) {
 }
 
 func (t *downloadTask) SaveDownload(ctx context.Context, reader io.ReadCloser, extension string) error {
-	path, err := t.download.SaveSong(ctx, t.user, t.song.Song, reader, extension)
+	path, err := t.download.SaveSong(ctx, t.user, t.songInfo.SongInfo, reader, extension)
 	if err != nil {
 		return fmt.Errorf("save song: %w", err)
 	}
 
-	if err := t.download.metadata.FormatMetadata(ctx, t.user, t.song.Provider, path, t.song.Song); err != nil {
+	if err := t.download.metadata.FormatMetadata(ctx, t.user, t.songInfo.Provider, path, t.songInfo.SongInfo); err != nil {
 		os.Remove(path)
 		return fmt.Errorf("format song metadata: %w", err)
 	}
@@ -283,10 +285,10 @@ func (t *downloadTask) SaveDownload(ctx context.Context, reader io.ReadCloser, e
 	return nil
 }
 
-func (s *DownloadService) SaveSong(ctx context.Context, user model.User, song model.Song, reader io.ReadCloser, extension string) (string, error) {
+func (s *DownloadService) SaveSong(ctx context.Context, user model.User, songInfo model.SongInfo, reader io.ReadCloser, extension string) (string, error) {
 	defer reader.Close()
 
-	root, err := os.OpenRoot(s.cfg.Path)
+	root, err := os.OpenRoot(s.cfgDownload.Path)
 	if err != nil {
 		return "", fmt.Errorf("open download folder: %w", err)
 	}
@@ -299,14 +301,14 @@ func (s *DownloadService) SaveSong(ctx context.Context, user model.User, song mo
 	defer rootUser.Close()
 
 	artistName := "UnknownArtist"
-	if len(song.Album.Artists) > 0 {
-		artistName = pkg_path.SanitizeName(song.Album.Artists[0].Name)
+	if len(songInfo.Album.Artists) > 0 {
+		artistName = pkg_path.SanitizeName(songInfo.Album.Artists[0].Name)
 	}
-	albumTitle := pkg_path.SanitizeName(song.Album.Title)
-	songTitle := pkg_path.SanitizeName(song.Title)
+	albumTitle := pkg_path.SanitizeName(songInfo.Album.Title)
+	songTitle := pkg_path.SanitizeName(songInfo.Title)
 
 	dirFile := filepath.Join(artistName, albumTitle)
-	filename := filepath.Join(dirFile, fmt.Sprintf("%d - %s.%s", song.TrackNumber, songTitle, extension))
+	filename := filepath.Join(dirFile, fmt.Sprintf("%d - %s.%s", songInfo.TrackNumber, songTitle, extension))
 
 	if err := rootUser.MkdirAll(dirFile, 0755); err != nil {
 		return "", fmt.Errorf("create song folders: %w", err)
@@ -447,7 +449,7 @@ func (s *DownloadService) List(userID uuid.UUID) []model.DownloadTaskInfo {
 		tasks = append(tasks, model.DownloadTaskInfo{
 			ID:            taskID,
 			UserID:        userID,
-			Data:          task.song,
+			Data:          task.songInfo,
 			Status:        task.status.Load().(model.DownloadStatus),
 			StatusComment: task.statusComment.Load().(string),
 		})

@@ -22,19 +22,19 @@ func (p *Hifi) getSearchISRC(ctx context.Context, urls []string, isrc string) (s
 	return searchSong, nil
 }
 
-func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc string) (model.Song, error) {
+func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, isrc string) (model.SongInfo, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
 	songData, err := p.getSearchISRC(ctx, urls, isrc)
 	if err != nil {
-		return model.Song{}, err
+		return model.SongInfo{}, err
 	}
 
 	if len(songData.Data.Songs) == 0 {
-		return model.Song{}, model.ErrPluginDataNotFound
+		return model.SongInfo{}, model.ErrPluginDataNotFound
 	}
 
-	songs := []model.Song{}
+	songs := []model.SongInfo{}
 	for _, song := range songData.Data.Songs {
 		releaseDate, err := time.Parse(StreamStartDateLayout, song.ReleaseDate)
 		if err != nil {
@@ -61,32 +61,16 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 			}
 		}
 
-		artists := []model.Artist{}
+		artists := []model.ArtistInfo{}
 		for _, artist := range song.Artists {
-			artists = append(artists, model.Artist{
+			artists = append(artists, model.ArtistInfo{
 				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs,
-			model.Song{
-				ID:           strconv.FormatUint(uint64(song.ID), 10),
-				Title:        song.Title,
-				Duration:     song.Duration,
-				AudioQuality: audioQuality,
-				Popularity:   song.Popularity,
-				Explicit:     song.Explicit,
-				Isrc:         song.Isrc,
-				Artists:      artists,
-				Album: model.Album{
-					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
-					Title:    song.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
-				},
-			})
-		songs = append(songs,
-			model.Song{
+			model.SongInfo{
 				ID:           strconv.FormatUint(uint64(song.ID), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
@@ -98,7 +82,7 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 				Popularity:   song.Popularity,
 				Isrc:         song.Isrc,
 				Artists:      artists,
-				Album: model.Album{
+				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
 					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 1280),
@@ -106,7 +90,7 @@ func (p *Hifi) SongByISRC(ctx context.Context, instances []model.Instance, isrc 
 			})
 	}
 
-	slices.SortFunc(songs, func(a, b model.Song) int {
+	slices.SortFunc(songs, func(a, b model.SongInfo) int {
 		if a.ReleaseDate.After(b.ReleaseDate) {
 			return -1
 		}

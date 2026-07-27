@@ -69,49 +69,49 @@ func (s *MetadataService) WriteCover(path string, reader io.Reader) error {
 	return nil
 }
 
-func (s *MetadataService) FormatMetadata(ctx context.Context, user model.User, provider string, path string, song model.Song) error {
+func (s *MetadataService) FormatMetadata(ctx context.Context, user model.User, provider string, path string, songInfo model.SongInfo) error {
 	var albumArtists []string
-	for _, artist := range song.Album.Artists {
+	for _, artist := range songInfo.Album.Artists {
 		albumArtists = append(albumArtists, artist.Name)
 	}
 
 	var artists []string
-	for _, artist := range song.Artists {
+	for _, artist := range songInfo.Artists {
 		artists = append(artists, artist.Name)
 	}
 
 	explicit := "0"
-	if song.Explicit {
+	if songInfo.Explicit {
 		explicit = "1"
 	}
-	trackNumber := strconv.FormatUint(uint64(song.TrackNumber), 10)
-	volumeNumber := strconv.FormatUint(uint64(song.VolumeNumber), 10)
-	trackGain := strconv.FormatFloat(song.ReplayGain, 'f', -1, 64)
-	trackPeak := strconv.FormatFloat(song.Peak, 'f', -1, 64)
-	albumGain := strconv.FormatFloat(song.AlbumReplayGain, 'f', -1, 64)
-	albumPeak := strconv.FormatFloat(song.AlbumPeak, 'f', -1, 64)
+	trackNumber := strconv.FormatUint(uint64(songInfo.TrackNumber), 10)
+	volumeNumber := strconv.FormatUint(uint64(songInfo.VolumeNumber), 10)
+	trackGain := strconv.FormatFloat(songInfo.ReplayGain, 'f', -1, 64)
+	trackPeak := strconv.FormatFloat(songInfo.Peak, 'f', -1, 64)
+	albumGain := strconv.FormatFloat(songInfo.AlbumReplayGain, 'f', -1, 64)
+	albumPeak := strconv.FormatFloat(songInfo.AlbumPeak, 'f', -1, 64)
 
 	tags := map[string][]string{
-		model.TagTitle:        {song.Title},
-		model.TagAlbum:        {song.Album.Title},
+		model.TagTitle:        {songInfo.Title},
+		model.TagAlbum:        {songInfo.Album.Title},
 		model.TagAlbumArtists: albumArtists,
 		model.TagArtists:      artists,
 		model.TagTrackNumber:  {trackNumber},
 		model.TagVolumeNumber: {volumeNumber},
-		model.TagReleaseDate:  {song.Album.ReleaseDate.String()},
+		model.TagReleaseDate:  {songInfo.Album.ReleaseDate.String()},
 		model.TagExplicit:     {explicit},
 		model.TagAlbumGain:    {albumGain},
 		model.TagAlbumPeak:    {albumPeak},
 		model.TagTrackGain:    {trackGain},
 		model.TagTrackPeak:    {trackPeak},
-		model.TagISRC:         {song.Isrc},
+		model.TagISRC:         {songInfo.Isrc},
 	}
 
 	if err := s.WriteTags(path, tags, false); err != nil {
 		return fmt.Errorf("save song tags: %w", err)
 	}
 
-	img, err := s.getCover(ctx, song.Album.CoverUrl)
+	img, err := s.getCover(ctx, songInfo.Album.CoverUrl)
 	if err != nil {
 		return fmt.Errorf("get song cover: %w", err)
 	}

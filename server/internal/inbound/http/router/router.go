@@ -77,10 +77,13 @@ func New(
 			authMW,
 		)
 		{
-			pluginGroup.GET("/song/:provider/:id", pluginH.GetSong)
-			pluginGroup.GET("/album/:provider/:id", pluginH.GetAlbum)
-			pluginGroup.GET("/artist/:provider/:id", pluginH.GetArtist)
-			pluginGroup.GET("/playlist/:provider/:id", pluginH.GetPlaylist)
+			pluginGroup.GET("/song/:provider/:id", pluginH.GetSongInfo)
+			pluginGroup.GET("/album/:provider/:id", pluginH.GetAlbumInfo)
+			pluginGroup.GET("/album/:provider/:id/songs", pluginH.GetAlbumSongs)
+			pluginGroup.GET("/artist/:provider/:id", pluginH.GetArtistInfo)
+			pluginGroup.GET("/artist/:provider/:id/albums", pluginH.GetArtistAlbums)
+			pluginGroup.GET("/playlist/:provider/:id", pluginH.GetPlaylistInfo)
+			pluginGroup.GET("/playlist/:provider/:id/songs", pluginH.GetPlaylistSongs)
 			pluginGroup.GET("/search", pluginH.GetSearch)
 		}
 

@@ -11,8 +11,8 @@ import (
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
-func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string) (searchSongResponse, error) {
-	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, "/search/?s="+url.QueryEscape(q), &p.limiters, &p.cache)
+func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string, limit int, offset int) (searchSongResponse, error) {
+	searchSong, err := hifi_utils.CachedMultiFetchTyped[searchSongResponse](ctx, urls, fmt.Sprintf("/search/?s=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
 	if err != nil {
 		return searchSongResponse{}, fmt.Errorf("fetch search song with url list: %w", err)
 	}
@@ -20,8 +20,8 @@ func (p *Hifi) getSearchSong(ctx context.Context, urls []string, q string) (sear
 	return searchSong, nil
 }
 
-func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string) (searchAlbumResponse, error) {
-	searchAlbum, err := hifi_utils.CachedMultiFetchTyped[searchAlbumResponse](ctx, urls, "/search/?al="+url.QueryEscape(q), &p.limiters, &p.cache)
+func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string, limit int, offset int) (searchAlbumResponse, error) {
+	searchAlbum, err := hifi_utils.CachedMultiFetchTyped[searchAlbumResponse](ctx, urls, fmt.Sprintf("/search/?al=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
 	if err != nil {
 		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
 	}
@@ -29,8 +29,8 @@ func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string) (sea
 	return searchAlbum, nil
 }
 
-func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string) (searchArtistResponse, error) {
-	searchArtist, err := hifi_utils.CachedMultiFetchTyped[searchArtistResponse](ctx, urls, "/search/?a="+url.QueryEscape(q), &p.limiters, &p.cache)
+func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string, limit int, offset int) (searchArtistResponse, error) {
+	searchArtist, err := hifi_utils.CachedMultiFetchTyped[searchArtistResponse](ctx, urls, fmt.Sprintf("/search/?a=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
 	if err != nil {
 		return searchArtistResponse{}, fmt.Errorf("fetch search artist with url list: %w", err)
 	}
@@ -38,8 +38,8 @@ func (p *Hifi) getSearchArtist(ctx context.Context, urls []string, q string) (se
 	return searchArtist, nil
 }
 
-func (p *Hifi) getSearchPlaylist(ctx context.Context, urls []string, q string) (searchPlaylistResponse, error) {
-	searchPlaylist, err := hifi_utils.CachedMultiFetchTyped[searchPlaylistResponse](ctx, urls, "/search/?p="+url.QueryEscape(q), &p.limiters, &p.cache)
+func (p *Hifi) getSearchPlaylist(ctx context.Context, urls []string, q string, limit int, offset int) (searchPlaylistResponse, error) {
+	searchPlaylist, err := hifi_utils.CachedMultiFetchTyped[searchPlaylistResponse](ctx, urls, fmt.Sprintf("/search/?p=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters, &p.cache)
 	if err != nil {
 		return searchPlaylistResponse{}, fmt.Errorf("fetch search playlist with url list: %w", err)
 	}
@@ -47,7 +47,7 @@ func (p *Hifi) getSearchPlaylist(ctx context.Context, urls []string, q string) (
 	return searchPlaylist, nil
 }
 
-func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist, playlist string) (searchSongResponse, searchAlbumResponse, searchArtistResponse, searchPlaylistResponse, error) {
+func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist, playlist string, limit int, offset int) (searchSongResponse, searchAlbumResponse, searchArtistResponse, searchPlaylistResponse, error) {
 	var searchSong searchSongResponse
 	var searchSongErr error
 	var searchAlbum searchAlbumResponse
@@ -59,16 +59,16 @@ func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist
 	var wg sync.WaitGroup
 
 	wg.Go(func() {
-		searchSong, searchSongErr = p.getSearchSong(ctx, urls, song)
+		searchSong, searchSongErr = p.getSearchSong(ctx, urls, song, limit, offset)
 	})
 	wg.Go(func() {
-		searchAlbum, searchAlbumErr = p.getSearchAlbum(ctx, urls, album)
+		searchAlbum, searchAlbumErr = p.getSearchAlbum(ctx, urls, album, limit, offset)
 	})
 	wg.Go(func() {
-		searchArtist, searchArtistErr = p.getSearchArtist(ctx, urls, artist)
+		searchArtist, searchArtistErr = p.getSearchArtist(ctx, urls, artist, limit, offset)
 	})
 	wg.Go(func() {
-		searchPlaylist, searchPlaylistErr = p.getSearchPlaylist(ctx, urls, playlist)
+		searchPlaylist, searchPlaylistErr = p.getSearchPlaylist(ctx, urls, playlist, limit, offset)
 	})
 	wg.Wait()
 
@@ -88,15 +88,15 @@ func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist
 	return searchSong, searchAlbum, searchArtist, searchPlaylist, nil
 }
 
-func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, album, artist, playlist string) (model.Search, error) {
+func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, album, artist, playlist string, limit int, offset int) (model.Search, error) {
 	urls := hifi_utils.InstancesToUrls(instances)
 
-	songData, albumData, artistData, playlistData, err := p.getSearch(ctx, urls, song, album, artist, playlist)
+	songData, albumData, artistData, playlistData, err := p.getSearch(ctx, urls, song, album, artist, playlist, limit, offset)
 	if err != nil {
 		return model.Search{}, err
 	}
 
-	songs := []model.Song{}
+	songs := []model.SongInfo{}
 	for _, song := range songData.Data.Songs {
 		audioQuality := LOW
 		switch song.AudioQuality {
@@ -118,16 +118,16 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			}
 		}
 
-		artists := []model.Artist{}
+		artists := []model.ArtistInfo{}
 		for _, artist := range song.Artists {
-			artists = append(artists, model.Artist{
+			artists = append(artists, model.ArtistInfo{
 				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		songs = append(songs,
-			model.Song{
+			model.SongInfo{
 				ID:           strconv.FormatUint(uint64(song.ID), 10),
 				Title:        song.Title,
 				Duration:     song.Duration,
@@ -136,7 +136,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				Explicit:     song.Explicit,
 				Isrc:         song.Isrc,
 				Artists:      artists,
-				Album: model.Album{
+				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
 					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
@@ -144,7 +144,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			})
 	}
 
-	albums := []model.Album{}
+	albums := []model.AlbumInfo{}
 	for _, album := range albumData.Data.Albums.Albums {
 		audioQuality := LOW
 		switch album.AudioQuality {
@@ -166,16 +166,16 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			}
 		}
 
-		artists := []model.Artist{}
+		artists := []model.ArtistInfo{}
 		for _, artist := range album.Artists {
-			artists = append(artists, model.Artist{
+			artists = append(artists, model.ArtistInfo{
 				ID:   strconv.FormatUint(uint64(artist.ID), 10),
 				Name: artist.Name,
 			})
 		}
 
 		albums = append(albums,
-			model.Album{
+			model.AlbumInfo{
 				ID:           strconv.FormatUint(uint64(album.ID), 10),
 				Title:        album.Title,
 				Duration:     album.Duration,
@@ -187,10 +187,10 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			})
 	}
 
-	artists := []model.Artist{}
+	artists := []model.ArtistInfo{}
 	for _, artist := range artistData.Data.Artists.Artists {
 		artists = append(artists,
-			model.Artist{
+			model.ArtistInfo{
 				ID:         strconv.FormatUint(uint64(artist.ID), 10),
 				Name:       artist.Name,
 				PictureUrl: hifi_utils.GetImageURL(artist.PictureUrl, 750),
@@ -198,10 +198,10 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			})
 	}
 
-	playlists := []model.Playlist{}
+	playlists := []model.PlaylistInfo{}
 	for _, playlist := range playlistData.Data.Playlists.Playlists {
 		playlists = append(playlists,
-			model.Playlist{
+			model.PlaylistInfo{
 				ID:       playlist.UUID,
 				Title:    playlist.Title,
 				Duration: playlist.Duration,

@@ -16,93 +16,111 @@ const (
 )
 
 type Quality struct {
-	Name  string `json:"name"`
-	Color string `json:"color"`
+	Name  string
+	Color string
 }
 
-type Song struct {
-	ID              string    `json:"id"`
-	Title           string    `json:"title"`
-	Duration        uint      `json:"duration"`
-	ReplayGain      float64   `json:"replayGain"`
-	Peak            float64   `json:"peak"`
-	AlbumReplayGain float64   `json:"albumReplayGain"`
-	AlbumPeak       float64   `json:"albumPeak"`
-	ReleaseDate     time.Time `json:"releaseDate"`
-	TrackNumber     uint      `json:"trackNumber"`
-	VolumeNumber    uint      `json:"volumeNumber"`
-	AudioQuality    Quality   `json:"audioQuality"`
-	Popularity      uint      `json:"popularity"`
-	Explicit        bool      `json:"explicit"`
-	Isrc            string    `json:"isrc"`
-	Artists         []Artist  `json:"artists"`
-	Album           Album     `json:"album"`
+type SongInfo struct {
+	ID              string
+	Title           string
+	Duration        uint
+	ReplayGain      float64
+	Peak            float64
+	AlbumReplayGain float64
+	AlbumPeak       float64
+	ReleaseDate     time.Time
+	TrackNumber     uint
+	VolumeNumber    uint
+	AudioQuality    Quality
+	Popularity      uint
+	Explicit        bool
+	Isrc            string
+	Artists         []ArtistInfo
+	Album           AlbumInfo
 }
 
-type EnrichedSong struct {
-	Provider   string `json:"provider"`
-	Downloaded bool   `json:"downloaded"`
-	Song
+type EnrichedSongInfo struct {
+	Provider string
+	SongInfo
 }
 
-type Album struct {
-	ID            string    `json:"id"`
-	Title         string    `json:"title"`
-	Duration      uint      `json:"duration"`
-	ReleaseDate   time.Time `json:"releaseDate"`
-	NumberTracks  uint      `json:"numberTracks"`
-	NumberVolumes uint      `json:"numberVolumes"`
-	CoverUrl      string    `json:"coverUrl"`
-	AudioQuality  Quality   `json:"audioQuality"`
-	Popularity    uint      `json:"popularity"`
-	Explicit      bool      `json:"explicit"`
-	Artists       []Artist  `json:"artists"`
-	Songs         []Song    `json:"songs"`
+type AlbumInfo struct {
+	ID            string
+	Title         string
+	Duration      uint
+	ReleaseDate   time.Time
+	NumberTracks  uint
+	NumberVolumes uint
+	CoverUrl      string
+	AudioQuality  Quality
+	Popularity    uint
+	Explicit      bool
+	Artists       []ArtistInfo
+}
+type EnrichedAlbumInfo struct {
+	Provider string
+	AlbumInfo
 }
 
-type EnrichedAlbum struct {
-	Provider   string `json:"provider"`
-	Downloaded bool   `json:"downloaded"`
-	Album
-	Songs []EnrichedSong `json:"songs"`
+type AlbumSongs struct {
+	Songs []SongInfo
+}
+type EnrichedAlbumSongs struct {
+	Provider string
+	AlbumSongs
+	Songs []EnrichedSongInfo
 }
 
-type Artist struct {
-	ID         string  `json:"id"`
-	Name       string  `json:"name"`
-	PictureUrl string  `json:"pictureUrl"`
-	Popularity uint    `json:"popularity"`
-	Albums     []Album `json:"albums"`
-	Ep         []Album `json:"ep"`
-	Singles    []Album `json:"singles"`
+type ArtistInfo struct {
+	ID         string
+	Name       string
+	PictureUrl string
+	Popularity uint
 }
 
-type EnrichedArtist struct {
-	Provider string    `json:"provider"`
-	Followed uuid.UUID `json:"followed"`
-	Artist
-	Albums  []EnrichedAlbum `json:"albums"`
-	Ep      []EnrichedAlbum `json:"ep"`
-	Singles []EnrichedAlbum `json:"singles"`
+type EnrichedArtistInfo struct {
+	Provider string
+	Followed uuid.UUID
+	ArtistInfo
 }
 
-type Playlist struct {
-	ID             string    `json:"id"`
-	Title          string    `json:"title"`
-	Description    string    `json:"description"`
-	Duration       uint      `json:"duration"`
-	LastUpdated    time.Time `json:"lastUpdated"`
-	NumberOfTracks uint      `json:"numberOfTracks"`
-	CoverURL       string    `json:"coverUrl"`
-	Popularity     uint      `json:"popularity"`
-	Songs          []Song    `json:"songs"`
+type ArtistAlbums struct {
+	Albums  []AlbumInfo
+	Ep      []AlbumInfo
+	Singles []AlbumInfo
 }
 
-type EnrichedPlaylist struct {
-	Provider   string `json:"provider"`
-	Downloaded bool   `json:"downloaded"`
-	Playlist
-	Songs []EnrichedSong `json:"songs"`
+type EnrichedArtistAlbums struct {
+	Provider string
+	ArtistAlbums
+	Albums  []EnrichedAlbumInfo
+	Ep      []EnrichedAlbumInfo
+	Singles []EnrichedAlbumInfo
+}
+
+type PlaylistInfo struct {
+	ID             string
+	Title          string
+	Description    string
+	Duration       uint
+	LastUpdated    time.Time
+	NumberOfTracks uint
+	CoverURL       string
+	Popularity     uint
+}
+
+type EnrichedPlaylistInfo struct {
+	Provider string
+	PlaylistInfo
+}
+
+type PlaylistSongs struct {
+	Songs []SongInfo
+}
+type EnrichedPlaylistSongs struct {
+	Provider string
+	PlaylistSongs
+	Songs []EnrichedSongInfo
 }
 
 type TypedItem struct {
@@ -111,17 +129,17 @@ type TypedItem struct {
 }
 
 type Search struct {
-	Songs     []Song     `json:"songs"`
-	Albums    []Album    `json:"albums"`
-	Artists   []Artist   `json:"artists"`
-	Playlists []Playlist `json:"playlists"`
+	Songs     []SongInfo
+	Albums    []AlbumInfo
+	Artists   []ArtistInfo
+	Playlists []PlaylistInfo
 }
 
 type EnrichedSearch struct {
-	Songs     []EnrichedSong     `json:"songs"`
-	Albums    []EnrichedAlbum    `json:"albums"`
-	Artists   []EnrichedArtist   `json:"artists"`
-	Playlists []EnrichedPlaylist `json:"playlists"`
+	Songs     []EnrichedSongInfo
+	Albums    []EnrichedAlbumInfo
+	Artists   []EnrichedArtistInfo
+	Playlists []EnrichedPlaylistInfo
 }
 
 type SearchResult struct {
@@ -130,6 +148,6 @@ type SearchResult struct {
 }
 
 type UrlItem struct {
-	Type DataType `json:"type"`
-	ID   string   `json:"id"`
+	Type DataType
+	ID   string
 }

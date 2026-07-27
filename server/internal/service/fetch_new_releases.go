@@ -6,13 +6,15 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
 	"github.com/google/uuid"
 )
 
 type FetchNewReleasesService struct {
-	plugin   *PluginService
-	follow   *FollowService
-	download *DownloadService
+	cfgPlugin config.PluginConfig
+	plugin    *PluginService
+	follow    *FollowService
+	download  *DownloadService
 }
 
 type release struct {
@@ -21,31 +23,32 @@ type release struct {
 	albumID  string
 }
 
-func NewFetchNewReleasesService(plugin *PluginService, follow *FollowService, download *DownloadService) FetchNewReleasesService {
+func NewFetchNewReleasesService(cfgPlugin config.PluginConfig, plugin *PluginService, follow *FollowService, download *DownloadService) FetchNewReleasesService {
 	return FetchNewReleasesService{
-		plugin:   plugin,
-		follow:   follow,
-		download: download,
+		cfgPlugin: cfgPlugin,
+		plugin:    plugin,
+		follow:    follow,
+		download:  download,
 	}
 }
 
 func (s *FetchNewReleasesService) getArtistNewReleases(ctx context.Context, follow model.Follow, lastFetchDate time.Time) ([]release, error) {
-	artist, err := s.plugin.GetArtist(ctx, follow.UserID, follow.Provider, follow.ArtistID)
+	artistAlbums, err := s.plugin.GetArtistAlbums(ctx, follow.UserID, follow.Provider, follow.ArtistID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
 	if err != nil {
 		return []release{}, fmt.Errorf("get artist %s: %w", follow.ArtistID, err)
 	}
 
-	var releases []model.EnrichedAlbum
-	releases = append(releases, artist.Albums...)
-	releases = append(releases, artist.Ep...)
-	releases = append(releases, artist.Singles...)
+	var releases []model.EnrichedAlbumInfo
+	releases = append(releases, artistAlbums.Albums...)
+	releases = append(releases, artistAlbums.Ep...)
+	releases = append(releases, artistAlbums.Singles...)
 
 	var newReleases []release
 	for _, r := range releases {
 		if r.ReleaseDate.After(lastFetchDate) {
 			newReleases = append(newReleases, release{
 				userID:   follow.UserID,
-				provider: artist.Provider,
+				provider: r.Provider,
 				albumID:  r.ID,
 			})
 		}
