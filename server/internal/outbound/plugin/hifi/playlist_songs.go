@@ -36,9 +36,9 @@ func (p *Hifi) PlaylistSongs(ctx context.Context, instances []model.Instance, id
 		}
 		song := item.Item
 
-		releaseDate, err := time.Parse(StreamStartDateLayout, song.ReleaseDate)
+		releaseDate, err := time.Parse(StreamStartDateLayout, song.StreamStartDate)
 		if err != nil {
-			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse playlist's song %s releaseDate %s", song.Title, song.ReleaseDate), slog.String("err", err.Error()))
+			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse playlist's song %s releaseDate %s", song.Title, song.StreamStartDate), slog.String("err", err.Error()))
 		}
 
 		audioQuality := LOW
@@ -83,12 +83,12 @@ func (p *Hifi) PlaylistSongs(ctx context.Context, instances []model.Instance, id
 			AudioQuality:    audioQuality,
 			Explicit:        song.Explicit,
 			Popularity:      song.Popularity,
-			Isrc:            song.Isrc,
+			Isrc:            song.ISRC,
 			Artists:         artists,
 			Album: model.AlbumInfo{
 				ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 				Title:    song.Album.Title,
-				CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 1280),
+				CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 1280),
 			},
 		})
 	}

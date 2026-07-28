@@ -70,7 +70,7 @@ func (p *Hifi) AlbumInfo(ctx context.Context, instances []model.Instance, id str
 		ReleaseDate:   releaseDate,
 		NumberTracks:  album.Data.NumberOfTracks,
 		NumberVolumes: album.Data.NumberOfVolumes,
-		CoverUrl:      hifi_utils.GetImageURL(album.Data.CoverUrl, 640),
+		CoverUrl:      hifi_utils.GetImageURL(album.Data.Cover, 640),
 		AudioQuality:  audioQuality,
 		Explicit:      album.Data.Explicit,
 		Artists:       artists,

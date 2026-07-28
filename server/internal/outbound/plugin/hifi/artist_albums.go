@@ -141,7 +141,7 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 			Title:        album.Title,
 			Duration:     album.Duration,
 			ReleaseDate:  releaseDate,
-			CoverUrl:     hifi_utils.GetImageURL(album.CoverUrl, 1280),
+			CoverUrl:     hifi_utils.GetImageURL(album.Cover, 1280),
 			AudioQuality: audioQuality,
 			Explicit:     album.Explicit,
 			Artists:      artists,

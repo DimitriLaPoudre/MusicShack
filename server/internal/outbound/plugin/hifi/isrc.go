@@ -36,9 +36,9 @@ func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, i
 
 	songs := []model.SongInfo{}
 	for _, song := range songData.Data.Songs {
-		releaseDate, err := time.Parse(StreamStartDateLayout, song.ReleaseDate)
+		releaseDate, err := time.Parse(StreamStartDateLayout, song.StreamStartDate)
 		if err != nil {
-			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse song with ISRC %s releaseDate %s", isrc, song.ReleaseDate), slog.String("err", err.Error()))
+			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse song with ISRC %s releaseDate %s", isrc, song.StreamStartDate), slog.String("err", err.Error()))
 		}
 
 		audioQuality := LOW
@@ -80,12 +80,12 @@ func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, i
 				AudioQuality: audioQuality,
 				Explicit:     song.Explicit,
 				Popularity:   song.Popularity,
-				Isrc:         song.Isrc,
+				Isrc:         song.ISRC,
 				Artists:      artists,
 				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 1280),
+					CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 1280),
 				},
 			})
 	}

@@ -27,9 +27,9 @@ func (p *Hifi) ArtistInfo(ctx context.Context, instances []model.Instance, id st
 		return model.ArtistInfo{}, err
 	}
 
-	pictureURL := artistInfo.Artist.PictureUrl
-	if pictureURL == "" {
-		pictureURL = artistInfo.Artist.PictureUrlFallback
+	pictureURL := artistInfo.Artist.Picture
+	if pictureURL == "" && artistInfo.Artist.SelectedAlbumCoverFallback != nil {
+		pictureURL = *artistInfo.Artist.SelectedAlbumCoverFallback
 	}
 	pictureURL = hifi_utils.GetImageURL(pictureURL, 750)
 

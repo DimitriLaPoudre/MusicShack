@@ -134,12 +134,12 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				AudioQuality: audioQuality,
 				Popularity:   song.Popularity,
 				Explicit:     song.Explicit,
-				Isrc:         song.Isrc,
+				Isrc:         song.ISRC,
 				Artists:      artists,
 				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(song.Album.CoverUrl, 640),
+					CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 640),
 				},
 			})
 	}
@@ -179,7 +179,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				ID:           strconv.FormatUint(uint64(album.ID), 10),
 				Title:        album.Title,
 				Duration:     album.Duration,
-				CoverUrl:     hifi_utils.GetImageURL(album.CoverUrl, 640),
+				CoverUrl:     hifi_utils.GetImageURL(album.Cover, 640),
 				AudioQuality: audioQuality,
 				Explicit:     album.Explicit,
 				Popularity:   album.Popularity,
@@ -193,7 +193,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			model.ArtistInfo{
 				ID:         strconv.FormatUint(uint64(artist.ID), 10),
 				Name:       artist.Name,
-				PictureUrl: hifi_utils.GetImageURL(artist.PictureUrl, 750),
+				PictureUrl: hifi_utils.GetImageURL(artist.Picture, 750),
 				Popularity: artist.Popularity,
 			})
 	}
