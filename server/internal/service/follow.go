@@ -29,7 +29,7 @@ func (s *FollowService) CreateFollow(ctx context.Context, follow model.Follow) (
 
 	artist, err := s.plugin.GetArtistInfo(ctx, follow.UserID, follow.Provider, follow.ArtistID)
 	follow.ArtistName = artist.Name
-	follow.ArtistPictureURL = artist.PictureUrl
+	follow.ArtistPictureURL = artist.PictureURL
 
 	follow, err = s.repo.CreateFollow(ctx, follow)
 	if err != nil {

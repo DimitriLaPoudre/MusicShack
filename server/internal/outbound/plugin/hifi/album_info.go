@@ -22,7 +22,7 @@ func (p *Hifi) getAlbumInfo(ctx context.Context, urls []string, id string) (albu
 }
 
 func (p *Hifi) AlbumInfo(ctx context.Context, instances []model.Instance, id string) (model.AlbumInfo, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	album, err := p.getAlbumInfo(ctx, urls, id)
 	if err != nil {
@@ -70,7 +70,7 @@ func (p *Hifi) AlbumInfo(ctx context.Context, instances []model.Instance, id str
 		ReleaseDate:   releaseDate,
 		NumberTracks:  album.Data.NumberOfTracks,
 		NumberVolumes: album.Data.NumberOfVolumes,
-		CoverUrl:      hifi_utils.GetImageURL(album.Data.Cover, 640),
+		CoverURL:      hifi_utils.GetImageURL(album.Data.Cover, 640),
 		AudioQuality:  audioQuality,
 		Explicit:      album.Data.Explicit,
 		Artists:       artists,

@@ -21,7 +21,7 @@ func (p *Hifi) getPlaylistInfo(ctx context.Context, urls []string, id string) (p
 }
 
 func (p *Hifi) PlaylistInfo(ctx context.Context, instances []model.Instance, id string) (model.PlaylistInfo, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	playlistInfo, err := p.getPlaylistInfo(ctx, urls, id)
 	if err != nil {

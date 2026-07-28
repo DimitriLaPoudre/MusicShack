@@ -46,7 +46,7 @@ type songResponse struct {
 type songItem struct {
 	ID                     uint64  `json:"id"`
 	Title                  string  `json:"title"`
-	Duration               uint    `json:"duration"`
+	Duration               int     `json:"duration"`
 	ReplayGain             float64 `json:"replayGain"`
 	Peak                   float64 `json:"peak"`
 	AllowStreaming         bool    `json:"allowStreaming"`
@@ -57,15 +57,15 @@ type songItem struct {
 	StemReady              bool    `json:"stemReady"`
 	StreamStartDate        string  `json:"streamStartDate"`
 	PremiumStreamingOnly   bool    `json:"premiumStreamingOnly"`
-	TrackNumber            uint    `json:"trackNumber"`
-	VolumeNumber           uint    `json:"volumeNumber"`
+	TrackNumber            int     `json:"trackNumber"`
+	VolumeNumber           int     `json:"volumeNumber"`
 
 	// Version *string `json:"version"`
 
-	Popularity uint   `json:"popularity"`
+	Popularity int    `json:"popularity"`
 	Copyright  string `json:"copyright"`
 
-	// BPM      *uint   `json:"bpm"`
+	// BPM      *int   `json:"bpm"`
 	// Key      *string `json:"key"`
 	// KeyScale *string `json:"keyScale"`
 
@@ -123,7 +123,7 @@ type albumItemWithSongs struct {
 type albumItem struct {
 	ID                     uint64 `json:"id"`
 	Title                  string `json:"title"`
-	Duration               uint   `json:"duration"`
+	Duration               int    `json:"duration"`
 	StreamReady            bool   `json:"streamReady"`
 	PayToStream            bool   `json:"payToStream"`
 	AdSupportedStreamReady bool   `json:"adSupportedStreamReady"`
@@ -133,9 +133,9 @@ type albumItem struct {
 	AllowStreaming         bool   `json:"allowStreaming"`
 	PremiumStreamingOnly   bool   `json:"premiumStreamingOnly"`
 
-	NumberOfTracks  uint `json:"numberOfTracks"`
-	NumberOfVideos  uint `json:"numberOfVideos"`
-	NumberOfVolumes uint `json:"numberOfVolumes"`
+	NumberOfTracks  int `json:"numberOfTracks"`
+	NumberOfVideos  int `json:"numberOfVideos"`
+	NumberOfVolumes int `json:"numberOfVolumes"`
 
 	ReleaseDate string `json:"releaseDate"`
 	Copyright   string `json:"copyright"`
@@ -151,7 +151,7 @@ type albumItem struct {
 
 	Explicit     bool     `json:"explicit"`
 	UPC          string   `json:"upc"`
-	Popularity   uint     `json:"popularity"`
+	Popularity   int      `json:"popularity"`
 	AudioQuality string   `json:"audioQuality"`
 	AudioModes   []string `json:"audioModes"`
 
@@ -173,8 +173,6 @@ type artistResponse struct {
 	Version string `json:"version"`
 
 	Artist artistItem `json:"artist"`
-
-	Cover coverItem `json:"cover"`
 }
 
 type artistItem struct {
@@ -184,7 +182,7 @@ type artistItem struct {
 	URL                        string   `json:"url"`
 	Picture                    string   `json:"picture"`
 	SelectedAlbumCoverFallback *string  `json:"selectedAlbumCoverFallback"`
-	Popularity                 uint     `json:"popularity"`
+	Popularity                 int      `json:"popularity"`
 
 	ArtistRoles []struct {
 		CategoryID int    `json:"categoryId"`
@@ -228,7 +226,7 @@ type playlistResponse struct {
 	Items    []struct {
 		SongItemTyped
 		DateAdded string `json:"dateAdded"`
-		Index     uint   `json:"index"`
+		Index     int    `json:"index"`
 		ItemUUID  string `json:"itemUuid"`
 	} `json:"items"`
 }
@@ -236,20 +234,20 @@ type playlistResponse struct {
 type playlistInfo struct {
 	UUID           string `json:"uuid"`
 	Title          string `json:"title"`
-	NumberOfTracks uint   `json:"numberOfTracks"`
-	NumberOfVideos uint   `json:"numberOfVideos"`
+	NumberOfTracks int    `json:"numberOfTracks"`
+	NumberOfVideos int    `json:"numberOfVideos"`
 	Creator        struct {
-		ID uint `json:"id"`
+		ID int `json:"id"`
 	} `json:"creator"`
 	Description     string           `json:"description"`
-	Duration        uint             `json:"duration"`
+	Duration        int              `json:"duration"`
 	LastUpdated     string           `json:"lastUpdated"`
 	Created         string           `json:"created"`
 	Type            string           `json:"type"`
 	PublicPlaylist  bool             `json:"publicPlaylist"`
 	URL             string           `json:"url"`
 	Image           string           `json:"image"`
-	Popularity      uint             `json:"popularity"`
+	Popularity      int              `json:"popularity"`
 	SquareImage     string           `json:"squareImage"`
 	PromotedArtists []miniArtistItem `json:"promotedArtists"`
 	LastItemAddedAt string           `json:"lastItemAddedAt"`
@@ -260,9 +258,9 @@ type playlistInfo struct {
 type searchSongResponse struct {
 	Version string `json:"version"`
 	Data    struct {
-		Limit              uint       `json:"limit"`
-		Offset             uint       `json:"offset"`
-		TotalNumberOfItems uint       `json:"totalNumberOfItems"`
+		Limit              int        `json:"limit"`
+		Offset             int        `json:"offset"`
+		TotalNumberOfItems int        `json:"totalNumberOfItems"`
 		Songs              []songItem `json:"items"`
 	} `json:"data"`
 }
@@ -271,9 +269,9 @@ type searchAlbumResponse struct {
 	Version string `json:"version"`
 	Data    struct {
 		Albums struct {
-			Limit              uint        `json:"limit"`
-			Offset             uint        `json:"offset"`
-			TotalNumberOfItems uint        `json:"totalNumberOfItems"`
+			Limit              int         `json:"limit"`
+			Offset             int         `json:"offset"`
+			TotalNumberOfItems int         `json:"totalNumberOfItems"`
 			Albums             []albumItem `json:"items"`
 		} `json:"albums"`
 	} `json:"data"`
@@ -283,9 +281,9 @@ type searchArtistResponse struct {
 	Version string `json:"version"`
 	Data    struct {
 		Artists struct {
-			Limit              uint         `json:"limit"`
-			Offset             uint         `json:"offset"`
-			TotalNumberOfItems uint         `json:"totalNumberOfItems"`
+			Limit              int          `json:"limit"`
+			Offset             int          `json:"offset"`
+			TotalNumberOfItems int          `json:"totalNumberOfItems"`
 			Artists            []artistItem `json:"items"`
 		} `json:"artists"`
 	} `json:"data"`
@@ -295,20 +293,12 @@ type searchPlaylistResponse struct {
 	Version string `json:"version"`
 	Data    struct {
 		Playlists struct {
-			Limit              uint           `json:"limit"`
-			Offset             uint           `json:"offset"`
-			TotalNumberOfItems uint           `json:"totalNumberOfItems"`
+			Limit              int            `json:"limit"`
+			Offset             int            `json:"offset"`
+			TotalNumberOfItems int            `json:"totalNumberOfItems"`
 			Playlists          []playlistInfo `json:"items"`
 		} `json:"playlists"`
 	} `json:"data"`
-}
-
-// -- Cover -- //
-
-type coverItem struct {
-	ID   uint64 `json:"id"`
-	Name string `json:"name"`
-	Size string `json:"750"`
 }
 
 // -- Download -- //
@@ -335,10 +325,10 @@ type downloadItem struct {
 }
 
 type manifestTidal struct {
-	MimeType       string
-	Codecs         string
-	EncryptionType string
-	Urls           []string
+	MimeType       string   `json:"mimeType"`
+	Codecs         string   `json:"codecs"`
+	EncryptionType string   `json:"encryptionType"`
+	URLs           []string `json:"urls"`
 }
 
 type manifestMPD struct {

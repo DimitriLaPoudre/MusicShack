@@ -24,18 +24,18 @@ func (p *Hifi) getArtistAlbums(ctx context.Context, urls []string, id string, li
 	return albums, nil
 }
 
-func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.ArtistAlbums, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.ArtistPaginatedAlbums, error) {
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	artistAlbums, err := p.getArtistAlbums(ctx, urls, id, limit, offset)
 	if err != nil {
-		return model.ArtistAlbums{}, err
+		return model.ArtistPaginatedAlbums{}, err
 	}
 
 	type albumItemComparaison struct {
 		Title       string
 		ReleaseDate string
-		TrackNumber uint
+		TrackNumber int
 	}
 
 	best := make(map[albumItemComparaison]albumItem)
@@ -141,7 +141,7 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 			Title:        album.Title,
 			Duration:     album.Duration,
 			ReleaseDate:  releaseDate,
-			CoverUrl:     hifi_utils.GetImageURL(album.Cover, 1280),
+			CoverURL:     hifi_utils.GetImageURL(album.Cover, 1280),
 			AudioQuality: audioQuality,
 			Explicit:     album.Explicit,
 			Artists:      artists,
@@ -157,9 +157,30 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 		}
 	}
 
-	return model.ArtistAlbums{
-		Albums:  albums,
-		Ep:      eps,
-		Singles: singles,
+	return model.ArtistPaginatedAlbums{
+		Albums:  model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(albums)}, Albums: paginate(albums, limit, offset)},
+		EPs:     model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(eps)}, Albums: eps},
+		Singles: model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(singles)}, Albums: singles},
 	}, nil
+}
+
+func paginate[T any](items []T, limit, offset int) []T {
+	if offset < 0 {
+		offset = 0
+	}
+
+	if limit <= 0 {
+		return []T{}
+	}
+
+	if offset >= len(items) {
+		return []T{}
+	}
+
+	end := offset + limit
+	if end > len(items) {
+		end = len(items)
+	}
+
+	return items[offset:end]
 }

@@ -39,9 +39,9 @@ func (s *FetchNewReleasesService) getArtistNewReleases(ctx context.Context, foll
 	}
 
 	var releases []model.EnrichedAlbumInfo
-	releases = append(releases, artistAlbums.Albums...)
-	releases = append(releases, artistAlbums.Ep...)
-	releases = append(releases, artistAlbums.Singles...)
+	releases = append(releases, artistAlbums.Albums.Albums...)
+	releases = append(releases, artistAlbums.EPs.Albums...)
+	releases = append(releases, artistAlbums.Singles.Albums...)
 
 	var newReleases []release
 	for _, r := range releases {

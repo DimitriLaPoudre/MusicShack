@@ -11,41 +11,44 @@ type AudioQuality struct {
 	Color string `json:"color"`
 }
 
-type SongInfoArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+type Pagination struct {
+	Limit              int `json:"limit"`
+	Offset             int `json:"offset"`
+	TotalNumberOfItems int `json:"totalNumberOfItems"`
 }
 
-type SongInfoAlbum struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	CoverUrl string `json:"coverUrl"`
-}
+// -- SongInfo -- //
 
 type SongInfo struct {
-	Provider        string           `json:"provider"`
-	ID              string           `json:"id"`
-	Title           string           `json:"title"`
-	Duration        uint             `json:"duration"`
-	ReplayGain      float64          `json:"replayGain"`
-	Peak            float64          `json:"peak"`
-	AlbumReplayGain float64          `json:"albumReplayGain"`
-	AlbumPeak       float64          `json:"albumPeak"`
-	ReleaseDate     time.Time        `json:"releaseDate"`
-	TrackNumber     uint             `json:"trackNumber"`
-	VolumeNumber    uint             `json:"volumeNumber"`
-	AudioQuality    AudioQuality     `json:"audioQuality"`
-	Explicit        bool             `json:"explicit"`
-	Popularity      uint             `json:"popularity"`
-	Isrc            string           `json:"isrc"`
-	Artists         []SongInfoArtist `json:"artists"`
-	Album           SongInfoAlbum    `json:"album"`
+	Provider        string       `json:"provider"`
+	ID              string       `json:"id"`
+	Title           string       `json:"title"`
+	Duration        int          `json:"duration"`
+	ReplayGain      float64      `json:"replayGain"`
+	Peak            float64      `json:"peak"`
+	AlbumReplayGain float64      `json:"albumReplayGain"`
+	AlbumPeak       float64      `json:"albumPeak"`
+	ReleaseDate     time.Time    `json:"releaseDate"`
+	TrackNumber     int          `json:"trackNumber"`
+	VolumeNumber    int          `json:"volumeNumber"`
+	AudioQuality    AudioQuality `json:"audioQuality"`
+	Explicit        bool         `json:"explicit"`
+	Popularity      int          `json:"popularity"`
+	Isrc            string       `json:"isrc"`
+	Artists         []MiniArtist `json:"artists"`
+	Album           SongAlbum    `json:"album"`
+}
+
+type SongAlbum struct {
+	ID       string `json:"id"`
+	Title    string `json:"title"`
+	CoverURL string `json:"coverURL"`
 }
 
 func SongInfoToResponse(songInfo model.EnrichedSongInfo) SongInfo {
-	artists := []SongInfoArtist{}
+	artists := []MiniArtist{}
 	for _, a := range songInfo.Artists {
-		artists = append(artists, SongInfoArtist{
+		artists = append(artists, MiniArtist{
 			ID:   a.ID,
 			Name: a.Name,
 		})
@@ -71,37 +74,54 @@ func SongInfoToResponse(songInfo model.EnrichedSongInfo) SongInfo {
 		Popularity: songInfo.Popularity,
 		Isrc:       songInfo.Isrc,
 		Artists:    artists,
-		Album: SongInfoAlbum{
+		Album: SongAlbum{
 			ID:       songInfo.Album.ID,
 			Title:    songInfo.Album.Title,
-			CoverUrl: songInfo.Album.CoverUrl,
+			CoverURL: songInfo.Album.CoverURL,
 		},
 	}
 }
 
-type AlbumInfoArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// -- PagignatedSongs -- //
+
+type PaginatedSongs struct {
+	Provider string `json:"provider"`
+	Pagination
+	Songs []SongInfo `json:"items"`
 }
 
+func PaginatedSongsToResponse(paginatedSongs model.EnrichedPaginatedSongs) PaginatedSongs {
+	songs := []SongInfo{}
+	for _, s := range paginatedSongs.Songs {
+		songs = append(songs, SongInfoToResponse(s))
+	}
+
+	return PaginatedSongs{
+		Provider: paginatedSongs.Provider,
+		Songs:    songs,
+	}
+}
+
+// -- AlbumInfo -- //
+
 type AlbumInfo struct {
-	Provider      string            `json:"provider"`
-	ID            string            `json:"id"`
-	Title         string            `json:"title"`
-	Duration      uint              `json:"duration"`
-	ReleaseDate   time.Time         `json:"releaseDate"`
-	NumberTracks  uint              `json:"numberTracks"`
-	NumberVolumes uint              `json:"numberVolumes"`
-	CoverUrl      string            `json:"coverUrl"`
-	AudioQuality  AudioQuality      `json:"audioQuality"`
-	Explicit      bool              `json:"explicit"`
-	Artists       []AlbumInfoArtist `json:"artists"`
+	Provider      string       `json:"provider"`
+	ID            string       `json:"id"`
+	Title         string       `json:"title"`
+	Duration      int          `json:"duration"`
+	ReleaseDate   time.Time    `json:"releaseDate"`
+	NumberTracks  int          `json:"numberTracks"`
+	NumberVolumes int          `json:"numberVolumes"`
+	CoverURL      string       `json:"coverURL"`
+	AudioQuality  AudioQuality `json:"audioQuality"`
+	Explicit      bool         `json:"explicit"`
+	Artists       []MiniArtist `json:"artists"`
 }
 
 func AlbumInfoToResponse(albumInfo model.EnrichedAlbumInfo) AlbumInfo {
-	artists := []AlbumInfoArtist{}
+	artists := []MiniArtist{}
 	for _, a := range albumInfo.Artists {
-		artists = append(artists, AlbumInfoArtist{
+		artists = append(artists, MiniArtist{
 			ID:   a.ID,
 			Name: a.Name,
 		})
@@ -115,7 +135,7 @@ func AlbumInfoToResponse(albumInfo model.EnrichedAlbumInfo) AlbumInfo {
 		ReleaseDate:   albumInfo.ReleaseDate,
 		NumberTracks:  albumInfo.NumberTracks,
 		NumberVolumes: albumInfo.NumberVolumes,
-		CoverUrl:      albumInfo.CoverUrl,
+		CoverURL:      albumInfo.CoverURL,
 		AudioQuality: AudioQuality{
 			Name:  albumInfo.AudioQuality.Name,
 			Color: albumInfo.AudioQuality.Color,
@@ -125,197 +145,107 @@ func AlbumInfoToResponse(albumInfo model.EnrichedAlbumInfo) AlbumInfo {
 	}
 }
 
-type AlbumSongArtist struct {
+// -- PaginatedAlbums -- //
+
+type PaginatedAlbums struct {
+	Provider string `json:"provider"`
+	Pagination
+	Albums []AlbumInfo `json:"items"`
+}
+
+func PaginatedAlbumsToResponse(paginatedAlbums model.EnrichedPaginatedAlbums) PaginatedAlbums {
+	albums := []AlbumInfo{}
+	for _, a := range paginatedAlbums.Albums {
+		albums = append(albums, AlbumInfoToResponse(a))
+	}
+
+	return PaginatedAlbums{
+		Provider: paginatedAlbums.Provider,
+		Albums:   albums,
+	}
+}
+
+// -- MiniArtist -- //
+
+type MiniArtist struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
 }
 
-type AlbumSong struct {
-	Provider     string            `json:"provider"`
-	ID           string            `json:"id"`
-	Title        string            `json:"title"`
-	Duration     uint              `json:"duration"`
-	TrackNumber  uint              `json:"trackNumber"`
-	VolumeNumber uint              `json:"volumeNumber"`
-	AudioQuality AudioQuality      `json:"audioQuality"`
-	Explicit     bool              `json:"explicit"`
-	Isrc         string            `json:"isrc"`
-	Artists      []AlbumSongArtist `json:"artists"`
-}
-
-type AlbumSongs struct {
-	Provider string      `json:"provider"`
-	Songs    []AlbumSong `json:"songs"`
-}
-
-func AlbumSongsToResponse(albumSongs model.EnrichedAlbumSongs) AlbumSongs {
-	songs := []AlbumSong{}
-	for _, s := range albumSongs.Songs {
-		songArtists := []AlbumSongArtist{}
-		for _, a := range s.Artists {
-			songArtists = append(songArtists, AlbumSongArtist{
-				ID:   a.ID,
-				Name: a.Name,
-			})
-		}
-
-		songs = append(songs, AlbumSong{
-			Provider:     s.Provider,
-			ID:           s.ID,
-			Title:        s.Title,
-			Duration:     s.Duration,
-			TrackNumber:  s.TrackNumber,
-			VolumeNumber: s.VolumeNumber,
-			AudioQuality: AudioQuality{
-				Name:  s.AudioQuality.Name,
-				Color: s.AudioQuality.Color,
-			},
-			Explicit: s.Explicit,
-			Isrc:     s.Isrc,
-			Artists:  songArtists,
-		})
-	}
-
-	return AlbumSongs{
-		Provider: albumSongs.Provider,
-		Songs:    songs,
-	}
-}
+// -- ArtistInfo -- //
 
 type ArtistInfo struct {
-	Provider   string `json:"provider"`
-	Followed   string `json:"followed"`
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	PictureUrl string `json:"pictureUrl"`
+	Provider   string  `json:"provider"`
+	Followed   *string `json:"followed"`
+	ID         string  `json:"id"`
+	Name       string  `json:"name"`
+	PictureURL string  `json:"pictureURL"`
 }
 
 func ArtistInfoToResponse(artistInfo model.EnrichedArtistInfo) ArtistInfo {
+	var followed *string
+	if artistInfo.Followed != nil {
+		followed_ground := (*artistInfo.Followed).String()
+		followed = &followed_ground
+	}
 	return ArtistInfo{
 		Provider:   artistInfo.Provider,
-		Followed:   artistInfo.Followed.String(),
+		Followed:   followed,
 		ID:         artistInfo.ID,
 		Name:       artistInfo.Name,
-		PictureUrl: artistInfo.PictureUrl,
+		PictureURL: artistInfo.PictureURL,
 	}
 }
 
-type ArtistAlbumArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// -- PaginatedArtists -- //
+
+type PaginatedArtists struct {
+	Provider string `json:"provider"`
+	Pagination
+	Artists []ArtistInfo `json:"items"`
 }
 
-type ArtistAlbum struct {
-	ID           string              `json:"id"`
-	Title        string              `json:"title"`
-	Duration     uint                `json:"duration"`
-	ReleaseDate  time.Time           `json:"releaseDate"`
-	CoverUrl     string              `json:"coverUrl"`
-	AudioQuality AudioQuality        `json:"audioQuality"`
-	Explicit     bool                `json:"explicit"`
-	Artists      []ArtistAlbumArtist `json:"artists"`
-}
-
-type ArtistAlbums struct {
-	Provider string        `json:"provider"`
-	Albums   []ArtistAlbum `json:"albums"`
-	Ep       []ArtistAlbum `json:"ep"`
-	Singles  []ArtistAlbum `json:"singles"`
-}
-
-func ArtistAlbumsToResponse(artistAlbums model.EnrichedArtistAlbums) ArtistAlbums {
-	albums := []ArtistAlbum{}
-	for _, album := range artistAlbums.Albums {
-		albumArtists := []ArtistAlbumArtist{}
-		for _, a := range album.Artists {
-			albumArtists = append(albumArtists, ArtistAlbumArtist{
-				ID:   a.ID,
-				Name: a.Name,
-			})
-		}
-
-		albums = append(albums, ArtistAlbum{
-			ID:          album.ID,
-			Title:       album.Title,
-			Duration:    album.Duration,
-			ReleaseDate: album.ReleaseDate,
-			CoverUrl:    album.CoverUrl,
-			AudioQuality: AudioQuality{
-				Name:  album.AudioQuality.Name,
-				Color: album.AudioQuality.Color,
-			},
-			Explicit: album.Explicit,
-			Artists:  albumArtists,
-		})
+func PaginatedArtistsToResponse(paginatedArtists model.EnrichedPaginatedArtists) PaginatedArtists {
+	artists := []ArtistInfo{}
+	for _, a := range paginatedArtists.Artists {
+		artists = append(artists, ArtistInfoToResponse(a))
 	}
 
-	eps := []ArtistAlbum{}
-	for _, ep := range artistAlbums.Ep {
-		epArtists := []ArtistAlbumArtist{}
-		for _, a := range ep.Artists {
-			epArtists = append(epArtists, ArtistAlbumArtist{
-				ID:   a.ID,
-				Name: a.Name,
-			})
-		}
-
-		eps = append(eps, ArtistAlbum{
-			ID:          ep.ID,
-			Title:       ep.Title,
-			Duration:    ep.Duration,
-			ReleaseDate: ep.ReleaseDate,
-			CoverUrl:    ep.CoverUrl,
-			AudioQuality: AudioQuality{
-				Name:  ep.AudioQuality.Name,
-				Color: ep.AudioQuality.Color,
-			},
-			Explicit: ep.Explicit,
-			Artists:  epArtists,
-		})
-	}
-
-	singles := []ArtistAlbum{}
-	for _, single := range artistAlbums.Singles {
-		singleArtists := []ArtistAlbumArtist{}
-		for _, a := range single.Artists {
-			singleArtists = append(singleArtists, ArtistAlbumArtist{
-				ID:   a.ID,
-				Name: a.Name,
-			})
-		}
-
-		singles = append(singles, ArtistAlbum{
-			ID:          single.ID,
-			Title:       single.Title,
-			Duration:    single.Duration,
-			ReleaseDate: single.ReleaseDate,
-			CoverUrl:    single.CoverUrl,
-			AudioQuality: AudioQuality{
-				Name:  single.AudioQuality.Name,
-				Color: single.AudioQuality.Color,
-			},
-			Explicit: single.Explicit,
-			Artists:  singleArtists,
-		})
-	}
-
-	return ArtistAlbums{
-		Provider: artistAlbums.Provider,
-		Albums:   albums,
-		Ep:       eps,
-		Singles:  singles,
+	return PaginatedArtists{
+		Provider: paginatedArtists.Provider,
+		Artists:  artists,
 	}
 }
+
+// -- ArtistPaginatedAlbums -- //
+
+type ArtistPaginatedAlbums struct {
+	Provider string          `json:"provider"`
+	Albums   PaginatedAlbums `json:"albums"`
+	EPs      PaginatedAlbums `json:"ep"`
+	Singles  PaginatedAlbums `json:"singles"`
+}
+
+func ArtistPaginatedAlbumsToResponse(artistPaginatedAlbums model.EnrichedArtistPaginatedAlbums) ArtistPaginatedAlbums {
+	return ArtistPaginatedAlbums{
+		Provider: artistPaginatedAlbums.Provider,
+		Albums:   PaginatedAlbumsToResponse(artistPaginatedAlbums.Albums),
+		EPs:      PaginatedAlbumsToResponse(artistPaginatedAlbums.EPs),
+		Singles:  PaginatedAlbumsToResponse(artistPaginatedAlbums.Singles),
+	}
+}
+
+// -- PlaylistInfo -- //
 
 type PlaylistInfo struct {
 	Provider       string    `json:"provider"`
 	ID             string    `json:"id"`
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
-	Duration       uint      `json:"duration"`
+	Duration       int       `json:"duration"`
 	LastUpdated    time.Time `json:"lastUpdated"`
-	NumberOfTracks uint      `json:"numberOfTracks"`
-	CoverURL       string    `json:"coverUrl"`
+	NumberOfTracks int       `json:"numberOfTracks"`
+	CoverURL       string    `json:"coverURL"`
 }
 
 func PlaylistInfoToResponse(playlistInfo model.EnrichedPlaylistInfo) PlaylistInfo {
@@ -331,121 +261,37 @@ func PlaylistInfoToResponse(playlistInfo model.EnrichedPlaylistInfo) PlaylistInf
 	}
 }
 
-type PlaylistSongArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+// -- PaginatedPlaylists -- //
+type PaginatedPlaylists struct {
+	Provider string `json:"provider"`
+	Pagination
+	Playlists []PlaylistInfo `json:"items"`
 }
 
-type PlaylistSong struct {
-	ID           string               `json:"id"`
-	Title        string               `json:"title"`
-	Duration     uint                 `json:"duration"`
-	AudioQuality AudioQuality         `json:"audioQuality"`
-	Explicit     bool                 `json:"explicit"`
-	Isrc         string               `json:"isrc"`
-	Artists      []PlaylistSongArtist `json:"artists"`
-}
-
-type PlaylistSongs struct {
-	Provider string         `json:"provider"`
-	Songs    []PlaylistSong `json:"songs"`
-}
-
-func PlaylistSongsToResponse(playlistSongs model.EnrichedPlaylistSongs) PlaylistSongs {
-	songs := []PlaylistSong{}
-	for _, s := range playlistSongs.Songs {
-		songArtists := []PlaylistSongArtist{}
-		for _, a := range s.Artists {
-			songArtists = append(songArtists, PlaylistSongArtist{
-				ID:   a.ID,
-				Name: a.Name,
-			})
-		}
-
-		songs = append(songs, PlaylistSong{
-			ID:       s.ID,
-			Title:    s.Title,
-			Duration: s.Duration,
-			AudioQuality: AudioQuality{
-				Name:  s.AudioQuality.Name,
-				Color: s.AudioQuality.Color,
-			},
-			Explicit: s.Explicit,
-			Isrc:     s.Isrc,
-			Artists:  songArtists,
-		})
+func PaginatedPlaylistsToResponse(paginatedPlaylists model.EnrichedPaginatedPlaylists) PaginatedPlaylists {
+	playlists := []PlaylistInfo{}
+	for _, a := range paginatedPlaylists.Playlists {
+		playlists = append(playlists, PlaylistInfoToResponse(a))
 	}
-	return PlaylistSongs{
-		Provider: playlistSongs.Provider,
-		Songs:    songs,
+
+	return PaginatedPlaylists{
+		Provider:  paginatedPlaylists.Provider,
+		Playlists: playlists,
 	}
 }
+
+// -- Search -- //
 
 type SearchItem struct {
 	Type string `json:"type"`
 	Data any    `json:"data"`
 }
 
-type SearchSongArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type SearchSongAlbum struct {
-	ID       string `json:"id"`
-	Title    string `json:"title"`
-	CoverUrl string `json:"coverUrl"`
-}
-
-type SearchSong struct {
-	ID           string             `json:"id"`
-	Title        string             `json:"title"`
-	Duration     uint               `json:"duration"`
-	AudioQuality AudioQuality       `json:"audioQuality"`
-	Popularity   uint               `json:"popularity"`
-	Explicit     bool               `json:"explicit"`
-	Isrc         string             `json:"isrc"`
-	Artists      []SearchSongArtist `json:"artists"`
-	Album        SearchSongAlbum    `json:"album"`
-}
-
-type SearchAlbumArtist struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type SearchAlbum struct {
-	ID           string              `json:"id"`
-	Title        string              `json:"title"`
-	Duration     uint                `json:"duration"`
-	CoverUrl     string              `json:"coverUrl"`
-	AudioQuality AudioQuality        `json:"audioQuality"`
-	Popularity   uint                `json:"popularity"`
-	Explicit     bool                `json:"explicit"`
-	Artists      []SearchAlbumArtist `json:"artists"`
-}
-
-type SearchArtist struct {
-	Followed   string `json:"followed"`
-	ID         string `json:"id"`
-	Name       string `json:"name"`
-	PictureUrl string `json:"pictureUrl"`
-	Popularity uint   `json:"popularity"`
-}
-
-type SearchPlaylist struct {
-	ID         string `json:"id"`
-	Title      string `json:"title"`
-	Duration   uint   `json:"duration"`
-	CoverURL   string `json:"coverUrl"`
-	Popularity uint   `json:"popularity"`
-}
-
 type SearchProviderResult struct {
-	Songs     []SearchSong     `json:"songs"`
-	Albums    []SearchAlbum    `json:"albums"`
-	Artists   []SearchArtist   `json:"artists"`
-	Playlists []SearchPlaylist `json:"playlists"`
+	Songs     PaginatedSongs     `json:"songs"`
+	Albums    PaginatedAlbums    `json:"albums"`
+	Artists   PaginatedArtists   `json:"artists"`
+	Playlists PaginatedPlaylists `json:"playlists"`
 }
 
 type SearchResult struct {
@@ -454,82 +300,11 @@ type SearchResult struct {
 }
 
 func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderResult {
-	songs := []SearchSong{}
-	for _, song := range search.Songs {
-		songArtists := []SearchSongArtist{}
-		for _, artist := range song.Artists {
-			songArtists = append(songArtists, SearchSongArtist{
-				ID:   artist.ID,
-				Name: artist.Name,
-			})
-		}
-
-		songs = append(songs, SearchSong{
-			ID:           song.ID,
-			Title:        song.Title,
-			Duration:     song.Duration,
-			AudioQuality: AudioQuality{Name: song.AudioQuality.Name, Color: song.AudioQuality.Color},
-			Popularity:   song.Popularity,
-			Explicit:     song.Explicit,
-			Isrc:         song.Isrc,
-			Artists:      songArtists,
-			Album: SearchSongAlbum{
-				ID:       song.Album.ID,
-				Title:    song.Album.Title,
-				CoverUrl: song.Album.CoverUrl,
-			},
-		})
-	}
-
-	albums := []SearchAlbum{}
-	for _, album := range search.Albums {
-		albumArtists := []SearchAlbumArtist{}
-		for _, artist := range album.Artists {
-			albumArtists = append(albumArtists, SearchAlbumArtist{
-				ID:   artist.ID,
-				Name: artist.Name,
-			})
-		}
-
-		albums = append(albums, SearchAlbum{
-			ID:           album.ID,
-			Title:        album.Title,
-			Duration:     album.Duration,
-			CoverUrl:     album.CoverUrl,
-			AudioQuality: AudioQuality{Name: album.AudioQuality.Name, Color: album.AudioQuality.Color},
-			Popularity:   album.Popularity,
-			Explicit:     album.Explicit,
-			Artists:      albumArtists,
-		})
-	}
-
-	artists := []SearchArtist{}
-	for _, artist := range search.Artists {
-		artists = append(artists, SearchArtist{
-			Followed:   artist.Followed.String(),
-			ID:         artist.ID,
-			Name:       artist.Name,
-			PictureUrl: artist.PictureUrl,
-			Popularity: artist.Popularity,
-		})
-	}
-
-	playlists := []SearchPlaylist{}
-	for _, playlist := range search.Playlists {
-		playlists = append(playlists, SearchPlaylist{
-			ID:         playlist.ID,
-			Title:      playlist.Title,
-			Duration:   playlist.Duration,
-			CoverURL:   playlist.CoverURL,
-			Popularity: playlist.Popularity,
-		})
-	}
-
 	return SearchProviderResult{
-		Songs:     songs,
-		Albums:    albums,
-		Artists:   artists,
-		Playlists: playlists,
+		Songs:     PaginatedSongsToResponse(search.Songs),
+		Albums:    PaginatedAlbumsToResponse(search.Albums),
+		Artists:   PaginatedArtistsToResponse(search.Artists),
+		Playlists: PaginatedPlaylistsToResponse(search.Playlists),
 	}
 }
 

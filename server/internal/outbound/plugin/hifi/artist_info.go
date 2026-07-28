@@ -20,7 +20,7 @@ func (p *Hifi) getArtistInfo(ctx context.Context, urls []string, id string) (art
 }
 
 func (p *Hifi) ArtistInfo(ctx context.Context, instances []model.Instance, id string) (model.ArtistInfo, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	artistInfo, err := p.getArtistInfo(ctx, urls, id)
 	if err != nil {
@@ -36,7 +36,7 @@ func (p *Hifi) ArtistInfo(ctx context.Context, instances []model.Instance, id st
 	return model.ArtistInfo{
 		ID:         strconv.FormatUint(uint64(artistInfo.Artist.ID), 10),
 		Name:       artistInfo.Artist.Name,
-		PictureUrl: pictureURL,
+		PictureURL: pictureURL,
 		Popularity: artistInfo.Artist.Popularity,
 	}, nil
 }

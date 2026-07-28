@@ -23,9 +23,9 @@ func NewInstanceService(plugin *PluginService, repo model.InstanceRepository) In
 
 func (s *InstanceService) CreateInstance(ctx context.Context, i model.Instance) (model.Instance, error) {
 	ping_start := time.Now()
-	plugin, err := s.plugin.GetOriginalPlugin(ctx, i.Url)
+	plugin, err := s.plugin.GetOriginalPlugin(ctx, i.URL)
 	if err != nil {
-		return model.Instance{}, fmt.Errorf("get plugin design for url %s: %w", i.Url, err)
+		return model.Instance{}, fmt.Errorf("get plugin design for url %s: %w", i.URL, err)
 	}
 	ping := time.Since(ping_start)
 
@@ -55,7 +55,7 @@ func (s *InstanceService) RefreshListByUserID(ctx context.Context, userID uuid.U
 
 	for i, instance := range instances {
 		ping_start := time.Now()
-		err := s.plugin.GetStatus(ctx, instance.Plugin, instance.Url)
+		err := s.plugin.GetStatus(ctx, instance.Plugin, instance.URL)
 		ping := time.Since(ping_start)
 		if err != nil {
 			_, err = s.repo.UpdateInstancePing(ctx, instance.ID, nil)

@@ -20,7 +20,7 @@ func (r *SQLiteRepository) CreateInstance(ctx context.Context, i model.Instance)
 	dbInstance := dto.Instance{}
 	err := tx.GetContext(ctx,
 		&dbInstance, query,
-		i.ID, i.UserID, i.Provider, i.Plugin, i.Url, i.Ping,
+		i.ID, i.UserID, i.Provider, i.Plugin, i.URL, i.Ping,
 	)
 	if err != nil {
 		return model.Instance{}, dto.Error(err)
@@ -52,9 +52,9 @@ func (r *SQLiteRepository) ListInstancesByFilter(ctx context.Context, filter mod
 		setParts = append(setParts, "plugin=?")
 		args = append(args, *filter.Plugin)
 	}
-	if filter.Url != nil {
+	if filter.URL != nil {
 		setParts = append(setParts, "role=?")
-		args = append(args, *filter.Url)
+		args = append(args, *filter.URL)
 	}
 
 	var query string

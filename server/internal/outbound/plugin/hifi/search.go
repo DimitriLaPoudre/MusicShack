@@ -89,7 +89,7 @@ func (p *Hifi) getSearch(ctx context.Context, urls []string, song, album, artist
 }
 
 func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, album, artist, playlist string, limit int, offset int) (model.Search, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	songData, albumData, artistData, playlistData, err := p.getSearch(ctx, urls, song, album, artist, playlist, limit, offset)
 	if err != nil {
@@ -139,7 +139,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 640),
+					CoverURL: hifi_utils.GetImageURL(song.Album.Cover, 640),
 				},
 			})
 	}
@@ -179,7 +179,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 				ID:           strconv.FormatUint(uint64(album.ID), 10),
 				Title:        album.Title,
 				Duration:     album.Duration,
-				CoverUrl:     hifi_utils.GetImageURL(album.Cover, 640),
+				CoverURL:     hifi_utils.GetImageURL(album.Cover, 640),
 				AudioQuality: audioQuality,
 				Explicit:     album.Explicit,
 				Popularity:   album.Popularity,
@@ -193,7 +193,7 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 			model.ArtistInfo{
 				ID:         strconv.FormatUint(uint64(artist.ID), 10),
 				Name:       artist.Name,
-				PictureUrl: hifi_utils.GetImageURL(artist.Picture, 750),
+				PictureURL: hifi_utils.GetImageURL(artist.Picture, 750),
 				Popularity: artist.Popularity,
 			})
 	}
@@ -210,9 +210,9 @@ func (p *Hifi) Search(ctx context.Context, instances []model.Instance, song, alb
 	}
 
 	return model.Search{
-		Songs:     songs,
-		Albums:    albums,
-		Artists:   artists,
-		Playlists: playlists,
+		Songs:     model.PaginatedSongs{Pagination: model.Pagination{Limit: songData.Data.Limit, Offset: songData.Data.Offset, TotalNumberOfItems: songData.Data.TotalNumberOfItems}, Songs: songs},
+		Albums:    model.PaginatedAlbums{Pagination: model.Pagination{Limit: albumData.Data.Albums.Limit, Offset: albumData.Data.Albums.Offset, TotalNumberOfItems: albumData.Data.Albums.TotalNumberOfItems}, Albums: albums},
+		Artists:   model.PaginatedArtists{Pagination: model.Pagination{Limit: artistData.Data.Artists.Limit, Offset: artistData.Data.Artists.Offset, TotalNumberOfItems: artistData.Data.Artists.TotalNumberOfItems}, Artists: artists},
+		Playlists: model.PaginatedPlaylists{Pagination: model.Pagination{Limit: playlistData.Data.Playlists.Limit, Offset: playlistData.Data.Playlists.Offset, TotalNumberOfItems: playlistData.Data.Playlists.TotalNumberOfItems}, Playlists: playlists},
 	}, nil
 }

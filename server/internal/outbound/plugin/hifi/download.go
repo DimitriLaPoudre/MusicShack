@@ -40,11 +40,11 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 		return nil, fmt.Errorf("json unmarshal manifest: %w", err)
 	}
 
-	if len(manifest.Urls) <= 0 {
+	if len(manifest.URLs) <= 0 {
 		return nil, fmt.Errorf("manifest first url: %w", errors.New("not found"))
 	}
 
-	resp, err := network.Fetch(ctx, manifest.Urls[0])
+	resp, err := network.Fetch(ctx, manifest.URLs[0])
 	if err != nil {
 		return nil, fmt.Errorf("fetch download: %w", err)
 	}
@@ -160,7 +160,7 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 		quality = "HI_RES_LOSSLESS"
 	}
 
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	downloadInfo, err := p.getDownloadInfo(ctx, urls, id, quality)
 	if err != nil {

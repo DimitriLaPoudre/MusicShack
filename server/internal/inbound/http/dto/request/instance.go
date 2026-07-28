@@ -6,12 +6,12 @@ import (
 )
 
 type CreateInstance struct {
-	Url string `json:"url" binding:"required,url"`
+	URL string `json:"url" binding:"required,url"`
 }
 
 func (req CreateInstance) IntoInstance(userID uuid.UUID) (model.Instance, error) {
 	return model.Instance{
 		UserID: userID,
-		Url:    req.Url,
+		URL:    req.URL,
 	}, nil
 }

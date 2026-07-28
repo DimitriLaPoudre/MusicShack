@@ -84,7 +84,7 @@ func (h *PluginHandler) GetAlbumSongs(c *gin.Context) {
 		return
 	}
 
-	resp := response.AlbumSongsToResponse(albumSongs)
+	resp := response.PaginatedSongsToResponse(albumSongs)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -130,7 +130,7 @@ func (h *PluginHandler) GetArtistAlbums(c *gin.Context) {
 		return
 	}
 
-	resp := response.ArtistAlbumsToResponse(artistAlbums)
+	resp := response.ArtistPaginatedAlbumsToResponse(artistAlbums)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -176,7 +176,7 @@ func (h *PluginHandler) GetPlaylistSongs(c *gin.Context) {
 		return
 	}
 
-	resp := response.PlaylistSongsToResponse(playlist)
+	resp := response.PaginatedSongsToResponse(playlist)
 	c.JSON(http.StatusOK, resp)
 }
 

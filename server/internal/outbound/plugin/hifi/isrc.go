@@ -23,7 +23,7 @@ func (p *Hifi) getSearchISRC(ctx context.Context, urls []string, isrc string) (s
 }
 
 func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, isrc string) (model.SongInfo, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	songData, err := p.getSearchISRC(ctx, urls, isrc)
 	if err != nil {
@@ -85,7 +85,7 @@ func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, i
 				Album: model.AlbumInfo{
 					ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 					Title:    song.Album.Title,
-					CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 1280),
+					CoverURL: hifi_utils.GetImageURL(song.Album.Cover, 1280),
 				},
 			})
 	}

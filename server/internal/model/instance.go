@@ -11,7 +11,7 @@ type Instance struct {
 	UserID   uuid.UUID
 	Provider string
 	Plugin   string
-	Url      string
+	URL      string
 	Ping     *time.Duration
 }
 
@@ -20,5 +20,5 @@ type InstanceFilter struct {
 	UserID   *uuid.UUID
 	Provider *string
 	Plugin   *string
-	Url      *string
+	URL      *string
 }

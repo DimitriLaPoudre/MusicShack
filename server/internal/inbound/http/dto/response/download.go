@@ -24,7 +24,7 @@ func DownloadTaskToResponse(task model.DownloadTaskInfo) DownloadTask {
 	return DownloadTask{
 		ID:            task.ID.String(),
 		UserID:        task.UserID.String(),
-		CoverURL:      task.Data.Album.CoverUrl,
+		CoverURL:      task.Data.Album.CoverURL,
 		Title:         task.Data.Title,
 		Artists:       artists,
 		Album:         task.Data.Album.Title,

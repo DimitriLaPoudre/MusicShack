@@ -20,40 +20,59 @@ type Quality struct {
 	Color string
 }
 
+type Pagination struct {
+	Limit              int
+	Offset             int
+	TotalNumberOfItems int
+}
+
+// -- Song -- //
+
 type SongInfo struct {
 	ID              string
 	Title           string
-	Duration        uint
+	Duration        int
 	ReplayGain      float64
 	Peak            float64
 	AlbumReplayGain float64
 	AlbumPeak       float64
 	ReleaseDate     time.Time
-	TrackNumber     uint
-	VolumeNumber    uint
+	TrackNumber     int
+	VolumeNumber    int
 	AudioQuality    Quality
-	Popularity      uint
+	Popularity      int
 	Explicit        bool
 	Isrc            string
 	Artists         []ArtistInfo
 	Album           AlbumInfo
 }
-
 type EnrichedSongInfo struct {
 	Provider string
 	SongInfo
 }
 
+type PaginatedSongs struct {
+	Pagination
+	Songs []SongInfo
+}
+type EnrichedPaginatedSongs struct {
+	Provider string
+	PaginatedSongs
+	Songs []EnrichedSongInfo
+}
+
+// -- Album -- //
+
 type AlbumInfo struct {
 	ID            string
 	Title         string
-	Duration      uint
+	Duration      int
 	ReleaseDate   time.Time
-	NumberTracks  uint
-	NumberVolumes uint
-	CoverUrl      string
+	NumberTracks  int
+	NumberVolumes int
+	CoverURL      string
 	AudioQuality  Quality
-	Popularity    uint
+	Popularity    int
 	Explicit      bool
 	Artists       []ArtistInfo
 }
@@ -62,65 +81,78 @@ type EnrichedAlbumInfo struct {
 	AlbumInfo
 }
 
-type AlbumSongs struct {
-	Songs []SongInfo
+type PaginatedAlbums struct {
+	Pagination
+	Albums []AlbumInfo
 }
-type EnrichedAlbumSongs struct {
+type EnrichedPaginatedAlbums struct {
 	Provider string
-	AlbumSongs
-	Songs []EnrichedSongInfo
+	PaginatedAlbums
+	Albums []EnrichedAlbumInfo
 }
+
+// -- Artist -- //
 
 type ArtistInfo struct {
 	ID         string
 	Name       string
-	PictureUrl string
-	Popularity uint
+	PictureURL string
+	Popularity int
 }
-
 type EnrichedArtistInfo struct {
 	Provider string
-	Followed uuid.UUID
+	Followed *uuid.UUID
 	ArtistInfo
 }
 
-type ArtistAlbums struct {
-	Albums  []AlbumInfo
-	Ep      []AlbumInfo
-	Singles []AlbumInfo
+type PaginatedArtists struct {
+	Pagination
+	Artists []ArtistInfo
+}
+type EnrichedPaginatedArtists struct {
+	Provider string
+	PaginatedArtists
+	Artists []EnrichedArtistInfo
 }
 
-type EnrichedArtistAlbums struct {
-	Provider string
-	ArtistAlbums
-	Albums  []EnrichedAlbumInfo
-	Ep      []EnrichedAlbumInfo
-	Singles []EnrichedAlbumInfo
+type ArtistPaginatedAlbums struct {
+	Albums  PaginatedAlbums
+	EPs     PaginatedAlbums
+	Singles PaginatedAlbums
 }
+type EnrichedArtistPaginatedAlbums struct {
+	Provider string
+	ArtistPaginatedAlbums
+	Albums  EnrichedPaginatedAlbums
+	EPs     EnrichedPaginatedAlbums
+	Singles EnrichedPaginatedAlbums
+}
+
+// -- Playlist -- //
 
 type PlaylistInfo struct {
 	ID             string
 	Title          string
 	Description    string
-	Duration       uint
+	Duration       int
 	LastUpdated    time.Time
-	NumberOfTracks uint
+	NumberOfTracks int
 	CoverURL       string
-	Popularity     uint
+	Popularity     int
 }
-
 type EnrichedPlaylistInfo struct {
 	Provider string
 	PlaylistInfo
 }
 
-type PlaylistSongs struct {
-	Songs []SongInfo
+type PaginatedPlaylists struct {
+	Pagination
+	Playlists []PlaylistInfo
 }
-type EnrichedPlaylistSongs struct {
+type EnrichedPaginatedPlaylists struct {
 	Provider string
-	PlaylistSongs
-	Songs []EnrichedSongInfo
+	PaginatedPlaylists
+	Playlists []EnrichedPlaylistInfo
 }
 
 type TypedItem struct {
@@ -129,17 +161,17 @@ type TypedItem struct {
 }
 
 type Search struct {
-	Songs     []SongInfo
-	Albums    []AlbumInfo
-	Artists   []ArtistInfo
-	Playlists []PlaylistInfo
+	Songs     PaginatedSongs
+	Albums    PaginatedAlbums
+	Artists   PaginatedArtists
+	Playlists PaginatedPlaylists
 }
 
 type EnrichedSearch struct {
-	Songs     []EnrichedSongInfo
-	Albums    []EnrichedAlbumInfo
-	Artists   []EnrichedArtistInfo
-	Playlists []EnrichedPlaylistInfo
+	Songs     EnrichedPaginatedSongs
+	Albums    EnrichedPaginatedAlbums
+	Artists   EnrichedPaginatedArtists
+	Playlists EnrichedPaginatedPlaylists
 }
 
 type SearchResult struct {
@@ -147,7 +179,7 @@ type SearchResult struct {
 	ProviderResult map[string]EnrichedSearch
 }
 
-type UrlItem struct {
+type URLItem struct {
 	Type DataType
 	ID   string
 }

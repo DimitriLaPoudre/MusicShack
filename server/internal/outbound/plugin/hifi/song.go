@@ -54,7 +54,7 @@ func (p *Hifi) getSong(ctx context.Context, urls []string, id string) (songRespo
 }
 
 func (p *Hifi) SongInfo(ctx context.Context, instances []model.Instance, id string) (model.SongInfo, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	songInfo, downloadInfo, err := p.getSong(ctx, urls, id)
 	if err != nil {
@@ -113,7 +113,7 @@ func (p *Hifi) SongInfo(ctx context.Context, instances []model.Instance, id stri
 		Album: model.AlbumInfo{
 			ID:       strconv.FormatUint(uint64(songInfo.Data.Album.ID), 10),
 			Title:    songInfo.Data.Album.Title,
-			CoverUrl: hifi_utils.GetImageURL(songInfo.Data.Album.Cover, 1280),
+			CoverURL: hifi_utils.GetImageURL(songInfo.Data.Album.Cover, 1280),
 		},
 	}, nil
 }

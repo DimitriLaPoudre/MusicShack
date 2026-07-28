@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func GetImageURL(encryptPath string, size uint) string {
+func GetImageURL(encryptPath string, size int) string {
 	if encryptPath == "" {
 		return ""
 	}

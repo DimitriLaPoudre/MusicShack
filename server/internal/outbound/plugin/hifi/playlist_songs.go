@@ -21,12 +21,12 @@ func (p *Hifi) getPlaylistSongs(ctx context.Context, urls []string, id string, l
 	return playlistSongs, nil
 }
 
-func (p *Hifi) PlaylistSongs(ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.PlaylistSongs, error) {
-	urls := hifi_utils.InstancesToUrls(instances)
+func (p *Hifi) PlaylistSongs(ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.PaginatedSongs, error) {
+	urls := hifi_utils.InstancesToURLs(instances)
 
 	playlistSongs, err := p.getPlaylistSongs(ctx, urls, id, limit, offset)
 	if err != nil {
-		return model.PlaylistSongs{}, err
+		return model.PaginatedSongs{}, err
 	}
 
 	songs := []model.SongInfo{}
@@ -88,12 +88,17 @@ func (p *Hifi) PlaylistSongs(ctx context.Context, instances []model.Instance, id
 			Album: model.AlbumInfo{
 				ID:       strconv.FormatUint(uint64(song.Album.ID), 10),
 				Title:    song.Album.Title,
-				CoverUrl: hifi_utils.GetImageURL(song.Album.Cover, 1280),
+				CoverURL: hifi_utils.GetImageURL(song.Album.Cover, 1280),
 			},
 		})
 	}
 
-	return model.PlaylistSongs{
+	return model.PaginatedSongs{
+		Pagination: model.Pagination{
+			Limit:              limit,
+			Offset:             offset,
+			TotalNumberOfItems: playlistSongs.Playlist.NumberOfTracks,
+		},
 		Songs: songs,
 	}, nil
 }

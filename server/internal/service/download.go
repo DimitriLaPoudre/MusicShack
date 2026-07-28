@@ -121,9 +121,9 @@ func (s *DownloadService) AddArtist(ctx context.Context, userID uuid.UUID, plugi
 	}
 
 	var allAlbums []model.EnrichedAlbumInfo
-	allAlbums = append(allAlbums, artistAlbums.Albums...)
-	allAlbums = append(allAlbums, artistAlbums.Ep...)
-	allAlbums = append(allAlbums, artistAlbums.Singles...)
+	allAlbums = append(allAlbums, artistAlbums.Albums.Albums...)
+	allAlbums = append(allAlbums, artistAlbums.EPs.Albums...)
+	allAlbums = append(allAlbums, artistAlbums.Singles.Albums...)
 
 	for _, album := range allAlbums {
 		_ = s.AddAlbum(ctx, userID, pluginInstances, album.ID)

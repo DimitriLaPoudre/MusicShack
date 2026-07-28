@@ -111,7 +111,7 @@ func (s *MetadataService) FormatMetadata(ctx context.Context, user model.User, p
 		return fmt.Errorf("save song tags: %w", err)
 	}
 
-	img, err := s.getCover(ctx, songInfo.Album.CoverUrl)
+	img, err := s.getCover(ctx, songInfo.Album.CoverURL)
 	if err != nil {
 		return fmt.Errorf("get song cover: %w", err)
 	}

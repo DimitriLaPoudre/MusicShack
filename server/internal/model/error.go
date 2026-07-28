@@ -11,7 +11,7 @@ var (
 	ErrExpiredToken    = errors.New("expired token")
 
 	ErrPluginNotFound         = errors.New("plugin not found")
-	ErrInvalidUrlPlugin       = errors.New("url not recognized by plugins")
+	ErrInvalidURLPlugin       = errors.New("url not recognized by plugins")
 	ErrPluginRateLimit        = errors.New("plugin rate limit reached")
 	ErrPluginSearchEmptyQuery = errors.New("search query empty")
 	ErrPluginDataNotFound     = errors.New("data not found")
