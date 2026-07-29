@@ -1,6 +1,6 @@
 .env
 downloads/
-db/
+data/
 navidrome/
 
 # Devenv

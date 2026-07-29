@@ -1,4 +1,10 @@
-{ pkgs, lib, config, inputs, ... }:
+{
+  pkgs,
+  lib,
+  config,
+  inputs,
+  ...
+}:
 
 {
   # https://devenv.sh/basics/
@@ -7,13 +13,30 @@
   # https://devenv.sh/packages/
   packages = [
     pkgs.git
+
+    # backend
     pkgs.air
+    pkgs.jq
+
+    # frontend
   ];
 
   # https://devenv.sh/languages/
-  languages.go = {
-    enable = true;
-    lsp.enable = true;
+  languages = {
+    go = {
+      enable = true;
+      lsp.enable = true;
+    };
+
+    javascript = {
+      enable = true;
+      directory = "./client_web";
+      lsp.enable = true;
+      bun = {
+        enable = true;
+        install.enable = true;
+      };
+    };
   };
 
   # https://devenv.sh/processes/
@@ -23,15 +46,15 @@
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
-  scripts.rsh.exec = ''
-    exec devenv shell
+  scripts.front-dev.exec = ''
+    	cd "$DEVENV_ROOT"/client_web
+    	secretspec run --provider dotenv:../.env -- bun run dev
   '';
 
-  scripts.go-dev.exec = ''
-	cd "$DEVENV_ROOT"/server
-	air -env_files ../.env.example
+  scripts.back-dev.exec = ''
+    	cd "$DEVENV_ROOT"/server
+    	secretspec run --provider dotenv:../.env -- air | jq
   '';
-
 
   # https://devenv.sh/basics/
   # enterShell = ''

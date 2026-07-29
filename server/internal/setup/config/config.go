@@ -47,14 +47,14 @@ type (
 	}
 
 	DownloadConfig struct {
-		Path       string `env:"PATH"`
+		Path       string `env:"PATH,unset,required"`
 		Concurrent int    `env:"CONCURRENT" envDefault:"3"`
 	}
 
 	PluginConfig struct {
 		Pagination struct {
 			Limit  int `env:"LIMIT" envDefault:"25"`
-			Offset int `env:"LIMIT" envDefault:"0"`
+			Offset int `env:"OFFSET" envDefault:"0"`
 		} `envPrefix:"PAGINATION_"`
 		Cache struct {
 			Expiration time.Duration `env:"EXPIRATION" envDefault:"30m"`
