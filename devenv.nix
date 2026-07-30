@@ -40,7 +40,10 @@
   };
 
   # https://devenv.sh/processes/
-  # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
+  processes = {
+    server.exec = "back-dev";
+    client_web.exec = "front-dev";
+  };
 
   # https://devenv.sh/services/
   # services.postgres.enable = true;
