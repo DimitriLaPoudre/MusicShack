@@ -46,9 +46,10 @@ func (s *PluginCacheService) SongInfo(plugin model.Plugin, ctx context.Context, 
 	}
 
 	songInfo, err := plugin.SongInfo(ctx, instances, id)
-	if err == nil {
-		s.cache.Store(key, songInfo)
+	if err != nil {
+		return model.SongInfo{}, err
 	}
+	s.cache.Store(key, songInfo)
 
 	return songInfo, nil
 }
@@ -62,9 +63,10 @@ func (s *PluginCacheService) SongInfoByISRC(plugin model.Plugin, ctx context.Con
 	}
 
 	songInfo, err := plugin.SongInfoByISRC(ctx, instances, isrc)
-	if err == nil {
-		s.cache.Store(key, songInfo)
+	if err != nil {
+		return model.SongInfo{}, err
 	}
+	s.cache.Store(key, songInfo)
 
 	return songInfo, nil
 }
@@ -78,9 +80,10 @@ func (s *PluginCacheService) AlbumInfo(plugin model.Plugin, ctx context.Context,
 	}
 
 	albumInfo, err := plugin.AlbumInfo(ctx, instances, id)
-	if err == nil {
-		s.cache.Store(key, albumInfo)
+	if err != nil {
+		return model.AlbumInfo{}, err
 	}
+	s.cache.Store(key, albumInfo)
 
 	return albumInfo, nil
 }
@@ -94,9 +97,10 @@ func (s *PluginCacheService) AlbumSongs(plugin model.Plugin, ctx context.Context
 	}
 
 	albumSongs, err := plugin.AlbumSongs(ctx, instances, id, limit, offset)
-	if err == nil {
-		s.cache.Store(key, albumSongs)
+	if err != nil {
+		return model.PaginatedSongs{}, err
 	}
+	s.cache.Store(key, albumSongs)
 
 	return albumSongs, nil
 }
@@ -110,9 +114,10 @@ func (s *PluginCacheService) ArtistInfo(plugin model.Plugin, ctx context.Context
 	}
 
 	artistInfo, err := plugin.ArtistInfo(ctx, instances, id)
-	if err == nil {
-		s.cache.Store(key, artistInfo)
+	if err != nil {
+		return model.ArtistInfo{}, err
 	}
+	s.cache.Store(key, artistInfo)
 
 	return artistInfo, nil
 }
@@ -126,9 +131,10 @@ func (s *PluginCacheService) ArtistAlbums(plugin model.Plugin, ctx context.Conte
 	}
 
 	artistAlbums, err := plugin.ArtistAlbums(ctx, instances, id, limit, offset)
-	if err == nil {
-		s.cache.Store(key, artistAlbums)
+	if err != nil {
+		return model.ArtistPaginatedAlbums{}, err
 	}
+	s.cache.Store(key, artistAlbums)
 
 	return artistAlbums, nil
 }
@@ -142,9 +148,10 @@ func (s *PluginCacheService) PlaylistInfo(plugin model.Plugin, ctx context.Conte
 	}
 
 	playlistInfo, err := plugin.PlaylistInfo(ctx, instances, id)
-	if err == nil {
-		s.cache.Store(key, playlistInfo)
+	if err != nil {
+		return model.PlaylistInfo{}, err
 	}
+	s.cache.Store(key, playlistInfo)
 
 	return playlistInfo, nil
 }
@@ -158,9 +165,10 @@ func (s *PluginCacheService) PlaylistSongs(plugin model.Plugin, ctx context.Cont
 	}
 
 	playlistSongs, err := plugin.PlaylistSongs(ctx, instances, id, limit, offset)
-	if err == nil {
-		s.cache.Store(key, playlistSongs)
+	if err != nil {
+		return model.PaginatedSongs{}, err
 	}
+	s.cache.Store(key, playlistSongs)
 
 	return playlistSongs, nil
 }
@@ -174,9 +182,10 @@ func (s *PluginCacheService) Search(plugin model.Plugin, ctx context.Context, in
 	}
 
 	search, err := plugin.Search(ctx, instances, song, album, artist, playlist, limit, offset)
-	if err == nil {
-		s.cache.Store(key, search)
+	if err != nil {
+		return model.Search{}, err
 	}
+	s.cache.Store(key, search)
 
 	return search, nil
 }
@@ -190,9 +199,10 @@ func (s *PluginCacheService) URL(plugin model.Plugin, ctx context.Context, url s
 	}
 
 	urlItem, err := plugin.URL(ctx, url)
-	if err == nil {
-		s.cache.Store(key, urlItem)
+	if err != nil {
+		return model.URLItem{}, err
 	}
+	s.cache.Store(key, urlItem)
 
 	return urlItem, nil
 }

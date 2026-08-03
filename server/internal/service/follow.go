@@ -28,6 +28,9 @@ func (s *FollowService) CreateFollow(ctx context.Context, follow model.Follow) (
 	follow.ID = id
 
 	artist, err := s.plugin.GetArtistInfo(ctx, follow.UserID, follow.Provider, follow.ArtistID)
+	if err != nil {
+		return model.Follow{}, fmt.Errorf("get artist info for new follow: %w", err)
+	}
 	follow.ArtistName = artist.Name
 	follow.ArtistPictureURL = artist.PictureURL
 

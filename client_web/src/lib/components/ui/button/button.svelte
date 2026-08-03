@@ -21,9 +21,9 @@
 					"bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
 				link: "text-primary underline underline-offset-4 hover:underline",
 				"hover-full":
-					"bg-inherit text-inherit shadow-[inset_0_0_0_1px_var(--foreground)] pointer-fine:hover:bg-foreground pointer-fine:hover:text-background pointer-fine:hover:shadow-none pointer-fine:active:bg-inherit pointer-fine:active:text-inherit pointer-fine:active:shadow-[inset_0_0_0_1px_var(--foreground)] pointer-coarse:active:bg-foreground pointer-coarse:active:text-background pointer-coarse:active:shadow-none",
+					"bg-background text-inherit shadow-[inset_0_0_0_1px_var(--foreground)] pointer-fine:hover:bg-foreground pointer-fine:hover:text-background pointer-fine:hover:shadow-none pointer-fine:active:bg-background pointer-fine:active:text-inherit pointer-fine:active:shadow-[inset_0_0_0_1px_var(--foreground)] pointer-coarse:active:bg-foreground pointer-coarse:active:text-background pointer-coarse:active:shadow-none aria-expanded:bg-foreground aria-expanded:text-background aria-expanded:shadow-none",
 				"hover-soft":
-					"bg-inherit text-inherit pointer-fine:hover:shadow-[inset_0_0_0_1px_var(--foreground)] pointer-fine:active:shadow-none pointer-coarse:active:shadow-[inset_0_0_0_1px_var(--foreground)]",
+					"bg-background text-inherit pointer-fine:hover:shadow-[inset_0_0_0_1px_var(--foreground)] pointer-fine:active:shadow-none pointer-coarse:active:shadow-[inset_0_0_0_1px_var(--foreground)]",
 			},
 			size: {
 				default:

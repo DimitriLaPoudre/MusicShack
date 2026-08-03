@@ -25,13 +25,11 @@
   languages = {
     go = {
       enable = true;
-      lsp.enable = true;
     };
 
     javascript = {
       enable = true;
       directory = "./client_web";
-      lsp.enable = true;
       bun = {
         enable = true;
         install.enable = true;
@@ -51,12 +49,12 @@
   # https://devenv.sh/scripts/
   scripts.front-dev.exec = ''
     	cd "$DEVENV_ROOT"/client_web
-    	secretspec run --provider dotenv:../.env -- bun run dev
+    	secretspec run -- bun run dev
   '';
 
   scripts.back-dev.exec = ''
-    	cd "$DEVENV_ROOT"/server
-    	secretspec run --provider dotenv:../.env -- air | jq
+        cd "$DEVENV_ROOT"/server
+    	secretspec run -- air
   '';
 
   # https://devenv.sh/basics/

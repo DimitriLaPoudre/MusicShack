@@ -14,7 +14,7 @@ type AudioQuality struct {
 type Pagination struct {
 	Limit              int `json:"limit"`
 	Offset             int `json:"offset"`
-	TotalNumberOfItems int `json:"totalNumberOfItems"`
+	TotalNumberOfItems int `json:"total_number_of_items"`
 }
 
 // -- SongInfo -- //
@@ -24,14 +24,14 @@ type SongInfo struct {
 	ID              string       `json:"id"`
 	Title           string       `json:"title"`
 	Duration        int          `json:"duration"`
-	ReplayGain      float64      `json:"replayGain"`
+	ReplayGain      float64      `json:"replay_gain"`
 	Peak            float64      `json:"peak"`
-	AlbumReplayGain float64      `json:"albumReplayGain"`
-	AlbumPeak       float64      `json:"albumPeak"`
-	ReleaseDate     time.Time    `json:"releaseDate"`
-	TrackNumber     int          `json:"trackNumber"`
-	VolumeNumber    int          `json:"volumeNumber"`
-	AudioQuality    AudioQuality `json:"audioQuality"`
+	AlbumReplayGain float64      `json:"album_replay_gain"`
+	AlbumPeak       float64      `json:"album_peak"`
+	ReleaseDate     time.Time    `json:"release_date"`
+	TrackNumber     int          `json:"track_number"`
+	VolumeNumber    int          `json:"volume_number"`
+	AudioQuality    AudioQuality `json:"audio_quality"`
 	Explicit        bool         `json:"explicit"`
 	Popularity      int          `json:"popularity"`
 	Isrc            string       `json:"isrc"`
@@ -42,7 +42,7 @@ type SongInfo struct {
 type SongAlbum struct {
 	ID       string `json:"id"`
 	Title    string `json:"title"`
-	CoverURL string `json:"coverURL"`
+	CoverURL string `json:"cover_url"`
 }
 
 func SongInfoToResponse(songInfo model.EnrichedSongInfo) SongInfo {
@@ -109,11 +109,11 @@ type AlbumInfo struct {
 	ID            string       `json:"id"`
 	Title         string       `json:"title"`
 	Duration      int          `json:"duration"`
-	ReleaseDate   time.Time    `json:"releaseDate"`
-	NumberTracks  int          `json:"numberTracks"`
-	NumberVolumes int          `json:"numberVolumes"`
-	CoverURL      string       `json:"coverURL"`
-	AudioQuality  AudioQuality `json:"audioQuality"`
+	ReleaseDate   time.Time    `json:"release_date"`
+	NumberTracks  int          `json:"number_tracks"`
+	NumberVolumes int          `json:"number_volumes"`
+	CoverURL      string       `json:"cover_url"`
+	AudioQuality  AudioQuality `json:"audio_quality"`
 	Explicit      bool         `json:"explicit"`
 	Artists       []MiniArtist `json:"artists"`
 }
@@ -179,7 +179,7 @@ type ArtistInfo struct {
 	Followed   *string `json:"followed"`
 	ID         string  `json:"id"`
 	Name       string  `json:"name"`
-	PictureURL string  `json:"pictureURL"`
+	PictureURL string  `json:"picture_url"`
 }
 
 func ArtistInfoToResponse(artistInfo model.EnrichedArtistInfo) ArtistInfo {
@@ -243,9 +243,9 @@ type PlaylistInfo struct {
 	Title          string    `json:"title"`
 	Description    string    `json:"description"`
 	Duration       int       `json:"duration"`
-	LastUpdated    time.Time `json:"lastUpdated"`
-	NumberOfTracks int       `json:"numberOfTracks"`
-	CoverURL       string    `json:"coverURL"`
+	LastUpdated    time.Time `json:"last_updated"`
+	NumberOfTracks int       `json:"number_of_tracks"`
+	CoverURL       string    `json:"cover_url"`
 }
 
 func PlaylistInfoToResponse(playlistInfo model.EnrichedPlaylistInfo) PlaylistInfo {
@@ -295,8 +295,8 @@ type SearchProviderResult struct {
 }
 
 type SearchResult struct {
-	Item           SearchItem
-	ProviderResult map[string]SearchProviderResult
+	Item           SearchItem                      `json:"item"`
+	ProviderResult map[string]SearchProviderResult `json:"provider_result"`
 }
 
 func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderResult {

@@ -36,17 +36,17 @@ func FetchTyped[T any](ctx context.Context, url string, path string, limiter *ra
 
 	resp, err := Fetch(ctx, url+path, limiter)
 	if err != nil {
-		return zero, fmt.Errorf("fetch url %s: %w", url, err)
+		return zero, fmt.Errorf("fetch url %s: %w", url+path, err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return zero, fmt.Errorf("fetch url %s response status: %w", url, errors.New(resp.Status))
+		return zero, fmt.Errorf("fetch url %s response status: %w", url+path, errors.New(resp.Status))
 	}
 
 	var data T
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		return zero, fmt.Errorf("decode url %s response: %w", url, err)
+		return zero, fmt.Errorf("decode url %s response: %w", url+path, err)
 	}
 
 	return data, nil

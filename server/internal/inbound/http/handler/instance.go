@@ -98,5 +98,5 @@ func (h *InstanceHandler) Delete(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.Ok)
+	c.Status(http.StatusNoContent)
 }

@@ -49,7 +49,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 	}
 
 	c.SetCookie(h.cfgSession.CookieName, tkn, int(expiresAt.Seconds()), "/api", "", h.cfgHTTP.HTTPS, true)
-	c.JSON(http.StatusOK, response.Ok)
+	c.Status(http.StatusNoContent)
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
@@ -65,5 +65,5 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 		slog.ErrorContext(c.Request.Context(), "logout failed", slog.String("err", err.Error()))
 	}
 
-	c.JSON(http.StatusOK, response.Ok)
+	c.Status(http.StatusNoContent)
 }

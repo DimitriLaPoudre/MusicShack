@@ -566,6 +566,7 @@ func (s *PluginService) enrichSearch(ctx context.Context, provider string, searc
 func (s *PluginService) URLFromPluginInstances(ctx context.Context, pluginInstances map[model.Plugin][]model.Instance, q string) (model.TypedItem, error) {
 	var urlItem model.URLItem
 	errMap := map[string]string{}
+
 	for plugin := range pluginInstances {
 		var err error
 		urlItem, err = s.cache.URL(plugin, ctx, q)
