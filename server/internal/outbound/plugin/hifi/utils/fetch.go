@@ -16,7 +16,7 @@ import (
 
 func MultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter]) (T, error) {
 	var data T
-	var err error
+	err := model.ErrPluginNoInstances
 	for _, url := range urls {
 		limiter, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
 

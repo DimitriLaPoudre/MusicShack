@@ -66,6 +66,9 @@ type Plugin interface {
 	ArtistAlbums(ctx context.Context, instances []Instance, id string, limit int, offset int) (ArtistPaginatedAlbums, error)
 	PlaylistInfo(ctx context.Context, instances []Instance, id string) (PlaylistInfo, error)
 	PlaylistSongs(ctx context.Context, instances []Instance, id string, limit int, offset int) (PaginatedSongs, error)
-	Search(ctx context.Context, instances []Instance, song string, album string, artist string, playlist string, limit int, offset int) (Search, error)
+	SearchSong(ctx context.Context, instances []Instance, q string, limit int, offset int) (PaginatedSongs, error)
+	SearchAlbum(ctx context.Context, instances []Instance, q string, limit int, offset int) (PaginatedAlbums, error)
+	SearchArtist(ctx context.Context, instances []Instance, q string, limit int, offset int) (PaginatedArtists, error)
+	SearchPlaylist(ctx context.Context, instances []Instance, q string, limit int, offset int) (PaginatedPlaylists, error)
 	URL(ctx context.Context, url string) (URLItem, error)
 }

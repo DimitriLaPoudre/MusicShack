@@ -84,7 +84,11 @@ func New(
 			pluginGroup.GET("/artist/:provider/:id/albums", pluginH.GetArtistAlbums)
 			pluginGroup.GET("/playlist/:provider/:id", pluginH.GetPlaylistInfo)
 			pluginGroup.GET("/playlist/:provider/:id/songs", pluginH.GetPlaylistSongs)
-			pluginGroup.GET("/search", pluginH.GetSearch)
+			pluginGroup.GET("/search/setup", pluginH.GetSearch)
+			pluginGroup.GET("/search/song", pluginH.GetSearchSong)
+			pluginGroup.GET("/search/album", pluginH.GetSearchAlbum)
+			pluginGroup.GET("/search/artist", pluginH.GetSearchArtist)
+			pluginGroup.GET("/search/playlist", pluginH.GetSearchPlaylist)
 		}
 
 		downloadGroup := api.Group("/download", middleware.RateLimiter(time.Minute, 100), authMW)

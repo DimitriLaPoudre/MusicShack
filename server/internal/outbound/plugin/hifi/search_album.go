@@ -1,0 +1,80 @@
+package hifi
+
+import (
+	"context"
+	"fmt"
+	"net/url"
+	"strconv"
+
+	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
+)
+
+func (p *Hifi) getSearchAlbum(ctx context.Context, urls []string, q string, limit int, offset int) (searchAlbumResponse, error) {
+	searchAlbums, err := hifi_utils.MultiFetchTyped[searchAlbumResponse](ctx, urls, fmt.Sprintf("/search/?al=%s&limit=%d&offset=%d", url.QueryEscape(q), limit, offset), &p.limiters)
+	if err != nil {
+		return searchAlbumResponse{}, fmt.Errorf("fetch search album with url list: %w", err)
+	}
+
+	return searchAlbums, nil
+}
+
+func (p *Hifi) SearchAlbum(ctx context.Context, instances []model.Instance, q string, limit int, offset int) (model.PaginatedAlbums, error) {
+	urls := hifi_utils.InstancesToURLs(instances)
+
+	searchAlbums, err := p.getSearchAlbum(ctx, urls, q, limit, offset)
+	if err != nil {
+		return model.PaginatedAlbums{}, err
+	}
+
+	albums := []model.AlbumInfo{}
+	for _, album := range searchAlbums.Data.Albums.Albums {
+		audioQuality := LOW
+		switch album.AudioQuality {
+		case "LOW":
+			audioQuality = LOW
+		case "HIGH":
+			audioQuality = HIGH
+		case "LOSSLESS":
+			audioQuality = LOSSLESS
+		}
+		for _, quality := range album.MediaMetadata.Tags {
+			switch quality {
+			case "HIRES_LOSSLESS":
+				audioQuality = HIRES
+			case "LOSSLESS", "DOLBY_ATMOS":
+				if audioQuality != HIRES {
+					audioQuality = LOSSLESS
+				}
+			}
+		}
+
+		artists := []model.ArtistInfo{}
+		for _, artist := range album.Artists {
+			artists = append(artists, model.ArtistInfo{
+				ID:   strconv.FormatUint(uint64(artist.ID), 10),
+				Name: artist.Name,
+			})
+		}
+
+		albums = append(albums,
+			model.AlbumInfo{
+				ID:           strconv.FormatUint(uint64(album.ID), 10),
+				Title:        album.Title,
+				Duration:     album.Duration,
+				CoverURL:     hifi_utils.GetImageURL(album.Cover, 640),
+				AudioQuality: audioQuality,
+				Explicit:     album.Explicit,
+				Popularity:   album.Popularity,
+				Artists:      artists,
+			})
+	}
+
+	return model.PaginatedAlbums{
+		Pagination: model.Pagination{
+			Limit:              limit,
+			Offset:             offset,
+			TotalNumberOfItems: searchAlbums.Data.Albums.TotalNumberOfItems},
+		Albums: albums,
+	}, nil
+}

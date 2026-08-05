@@ -187,18 +187,110 @@ func (h *PluginHandler) GetSearch(c *gin.Context) {
 		return
 	}
 
+	var query request.SearchSetupQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	results, err := h.plugin.SearchSetup(c.Request.Context(), me.ID, query.Q, query.Limit)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.SearchSetupResultToResponse(results)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetSearchSong(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
 	var query request.SearchQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, response.NewError(err))
 		return
 	}
 
-	results, err := h.plugin.Search(c.Request.Context(), me.ID, query.Q, query.Limit, query.Offset)
+	songs, err := h.plugin.SearchSong(c.Request.Context(), me.ID, query.Provider, query.Q, query.Limit, query.Offset)
 	if err != nil {
 		utils.Error(c, err)
 		return
 	}
 
-	resp := response.SearchResultToResponse(results)
+	resp := response.PaginatedSongsToResponse(songs)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetSearchAlbum(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	var query request.SearchQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	albums, err := h.plugin.SearchAlbum(c.Request.Context(), me.ID, query.Provider, query.Q, query.Limit, query.Offset)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.PaginatedAlbumsToResponse(albums)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetSearchArtist(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	var query request.SearchQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	artists, err := h.plugin.SearchArtist(c.Request.Context(), me.ID, query.Provider, query.Q, query.Limit, query.Offset)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.PaginatedArtistsToResponse(artists)
+	c.JSON(http.StatusOK, resp)
+}
+
+func (h *PluginHandler) GetSearchPlaylist(c *gin.Context) {
+	me, err := utils.GetFromContext[model.User](c, macro.Me)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	var query request.SearchQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.JSON(http.StatusBadRequest, response.NewError(err))
+		return
+	}
+
+	playlists, err := h.plugin.SearchPlaylist(c.Request.Context(), me.ID, query.Provider, query.Q, query.Limit, query.Offset)
+	if err != nil {
+		utils.Error(c, err)
+		return
+	}
+
+	resp := response.PaginatedPlaylistsToResponse(playlists)
 	c.JSON(http.StatusOK, resp)
 }

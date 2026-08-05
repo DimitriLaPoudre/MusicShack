@@ -155,28 +155,32 @@ type EnrichedPaginatedPlaylists struct {
 	Playlists []EnrichedPlaylistInfo
 }
 
-type TypedItem struct {
-	Type DataType
-	Data any
-}
+// -- SearchSetup -- //
 
-type Search struct {
+type SearchSetup struct {
 	Songs     PaginatedSongs
 	Albums    PaginatedAlbums
 	Artists   PaginatedArtists
 	Playlists PaginatedPlaylists
 }
 
-type EnrichedSearch struct {
+type EnrichedSearchSetup struct {
 	Songs     EnrichedPaginatedSongs
 	Albums    EnrichedPaginatedAlbums
 	Artists   EnrichedPaginatedArtists
 	Playlists EnrichedPaginatedPlaylists
 }
 
-type SearchResult struct {
+type SearchSetupResult struct {
 	ItemFound      TypedItem
-	ProviderResult map[string]EnrichedSearch
+	ProviderResult map[string]EnrichedSearchSetup
+}
+
+// -- URL -- //
+
+type TypedItem struct {
+	Type DataType
+	Data any
 }
 
 type URLItem struct {

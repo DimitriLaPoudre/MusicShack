@@ -159,8 +159,8 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 
 	return model.ArtistPaginatedAlbums{
 		Albums:  model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(albums)}, Albums: paginate(albums, limit, offset)},
-		EPs:     model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(eps)}, Albums: eps},
-		Singles: model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(singles)}, Albums: singles},
+		EPs:     model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(eps)}, Albums: paginate(eps, limit, offset)},
+		Singles: model.PaginatedAlbums{Pagination: model.Pagination{Limit: limit, Offset: offset, TotalNumberOfItems: len(singles)}, Albums: paginate(singles, limit, offset)},
 	}, nil
 }
 

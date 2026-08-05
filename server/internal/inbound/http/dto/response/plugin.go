@@ -262,6 +262,7 @@ func PlaylistInfoToResponse(playlistInfo model.EnrichedPlaylistInfo) PlaylistInf
 }
 
 // -- PaginatedPlaylists -- //
+
 type PaginatedPlaylists struct {
 	Provider string `json:"provider"`
 	Pagination
@@ -282,25 +283,25 @@ func PaginatedPlaylistsToResponse(paginatedPlaylists model.EnrichedPaginatedPlay
 
 // -- Search -- //
 
-type SearchItem struct {
+type SearchSetupItem struct {
 	Type string `json:"type"`
 	Data any    `json:"data"`
 }
 
-type SearchProviderResult struct {
+type SearchSetupProviderResult struct {
 	Songs     PaginatedSongs     `json:"songs"`
 	Albums    PaginatedAlbums    `json:"albums"`
 	Artists   PaginatedArtists   `json:"artists"`
 	Playlists PaginatedPlaylists `json:"playlists"`
 }
 
-type SearchResult struct {
-	Item           SearchItem                      `json:"item"`
-	ProviderResult map[string]SearchProviderResult `json:"provider_result"`
+type SearchSetupResult struct {
+	Item           SearchSetupItem                      `json:"item"`
+	ProviderResult map[string]SearchSetupProviderResult `json:"provider_result"`
 }
 
-func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderResult {
-	return SearchProviderResult{
+func SearchSetupProviderResultToResponse(search model.EnrichedSearchSetup) SearchSetupProviderResult {
+	return SearchSetupProviderResult{
 		Songs:     PaginatedSongsToResponse(search.Songs),
 		Albums:    PaginatedAlbumsToResponse(search.Albums),
 		Artists:   PaginatedArtistsToResponse(search.Artists),
@@ -308,21 +309,21 @@ func SearchProviderResultToResponse(search model.EnrichedSearch) SearchProviderR
 	}
 }
 
-func SearchResultToResponse(searchResult model.SearchResult) SearchResult {
+func SearchSetupResultToResponse(searchResult model.SearchSetupResult) SearchSetupResult {
 	if searchResult.ProviderResult == nil {
-		return SearchResult{
-			Item: SearchItem{
+		return SearchSetupResult{
+			Item: SearchSetupItem{
 				Type: string(searchResult.ItemFound.Type),
 				Data: searchResult.ItemFound.Data,
 			},
 		}
 	}
 
-	providerResult := map[string]SearchProviderResult{}
+	providerResult := map[string]SearchSetupProviderResult{}
 	for provider, result := range searchResult.ProviderResult {
-		providerResult[provider] = SearchProviderResultToResponse(result)
+		providerResult[provider] = SearchSetupProviderResultToResponse(result)
 	}
-	return SearchResult{
+	return SearchSetupResult{
 		ProviderResult: providerResult,
 	}
 }

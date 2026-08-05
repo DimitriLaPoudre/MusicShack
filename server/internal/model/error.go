@@ -15,6 +15,7 @@ var (
 	ErrPluginRateLimit        = errors.New("plugin rate limit reached")
 	ErrPluginSearchEmptyQuery = errors.New("search query empty")
 	ErrPluginDataNotFound     = errors.New("data not found")
+	ErrPluginNoInstances      = errors.New("no instances")
 
 	ErrInvalidInput = errors.New("invalid input")
 	ErrConflict     = errors.New("conflict")
