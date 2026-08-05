@@ -3,14 +3,12 @@ package hifi
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/url"
 	"slices"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/dto"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 )
 
@@ -38,7 +36,7 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 		TrackNumber int
 	}
 
-	best := make(map[albumItemComparaison]albumItem)
+	best := make(map[albumItemComparaison]dto.AlbumItem)
 	for _, album := range artistAlbums.Albums.Items {
 		if bestVersion, ok := best[albumItemComparaison{
 			Title:       strings.ToLower(album.Title),
@@ -58,9 +56,9 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 	// 	ReleaseDate string
 	// }
 
-	// extension := make(map[albumItemComparaisonExtension][]*albumItem)
+	// extension := make(map[albumItemComparaisonExtension][]*dto.AlbumItem)
 	// for _, album := range best {
-	// 	newExtension := []*albumItem{}
+	// 	newExtension := []*dto.AlbumItem{}
 	// 	bestExtension, ok := extension[albumItemComparaisonExtension{
 	// 		Title:       strings.ToLower(album.Title),
 	// 		ReleaseDate: album.ReleaseDate,
@@ -78,12 +76,12 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 	// 	}
 	// }
 
-	list := []albumItem{}
+	list := []dto.AlbumItem{}
 	for _, album := range best {
 		list = append(list, album)
 	}
 
-	slices.SortFunc(list, func(a, b albumItem) int {
+	slices.SortFunc(list, func(a, b dto.AlbumItem) int {
 		if a.ReleaseDate > b.ReleaseDate {
 			return -1
 		}
@@ -103,49 +101,7 @@ func (p *Hifi) ArtistAlbums(ctx context.Context, instances []model.Instance, id 
 	eps := []model.AlbumInfo{}
 	singles := []model.AlbumInfo{}
 	for _, album := range list {
-		releaseDate, err := time.Parse(ReleaseDateLayout, album.ReleaseDate)
-		if err != nil {
-			slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse artist's album %s releaseDate %s", album.Title, album.ReleaseDate), slog.String("err", err.Error()))
-		}
-
-		audioQuality := LOW
-		switch album.AudioQuality {
-		case "LOW":
-			audioQuality = LOW
-		case "HIGH":
-			audioQuality = HIGH
-		case "LOSSLESS":
-			audioQuality = LOSSLESS
-		}
-		for _, quality := range album.MediaMetadata.Tags {
-			switch quality {
-			case "HIRES_LOSSLESS":
-				audioQuality = HIRES
-			case "LOSSLESS", "DOLBY_ATMOS":
-				if audioQuality != HIRES {
-					audioQuality = LOSSLESS
-				}
-			}
-		}
-
-		artists := []model.ArtistInfo{}
-		for _, artist := range album.Artists {
-			artists = append(artists, model.ArtistInfo{
-				ID:   strconv.FormatUint(uint64(artist.ID), 10),
-				Name: artist.Name,
-			})
-		}
-
-		newAlbum := model.AlbumInfo{
-			ID:           strconv.FormatUint(uint64(album.ID), 10),
-			Title:        album.Title,
-			Duration:     album.Duration,
-			ReleaseDate:  releaseDate,
-			CoverURL:     hifi_utils.GetImageURL(album.Cover, 1280),
-			AudioQuality: audioQuality,
-			Explicit:     album.Explicit,
-			Artists:      artists,
-		}
+		newAlbum := album.ToAlbumInfo(1280)
 
 		switch album.Type {
 		case "ALBUM":

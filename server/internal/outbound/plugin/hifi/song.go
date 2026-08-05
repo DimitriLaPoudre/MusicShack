@@ -3,11 +3,8 @@ package hifi
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/url"
-	"strconv"
 	"sync"
-	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -61,59 +58,9 @@ func (p *Hifi) SongInfo(ctx context.Context, instances []model.Instance, id stri
 		return model.SongInfo{}, err
 	}
 
-	releaseDate, err := time.Parse(StreamStartDateLayout, songInfo.Data.StreamStartDate)
-	if err != nil {
-		slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse song releaseDate %s", songInfo.Data.StreamStartDate), slog.String("err", err.Error()))
-	}
+	song := songInfo.Data.ToSongInfo(1280)
+	song.ReplayGain = downloadInfo.Data.TrackReplayGain
+	song.AlbumPeak = downloadInfo.Data.AlbumPeakAmplitude
 
-	audioQuality := LOW
-	switch songInfo.Data.AudioQuality {
-	case "LOW":
-		audioQuality = LOW
-	case "HIGH":
-		audioQuality = HIGH
-	case "LOSSLESS":
-		audioQuality = LOSSLESS
-	}
-	for _, quality := range songInfo.Data.MediaMetadata.Tags {
-		switch quality {
-		case "HIRES_LOSSLESS":
-			audioQuality = HIRES
-		case "LOSSLESS", "DOLBY_ATMOS":
-			if audioQuality != HIRES {
-				audioQuality = LOSSLESS
-			}
-		}
-	}
-
-	artists := []model.ArtistInfo{}
-	for _, artist := range songInfo.Data.Artists {
-		artists = append(artists, model.ArtistInfo{
-			ID:   strconv.FormatUint(uint64(artist.ID), 10),
-			Name: artist.Name,
-		})
-	}
-
-	return model.SongInfo{
-		ID:              strconv.FormatUint(uint64(songInfo.Data.ID), 10),
-		Title:           songInfo.Data.Title,
-		Duration:        songInfo.Data.Duration,
-		ReplayGain:      downloadInfo.Data.TrackReplayGain,
-		Peak:            songInfo.Data.Peak,
-		AlbumReplayGain: songInfo.Data.ReplayGain,
-		AlbumPeak:       downloadInfo.Data.AlbumPeakAmplitude,
-		ReleaseDate:     releaseDate,
-		TrackNumber:     songInfo.Data.TrackNumber,
-		VolumeNumber:    songInfo.Data.VolumeNumber,
-		AudioQuality:    audioQuality,
-		Explicit:        songInfo.Data.Explicit,
-		Popularity:      songInfo.Data.Popularity,
-		Isrc:            songInfo.Data.ISRC,
-		Artists:         artists,
-		Album: model.AlbumInfo{
-			ID:       strconv.FormatUint(uint64(songInfo.Data.Album.ID), 10),
-			Title:    songInfo.Data.Album.Title,
-			CoverURL: hifi_utils.GetImageURL(songInfo.Data.Album.Cover, 1280),
-		},
-	}, nil
+	return song, nil
 }

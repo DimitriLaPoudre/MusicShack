@@ -3,9 +3,7 @@ package hifi
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"net/url"
-	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -28,18 +26,5 @@ func (p *Hifi) PlaylistInfo(ctx context.Context, instances []model.Instance, id 
 		return model.PlaylistInfo{}, err
 	}
 
-	lastUpdated, err := time.Parse(StreamStartDateLayout, playlistInfo.Playlist.LastUpdated)
-	if err != nil {
-		slog.Warn(fmt.Sprintf("plugin [hifi]: failed to parse playlist last update date: %s", playlistInfo.Playlist.LastUpdated), slog.String("err", err.Error()))
-	}
-
-	return model.PlaylistInfo{
-		ID:             playlistInfo.Playlist.UUID,
-		Title:          playlistInfo.Playlist.Title,
-		Description:    playlistInfo.Playlist.Description,
-		Duration:       playlistInfo.Playlist.Duration,
-		NumberOfTracks: playlistInfo.Playlist.NumberOfTracks,
-		CoverURL:       hifi_utils.GetImageURL(playlistInfo.Playlist.SquareImage, 640),
-		LastUpdated:    lastUpdated,
-	}, nil
+	return playlistInfo.Playlist.ToPlaylistInfo(640), nil
 }

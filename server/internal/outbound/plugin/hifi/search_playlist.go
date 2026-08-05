@@ -28,13 +28,7 @@ func (p *Hifi) SearchPlaylist(ctx context.Context, instances []model.Instance, q
 
 	playlists := []model.PlaylistInfo{}
 	for _, playlist := range searchPlaylists.Data.Playlists.Playlists {
-		playlists = append(playlists,
-			model.PlaylistInfo{
-				ID:       playlist.UUID,
-				Title:    playlist.Title,
-				Duration: playlist.Duration,
-				CoverURL: hifi_utils.GetImageURL(playlist.SquareImage, 640),
-			})
+		playlists = append(playlists, playlist.ToPlaylistInfo(640))
 	}
 
 	return model.PaginatedPlaylists{

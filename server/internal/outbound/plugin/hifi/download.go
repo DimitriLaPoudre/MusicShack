@@ -15,6 +15,7 @@ import (
 	"strings"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
+	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/dto"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
 	pkg_io "github.com/DimitriLaPoudre/MusicShack/internal/pkg/io"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/network"
@@ -35,7 +36,7 @@ func (p *Hifi) getDownloadInfo(ctx context.Context, urls []string, id string, qu
 }
 
 func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, error) {
-	var manifest manifestTidal
+	var manifest dto.ManifestTidal
 	if err := json.Unmarshal(manifestRaw, &manifest); err != nil {
 		return nil, fmt.Errorf("json unmarshal manifest: %w", err)
 	}
@@ -57,7 +58,7 @@ func downloadTidal(ctx context.Context, manifestRaw []byte) (io.ReadCloser, erro
 }
 
 func downloadMPD(ctx context.Context, manifest []byte) (io.ReadCloser, error) {
-	var mpd manifestMPD
+	var mpd dto.ManifestMPD
 	if err := xml.Unmarshal(manifest, &mpd); err != nil {
 		return nil, fmt.Errorf("xml unmarshal manifest: %w", err)
 	}
@@ -174,14 +175,14 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 
 	var extension string
 	switch downloadInfo.Data.AudioQuality {
-	case AudioQualityHIRES:
+	case dto.AudioQualityHIRES:
 		if quality != "HI_RES_LOSSLESS" {
 			return nil, "", fmt.Errorf("download song %s: %w", id, errors.New("audio quality received too high"))
 		}
 		extension = "flac"
-	case AudioQualityLOSSLESS:
+	case dto.AudioQualityLOSSLESS:
 		extension = "flac"
-	case AudioQualityHIGH:
+	case dto.AudioQualityHIGH:
 		extension = "m4a"
 	}
 
@@ -199,7 +200,7 @@ func (p *Hifi) Download(ctx context.Context, instances []model.Instance, id stri
 	}
 
 	switch downloadInfo.Data.AudioQuality {
-	case AudioQualityHIRES, AudioQualityLOSSLESS:
+	case dto.AudioQualityHIRES, dto.AudioQualityLOSSLESS:
 		reader, err = remuxM4AtoFLAC(reader)
 		if err != nil {
 			return nil, "", fmt.Errorf("remux from M4A to FLAC: %w", err)

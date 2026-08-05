@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -29,13 +28,7 @@ func (p *Hifi) SearchArtist(ctx context.Context, instances []model.Instance, q s
 
 	artists := []model.ArtistInfo{}
 	for _, artist := range searchArtists.Data.Artists.Artists {
-		artists = append(artists,
-			model.ArtistInfo{
-				ID:         strconv.FormatUint(uint64(artist.ID), 10),
-				Name:       artist.Name,
-				PictureURL: hifi_utils.GetImageURL(artist.Picture, 750),
-				Popularity: artist.Popularity,
-			})
+		artists = append(artists, artist.ToArtistInfo(750))
 	}
 
 	return model.PaginatedArtists{

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -27,16 +26,5 @@ func (p *Hifi) ArtistInfo(ctx context.Context, instances []model.Instance, id st
 		return model.ArtistInfo{}, err
 	}
 
-	pictureURL := artistInfo.Artist.Picture
-	if pictureURL == "" && artistInfo.Artist.SelectedAlbumCoverFallback != nil {
-		pictureURL = *artistInfo.Artist.SelectedAlbumCoverFallback
-	}
-	pictureURL = hifi_utils.GetImageURL(pictureURL, 750)
-
-	return model.ArtistInfo{
-		ID:         strconv.FormatUint(uint64(artistInfo.Artist.ID), 10),
-		Name:       artistInfo.Artist.Name,
-		PictureURL: pictureURL,
-		Popularity: artistInfo.Artist.Popularity,
-	}, nil
+	return artistInfo.Artist.ToArtistInfo(750), nil
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	hifi_utils "github.com/DimitriLaPoudre/MusicShack/internal/outbound/plugin/hifi/utils"
@@ -29,45 +28,7 @@ func (p *Hifi) SearchAlbum(ctx context.Context, instances []model.Instance, q st
 
 	albums := []model.AlbumInfo{}
 	for _, album := range searchAlbums.Data.Albums.Albums {
-		audioQuality := LOW
-		switch album.AudioQuality {
-		case "LOW":
-			audioQuality = LOW
-		case "HIGH":
-			audioQuality = HIGH
-		case "LOSSLESS":
-			audioQuality = LOSSLESS
-		}
-		for _, quality := range album.MediaMetadata.Tags {
-			switch quality {
-			case "HIRES_LOSSLESS":
-				audioQuality = HIRES
-			case "LOSSLESS", "DOLBY_ATMOS":
-				if audioQuality != HIRES {
-					audioQuality = LOSSLESS
-				}
-			}
-		}
-
-		artists := []model.ArtistInfo{}
-		for _, artist := range album.Artists {
-			artists = append(artists, model.ArtistInfo{
-				ID:   strconv.FormatUint(uint64(artist.ID), 10),
-				Name: artist.Name,
-			})
-		}
-
-		albums = append(albums,
-			model.AlbumInfo{
-				ID:           strconv.FormatUint(uint64(album.ID), 10),
-				Title:        album.Title,
-				Duration:     album.Duration,
-				CoverURL:     hifi_utils.GetImageURL(album.Cover, 640),
-				AudioQuality: audioQuality,
-				Explicit:     album.Explicit,
-				Popularity:   album.Popularity,
-				Artists:      artists,
-			})
+		albums = append(albums, album.ToAlbumInfo(640))
 	}
 
 	return model.PaginatedAlbums{
