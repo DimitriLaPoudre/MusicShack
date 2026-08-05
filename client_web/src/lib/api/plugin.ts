@@ -4,6 +4,9 @@ import type {
 	ArtistInfo,
 	ArtistPaginatedAlbums,
 	PaginationQuery,
+	PaginatedAlbums,
+	PaginatedArtists,
+	PaginatedPlaylists,
 	PaginatedSongs,
 	PlaylistInfo,
 	SearchResult,
@@ -58,6 +61,46 @@ export function getPlaylistSongs(
 	);
 }
 
-export function search(q: string, params: PaginationQuery = {}): Promise<SearchResult> {
-	return apiFetch<SearchResult>(`/search${query({ q, ...params })}`);
+export function searchSetup(q: string, params: PaginationQuery = {}): Promise<SearchResult> {
+	return apiFetch<SearchResult>(`/search/setup${query({ q, ...params })}`);
+}
+
+export function searchSong(
+	q: string,
+	provider: string,
+	params: PaginationQuery = {},
+): Promise<PaginatedSongs> {
+	return apiFetch<PaginatedSongs>(
+		`/search/song${query({ q, provider, ...params })}`,
+	);
+}
+
+export function searchAlbum(
+	q: string,
+	provider: string,
+	params: PaginationQuery = {},
+): Promise<PaginatedAlbums> {
+	return apiFetch<PaginatedAlbums>(
+		`/search/album${query({ q, provider, ...params })}`,
+	);
+}
+
+export function searchArtist(
+	q: string,
+	provider: string,
+	params: PaginationQuery = {},
+): Promise<PaginatedArtists> {
+	return apiFetch<PaginatedArtists>(
+		`/search/artist${query({ q, provider, ...params })}`,
+	);
+}
+
+export function searchPlaylist(
+	q: string,
+	provider: string,
+	params: PaginationQuery = {},
+): Promise<PaginatedPlaylists> {
+	return apiFetch<PaginatedPlaylists>(
+		`/search/playlist${query({ q, provider, ...params })}`,
+	);
 }

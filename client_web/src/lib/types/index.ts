@@ -39,6 +39,11 @@ export interface PaginationQuery {
 	limit?: number;
 }
 
+export interface SearchQuery extends PaginationQuery {
+	q: string;
+	provider: string;
+}
+
 // ---- Responses ---- //
 
 export interface StatusResponse {

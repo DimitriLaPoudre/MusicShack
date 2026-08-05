@@ -98,7 +98,12 @@ func PaginatedSongsToResponse(paginatedSongs model.EnrichedPaginatedSongs) Pagin
 
 	return PaginatedSongs{
 		Provider: paginatedSongs.Provider,
-		Songs:    songs,
+		Pagination: Pagination{
+			Limit:              paginatedSongs.Limit,
+			Offset:             paginatedSongs.Offset,
+			TotalNumberOfItems: paginatedSongs.TotalNumberOfItems,
+		},
+		Songs: songs,
 	}
 }
 
@@ -161,7 +166,12 @@ func PaginatedAlbumsToResponse(paginatedAlbums model.EnrichedPaginatedAlbums) Pa
 
 	return PaginatedAlbums{
 		Provider: paginatedAlbums.Provider,
-		Albums:   albums,
+		Pagination: Pagination{
+			Limit:              paginatedAlbums.Limit,
+			Offset:             paginatedAlbums.Offset,
+			TotalNumberOfItems: paginatedAlbums.TotalNumberOfItems,
+		},
+		Albums: albums,
 	}
 }
 
@@ -213,7 +223,12 @@ func PaginatedArtistsToResponse(paginatedArtists model.EnrichedPaginatedArtists)
 
 	return PaginatedArtists{
 		Provider: paginatedArtists.Provider,
-		Artists:  artists,
+		Pagination: Pagination{
+			Limit:              paginatedArtists.Limit,
+			Offset:             paginatedArtists.Offset,
+			TotalNumberOfItems: paginatedArtists.TotalNumberOfItems,
+		},
+		Artists: artists,
 	}
 }
 
@@ -276,7 +291,12 @@ func PaginatedPlaylistsToResponse(paginatedPlaylists model.EnrichedPaginatedPlay
 	}
 
 	return PaginatedPlaylists{
-		Provider:  paginatedPlaylists.Provider,
+		Provider: paginatedPlaylists.Provider,
+		Pagination: Pagination{
+			Limit:              paginatedPlaylists.Limit,
+			Offset:             paginatedPlaylists.Offset,
+			TotalNumberOfItems: paginatedPlaylists.TotalNumberOfItems,
+		},
 		Playlists: playlists,
 	}
 }

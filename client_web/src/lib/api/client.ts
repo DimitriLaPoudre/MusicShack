@@ -33,6 +33,9 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
 		} catch {
 			// body not parseable as JSON
 		}
+		if (response.status === 401) {
+			window.location.href = "/login";
+		}
 		throw new ApiError(response.status, body);
 	}
 

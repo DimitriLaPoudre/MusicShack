@@ -1,48 +1,172 @@
 <script lang="ts">
 	import { goto } from "$app/navigation";
 	import { page } from "$app/state";
-	import { ApiError, search } from "$lib/api";
+	import {
+		ApiError,
+		searchAlbum,
+		searchArtist,
+		searchPlaylist,
+		searchSetup,
+		searchSong,
+	} from "$lib/api";
 	import AlbumCard from "$lib/components/album-card.svelte";
 	import ArtistCard from "$lib/components/artist-card.svelte";
+	import LoadMore from "$lib/components/load-more.svelte";
 	import PlaylistCard from "$lib/components/playlist-card.svelte";
 	import SongCard from "$lib/components/song-card.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import type { SearchResult } from "$lib/types";
+	import type { AlbumInfo, ArtistInfo, PlaylistInfo, SongInfo } from "$lib/types";
 
 	type SearchType = "songs" | "albums" | "artists" | "playlists";
 
+	const PAGE_SIZE = 25;
+
 	let error = $state<string | null>(null);
+	let providers = $state<string[]>([]);
 	let provider = $state<string>("");
 	let type = $state<SearchType>("songs");
-	let result = $state<SearchResult | null>(null);
+	let songs = $state<SongInfo[]>([]);
+	let albums = $state<AlbumInfo[]>([]);
+	let artists = $state<ArtistInfo[]>([]);
+	let playlists = $state<PlaylistInfo[]>([]);
+	let total = $state(0);
+	let loadingMore = $state(false);
 
 	const searchData = $derived(page.url.searchParams.get("q"));
-	const providerResult = $derived(result?.provider_result ?? null);
 
-	async function fetchData(q: string | null) {
-		result = null;
+	const currentItems = $derived.by(() => {
+		switch (type) {
+			case "songs":
+				return songs;
+			case "albums":
+				return albums;
+			case "artists":
+				return artists;
+			case "playlists":
+				return playlists;
+		}
+	});
+
+	const hasMore = $derived(currentItems.length < total);
+
+	async function fetchPage(
+		q: string,
+		prov: string,
+		t: SearchType,
+		offset: number,
+	) {
+		switch (t) {
+			case "songs":
+				return searchSong(q, prov, { limit: PAGE_SIZE, offset });
+			case "albums":
+				return searchAlbum(q, prov, { limit: PAGE_SIZE, offset });
+			case "artists":
+				return searchArtist(q, prov, { limit: PAGE_SIZE, offset });
+			case "playlists":
+				return searchPlaylist(q, prov, { limit: PAGE_SIZE, offset });
+		}
+	}
+
+	async function loadType(q: string, prov: string, t: SearchType) {
+		switch (t) {
+			case "songs":
+				songs = [];
+				break;
+			case "albums":
+				albums = [];
+				break;
+			case "artists":
+				artists = [];
+				break;
+			case "playlists":
+				playlists = [];
+				break;
+		}
+		total = 0;
+		const data = await fetchPage(q, prov, t, 0);
+		total = data.total_number_of_items;
+		switch (t) {
+			case "songs":
+				songs = data.items as SongInfo[];
+				break;
+			case "albums":
+				albums = data.items as AlbumInfo[];
+				break;
+			case "artists":
+				artists = data.items as ArtistInfo[];
+				break;
+			case "playlists":
+				playlists = data.items as PlaylistInfo[];
+				break;
+		}
+	}
+
+	async function fetchData(q: string) {
 		error = null;
+		songs = [];
+		albums = [];
+		artists = [];
+		playlists = [];
+		total = 0;
+		providers = [];
+		provider = "";
 		try {
 			if (!q) throw new Error("No Search");
-			const data = await search(q);
-			if (data.item?.type && data.item?.data) {
-				const item = data.item.data as { provider: string; id: string };
-				await goto(`/${data.item.type}/${item.provider}/${item.id}`);
-			} else if (data.provider_result) {
-				if (Object.keys(data.provider_result).length === 0) {
-					throw new Error("instances missing");
-				}
-				provider = Object.keys(data.provider_result)[0];
-				result = data;
-			} else {
-				throw new Error("No result");
+			const setup = await searchSetup(q);
+			if (setup.item?.type && setup.item?.data) {
+				const item = setup.item.data as { provider: string; id: string };
+				await goto(`/${setup.item.type}/${item.provider}/${item.id}`);
+				return;
 			}
+			const keys = Object.keys(setup.provider_result ?? {});
+			if (keys.length === 0) {
+				throw new Error("instances missing");
+			}
+			providers = keys;
+			provider = keys[0];
+			await loadType(q, provider, type);
 		} catch (e) {
 			error =
 				e instanceof ApiError || e instanceof Error
 					? e.message
 					: "Failed to search";
 		}
+	}
+
+	async function loadMore() {
+		if (!searchData || !provider || loadingMore || !hasMore) return;
+		loadingMore = true;
+		try {
+			const data = await fetchPage(searchData, provider, type, currentItems.length);
+			total = data.total_number_of_items;
+			switch (type) {
+				case "songs":
+					songs = [...songs, ...(data.items as SongInfo[])];
+					break;
+				case "albums":
+					albums = [...albums, ...(data.items as AlbumInfo[])];
+					break;
+				case "artists":
+					artists = [...artists, ...(data.items as ArtistInfo[])];
+					break;
+				case "playlists":
+					playlists = [...playlists, ...(data.items as PlaylistInfo[])];
+					break;
+			}
+		} catch (e) {
+			error = e instanceof ApiError ? e.message : "Failed to load more";
+		}
+		loadingMore = false;
+	}
+
+	async function switchProvider(p: string) {
+		provider = p;
+		if (searchData) await loadType(searchData, p, type);
+	}
+
+	async function switchType(t: SearchType) {
+		type = t;
+		if (searchData && provider) await loadType(searchData, provider, t);
 	}
 
 	$effect(() => {
@@ -61,18 +185,18 @@
 		<p>{error}</p>
 		<a class="underline" href="/dashboard">Go to Home</a>
 	</div>
-{:else if !providerResult}
+{:else if !provider}
 	<p class="mt-6 text-center">Searching...</p>
 {:else}
 	<div class="flex flex-col gap-2 py-4 items-center">
 		<div class="flex flex-row gap-2">
-			{#each Object.keys(providerResult) as key}
+			{#each providers as key}
 				<Button
 					variant="hover-full"
 					class={provider === key
 						? "bg-foreground text-background shadow-none"
 						: ""}
-					onclick={() => (provider = key)}
+					onclick={() => switchProvider(key)}
 				>
 					{key}
 				</Button>
@@ -85,7 +209,7 @@
 					class={type === tab.key
 						? "bg-foreground text-background shadow-none"
 						: ""}
-					onclick={() => (type = tab.key as SearchType)}
+					onclick={() => switchType(tab.key as SearchType)}
 				>
 					{tab.label}
 				</Button>
@@ -94,39 +218,31 @@
 	</div>
 	<div class="grid grid-cols-[repeat(auto-fit,200px)] justify-center gap-4">
 		{#if type === "songs"}
-			{#if providerResult[provider].songs.items.length === 0}
+			{#if currentItems.length === 0}
 				<p class="flex justify-center">No song found</p>
 			{/if}
-			{#each providerResult[provider].songs.items as song}
+			{#each songs as song}
 				<SongCard {provider} {song} onerror={(msg) => (error = msg)} />
 			{/each}
 		{:else if type === "albums"}
-			{#if providerResult[provider].albums.items.length === 0}
+			{#if currentItems.length === 0}
 				<p class="flex justify-center">No album found</p>
 			{/if}
-			{#each providerResult[provider].albums.items as album}
-				<AlbumCard
-					{provider}
-					{album}
-					onerror={(msg) => (error = msg)}
-				/>
+			{#each albums as album}
+				<AlbumCard {provider} {album} onerror={(msg) => (error = msg)} />
 			{/each}
 		{:else if type === "artists"}
-			{#if providerResult[provider].artists.items.length === 0}
+			{#if currentItems.length === 0}
 				<p class="flex justify-center">No artist found</p>
 			{/if}
-			{#each providerResult[provider].artists.items as artist}
-				<ArtistCard
-					{provider}
-					{artist}
-					onerror={(msg) => (error = msg)}
-				/>
+			{#each artists as artist}
+				<ArtistCard {provider} {artist} onerror={(msg) => (error = msg)} />
 			{/each}
 		{:else if type === "playlists"}
-			{#if providerResult[provider].playlists.items.length === 0}
+			{#if currentItems.length === 0}
 				<p class="flex justify-center">No playlist found</p>
 			{/if}
-			{#each providerResult[provider].playlists.items as playlist}
+			{#each playlists as playlist}
 				<PlaylistCard
 					{provider}
 					{playlist}
@@ -134,5 +250,12 @@
 				/>
 			{/each}
 		{/if}
+	</div>
+	<div class="pt-4">
+		<LoadMore
+			hasMore={hasMore}
+			loading={loadingMore}
+			onclick={loadMore}
+		/>
 	</div>
 {/if}
