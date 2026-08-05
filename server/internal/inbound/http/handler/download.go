@@ -36,7 +36,7 @@ func (h *DownloadHandler) DownloadArtist(c *gin.Context) {
 		return
 	}
 
-	if err := h.download.DownloadArtist(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
+	if err := h.download.DownloadArtist(c.Request.Context(), me, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -57,7 +57,7 @@ func (h *DownloadHandler) DownloadAlbum(c *gin.Context) {
 		return
 	}
 
-	if err := h.download.DownloadAlbum(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
+	if err := h.download.DownloadAlbum(c.Request.Context(), me, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -78,7 +78,7 @@ func (h *DownloadHandler) DownloadPlaylist(c *gin.Context) {
 		return
 	}
 
-	if err := h.download.DownloadPlaylist(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
+	if err := h.download.DownloadPlaylist(c.Request.Context(), me, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}
@@ -99,7 +99,7 @@ func (h *DownloadHandler) DownloadSong(c *gin.Context) {
 		return
 	}
 
-	if err := h.download.DownloadSong(c.Request.Context(), me.ID, req.Provider, req.ID); err != nil {
+	if err := h.download.DownloadSong(c.Request.Context(), me, req.Provider, req.ID); err != nil {
 		utils.Error(c, err)
 		return
 	}

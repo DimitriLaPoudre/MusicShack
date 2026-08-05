@@ -7,7 +7,6 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/google/uuid"
 )
 
 type FetchNewReleasesService struct {
@@ -18,7 +17,7 @@ type FetchNewReleasesService struct {
 }
 
 type release struct {
-	userID   uuid.UUID
+	user     model.User
 	provider string
 	albumID  string
 }
@@ -33,7 +32,7 @@ func NewFetchNewReleasesService(cfgPlugin config.PluginConfig, plugin *PluginSer
 }
 
 func (s *FetchNewReleasesService) getArtistNewReleases(ctx context.Context, follow model.Follow, lastFetchDate time.Time) ([]release, error) {
-	artistAlbums, err := s.plugin.GetArtistAlbums(ctx, follow.UserID, follow.Provider, follow.ArtistID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
+	artistAlbums, err := s.plugin.GetArtistAlbums(ctx, model.User{ID: follow.UserID}, follow.Provider, follow.ArtistID, s.cfgPlugin.Pagination.Limit, s.cfgPlugin.Pagination.Offset)
 	if err != nil {
 		return []release{}, fmt.Errorf("get artist %s: %w", follow.ArtistID, err)
 	}
@@ -47,7 +46,7 @@ func (s *FetchNewReleasesService) getArtistNewReleases(ctx context.Context, foll
 	for _, r := range releases {
 		if r.ReleaseDate.After(lastFetchDate) {
 			newReleases = append(newReleases, release{
-				userID:   follow.UserID,
+				user:     model.User{ID: follow.UserID},
 				provider: r.Provider,
 				albumID:  r.ID,
 			})
@@ -81,7 +80,7 @@ func (s *FetchNewReleasesService) FetchNewReleases(ctx context.Context, lastFetc
 	newReleases, errList := s.getNewReleases(ctx, follows, lastFetchDate)
 
 	for _, release := range newReleases {
-		if err := s.download.DownloadAlbum(ctx, release.userID, release.provider, release.albumID); err != nil {
+		if err := s.download.DownloadAlbum(ctx, release.user, release.provider, release.albumID); err != nil {
 			errList = append(errList, fmt.Errorf("download album %s: %w", release.albumID, err))
 		}
 	}
