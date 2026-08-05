@@ -41,3 +41,17 @@ func (c *Cache[K]) Store(key K, value any) {
 		expiredAt: time.Now().Add(c.itemExpiration),
 	})
 }
+
+func (c *Cache[K]) ClearExpired() {
+	expired := []K{}
+	now := time.Now()
+	for key, item := range c.cacheMap.Range() {
+		if item.expiredAt.Before(now) {
+			expired = append(expired, key)
+		}
+	}
+
+	for _, key := range expired {
+		c.cacheMap.Delete(key)
+	}
+}

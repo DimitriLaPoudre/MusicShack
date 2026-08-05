@@ -1,6 +1,7 @@
 package sync
 
 import "sync"
+import "iter"
 
 type Map[K comparable, V any] struct {
 	mu sync.RWMutex
@@ -76,13 +77,15 @@ func (m *Map[K, V]) Swap(key K, value V) (V, bool) {
 	return old, loaded
 }
 
-func (m *Map[K, V]) Range(f func(K, V) bool) {
-	m.mu.RLock()
-	defer m.mu.RUnlock()
+func (m *Map[K, V]) Range() iter.Seq2[K, V] {
+	return func(yield func(K, V) bool) {
+		m.mu.RLock()
+		defer m.mu.RUnlock()
 
-	for k, v := range m.m {
-		if !f(k, v) {
-			return
+		for k, v := range m.m {
+			if !yield(k, v) {
+				return
+			}
 		}
 	}
 }

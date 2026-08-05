@@ -37,6 +37,10 @@ func (s *PluginCacheService) HashKey(fn any, args ...any) CacheKey {
 	return sha256.Sum256(b)
 }
 
+func (s *PluginCacheService) CleanExpired() {
+	s.cache.ClearExpired()
+}
+
 func (s *PluginCacheService) SongInfo(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string) (model.SongInfo, error) {
 	key := s.HashKey(plugin.SongInfo, instances, id)
 	if cached, ok := s.cache.Load(key); ok {

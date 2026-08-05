@@ -79,6 +79,10 @@ func Run(cfg *config.Config) {
 		slog.Error("start the job: CleanExpiredSession", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
+	if err := job.CleanExpiredPluginCache(c, ctx, &pluginCache); err != nil {
+		slog.Error("start the job: CleanExpiredPluginCache", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
 	c.Start()
 
 	app := gin.New()

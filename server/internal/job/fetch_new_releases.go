@@ -19,6 +19,5 @@ func DownloadNewReleases(c *cron.Cron, ctx context.Context, s *service.FetchNewR
 		return err
 	}
 
-	c.Start()
 	return nil
 }

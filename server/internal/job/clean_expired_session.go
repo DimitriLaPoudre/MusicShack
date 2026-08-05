@@ -17,6 +17,5 @@ func CleanExpiredSession(c *cron.Cron, ctx context.Context, auth *service.AuthSe
 		return err
 	}
 
-	c.Start()
 	return nil
 }
