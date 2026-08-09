@@ -45,6 +45,15 @@ type FollowRepository interface {
 	DeleteFollowByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
 }
 
+type SongRepository interface {
+	TransactionRepository
+	CreateSong(ctx context.Context, s Song) (Song, error)
+	GetSongByFilter(ctx context.Context, filter SongFilter) (Song, error)
+	ListSongsByFilter(ctx context.Context, filter SongFilter) ([]Song, error)
+	DeleteSong(ctx context.Context, id uuid.UUID) error
+	DeleteSongByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+}
+
 type TransactionRepository interface {
 	WithTransaction(ctx context.Context, fn func(ctx context.Context) error) error
 }
