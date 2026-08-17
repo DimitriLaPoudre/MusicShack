@@ -3,10 +3,6 @@ inputs:
   nixpkgs:
     url: github:cachix/devenv-nixpkgs/rolling
 
-shell: zsh
-
-reload: false
-
 secretspec:
   enable: true
   provider: dotenv:.env
