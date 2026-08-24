@@ -119,7 +119,7 @@ func (s SongItem) ToSongInfo(size int) model.SongInfo {
 		AudioQuality:    audioQuality,
 		Explicit:        s.Explicit,
 		Popularity:      s.Popularity,
-		Isrc:            s.ISRC,
+		ISRC:            s.ISRC,
 		Artists:         artists,
 		Album: model.AlbumInfo{
 			ID:       strconv.FormatUint(uint64(s.Album.ID), 10),

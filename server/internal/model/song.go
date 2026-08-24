@@ -17,4 +17,5 @@ type Song struct {
 type SongFilter struct {
 	ID     *uuid.UUID
 	UserID *uuid.UUID
+	ISRC   *string
 }

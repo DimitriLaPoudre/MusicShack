@@ -104,7 +104,7 @@ func (s *MetadataService) FormatMetadata(ctx context.Context, user model.User, p
 		model.TagAlbumPeak:    {albumPeak},
 		model.TagTrackGain:    {trackGain},
 		model.TagTrackPeak:    {trackPeak},
-		model.TagISRC:         {songInfo.Isrc},
+		model.TagISRC:         {songInfo.ISRC},
 	}
 
 	if err := s.WriteTags(path, tags, false); err != nil {

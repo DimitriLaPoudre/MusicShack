@@ -42,7 +42,7 @@ type SongInfo struct {
 	AudioQuality    Quality
 	Popularity      int
 	Explicit        bool
-	Isrc            string
+	ISRC            string
 	Artists         []ArtistInfo
 	Album           AlbumInfo
 }

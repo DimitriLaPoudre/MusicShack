@@ -43,6 +43,10 @@ func (r *SQLiteRepository) GetSongByFilter(ctx context.Context, filter model.Son
 		setParts = append(setParts, "user_id=?")
 		args = append(args, *filter.UserID)
 	}
+	if filter.ISRC != nil {
+		setParts = append(setParts, "isrc=?")
+		args = append(args, *filter.ISRC)
+	}
 
 	var query string
 	if len(args) == 0 {
@@ -119,6 +123,25 @@ func (r *SQLiteRepository) DeleteSongByUserID(ctx context.Context, id uuid.UUID,
 	query = tx.Rebind(query)
 
 	result, err := tx.ExecContext(ctx, query, id, userID)
+	if err != nil {
+		return dto.Error(err)
+	}
+	if n, err := result.RowsAffected(); err != nil {
+		return dto.Error(err)
+	} else if n == 0 {
+		return model.ErrNotFound
+	}
+
+	return nil
+}
+
+func (r *SQLiteRepository) DeleteSongByUserIDByISRC(ctx context.Context, isrc string, userID uuid.UUID) error {
+	tx := r.getTx(ctx)
+
+	query := "DELETE FROM songs WHERE isrc = ? AND user_id = ?"
+	query = tx.Rebind(query)
+
+	result, err := tx.ExecContext(ctx, query, isrc, userID)
 	if err != nil {
 		return dto.Error(err)
 	}

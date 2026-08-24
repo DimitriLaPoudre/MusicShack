@@ -280,7 +280,7 @@ func (t *downloadTask) SaveDownload(ctx context.Context, reader io.ReadCloser, e
 		return fmt.Errorf("format song metadata: %w", err)
 	}
 
-	// _ = repository.AddSong(models.Song{UserID: userID, Path: filename, Isrc: data.Isrc, MTime: time.Now()})
+	// _ = repository.AddSong(models.Song{UserID: userID, Path: filename, ISRC: data.ISRC, MTime: time.Now()})
 
 	return nil
 }

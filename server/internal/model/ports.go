@@ -52,6 +52,7 @@ type SongRepository interface {
 	ListSongsByFilter(ctx context.Context, filter SongFilter) ([]Song, error)
 	DeleteSong(ctx context.Context, id uuid.UUID) error
 	DeleteSongByUserID(ctx context.Context, id uuid.UUID, userID uuid.UUID) error
+	DeleteSongByUserIDByISRC(ctx context.Context, isrc string, userID uuid.UUID) error
 }
 
 type TransactionRepository interface {

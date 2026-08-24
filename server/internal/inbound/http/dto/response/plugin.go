@@ -34,7 +34,7 @@ type SongInfo struct {
 	AudioQuality    AudioQuality `json:"audio_quality"`
 	Explicit        bool         `json:"explicit"`
 	Popularity      int          `json:"popularity"`
-	Isrc            string       `json:"isrc"`
+	ISRC            string       `json:"isrc"`
 	Artists         []MiniArtist `json:"artists"`
 	Album           SongAlbum    `json:"album"`
 }
@@ -72,7 +72,7 @@ func SongInfoToResponse(songInfo model.EnrichedSongInfo) SongInfo {
 		},
 		Explicit:   songInfo.Explicit,
 		Popularity: songInfo.Popularity,
-		Isrc:       songInfo.Isrc,
+		ISRC:       songInfo.ISRC,
 		Artists:    artists,
 		Album: SongAlbum{
 			ID:       songInfo.Album.ID,
