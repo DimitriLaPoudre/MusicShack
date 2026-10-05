@@ -8,7 +8,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/inbound/http/utils"
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func TargetUserMiddleware(user model.UserRepository) gin.HandlerFunc {

@@ -31,9 +31,11 @@ func Run(cfg *config.Config) {
 		os.Exit(1)
 	}
 
-	if err := repo.Migrate(cfg.DB.Path); err != nil {
+	if err := repo.Migrate(); err != nil {
 		slog.Error("failed to migrate the database", slog.String("err", err.Error()))
 		os.Exit(1)
+	} else {
+		slog.Info("sqlite migration completed successfully")
 	}
 
 	pluginStore := service.NewPluginStoreService()

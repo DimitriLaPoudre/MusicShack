@@ -8,7 +8,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/sqlite/dto"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func (r *SQLiteRepository) CreateSession(ctx context.Context, s model.Session) (model.Session, error) {

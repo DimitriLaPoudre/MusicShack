@@ -7,7 +7,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type SongService struct {
@@ -23,10 +23,7 @@ func NewSongService(cfg config.DownloadConfig, repo model.SongRepository) SongSe
 }
 
 func (s *SongService) AddSong(ctx context.Context, user model.User, songInfo model.SongInfo, filePath string, fileUpdatedAt time.Time) (model.Song, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return model.Song{}, fmt.Errorf("create id for new song for %s: %w", user.ID.String(), err)
-	}
+	id := uuid.NewV7()
 
 	song := model.Song{
 		ID:        id,
@@ -36,7 +33,7 @@ func (s *SongService) AddSong(ctx context.Context, user model.User, songInfo mod
 		UpdatedAt: fileUpdatedAt,
 	}
 
-	song, err = s.repo.CreateSong(ctx, song)
+	song, err := s.repo.CreateSong(ctx, song)
 	if err != nil {
 		return model.Song{}, fmt.Errorf(": %w", err)
 	}

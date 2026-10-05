@@ -14,7 +14,7 @@ import (
 	pkg_path "github.com/DimitriLaPoudre/MusicShack/internal/pkg/path"
 	pkg_sync "github.com/DimitriLaPoudre/MusicShack/internal/pkg/sync"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type DownloadService struct {
@@ -181,10 +181,7 @@ func (s *DownloadService) AddSong(ctx context.Context, user model.User, pluginIn
 func (s *DownloadService) AddDownloadTask(user model.User, songInfo model.EnrichedSongInfo) error {
 	// check if song already owned
 
-	taskID, err := uuid.NewV7()
-	if err != nil {
-		return fmt.Errorf("create id for new download task: %w", err)
-	}
+	taskID := uuid.NewV7()
 
 	newTask := &downloadTask{
 		user:           user,

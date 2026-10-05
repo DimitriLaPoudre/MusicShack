@@ -4,7 +4,6 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"log/slog"
 
 	"github.com/golang-migrate/migrate/v4"
 	migratesqlite "github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -39,7 +38,7 @@ func New(filepath string) (SQLiteRepository, error) {
 	return SQLiteRepository{DB: db}, nil
 }
 
-func (r *SQLiteRepository) Migrate(filepath string) error {
+func (r *SQLiteRepository) Migrate() error {
 	driver, err := migratesqlite.WithInstance(r.DB.DB, &migratesqlite.Config{})
 	if err != nil {
 		return fmt.Errorf("create sqlite driver: %w", err)
@@ -64,6 +63,5 @@ func (r *SQLiteRepository) Migrate(filepath string) error {
 		return fmt.Errorf("load migration: %w", err)
 	}
 
-	slog.Info("sqlite migration completed successfully")
 	return nil
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/outbound/sqlite/dto"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 func (r *SQLiteRepository) CreateFollow(ctx context.Context, f model.Follow) (model.Follow, error) {

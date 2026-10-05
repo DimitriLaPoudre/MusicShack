@@ -9,7 +9,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/token"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type AuthService struct {
@@ -36,10 +36,7 @@ func (s *AuthService) Login(ctx context.Context, form model.LoginForm) (string, 
 		return "", fmt.Errorf("compare given password with user password hash: %w", err)
 	}
 
-	id, err := uuid.NewV7()
-	if err != nil {
-		return "", fmt.Errorf("create id for new session: %w", err)
-	}
+	id := uuid.NewV7()
 
 	token, err := token.GenerateSessionToken()
 	if err != nil {

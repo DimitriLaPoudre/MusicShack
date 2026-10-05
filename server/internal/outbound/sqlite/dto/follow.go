@@ -2,7 +2,7 @@ package dto
 
 import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type Follow struct {

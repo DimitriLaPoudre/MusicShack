@@ -2,7 +2,7 @@ package request
 
 import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type CreateInstance struct {

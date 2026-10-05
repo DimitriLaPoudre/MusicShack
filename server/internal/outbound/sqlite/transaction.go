@@ -37,7 +37,11 @@ func (r *SQLiteRepository) WithTransaction(ctx context.Context, fn func(ctx cont
 		return fmt.Errorf("during transaction: %w", err)
 	}
 
-	return tx.Commit()
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("commit transaction: %w", err)
+	}
+
+	return nil
 }
 
 func (r *SQLiteRepository) getTx(ctx context.Context) DBTX {

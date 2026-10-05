@@ -5,7 +5,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserRepository interface {

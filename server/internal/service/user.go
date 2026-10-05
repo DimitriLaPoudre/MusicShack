@@ -8,7 +8,7 @@ import (
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
 	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/crypto"
 	"github.com/DimitriLaPoudre/MusicShack/internal/setup/config"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type UserService struct {
@@ -24,11 +24,7 @@ func NewUserService(cfg config.DownloadConfig, repo model.UserRepository) UserSe
 }
 
 func (s *UserService) CreateUser(ctx context.Context, user model.User) (model.User, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return model.User{}, fmt.Errorf("create id for new user: %w", err)
-	}
-	user.ID = id
+	user.ID = uuid.NewV7()
 
 	hash, err := crypto.HashPassword(user.Password)
 	if err != nil {

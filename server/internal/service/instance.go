@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type InstanceService struct {
@@ -32,11 +32,7 @@ func (s *InstanceService) CreateInstance(ctx context.Context, i model.Instance) 
 	i.Plugin = plugin.Name()
 	i.Provider = plugin.Provider()
 
-	id, err := uuid.NewV7()
-	if err != nil {
-		return model.Instance{}, fmt.Errorf("create id for new instance: %w", err)
-	}
-	i.ID = id
+	i.ID = uuid.NewV7()
 	i.Ping = &ping
 
 	i, err = s.repo.CreateInstance(ctx, i)

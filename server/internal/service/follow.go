@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/DimitriLaPoudre/MusicShack/internal/model"
-	"github.com/google/uuid"
+	"uuid"
 )
 
 type FollowService struct {
@@ -21,11 +21,7 @@ func NewFollowService(plugin *PluginService, repo model.FollowRepository) Follow
 }
 
 func (s *FollowService) CreateFollow(ctx context.Context, follow model.Follow) (model.Follow, error) {
-	id, err := uuid.NewV7()
-	if err != nil {
-		return model.Follow{}, fmt.Errorf("create id for new follow: %w", err)
-	}
-	follow.ID = id
+	follow.ID = uuid.NewV7()
 
 	artist, err := s.plugin.GetArtistInfo(ctx, model.User{ID: follow.UserID}, follow.Provider, follow.ArtistID)
 	if err != nil {
