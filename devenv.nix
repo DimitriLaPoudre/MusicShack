@@ -13,52 +13,21 @@
   # env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = [
-    pkgs.git
-
-    # backend
-    pkgs.air
-    pkgs.jq
-
-    # frontend
-  ];
+  # packages = [ pkgs.git ];
 
   # https://devenv.sh/languages/
-  languages = {
-    go = {
-      enable = true;
-      version = "1.27.1";
-    };
-
-    javascript = {
-      enable = true;
-      directory = "./client_web";
-      bun = {
-        enable = true;
-        install.enable = true;
-      };
-    };
-  };
+  # languages.rust.enable = true;
 
   # https://devenv.sh/processes/
-  processes = {
-    server.exec = "back-dev";
-    client_web.exec = "front-dev";
-  };
+  # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
 
   # https://devenv.sh/services/
   # services.postgres.enable = true;
 
   # https://devenv.sh/scripts/
-  scripts.front-dev.exec = ''
-    	cd "$DEVENV_ROOT"/client_web
-    	secretspec run -- bun run dev
-  '';
-
-  scripts.back-dev.exec = ''
-        cd "$DEVENV_ROOT"/server
-    	secretspec run -- air
-  '';
+  # scripts.hello.exec = ''
+  #   echo hello from $GREET
+  # '';
 
   # https://devenv.sh/basics/
   # enterShell = ''
