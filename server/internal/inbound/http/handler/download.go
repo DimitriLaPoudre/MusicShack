@@ -117,7 +117,7 @@ func (h *DownloadHandler) Retry(c *gin.Context) {
 	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
-		utils.Error(c, model.ErrDownloadInvalidID)
+		utils.Error(c, model.NewError(model.ErrInvalid, model.MessageCodeInvalid, "download ID"))
 		return
 	}
 
@@ -151,7 +151,7 @@ func (h *DownloadHandler) Cancel(c *gin.Context) {
 	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
-		utils.Error(c, model.ErrDownloadInvalidID)
+		utils.Error(c, model.NewError(model.ErrInvalid, model.MessageCodeInvalid, "download ID"))
 		return
 	}
 
@@ -184,7 +184,7 @@ func (h *DownloadHandler) Remove(c *gin.Context) {
 	rawTaskID := c.Param(macro.ID)
 	taskID, err := uuid.Parse(rawTaskID)
 	if err != nil {
-		utils.Error(c, model.ErrDownloadInvalidID)
+		utils.Error(c, model.NewError(model.ErrInvalid, model.MessageCodeInvalid, "download ID"))
 		return
 	}
 

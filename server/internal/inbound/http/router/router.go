@@ -28,7 +28,7 @@ func New(
 	app.Use(middleware.Logger())
 	app.Use(middleware.Recovery())
 
-	app.GET("/healthz", healthz)
+	app.GET("/health", health)
 
 	api := app.Group("/api")
 	{
@@ -126,6 +126,6 @@ func New(
 	}
 }
 
-func healthz(c *gin.Context) {
+func health(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }

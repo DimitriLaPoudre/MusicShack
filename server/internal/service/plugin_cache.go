@@ -25,7 +25,11 @@ func NewPluginCacheService(cfgPlugin config.PluginConfig) PluginCacheService {
 
 type CacheKey [32]byte
 
-func (s *PluginCacheService) HashKey(fn any, args ...any) CacheKey {
+func (c CacheKey) String() string {
+	return string(c[:])
+}
+
+func hashKey(fn any, args ...any) CacheKey {
 	v := reflect.ValueOf(fn)
 
 	if v.Kind() != reflect.Func {
@@ -42,9 +46,9 @@ func (s *PluginCacheService) CleanExpired() {
 }
 
 func (s *PluginCacheService) SongInfo(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string) (model.SongInfo, error) {
-	key := s.HashKey(plugin.SongInfo, instances, id)
+	key := hashKey(plugin.SongInfo, instances, id)
 	if cached, ok := s.cache.Load(key); ok {
-		if songInfo := cached.(model.SongInfo); ok {
+		if songInfo, ok := cached.(model.SongInfo); ok {
 			return songInfo, nil
 		}
 	}
@@ -59,7 +63,7 @@ func (s *PluginCacheService) SongInfo(plugin model.Plugin, ctx context.Context, 
 }
 
 func (s *PluginCacheService) SongInfoByISRC(plugin model.Plugin, ctx context.Context, instances []model.Instance, isrc string) (model.SongInfo, error) {
-	key := s.HashKey(plugin.SongInfoByISRC, instances, isrc)
+	key := hashKey(plugin.SongInfoByISRC, instances, isrc)
 	if cached, ok := s.cache.Load(key); ok {
 		if songInfo := cached.(model.SongInfo); ok {
 			return songInfo, nil
@@ -76,7 +80,7 @@ func (s *PluginCacheService) SongInfoByISRC(plugin model.Plugin, ctx context.Con
 }
 
 func (s *PluginCacheService) AlbumInfo(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string) (model.AlbumInfo, error) {
-	key := s.HashKey(plugin.AlbumInfo, instances, id)
+	key := hashKey(plugin.AlbumInfo, instances, id)
 	if cached, ok := s.cache.Load(key); ok {
 		if albumInfo := cached.(model.AlbumInfo); ok {
 			return albumInfo, nil
@@ -93,7 +97,7 @@ func (s *PluginCacheService) AlbumInfo(plugin model.Plugin, ctx context.Context,
 }
 
 func (s *PluginCacheService) AlbumSongs(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.PaginatedSongs, error) {
-	key := s.HashKey(plugin.AlbumSongs, instances, id, limit, offset)
+	key := hashKey(plugin.AlbumSongs, instances, id, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if albumSongs := cached.(model.PaginatedSongs); ok {
 			return albumSongs, nil
@@ -110,7 +114,7 @@ func (s *PluginCacheService) AlbumSongs(plugin model.Plugin, ctx context.Context
 }
 
 func (s *PluginCacheService) ArtistInfo(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string) (model.ArtistInfo, error) {
-	key := s.HashKey(plugin.ArtistInfo, instances, id)
+	key := hashKey(plugin.ArtistInfo, instances, id)
 	if cached, ok := s.cache.Load(key); ok {
 		if artistInfo := cached.(model.ArtistInfo); ok {
 			return artistInfo, nil
@@ -127,7 +131,7 @@ func (s *PluginCacheService) ArtistInfo(plugin model.Plugin, ctx context.Context
 }
 
 func (s *PluginCacheService) ArtistAlbums(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.ArtistPaginatedAlbums, error) {
-	key := s.HashKey(plugin.ArtistAlbums, instances, id, limit, offset)
+	key := hashKey(plugin.ArtistAlbums, instances, id, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if artistAlbums := cached.(model.ArtistPaginatedAlbums); ok {
 			return artistAlbums, nil
@@ -144,7 +148,7 @@ func (s *PluginCacheService) ArtistAlbums(plugin model.Plugin, ctx context.Conte
 }
 
 func (s *PluginCacheService) PlaylistInfo(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string) (model.PlaylistInfo, error) {
-	key := s.HashKey(plugin.PlaylistInfo, instances, id)
+	key := hashKey(plugin.PlaylistInfo, instances, id)
 	if cached, ok := s.cache.Load(key); ok {
 		if playlistInfo := cached.(model.PlaylistInfo); ok {
 			return playlistInfo, nil
@@ -161,7 +165,7 @@ func (s *PluginCacheService) PlaylistInfo(plugin model.Plugin, ctx context.Conte
 }
 
 func (s *PluginCacheService) PlaylistSongs(plugin model.Plugin, ctx context.Context, instances []model.Instance, id string, limit int, offset int) (model.PaginatedSongs, error) {
-	key := s.HashKey(plugin.PlaylistSongs, instances, id, limit, offset)
+	key := hashKey(plugin.PlaylistSongs, instances, id, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if playlistSongs := cached.(model.PaginatedSongs); ok {
 			return playlistSongs, nil
@@ -178,7 +182,7 @@ func (s *PluginCacheService) PlaylistSongs(plugin model.Plugin, ctx context.Cont
 }
 
 func (s *PluginCacheService) SearchSong(plugin model.Plugin, ctx context.Context, instances []model.Instance, q string, limit int, offset int) (model.PaginatedSongs, error) {
-	key := s.HashKey(plugin.SearchSong, instances, q, limit, offset)
+	key := hashKey(plugin.SearchSong, instances, q, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if songs := cached.(model.PaginatedSongs); ok {
 			return songs, nil
@@ -195,7 +199,7 @@ func (s *PluginCacheService) SearchSong(plugin model.Plugin, ctx context.Context
 }
 
 func (s *PluginCacheService) SearchAlbum(plugin model.Plugin, ctx context.Context, instances []model.Instance, q string, limit int, offset int) (model.PaginatedAlbums, error) {
-	key := s.HashKey(plugin.SearchAlbum, instances, q, limit, offset)
+	key := hashKey(plugin.SearchAlbum, instances, q, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if albums := cached.(model.PaginatedAlbums); ok {
 			return albums, nil
@@ -212,7 +216,7 @@ func (s *PluginCacheService) SearchAlbum(plugin model.Plugin, ctx context.Contex
 }
 
 func (s *PluginCacheService) SearchArtist(plugin model.Plugin, ctx context.Context, instances []model.Instance, q string, limit int, offset int) (model.PaginatedArtists, error) {
-	key := s.HashKey(plugin.SearchArtist, instances, q, limit, offset)
+	key := hashKey(plugin.SearchArtist, instances, q, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if artists := cached.(model.PaginatedArtists); ok {
 			return artists, nil
@@ -229,7 +233,7 @@ func (s *PluginCacheService) SearchArtist(plugin model.Plugin, ctx context.Conte
 }
 
 func (s *PluginCacheService) SearchPlaylist(plugin model.Plugin, ctx context.Context, instances []model.Instance, q string, limit int, offset int) (model.PaginatedPlaylists, error) {
-	key := s.HashKey(plugin.SearchPlaylist, instances, q, limit, offset)
+	key := hashKey(plugin.SearchPlaylist, instances, q, limit, offset)
 	if cached, ok := s.cache.Load(key); ok {
 		if playlists := cached.(model.PaginatedPlaylists); ok {
 			return playlists, nil
@@ -246,7 +250,7 @@ func (s *PluginCacheService) SearchPlaylist(plugin model.Plugin, ctx context.Con
 }
 
 func (s *PluginCacheService) URL(plugin model.Plugin, ctx context.Context, url string) (model.URLItem, error) {
-	key := s.HashKey(plugin.URL, url)
+	key := hashKey(plugin.URL, url)
 	if cached, ok := s.cache.Load(key); ok {
 		if urlItem := cached.(model.URLItem); ok {
 			return urlItem, nil

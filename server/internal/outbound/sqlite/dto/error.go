@@ -12,23 +12,22 @@ import (
 func Error(err error) error {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.ErrNotFound
+			return model.NewOutboundError(model.ErrNotFound, err)
 		}
 
-		var sqliteErr *sqlite.Error
-		if errors.As(err, &sqliteErr) {
+		if sqliteErr, ok := errors.AsType[*sqlite.Error](err); ok {
 			switch sqliteErr.Code() {
 			case sqlite3.SQLITE_CONSTRAINT_UNIQUE:
-				return model.ErrConflict
+				return model.NewOutboundError(model.NewError(model.ErrConflict, model.MessageCodeAlreadyExists, "a field"), err)
 
 			case sqlite3.SQLITE_CONSTRAINT_FOREIGNKEY:
-				return model.ErrInvalidInput
+				return model.NewOutboundError(model.NewError(model.ErrInvalid, model.MessageCodeInvalid, "a field"), err)
 
 			case sqlite3.SQLITE_CONSTRAINT_NOTNULL:
-				return model.ErrInvalidInput
+				return model.NewOutboundError(model.NewError(model.ErrInvalid, model.MessageCodeInvalid, "a field"), err)
 
 			default:
-				return model.ErrInternal
+				return model.NewOutboundError(model.NewError(model.ErrInternal, model.MessageCodeInternalError), err)
 			}
 		}
 	}

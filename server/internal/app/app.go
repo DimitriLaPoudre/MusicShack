@@ -39,8 +39,9 @@ func Run(cfg *config.Config) {
 	}
 
 	pluginStore := service.NewPluginStoreService()
-	pluginHifi := hifi.NewHifi()
-	pluginStore.Register(&pluginHifi)
+	pluginStore.Register(
+		new(hifi.NewHifi()),
+	)
 
 	pluginCache := service.NewPluginCacheService(cfg.Plugin)
 
@@ -68,7 +69,7 @@ func Run(cfg *config.Config) {
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
 
-	if err := service.InitAdmin(ctx, cfg.Admin, &userS, &repo); err != nil && !errors.Is(err, model.ErrAdminAlreadyExist) {
+	if err := service.InitAdmin(ctx, cfg.Admin, &userS, &repo); err != nil && !errors.Is(err, model.ErrConflict) {
 		slog.Warn("admin initialisation failed", slog.String("err", err.Error()))
 	}
 

@@ -28,7 +28,7 @@ func (c *Cache[K]) Load(key K) (any, bool) {
 		return nil, false
 	}
 
-	if item.expiredAt.Before(time.Now()) {
+	if time.Now().After(item.expiredAt) {
 		return nil, false
 	}
 
@@ -46,7 +46,7 @@ func (c *Cache[K]) ClearExpired() {
 	expired := []K{}
 	now := time.Now()
 	for key, item := range c.cacheMap.Range() {
-		if item.expiredAt.Before(now) {
+		if now.After(item.expiredAt) {
 			expired = append(expired, key)
 		}
 	}

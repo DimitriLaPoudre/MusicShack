@@ -28,7 +28,7 @@ func (p *Hifi) SongInfoByISRC(ctx context.Context, instances []model.Instance, i
 	}
 
 	if len(songData.Data.Songs) == 0 {
-		return model.SongInfo{}, model.ErrPluginDataNotFound
+		return model.SongInfo{}, model.NewError(model.ErrNotFound, model.MessageCodeNotFound, "song")
 	}
 
 	songs := []model.SongInfo{}

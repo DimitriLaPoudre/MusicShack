@@ -16,7 +16,7 @@ import (
 
 func MultiFetchTyped[T any](ctx context.Context, urls []string, path string, limiters *sync.Map[string, *rate.Limiter]) (T, error) {
 	var data T
-	err := model.ErrPluginNoInstances
+	err := model.NewError(model.ErrNotFound, model.MessageCodeEmpty, "plugin instances")
 	for _, url := range urls {
 		limiter, _ := limiters.LoadOrStore(url, rate.NewLimiter(rate.Every(6*time.Second), 150))
 
@@ -54,7 +54,7 @@ func FetchTyped[T any](ctx context.Context, url string, path string, limiter *ra
 
 func Fetch(ctx context.Context, url string, limiter *rate.Limiter) (*http.Response, error) {
 	if !limiter.Allow() {
-		return nil, model.ErrPluginRateLimit
+		return nil, model.NewError(model.ErrRateLimitReached, model.MessageCodeInternalError)
 	}
 	return network.Fetch(ctx, url)
 }

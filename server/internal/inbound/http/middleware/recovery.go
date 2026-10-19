@@ -16,8 +16,7 @@ import (
 
 func isBrokenPipe(err any) bool {
 	if ne, ok := err.(*net.OpError); ok {
-		var se *os.SyscallError
-		if errors.As(ne, &se) {
+		if se, ok := errors.AsType[*os.SyscallError](ne); ok {
 			errStr := strings.ToLower(se.Error())
 
 			if strings.Contains(errStr, "broken pipe") {

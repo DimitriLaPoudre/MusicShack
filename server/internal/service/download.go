@@ -354,13 +354,13 @@ func (t *downloadTask) retry() {
 func (s *DownloadService) Retry(userID uuid.UUID, taskID uuid.UUID) error {
 	actual, ok := s.tasks.Load(userID)
 	if !ok {
-		return model.ErrDownloadNotFound
+		return model.NewError(model.ErrNotFound, model.MessageCodeNotFound, "download")
 	}
 	userTasks := actual.(*sync.Map)
 
 	actual, ok = userTasks.Load(taskID)
 	if !ok {
-		return model.ErrDownloadNotFound
+		return model.NewError(model.ErrNotFound, model.MessageCodeNotFound, "download")
 	}
 	task := actual.(*downloadTask)
 
@@ -385,13 +385,13 @@ func (s *DownloadService) RetryAll(userID uuid.UUID) {
 func (s *DownloadService) Cancel(userID uuid.UUID, taskID uuid.UUID) error {
 	actual, ok := s.tasks.Load(userID)
 	if !ok {
-		return model.ErrDownloadNotFound
+		return model.NewError(model.ErrNotFound, model.MessageCodeNotFound, "download")
 	}
 	userTasks := actual.(*sync.Map)
 
 	actual, ok = userTasks.Load(taskID)
 	if !ok {
-		return model.ErrDownloadNotFound
+		return model.NewError(model.ErrNotFound, model.MessageCodeNotFound, "download")
 	}
 	task := actual.(*downloadTask)
 

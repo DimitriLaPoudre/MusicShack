@@ -80,7 +80,7 @@ func (s *AuthService) Authenticate(ctx context.Context, tkn string) (model.User,
 	}
 
 	if session.ExpiresAt.Before(time.Now()) {
-		return model.User{}, model.ErrExpiredToken
+		return model.User{}, model.NewError(model.ErrExpired, model.MessageCodeExpired, "session")
 	}
 
 	user, err := s.user.GetUserByFilter(ctx, model.UserFilter{ID: &session.UserID})

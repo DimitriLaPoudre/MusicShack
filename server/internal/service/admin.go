@@ -15,7 +15,7 @@ func InitAdmin(ctx context.Context, cfg config.AdminConfig, user *UserService, r
 		if err != nil {
 			return fmt.Errorf("check if admin already exist: %w", err)
 		}
-		return model.ErrAdminAlreadyExist
+		return model.NewError(model.ErrConflict, model.MessageCodeAlreadyExists, "default admin account")
 	}
 
 	if _, err := user.CreateUser(ctx, model.User{

@@ -18,16 +18,12 @@ func Error(c *gin.Context, err error) {
 	slog.ErrorContext(c.Request.Context(), "handler forward domain error", slog.String("err", err.Error()))
 
 	switch {
-	case errors.Is(err, model.ErrDownloadInvalidID):
+	case errors.Is(err, model.ErrInvalid):
 		c.JSON(http.StatusBadRequest, response.NewError(err))
-	case errors.Is(err, model.ErrDownloadNotFound),
-		errors.Is(err, model.ErrNotFound),
-		errors.Is(err, model.ErrUserNotFound),
-		errors.Is(err, model.ErrPluginNotFound),
-		errors.Is(err, model.ErrPluginDataNotFound):
+	case errors.Is(err, model.ErrNotFound):
 		c.JSON(http.StatusNotFound, response.NewError(err))
-	// case errors.Is(err, model.ErrRoleInvalid):
-	// 	c.JSON(http.StatusUnprocessableEntity, response.Error{Message: err.Error()})
+	case errors.Is(err, model.ErrInvalid):
+		c.JSON(http.StatusUnprocessableEntity, response.NewError(err))
 	// case errors.Is(err, model.ErrEmailDuplicate):
 	// 	c.JSON(http.StatusConflict, response.Error{Message: err.Error()})
 	default:

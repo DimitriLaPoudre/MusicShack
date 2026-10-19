@@ -6,8 +6,8 @@ import (
 )
 
 type CreateUser struct {
-	Username string `json:"username" binding:"required,min=3,max=20,alphanumunicode|contains=_"`
-	Password string `json:"password" binding:"required"`
+	Username string `json:"username" binding:"required,min=3,max=32,regex=^[a-zA-Z0-9_]+$"`
+	Password string `json:"password" binding:"required,min=8,max=128,regex=^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$"`
 	HiRes    bool   `json:"hi_res"`
 	Role     string `json:"role"`
 }
@@ -22,8 +22,8 @@ func (req CreateUser) IntoUser() (model.User, error) {
 }
 
 type UpdateUser struct {
-	Username *string `json:"username" binding:"omitempty,min=3,max=20,alphanumunicode|contains=_"`
-	Password *string `json:"password"`
+	Username *string `json:"username" binding:"omitempty,min=3,max=32,regex=^[a-zA-Z0-9_]+$"`
+	Password *string `json:"password" binding:"omitempty,min=8,max=128,regex=^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])[a-zA-Z0-9]+$"`
 	HiRes    *bool   `json:"hi_res"`
 }
 
