@@ -3,44 +3,45 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
-	"time"
 
-	"github.com/DimitriLaPoudre/MusicShack/internal/pkg/plugin"
-	"github.com/tetratelabs/wazero"
-	"github.com/tetratelabs/wazero/imports/wasi_snapshot_preview1"
+	"github.com/extism/go-sdk"
 )
 
 func main() {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	cache, err := wazero.NewCompilationCacheWithDir("./.wazero-cache")
-	if err != nil {
-		log.Fatalf("Failed to create compilation cache dir: %v", err)
+	manifest := extism.Manifest{
+		Wasm: []extism.Wasm{
+			extism.WasmFile{
+				Path: "./plugin/hifi.wasm",
+			},
+		},
+		Config: map[string]string{
+			"vowels": "aeiouyAEIOUY",
+		},
 	}
 
-	configRuntime := wazero.NewRuntimeConfigCompiler().
-		WithCompilationCache(cache)
-	r := wazero.NewRuntimeWithConfig(ctx, configRuntime)
-	defer r.Close(ctx)
-	wasi_snapshot_preview1.MustInstantiate(ctx, r)
-
-	// _, err = r.NewHostModuleBuilder("env").
-	// 	NewFunctionBuilder().
-	// 	WithFunc(func(ctx context.Context, m api.Module, ptr, len uint32) uint32 {
-	// 		return a + b
-	// 	}).
-	// 	Export("log").
-	// 	Instantiate(ctx)
-	// if err != nil {
-	// 	log.Fatalf("Failed to create host module: %v", err)
-	// }
-
-	res, err := plugin.WASMCall[map[string]any](ctx, r, "hifi", "info", nil)
+	ctx := context.Background()
+	config := extism.PluginConfig{
+		EnableWasi: true,
+	}
+	compiledPlugin, err := extism.NewCompiledPlugin(ctx, manifest, config, []extism.HostFunction{})
 	if err != nil {
-		log.Fatalf("Failed to call plugin: %v", err)
+		panic(err)
+	}
+	defer compiledPlugin.Close(ctx)
+
+	plugin, err := compiledPlugin.Instance(ctx, extism.PluginInstanceConfig{})
+	if err != nil {
+		fmt.Printf("Failed to initialize plugin: %v\n", err)
+		return
+	}
+	defer plugin.Close(ctx)
+
+	_, out, err := plugin.CallWithContext(ctx, "info", nil)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
-	fmt.Println(res)
+	response := string(out)
+	fmt.Println(response)
 }
